@@ -22,3 +22,5 @@ GitHub Actions는 동일 설치·환경 확인·계약 검사·시험·예제 �
 설치 환경과 구현 범위의 실제 확인 결과는 `runtime_manifest.json`에 기록합니다. 이 검사는 물리적 정확도나 계산 엔진의 검증을 뜻하지 않습니다.
 
 `python scripts/verify_numerics.py --output docs/numerical_verification.json`은 지정한 단일 배치의 A01~A03과 SI 척도 동등성만 측정합니다. 독립 해석식, 실제 에너지의 중심차분, 기하 변환과 합력·토크를 사용하며 실제 오차·허용오차·입력·환경·코드 해시를 저장합니다. 실패하면 JSON에 실패를 남기고 비정상 종료합니다. 원래 계약의 계획 상태를 변경하지 않습니다. GitHub Actions에서는 측정 JSON을 실행별 artifact로 보존합니다.
+
+`python scripts/verify_relaxation.py --output docs/relaxation_verification.json`은 별도의 A04 제약 조건에서 정지점 탐색을 측정합니다. 최종 거리·자유 기울기를 독립 해석식과 비교하고 고정 좌표 비트·입력 불변성·평가 상한·accepted 이력과 실제 종료 사유를 확인합니다. 이 기록은 최소점의 보증이나 실제 현상에 대한 검증을 뜻하지 않습니다. CI artifact에는 두 측정 JSON만 포함합니다.

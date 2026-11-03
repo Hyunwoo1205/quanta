@@ -38,18 +38,24 @@ jobs:
         run: python -m pytest
       - name: Measure named numerical benchmarks
         run: python scripts/verify_numerics.py --output .cache/numerical_verification.json
+      - name: Measure constrained relaxation benchmark
+        run: python scripts/verify_relaxation.py --output .cache/relaxation_verification.json
       - name: Preserve actual numerical measurements
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, verified 2026-11-04 (UTC+09:00)
         with:
           name: numerical-verification-${{ github.sha }}
-          path: .cache/numerical_verification.json
+          path: |
+            .cache/numerical_verification.json
+            .cache/relaxation_verification.json
           include-hidden-files: true
           if-no-files-found: ignore
       - name: Validate example input
         run: python -m quanta validate contracts/v0.2.0/examples/pair_revision.json
       - name: Evaluate a single configuration
         run: python -m quanta evaluate examples/pair_energy_forces.json
+      - name: Relax a constrained configuration
+        run: python -m quanta relax examples/pair_relax.json
       - name: Build pinned-base container
         run: docker build --platform linux/amd64 --tag quanta-contracts-ci .
       - name: Check installed-wheel container
@@ -57,3 +63,4 @@ jobs:
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta check-contracts
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta environment
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta evaluate /app/examples/pair_energy_forces.json
+          docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta relax /app/examples/pair_relax.json

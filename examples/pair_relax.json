@@ -1,0 +1,113 @@
+{
+  "schema_version": "0.2.0",
+  "experiment_id": "11e11111-1111-4111-8111-111111111111",
+  "revision_id": "55e55555-5555-4555-8555-555555555555",
+  "title": "Fixed-coordinate pair relaxation",
+  "created_at": "2026-11-03T21:00:00+09:00",
+  "definition": {
+    "unit_system": "SI",
+    "scales": {
+      "length_m": 1e-09,
+      "energy_j": 1e-19
+    },
+    "system": {
+      "representation": "particles_3d",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "particles": [
+        {
+          "id": "p1",
+          "position_m": [
+            0,
+            0,
+            0
+          ],
+          "fixed": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "id": "p2",
+          "position_m": [
+            1.2e-09,
+            0,
+            0
+          ],
+          "fixed": [
+            false,
+            true,
+            true
+          ]
+        }
+      ],
+      "boundary": "nonperiodic",
+      "min_distance_m": 1e-17,
+      "potential": {
+        "expression": {
+          "op": "mul",
+          "args": [
+            {
+              "op": "const",
+              "value": 0.5
+            },
+            {
+              "op": "param",
+              "name": "k"
+            },
+            {
+              "op": "pow",
+              "arg": {
+                "op": "sub",
+                "args": [
+                  {
+                    "op": "var",
+                    "name": "rho"
+                  },
+                  {
+                    "op": "param",
+                    "name": "rho0"
+                  }
+                ]
+              },
+              "exponent": 2
+            }
+          ]
+        },
+        "parameters": {
+          "k": 2,
+          "rho0": 1
+        }
+      }
+    },
+    "numerics": {
+      "solver": "lbfgsb_forward_ad",
+      "gradient_tolerance": 1e-06,
+      "energy_ftol": 1e-12,
+      "max_iterations": 2000,
+      "max_evaluations": 10000
+    },
+    "protocol": {
+      "steps": [
+        {
+          "step_id": "relax",
+          "operation": "relax",
+          "source": "initial",
+          "overrides": []
+        }
+      ],
+      "sweep": {
+        "axes": []
+      }
+    },
+    "observables": [
+      "energy",
+      "forces",
+      "pair_energies",
+      "final_positions",
+      "optimization_history"
+    ],
+    "extensions": {}
+  }
+}

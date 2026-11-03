@@ -1,6 +1,6 @@
 # 단일 배치의 에너지·힘 계산
 
-패키지 `0.2.0` · 모듈 `quanta.pair_static@0.1.0` · 제공 연산 `energy_forces`
+패키지 `0.3.0` · 모듈 `quanta.pair_static@0.1.0` · 이 문서의 연산 `energy_forces`
 
 ## 사용 방법
 
@@ -47,11 +47,11 @@ else:
 - 비반복 단일 평가이므로 `numerical_status`와 `resolution_status`는 `not_applicable`입니다. 이는 정확도 시험에 대한 판정과 다른 정보입니다.
 - 실제 현상과 비교한 근거가 없으므로 `physical_validation_status=unvalidated`입니다.
 
-상위 평가 보고서의 `report_version=0.1.0`은 향후 전체 실행 결과 envelope와 별개의 단일 평가 형식입니다. `input_validation_status`와 `evaluation_status`를 구분하며 `calculation_executed=true`는 전체 단일 평가가 성공적으로 끝났음을 뜻합니다. 작성 정의의 해시, 코드 파일 해시와 실제 환경을 연결합니다. run·state 식별자나 실행 지문을 꾸며 생성하지 않습니다.
+상위 보고서의 `report_version=0.2.0`은 향후 전체 실행 결과 envelope와 별개의 단일 연산 형식입니다. `input_validation_status`와 `evaluation_status`를 구분합니다. `calculation_executed=true`는 유효한 계산 결과가 생성됐음을 뜻하며, 단일 에너지·힘 평가에서는 성공 결과에만 설정됩니다. `partial=false`입니다. 정적 탐색의 실패·부분 결과 의미는 [별도 문서](relaxation.md)를 따릅니다. 작성 정의의 해시, 코드 파일 해시와 실제 환경을 연결합니다. run·state 식별자나 실행 지문을 꾸며 생성하지 않습니다.
 
 ## 지원 범위와 근거
 
-상위 명령은 정확히 한 개의 초기 `energy_forces` 단계만 실행하며 변경값·반복 축·다단계 입력은 명시적으로 거부합니다. `relax`, A04, 다른 모듈의 solver, 시간 변화와 실행 서버·웹 화면은 후속 작업입니다.
+상위 명령은 정확히 한 개의 초기 `energy_forces` 단계만 실행하며 변경값·반복 축·다단계 입력은 명시적으로 거부합니다. 같은 커널을 사용하는 `relax`는 별도 명령으로 제공합니다. 다른 모듈의 solver, 시간 변화와 실행 서버·웹 화면은 후속 작업입니다.
 
 A01~A03 및 SI 동등성의 실제 입력·기준값·오차·허용오차·판정·코드·환경은 [수치 검증 기록](numerical_verification.json)에 있습니다. 기록을 다시 만들려면 다음 명령을 실행합니다.
 

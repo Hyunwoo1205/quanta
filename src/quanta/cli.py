@@ -22,6 +22,10 @@ def _emit(report: dict, output_format: str = "json") -> None:
         print("energy_j: " + str(report["payload"]["energy_j"]))
         for ident, force in zip(report["particle_ids"], report["payload"]["forces_n"]):
             print(f"force_n[{ident}]: {force}")
+        if report["payload"]["operation"] == "relax":
+            for field in ("free_gradient_inf", "iterations", "evaluations", "stop_reason"):
+                print(f"{field}: {report['payload'][field]}")
+            print("partial: " + str(report["partial"]))
     for severity in ("errors", "warnings"):
         for issue in report.get(severity, []):
             print(f"{severity[:-1]}: {issue.get('code', 'CHECK')}: "
@@ -40,6 +44,9 @@ def main(argv: list[str] | None = None) -> int:
     evaluate = sub.add_parser("evaluate", help="Calculate pair energy and forces for one initial configuration.")
     evaluate.add_argument("file", help="Single-step experiment JSON, or - for standard input.")
     evaluate.add_argument("--format", choices=("json", "text"), default="json")
+    relax = sub.add_parser("relax", help="Search for a stationary configuration with fixed coordinates preserved.")
+    relax.add_argument("file", help="Single-step relaxation experiment JSON, or - for standard input.")
+    relax.add_argument("--format", choices=("json", "text"), default="json")
     sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
@@ -72,14 +79,18 @@ def main(argv: list[str] | None = None) -> int:
                 "path": None, "message": str(exc), "step_id": None, "branch_index": None,
                 "retryable": False, "details": {}}], "warnings": [],
                 "input_sha256": None, "physical_validation_status": "unvalidated"}
-        if args.command == "evaluate":
+        if args.command in {"evaluate", "relax"}:
             report.update(evaluation_status="FAILED", calculation_executed=False, payload=None,
-                          report_version="0.1.0", scope="single_configuration_energy_forces")
+                          report_version="0.2.0", partial=False,
+                          input_validation_status="failed", resolution_status="not_applicable",
+                          numerical_status="not_checked" if args.command == "relax" else "not_applicable",
+                          module_ref=None, provenance=None,
+                          scope="single_configuration_relaxation" if args.command == "relax" else "single_configuration_energy_forces")
         _emit(report, args.format)
         return 2
-    if args.command == "evaluate":
-        from .evaluation import evaluate_experiment
-        report = evaluate_experiment(raw)
+    if args.command in {"evaluate", "relax"}:
+        from .evaluation import evaluate_experiment, relax_experiment
+        report = (relax_experiment if args.command == "relax" else evaluate_experiment)(raw)
         _emit(report, args.format)
         return 0 if report["evaluation_status"] == "SUCCEEDED" else 2
     report = validate_experiment(raw)

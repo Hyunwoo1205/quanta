@@ -1,18 +1,21 @@
 {
   "manifest_version": "1.0.0",
-  "recorded_at": "2026-11-03T17:30:24.140270+00:00",
+  "recorded_at": "2026-11-03T22:37:51.671333+00:00",
   "verification_date": "2026-11-04",
   "verification_timezone": "Asia/Seoul",
-  "scope": "개발 환경·의존성 설치·패키지 배포 구조와 지정 단일 배치의 수치 계산 확인 기록",
+  "scope": "개발 환경·배포 구조·지정 배치 계산과 제약 정지점 탐색의 실제 확인 기록",
   "package": {
     "name": "quanta-research-contracts",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "contract_version": "0.2.0",
     "source_revision_policy": "실행별 Git commit은 GitHub Actions의 checkout과 실행 기록으로 식별합니다.",
     "numeric_module_ref": {
       "module_id": "quanta.pair_static",
       "module_version": "0.1.0",
-      "operation": "energy_forces"
+      "operations": [
+        "energy_forces",
+        "relax"
+      ]
     }
   },
   "baseline": {
@@ -203,12 +206,15 @@
   "verification": {
     "project_venv_install": {
       "status": "passed",
-      "method": "공식 해시 대조가 끝난 캐시 휠의 오프라인 설치와 editable 설치"
+      "method": "공식 해시 대조가 끝난 캐시 휠의 오프라인 설치와 editable 설치",
+      "package_version": "0.3.0"
     },
     "clean_venv_reinstall": {
       "status": "passed",
-      "method": "새 빈 가상 환경에 20개 잠금 휠을 오프라인 설치한 뒤 0.2.0 프로젝트 wheel 설치",
-      "locked_profile_matches": true
+      "method": "새 빈 전용 환경에 잠금 휠 20개를 오프라인 설치한 뒤 최종 0.3.0 wheel 설치",
+      "locked_profile_matches": true,
+      "installed_distributions": 21,
+      "distribution_set": "정확한 잠금 20개와 Quanta 0.3.0만 확인"
     },
     "pip_check": {
       "status": "passed",
@@ -219,8 +225,8 @@
       "working_directory": "프로젝트 밖의 임시 경로",
       "bundled_contract_files": 24,
       "command": "python -m quanta check-contracts",
-      "wheel_filename": "quanta_research_contracts-0.2.0-py3-none-any.whl",
-      "wheel_sha256": "50a0c0c741a71843e2839b9f9e287338f3f41b537c4044cd564978755c66bb20"
+      "wheel_filename": "quanta_research_contracts-0.3.0-py3-none-any.whl",
+      "wheel_sha256": "73572ee5fbe2658430d1c34feb353cc76fb9af5d607da3cc10e0d22d728017df"
     },
     "stale_direct_requirements_guard": {
       "status": "passed",
@@ -238,16 +244,14 @@
       "status": "not_run",
       "configuration": ".github/workflows/ci.yml",
       "checks": [
-        "해시 잠금 설치",
-        "의존성 및 실제 환경 검사",
-        "계약 검사",
-        "전체 시험",
-        "실제 수치 측정과 JSON artifact 보존",
-        "예제 검증 및 단일 평가",
+        "잠금 설치와 환경",
+        "계약·전체 시험",
+        "A01~A03·SI·A04 실제 측정 및 정확히 두 JSON artifact",
+        "단일 평가와 relax CLI",
         "고정 이미지 빌드",
-        "프로젝트 밖에서 설치 계약·컨테이너 환경·단일 평가 검사"
+        "프로젝트 밖 설치 패키지의 환경·평가·relax 실행"
       ],
-      "package_version": "0.2.0"
+      "package_version": "0.3.0"
     },
     "previous_release_local_test_suite": {
       "status": "passed",
@@ -260,54 +264,72 @@
     },
     "installed_wheel_source_comparison": {
       "status": "passed",
-      "method": "최종 wheel의 모든 Python 소스·계약 24개·README metadata를 현재 파일과 byte 대조"
-    },
-    "installed_wheel_evaluation": {
-      "status": "passed",
-      "working_directory": "프로젝트 밖의 임시 경로",
-      "command": "quanta evaluate <프로젝트 절대 경로>/examples/pair_energy_forces.json",
-      "evaluation_status": "SUCCEEDED",
-      "input_sha256": "b5aa8df8a99cfcb34af88dff27bbc7825adcefa9ead33444f6bc02d2d6ea24e9",
-      "package_version": "0.2.0",
-      "energy_j": 3.999999999999998e-21,
-      "forces_n": [
-        [
-          3.9999999999999985e-11,
-          0.0,
-          0.0
-        ],
-        [
-          -3.9999999999999985e-11,
-          0.0,
-          0.0
-        ]
-      ],
-      "physical_validation_status": "unvalidated"
+      "method": "최종 wheel·설치본·현재 Python 소스 전부와 계약 24개·README metadata를 byte 대조"
     },
     "numerical_benchmarks": {
       "status": "passed",
       "report": "docs/numerical_verification.json",
-      "report_sha256": "885d1cd0f2b1adc73eb5533e2fe03fec2b00df7b2576bdddaceec943a297433d",
-      "measured_at": "2026-11-03T17:25:08.332520+00:00",
+      "report_sha256": "1f641f726d3f5500ed1caa6ef6439ae869885bf2cbbe106bacb8d318c92fa1a4",
+      "measured_at": "2026-11-03T22:34:48.426340+00:00",
       "cases": {
         "A01": "passed",
         "A02": "passed",
         "A03": "passed",
         "SI_EQUIVALENCE": "passed"
       },
-      "source_set_sha256": "cb78743b2fa310689660d9b632fda40793e3d4a8853d655d226e3501bb1420f6",
+      "source_set_sha256": "6baef20475862aeb6cbd8e825096178e7718ec95d62477be28ebbdf8a4de30c7",
       "scope": "Named smooth harmonic pair benchmarks for one-configuration energy_forces only",
       "physical_validation_status": "unvalidated",
-      "A04_status": "not_executed"
+      "A04_status_in_this_report": "not_executed; separate relaxation report"
     },
     "numeric_suite": {
       "status": "passed",
-      "collected": 154,
-      "passed": 154,
-      "duration_seconds": 41.91,
-      "package_version": "0.2.0",
-      "scope": "기존 계약 회귀·자동미분·에너지와 힘·단일 평가 API 및 CLI·오류 경로의 최종 전체 시험",
+      "collected": 186,
+      "passed": 186,
+      "duration_seconds": 100.04,
+      "package_version": "0.3.0",
+      "scope": "최종 수치 코드의 전체 회귀 시험; 이후 CLI 읽기 오류 상태 필드 보완은 별도 회귀로 확인",
+      "follow_up": "final_cli_regression",
       "physical_validation_status": "unvalidated"
+    },
+    "installer_metadata_hygiene": {
+      "status": "passed",
+      "method": "전용 검증 환경에 남은 비활성 pip 25.0.1 metadata만 제거하고 실제 pip 25.3 및 전체 배포 버전을 확인"
+    },
+    "installed_wheel_relaxation": {
+      "status": "passed",
+      "working_directory": "프로젝트 밖의 임시 경로",
+      "command": "quanta relax <프로젝트 절대 경로>/examples/pair_relax.json",
+      "evaluation_status": "SUCCEEDED",
+      "numerical_status": "pass",
+      "input_sha256": "6d7e695598fc43392949b78f74e1458abdbeb692430034472010c53a1e76d4da",
+      "package_version": "0.3.0",
+      "free_gradient_inf": 0.0,
+      "stop_reason": "gradient_tolerance",
+      "iterations": 1,
+      "evaluations": 3,
+      "physical_validation_status": "unvalidated"
+    },
+    "relaxation_benchmark": {
+      "status": "passed",
+      "report": "docs/relaxation_verification.json",
+      "report_sha256": "e6dc6d3480cb7a7c7461bb4b156b4f21198a552b70592c2f685f69a3dc361823",
+      "measured_at": "2026-11-03T22:34:09.298354+00:00",
+      "cases": {
+        "A04": "passed"
+      },
+      "source_set_sha256": "35abf03a15a0ca5443f28c8129fc6f9f2487601e6464d836f6ac6b667e775687",
+      "scope": "A04 constrained two-point harmonic local stationarity search only",
+      "rest_distance_reduced_error": 0.0,
+      "free_gradient_inf": 0.0,
+      "physical_validation_status": "unvalidated",
+      "minimum_certification": "not_performed"
+    },
+    "final_cli_regression": {
+      "status": "passed",
+      "passed": 15,
+      "duration_seconds": 13.55,
+      "scope": "마지막 INPUT_READ 상태 필드 보완 뒤 누락 파일 relax 1개와 기존 evaluate 14개 회귀"
     }
   },
   "container_base": {
@@ -346,13 +368,79 @@
   ],
   "physical_validation_status": "unvalidated",
   "limitations": [
-    "수치 합격은 보고서에 선언한 매끄럽고 적절히 스케일된 기준 문제와 energy_forces 범위에만 적용됩니다.",
-    "이 기록은 실제 현상과의 대조나 물리적 정확도의 검증 기록이 아닙니다.",
-    "relax·A04·다른 모듈·실행 시스템은 이번 수치 합격에 포함하지 않습니다.",
-    "새 버전의 원격 CI 결과와 실행별 소스 commit은 별도 실행 기록에서 확인해야 합니다.",
-    "플랫폼별 바이너리와 수치 라이브러리 빌드가 달라지면 새 환경 기록과 시험이 필요합니다."
+    "합격은 보고서에 선언한 매끄럽고 적절히 스케일된 기준 문제와 실제 호출한 연산 범위에만 적용됩니다.",
+    "기울기 수렴은 최소점·전역해·안정성의 보증이나 실제 현상에 대한 검증이 아닙니다.",
+    "다른 계산 모듈·다단계 실행·실행 시스템은 이번 수치 합격에 포함하지 않습니다.",
+    "새 버전의 원격 CI 결과는 후속 Actions 실행 기록에서 확인해야 합니다.",
+    "release_checkpoints의 경로와 SHA는 명시된 과거 Git commit의 내용이며 현재 보고서와 구분합니다."
   ],
   "record_phase": "Local checkpoint before first GitHub push; later remote execution evidence is tracked per commit in GitHub Actions.",
   "calculation_executed": true,
-  "execution_scope": "single_configuration_energy_forces"
+  "execution_scope": "single_operation_energy_forces_or_constrained_relax",
+  "release_checkpoints": [
+    {
+      "package_version": "0.2.0",
+      "source_commit": "3f5e9925ef8d944b9b13d6d8ebacbb267d92b368",
+      "recorded_at": "2026-11-03T17:30:24.140270+00:00",
+      "scope_note": "이 항목의 보고서 경로와 SHA는 source_commit의 파일 내용이며 현재 덮어쓴 JSON을 가리키지 않습니다.",
+      "historical_energy_report": {
+        "path_at_commit": "docs/numerical_verification.json",
+        "sha256_at_commit": "885d1cd0f2b1adc73eb5533e2fe03fec2b00df7b2576bdddaceec943a297433d",
+        "measured_at": "2026-11-03T17:25:08.332520+00:00",
+        "cases": {
+          "A01": "passed",
+          "A02": "passed",
+          "A03": "passed",
+          "SI_EQUIVALENCE": "passed"
+        },
+        "source_set_sha256": "cb78743b2fa310689660d9b632fda40793e3d4a8853d655d226e3501bb1420f6"
+      },
+      "test_suite": {
+        "status": "passed",
+        "collected": 154,
+        "passed": 154,
+        "duration_seconds": 41.91,
+        "package_version": "0.2.0",
+        "scope": "기존 계약 회귀·자동미분·에너지와 힘·단일 평가 API 및 CLI·오류 경로의 최종 전체 시험",
+        "physical_validation_status": "unvalidated"
+      },
+      "installed_wheel": {
+        "status": "passed",
+        "working_directory": "프로젝트 밖의 임시 경로",
+        "bundled_contract_files": 24,
+        "command": "python -m quanta check-contracts",
+        "wheel_filename": "quanta_research_contracts-0.2.0-py3-none-any.whl",
+        "wheel_sha256": "50a0c0c741a71843e2839b9f9e287338f3f41b537c4044cd564978755c66bb20"
+      },
+      "installed_wheel_evaluation": {
+        "status": "passed",
+        "working_directory": "프로젝트 밖의 임시 경로",
+        "command": "quanta evaluate <프로젝트 절대 경로>/examples/pair_energy_forces.json",
+        "evaluation_status": "SUCCEEDED",
+        "input_sha256": "b5aa8df8a99cfcb34af88dff27bbc7825adcefa9ead33444f6bc02d2d6ea24e9",
+        "package_version": "0.2.0",
+        "energy_j": 3.999999999999998e-21,
+        "forces_n": [
+          [
+            3.9999999999999985e-11,
+            0.0,
+            0.0
+          ],
+          [
+            -3.9999999999999985e-11,
+            0.0,
+            0.0
+          ]
+        ],
+        "physical_validation_status": "unvalidated"
+      },
+      "clean_venv_reinstall": {
+        "status": "passed",
+        "method": "새 빈 가상 환경에 20개 잠금 휠을 오프라인 설치한 뒤 0.2.0 프로젝트 wheel 설치",
+        "locked_profile_matches": true
+      },
+      "physical_validation_status": "unvalidated"
+    }
+  ],
+  "minimum_certification": "not_performed"
 }
