@@ -1,0 +1,329 @@
+{
+  "contract_version": "0.2.0",
+  "status": "planned_not_implemented",
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/v1/experiments",
+      "body": [
+        "title"
+      ],
+      "response": "201 experiment_id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/experiments/{experiment_id}/revisions",
+      "body": [
+        "schema_version",
+        "title",
+        "definition"
+      ],
+      "response": "201 server-assigned immutable revision envelope"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/revisions/{revision_id}",
+      "response": "200 revision envelope"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/validate",
+      "body": {
+        "schema_version": "0.2.0",
+        "definition": "experiment.schema.json #/$defs/definition"
+      },
+      "response": "200 validation report; no compute side effects"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/runs",
+      "body": [
+        "revision_id"
+      ],
+      "headers": [
+        "Idempotency-Key"
+      ],
+      "response": "202 run_id and resolved input hash"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/runs/{run_id}",
+      "response": "200 status, progress, diagnostics, artifact manifest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/runs/{run_id}/cancel",
+      "response": "202 cancellation requested, or 200 existing terminal status"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/runs/{run_id}/replay",
+      "headers": [
+        "Idempotency-Key"
+      ],
+      "response": "202 new run_id referencing the immutable source input"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/runs/{run_id}/artifacts",
+      "response": "200 owner-scoped artifact manifest; raw transfer uses authenticated artifact IDs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/experiments",
+      "response": "200 owner-scoped experiments with cursor pagination"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/experiments/{experiment_id}",
+      "response": "200 experiment metadata and revision identifiers"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/capabilities",
+      "response": "200 captured registry support, module/representation versions, operation ports, observable schemas and resource profiles; no computation"
+    }
+  ],
+  "states": {
+    "QUEUED": [
+      "RUNNING",
+      "CANCELLED",
+      "FAILED"
+    ],
+    "RUNNING": [
+      "SUCCEEDED",
+      "FAILED",
+      "CANCEL_REQUESTED"
+    ],
+    "CANCEL_REQUESTED": [
+      "CANCELLED"
+    ],
+    "SUCCEEDED": [],
+    "FAILED": [],
+    "CANCELLED": []
+  },
+  "idempotency": "Per principal and endpoint, same key+body returns same run for 24h; different body yields 409. A terminal state is immutable. Atomic first committed success/failure vs cancel request wins; after CANCEL_REQUESTED no success publication.",
+  "progress": "{completed_steps,total_steps,active_step,active_branch}; solver iteration/residual are separate diagnostics. Never invent percent completion for unfinished linear algebra.",
+  "result_axes": [
+    "execution_status",
+    "numerical_status",
+    "resolution_status",
+    "physical_validation_status"
+  ],
+  "result_required": [
+    "schema_version",
+    "run_id",
+    "revision_id",
+    "input_sha256",
+    "resolved_input_sha256",
+    "execution_fingerprint",
+    "execution_status",
+    "numerical_status",
+    "resolution_status",
+    "physical_validation_status",
+    "steps",
+    "states",
+    "warnings",
+    "errors",
+    "artifacts",
+    "provenance",
+    "partial",
+    "physical_validation_evidence_refs"
+  ],
+  "step_result_required": [
+    "branch_index",
+    "step_id",
+    "module_id",
+    "module_version",
+    "resolved_input_sha256",
+    "state_ref",
+    "source_binding",
+    "outcome",
+    "partial",
+    "numerical_status",
+    "resolution_status",
+    "diagnostics",
+    "payload_schema_ref",
+    "payload",
+    "artifacts"
+  ],
+  "artifact_required": [
+    "contract_version",
+    "artifact_id",
+    "kind",
+    "sha256",
+    "mime_type",
+    "size_bytes"
+  ],
+  "auth": "Single-owner prototype. All access checks apply to revisions, runs and artifacts; foreign identifiers return 404. No sharing feature is implied.",
+  "override_paths": {
+    "pair": [
+      "/system/particles/{i}/position_m/{axis}",
+      "/system/particles/{i}/fixed/{axis}",
+      "/system/potential/parameters/{existing_name}"
+    ],
+    "quantum": [
+      "/system/domain/a_m",
+      "/system/domain/b_m",
+      "/system/mass_kg",
+      "/system/potential/parameters/{existing_name}",
+      "/numerics/n_points",
+      "/numerics/states",
+      "/numerics/refinement_levels"
+    ]
+  },
+  "sweep_paths": "Numeric override paths only. Fixed masks accept per-step booleans, never sweep axes.",
+  "error_shape": {
+    "code": "stable code",
+    "category": "input|support|numerical|resource|runtime",
+    "message": "human readable",
+    "path": "JSON Pointer or null",
+    "step_id": "ID or null",
+    "branch_index": "integer or null",
+    "retryable": "boolean",
+    "details": "structured finite values"
+  },
+  "errors": [
+    [
+      "INPUT_SCHEMA",
+      "input",
+      422,
+      false
+    ],
+    [
+      "INPUT_SEMANTIC",
+      "input",
+      422,
+      false
+    ],
+    [
+      "MODEL_UNSUPPORTED",
+      "support",
+      422,
+      false
+    ],
+    [
+      "EXPRESSION_DOMAIN",
+      "numerical",
+      422,
+      false
+    ],
+    [
+      "NUM_NOT_CONVERGED",
+      "numerical",
+      null,
+      false
+    ],
+    [
+      "NUM_GRID_NOT_CONVERGED",
+      "numerical",
+      null,
+      false
+    ],
+    [
+      "RESOURCE_LIMIT",
+      "resource",
+      null,
+      false
+    ],
+    [
+      "QUEUE_TIMEOUT",
+      "resource",
+      null,
+      true
+    ],
+    [
+      "IDEMPOTENCY_CONFLICT",
+      "input",
+      409,
+      false
+    ],
+    [
+      "REVISION_CONFLICT",
+      "input",
+      409,
+      false
+    ],
+    [
+      "ENGINE_FAILURE",
+      "runtime",
+      null,
+      true
+    ],
+    [
+      "PORT_INCOMPATIBLE",
+      "support",
+      422,
+      false
+    ],
+    [
+      "REPRESENTATION_UNSUPPORTED",
+      "support",
+      422,
+      false
+    ],
+    [
+      "REGISTRY_SNAPSHOT_UNAVAILABLE",
+      "support",
+      409,
+      false
+    ]
+  ],
+  "artifact_contract": {
+    "schema_ref": "artifact.schema.json",
+    "common": [
+      "contract_version",
+      "artifact_id",
+      "kind",
+      "sha256",
+      "mime_type",
+      "size_bytes"
+    ],
+    "conditional_required": {
+      "array": [
+        "dtype",
+        "shape",
+        "unit",
+        "axis_order",
+        "precision"
+      ],
+      "text": [
+        "encoding"
+      ],
+      "image": [
+        "width_px",
+        "height_px"
+      ],
+      "config": [
+        "format",
+        "schema_ref"
+      ]
+    },
+    "rule": "Apply only metadata appropriate to kind. Plain logs/config/image artifacts never require array-only fields. Kind-specific schemas reject unknown fields."
+  },
+  "registry_contract": {
+    "registry_ref": "registry.json",
+    "input_validation": "experiment.schema.json envelope then registered module definition/system/numerics schemas and semantic rules; exact version resolution required",
+    "result_validation": "common result envelope plus the registered result_schema; mandatory core payload and requested supported observables are checked separately",
+    "state_validation": "state.schema.json followed by registered representation data and metadata schemas",
+    "resolved_record_ref": "semantic_rules.json#/resolved_record",
+    "support_status": "Preserve captured declared support and validation status in provenance; planned registrations do not imply implemented or physically validated calculations."
+  },
+  "state_ref_rule": "source_binding preserves the original source_state_ref and a distinct effective_input_state_ref after current overrides; output state_ref identifies the produced state only. For skipped or pre-preparation failures, bindings/hashes may be null as allowed by result.schema.json. Successful steps require resolved bindings and hashes.",
+  "provenance_required": [
+    "registry_snapshot_sha256",
+    "module_manifest_sha256",
+    "implementation_manifest_sha256",
+    "environment_manifest_sha256",
+    "constants_manifest_sha256",
+    "resource_policy_version",
+    "replay_of",
+    "started_at",
+    "finished_at"
+  ],
+  "override_paths_scope": "The lists below are the initial registered-module profiles, not a universal envelope allowlist. Future modules provide their own versioned override and sweep policies.",
+  "result_schema_ref": "result.schema.json",
+  "step_result_schema_ref": "result.schema.json#/properties/steps/items",
+  "source_binding_schema_ref": "state.schema.json#/$defs/portBinding",
+  "hashing_contract_ref": "hashing_contract.json"
+}

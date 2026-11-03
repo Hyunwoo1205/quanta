@@ -1,0 +1,157 @@
+{
+  "version": "0.2.0",
+  "status": "candidate_register_only",
+  "scope_note": "아래 기능은 장기 확장 후보이며 현재 구현 범위에 추가하지 않는다. 필요성이 확인되면 별도 버전의 설계·검증 계획으로 활성화한다.",
+  "candidates": [
+    {
+      "id": "EXT-001",
+      "title": "시간 변화",
+      "status": "candidate",
+      "work_status": "not_started",
+      "trigger": "정적 상태나 정지점 계산으로 답할 수 없는 시간 의존 실험의 수요가 확인될 때",
+      "depends_on_decisions": [
+        "DEC-001",
+        "DEC-002",
+        "DEC-003",
+        "DEC-004",
+        "DEC-005",
+        "DEC-006"
+      ],
+      "prerequisites": [
+        "시간·속도·변화율을 포함한 상태와 단위의 명시",
+        "시간 간격과 적분법의 수렴·안정성 기준",
+        "시간별 상태와 관측 이력의 저장 방식"
+      ],
+      "decisions_when_activated": [
+        "시간의 기준·입출력 단위와 적분법",
+        "외부 조건의 시간 변화·사건 처리 규칙",
+        "이력 간격·실행 중단·재개 계약"
+      ],
+      "current_scope_boundary": "현재 A·B의 정적 연산이나 순차 절차만으로 시간 의존 현상을 구현했다고 간주하지 않는다."
+    },
+    {
+      "id": "EXT-002",
+      "title": "확률·통계 계산",
+      "status": "candidate",
+      "work_status": "not_started",
+      "trigger": "확률적 동역학·표본 추정·여러 초기 상태의 통계가 연구 질문에 필요할 때",
+      "depends_on_decisions": [
+        "DEC-002",
+        "DEC-003",
+        "DEC-004",
+        "DEC-005",
+        "DEC-006"
+      ],
+      "prerequisites": [
+        "확률 상태·표본·집단의 식별과 자료 의미",
+        "난수 생성기·시드·스트림 분할의 기록",
+        "통계적 오차와 수치·모형 오차의 분리"
+      ],
+      "decisions_when_activated": [
+        "분포·표본화·평균·상관과 불확실성의 정의",
+        "반복 수와 통계 수렴 판정",
+        "병렬 실행 시 재현 가능한 난수 할당"
+      ],
+      "current_scope_boundary": "현재 모듈의 결정론적 결과나 조건 탐색을 확률적 검증의 대체로 사용하지 않는다."
+    },
+    {
+      "id": "EXT-003",
+      "title": "다중 실험계·모형 결합",
+      "status": "candidate",
+      "work_status": "not_started",
+      "trigger": "둘 이상의 계나 계산 모형이 서로 영향을 주는 연구 문제를 지원해야 할 때",
+      "depends_on_decisions": [
+        "DEC-001",
+        "DEC-002",
+        "DEC-003",
+        "DEC-004",
+        "DEC-005"
+      ],
+      "prerequisites": [
+        "각 계의 상태·영역·연결 포트와 소유 관계",
+        "물리량 전달의 단위·좌표·시간 척도 변환",
+        "상호작용의 중복·경계 오차·보존량 검증"
+      ],
+      "decisions_when_activated": [
+        "실험계 그래프와 결합기의 계약",
+        "자료 전달·반복 결합·동기화 순서",
+        "결합 오차와 전체 계의 합격 기준"
+      ],
+      "current_scope_boundary": "두 엔진을 차례로 실행하거나 같은 파일에 기록하는 것만으로 물리적 결합이 성립하지 않는다."
+    },
+    {
+      "id": "EXT-004",
+      "title": "대규모 계산·데이터",
+      "status": "candidate",
+      "work_status": "not_started",
+      "trigger": "실제 실행에서 현재 시간·메모리·데이터 한도를 넘는 검증 가능한 연구 수요가 측정될 때",
+      "depends_on_decisions": [
+        "DEC-001",
+        "DEC-002",
+        "DEC-003",
+        "DEC-005",
+        "DEC-006"
+      ],
+      "prerequisites": [
+        "계산 복잡도와 실제 자원 사용량 측정",
+        "대형 자료의 분할·전송·보존 규격",
+        "작업 대기열·중단 지점·실패 복구의 추적"
+      ],
+      "decisions_when_activated": [
+        "GPU·분산·외부 계산 자원의 연결 방식",
+        "분할 저장·스트리밍·압축·정밀도 정책",
+        "실행 비용·할당량·체크포인트 호환성"
+      ],
+      "current_scope_boundary": "초기 자원 상한은 보호 정책이며 대규모 처리 성능이나 분산 재현성이 확인되었다는 뜻이 아니다."
+    },
+    {
+      "id": "EXT-005",
+      "title": "사용자 코드·외부 엔진",
+      "status": "candidate",
+      "work_status": "not_started",
+      "trigger": "등록된 수식·모듈의 조합으로 표현할 수 없는 계산법을 사용자나 연구자가 추가해야 할 때",
+      "depends_on_decisions": [
+        "DEC-001",
+        "DEC-002",
+        "DEC-003",
+        "DEC-004",
+        "DEC-006"
+      ],
+      "prerequisites": [
+        "코드·모형·입출력·의존성·라이선스의 명시",
+        "실행 격리와 자원·산출물 경계",
+        "독립 기준 시험과 모듈 등록 검토"
+      ],
+      "decisions_when_activated": [
+        "제공할 확장 인터페이스와 배포 형식",
+        "허용 실행 권한·의존성·엔진 버전 정책",
+        "신규 코드의 검증·제공·철회와 과거 실행 보존"
+      ],
+      "current_scope_boundary": "현재 AST 입력은 범용 사용자 코드 실행이나 외부 엔진 연결의 구현을 뜻하지 않는다."
+    },
+    {
+      "id": "EXT-006",
+      "title": "공동 연구",
+      "status": "candidate",
+      "work_status": "not_started",
+      "trigger": "여러 사용자가 실험·자료·검토 결과를 함께 작성하고 공유해야 할 때",
+      "depends_on_decisions": [
+        "DEC-001",
+        "DEC-002",
+        "DEC-003",
+        "DEC-006"
+      ],
+      "prerequisites": [
+        "소유자·역할·권한과 감사 이력",
+        "개정 분기·충돌·병합과 결과의 출처",
+        "공유 자료와 검증 근거의 보존 규칙"
+      ],
+      "decisions_when_activated": [
+        "팀·프로젝트·실험 단위의 접근 제어",
+        "공동 편집·검토·공개와 역할별 책임",
+        "자료 보존·내보내기·삭제·백업 범위"
+      ],
+      "current_scope_boundary": "현재 단일 소유자 계약을 협업이나 공유 기능이 구현된 것으로 표시하지 않는다."
+    }
+  ]
+}

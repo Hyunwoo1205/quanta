@@ -1,0 +1,289 @@
+{
+  "manifest_version": "1.0.0",
+  "recorded_at": "2026-11-03T16:50:59.748088+00:00",
+  "verification_date": "2026-11-04",
+  "verification_timezone": "Asia/Seoul",
+  "scope": "개발 환경·의존성 설치·패키지 배포 구조의 확인 기록",
+  "package": {
+    "name": "quanta-research-contracts",
+    "version": "0.1.0",
+    "contract_version": "0.2.0",
+    "source_revision_policy": "실행별 Git commit은 GitHub Actions의 checkout과 실행 기록으로 식별합니다."
+  },
+  "baseline": {
+    "implementation": "CPython",
+    "python": "3.12.14",
+    "os": "Linux",
+    "architecture": "x86_64",
+    "compute": "CPU",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "threads_per_numerical_pool": 1
+  },
+  "dependency_lock": {
+    "input": "requirements.in",
+    "input_sha256": "4a76404a7a824b8f25f40d6cf9b7410a68c2bc90bbddd2688ef325081022a2d9",
+    "installation_lock": "requirements.lock.txt",
+    "installation_lock_sha256": "f707157f7ee8ed0d3e6dac568e2b8a5db4241d7af63907f8350ed0567e759583",
+    "provenance": "requirements.lock.json",
+    "provenance_sha256": "38d9049d00a429aedc076530bc3c5ee854895d31f6805c11341f69da627b0063",
+    "resolved_distributions": 20,
+    "distribution_format": "wheel",
+    "index_url": "https://pypi.org/simple",
+    "wheel_hash_verification": "선택한 모든 휠을 공식 PyPI 배포 메타데이터의 SHA-256과 대조했습니다.",
+    "packages": [
+      {
+        "name": "attrs",
+        "version": "26.1.0",
+        "filename": "attrs-26.1.0-py3-none-any.whl",
+        "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309"
+      },
+      {
+        "name": "iniconfig",
+        "version": "2.3.1",
+        "filename": "iniconfig-2.3.1-py3-none-any.whl",
+        "sha256": "9121e2c1fdb355232495be3194c8dfe87ccc2d5dee45947b78e68f499790d7a7"
+      },
+      {
+        "name": "jsonschema",
+        "version": "4.26.0",
+        "filename": "jsonschema-4.26.0-py3-none-any.whl",
+        "sha256": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce"
+      },
+      {
+        "name": "jsonschema-specifications",
+        "version": "2025.9.1",
+        "filename": "jsonschema_specifications-2025.9.1-py3-none-any.whl",
+        "sha256": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe"
+      },
+      {
+        "name": "numpy",
+        "version": "2.3.5",
+        "filename": "numpy-2.3.5-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+        "sha256": "0d8163f43acde9a73c2a33605353a4f1bc4798745a8b1d73183b28e5b435ae28"
+      },
+      {
+        "name": "packaging",
+        "version": "26.3",
+        "filename": "packaging-26.3-py3-none-any.whl",
+        "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+      },
+      {
+        "name": "pip",
+        "version": "25.3",
+        "filename": "pip-25.3-py3-none-any.whl",
+        "sha256": "9655943313a94722b7774661c21049070f6bbb0a1516bf02f7c8d5d9201514cd"
+      },
+      {
+        "name": "pluggy",
+        "version": "1.7.0",
+        "filename": "pluggy-1.7.0-py3-none-any.whl",
+        "sha256": "7dd7b0d8832ba3cb632c306926ded123429211b83641b35dc5c41ad2d34f9bec"
+      },
+      {
+        "name": "pygments",
+        "version": "2.21.0",
+        "filename": "pygments-2.21.0-py3-none-any.whl",
+        "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
+      },
+      {
+        "name": "pytest",
+        "version": "9.0.2",
+        "filename": "pytest-9.0.2-py3-none-any.whl",
+        "sha256": "711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b"
+      },
+      {
+        "name": "referencing",
+        "version": "0.37.0",
+        "filename": "referencing-0.37.0-py3-none-any.whl",
+        "sha256": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231"
+      },
+      {
+        "name": "rfc3339-validator",
+        "version": "0.1.4",
+        "filename": "rfc3339_validator-0.1.4-py2.py3-none-any.whl",
+        "sha256": "24f6ec1eda14ef823da9e36ec7113124b39c04d50a4d3d3a3c2859577e7791fa"
+      },
+      {
+        "name": "rfc8785",
+        "version": "0.1.4",
+        "filename": "rfc8785-0.1.4-py3-none-any.whl",
+        "sha256": "520d690b448ecf0703691c76e1a34a24ddcd4fc5bc41d589cb7c58ec651bcd48"
+      },
+      {
+        "name": "rpds-py",
+        "version": "2026.9.1",
+        "filename": "rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "sha256": "addeda51556dac7c1a2f14cda62db8b621cd12afba3091d03a96c72932387eab"
+      },
+      {
+        "name": "scipy",
+        "version": "1.17.0",
+        "filename": "scipy-1.17.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+        "sha256": "9eeb9b5f5997f75507814ed9d298ab23f62cf79f5a3ef90031b1ee2506abdb5b"
+      },
+      {
+        "name": "setuptools",
+        "version": "80.9.0",
+        "filename": "setuptools-80.9.0-py3-none-any.whl",
+        "sha256": "062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922"
+      },
+      {
+        "name": "six",
+        "version": "1.17.0",
+        "filename": "six-1.17.0-py2.py3-none-any.whl",
+        "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+      },
+      {
+        "name": "threadpoolctl",
+        "version": "3.6.0",
+        "filename": "threadpoolctl-3.6.0-py3-none-any.whl",
+        "sha256": "43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb"
+      },
+      {
+        "name": "typing-extensions",
+        "version": "4.16.0",
+        "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+        "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+      },
+      {
+        "name": "wheel",
+        "version": "0.45.1",
+        "filename": "wheel-0.45.1-py3-none-any.whl",
+        "sha256": "708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248"
+      }
+    ]
+  },
+  "observed_environment": {
+    "locked_profile_matches": true,
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "x86_64"
+    },
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "prefix": "libscipy_openblas",
+        "num_threads": 1,
+        "version": "0.3.30",
+        "architecture": "SkylakeX"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "prefix": "libscipy_openblas",
+        "num_threads": 1,
+        "version": "0.3.30",
+        "architecture": "SkylakeX"
+      }
+    ]
+  },
+  "verification": {
+    "project_venv_install": {
+      "status": "passed",
+      "method": "공식 해시 대조가 끝난 캐시 휠의 오프라인 설치와 editable 설치"
+    },
+    "clean_venv_reinstall": {
+      "status": "passed",
+      "method": "빈 별도 가상 환경에 같은 잠금 휠을 오프라인 설치한 뒤 프로젝트 wheel 설치",
+      "locked_profile_matches": true
+    },
+    "pip_check": {
+      "status": "passed",
+      "message": "No broken requirements found."
+    },
+    "installed_wheel_contract_lookup": {
+      "status": "passed",
+      "working_directory": "프로젝트 밖의 임시 경로",
+      "bundled_contract_files": 24,
+      "command": "python -m quanta check-contracts",
+      "wheel_filename": "quanta_research_contracts-0.1.0-py3-none-any.whl",
+      "wheel_sha256": "35c3189bac92a238f0a020894db6869bfcb75e1b16a2affa5012fe474aba8201"
+    },
+    "stale_direct_requirements_guard": {
+      "status": "passed",
+      "result": "직접 의존성 입력이 변경되면 환경 검사가 실패합니다."
+    },
+    "nonbaseline_thread_guard": {
+      "status": "passed",
+      "result": "스레드 수가 기준과 다르면 환경 검사가 실패합니다."
+    },
+    "local_container_build": {
+      "status": "not_run",
+      "reason": "이 작업 환경에 Docker 실행기가 없습니다."
+    },
+    "remote_ci": {
+      "status": "not_run",
+      "configuration": ".github/workflows/ci.yml",
+      "checks": [
+        "해시 잠금 설치",
+        "의존성 및 실제 환경 검사",
+        "계약 검사",
+        "시험",
+        "예제 검증",
+        "고정 이미지 빌드",
+        "프로젝트 밖에서 설치 계약과 실제 컨테이너 환경 검사"
+      ]
+    },
+    "local_test_suite": {
+      "status": "passed",
+      "collected": 59,
+      "passed": 59,
+      "duration_seconds": 15.32,
+      "command": ".venv/bin/python -m pytest -q",
+      "scope": "development contracts and CLI, no numerical engine or physical validation"
+    }
+  },
+  "container_base": {
+    "image": "docker.io/library/python:3.12.14-slim-bookworm",
+    "platform": "linux/amd64",
+    "index_digest": "sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e",
+    "verified_at": "2026-11-03T16:49:09.140328+00:00",
+    "registry_manifest_url": "https://registry-1.docker.io/v2/library/python/manifests/sha256:1aaa65a85fda306ffb8b910824d4e93bdce61e212c7e87168123ea3073b41a1a",
+    "digest": "sha256:1aaa65a85fda306ffb8b910824d4e93bdce61e212c7e87168123ea3073b41a1a",
+    "header_digest": "sha256:1aaa65a85fda306ffb8b910824d4e93bdce61e212c7e87168123ea3073b41a1a",
+    "media_type": "application/vnd.oci.image.manifest.v1+json",
+    "verification": "공식 registry 응답의 manifest 본문 SHA-256과 Docker-Content-Digest를 대조했습니다."
+  },
+  "ci_actions": [
+    {
+      "repository": "actions/checkout",
+      "tag_at_verification": "v4",
+      "commit": "11d5960a326750d5838078e36cf38b85af677262",
+      "source_url": "https://api.github.com/repos/actions/checkout/git/ref/tags/v4",
+      "verified_at": "2026-11-03T16:50:22.953671+00:00"
+    },
+    {
+      "repository": "actions/setup-python",
+      "tag_at_verification": "v5",
+      "commit": "a26af69be951a213d495a4c3e4e4022e16d87065",
+      "source_url": "https://api.github.com/repos/actions/setup-python/git/ref/tags/v5",
+      "verified_at": "2026-11-03T16:50:22.917873+00:00"
+    }
+  ],
+  "physical_validation_status": "unvalidated",
+  "simulation_executed": false,
+  "limitations": [
+    "이 기록은 계산 엔진 또는 물리적 정확도의 검증 기록이 아닙니다.",
+    "원격 CI 결과와 실행별 소스 commit은 별도 실행 기록에서 확인해야 합니다.",
+    "플랫폼별 바이너리와 수치 라이브러리 빌드가 달라지면 새 환경 기록과 시험이 필요합니다."
+  ],
+  "record_phase": "Local checkpoint before first GitHub push; later remote execution evidence is tracked per commit in GitHub Actions."
+}

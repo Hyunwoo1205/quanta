@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools==80.9.0", "wheel==0.45.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quanta-research-contracts"
+version = "0.1.0"
+description = "Validated experiment contracts and reproducible development tools for Quanta"
+readme = "README.md"
+requires-python = "==3.12.14"
+dependencies = [
+  "numpy==2.3.5",
+  "scipy==1.17.0",
+  "jsonschema==4.26.0",
+  "rfc8785==0.1.4",
+  "rfc3339-validator==0.1.4",
+  "threadpoolctl==3.6.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.0.2"]
+
+[project.scripts]
+quanta = "quanta.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.data-files]
+"share/quanta/contracts/v0.2.0" = ["contracts/v0.2.0/*.json", "contracts/v0.2.0/README.txt"]
+"share/quanta/contracts/v0.2.0/examples" = ["contracts/v0.2.0/examples/*.json"]
+"share/quanta/contracts/v0.2.0/module_results" = ["contracts/v0.2.0/module_results/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -1,0 +1,241 @@
+{
+  "contract_version": "0.2.0",
+  "status": "normative_contract_not_implemented",
+  "scope": "Exact scientific-input and execution-identity hash projections. This file defines recipes only; no digest, numerical acceptance or physical validation is claimed.",
+  "algorithm": {
+    "canonicalization": "RFC 8785 JSON Canonicalization Scheme (JCS)",
+    "encoding": "UTF-8 without BOM",
+    "digest": "SHA-256",
+    "output": "64 lowercase hexadecimal characters",
+    "formula": "hex_lower(SHA256(UTF8(JCS(projection))))",
+    "ingest": "Reject duplicate keys, non-finite JSON numbers and invalid Unicode before projection. Use registered lossless encodings for values outside interoperable JSON-number precision; never silently round or recode them.",
+    "implementation_gate": "The exact RFC 8785 implementation, version, distribution hash and official test-vector checks must satisfy development_baseline.json before executable hash production. A general sorted-key JSON serializer is not a substitute."
+  },
+  "projection_rules": [
+    "Each recipe admits only its explicit top-level whitelist. Nested scientific values are copied according to the exact frozen registered schema; they are not guessed, truncated or silently normalized.",
+    "A projection is a new object, never the complete runtime record with selected fields casually removed. Its hash field is not a member of that projection.",
+    "Preserve every scientific distinction admitted by the registered schema. Missing and null are different. Do not insert defaults, convert units, simplify an AST, round values or normalize Unicode during hashing.",
+    "Preserve authored array order, including particle order, protocol step order, AST arguments and sweep-axis/value order. Only the explicitly identified binding-set arrays are sorted using the keys specified below.",
+    "Exclude server-generated experiment, revision, run, state and artifact UUIDs, timestamps, progress, logs, result arrays and digest fields not explicitly whitelisted by the recipe. Authored particle IDs and step IDs remain scientific or protocol content and are retained.",
+    "Generated outputs are excluded from the submission plan. A later step may depend on an earlier output only through a symbolic source at submission and the scientific source-content digest at runtime.",
+    "The same field name resolved_input_sha256 has distinct run-level and step-level recipes below. Never substitute one for the other.",
+    "Record the hashing contract version and the exact projection bytes or an immutable authenticated artifact containing them. Existing projection bytes and their interpretation are immutable; changed recipes require a new contract version."
+  ],
+  "definition_projection": {
+    "whitelist": [
+      "unit_system",
+      "scales",
+      "system",
+      "numerics",
+      "extensions"
+    ],
+    "presence": "Copy each whitelisted member if present in the fully validated definition. Required or optional presence is determined by the selected module schema. The current first-module schemas require all five members.",
+    "excluded_definition_members": [
+      "protocol",
+      "observables"
+    ],
+    "reason": "Operations, source dependencies and selected versioned observable references are explicit members of the relevant plan or step projection."
+  },
+  "binding_sets": {
+    "registry_binding": {
+      "whitelist": [
+        "registry_version",
+        "registry_snapshot_sha256"
+      ]
+    },
+    "module_bindings": {
+      "item_whitelist": [
+        "module_id",
+        "module_version",
+        "manifest_sha256"
+      ],
+      "sort_by": [
+        "module_id",
+        "module_version"
+      ]
+    },
+    "observable_bindings": {
+      "item_whitelist": [
+        "module_id",
+        "module_version",
+        "observable_id",
+        "observable_version",
+        "manifest_sha256"
+      ],
+      "sort_by": [
+        "module_id",
+        "module_version",
+        "observable_id",
+        "observable_version"
+      ]
+    },
+    "schema_bindings": {
+      "item_whitelist": [
+        "schema_ref",
+        "schema_sha256"
+      ],
+      "sort_by": [
+        "schema_ref"
+      ]
+    },
+    "engine_bindings": {
+      "item_whitelist": [
+        "module_id",
+        "module_version",
+        "operation",
+        "implementation_manifest_sha256"
+      ],
+      "sort_by": [
+        "module_id",
+        "module_version",
+        "operation"
+      ]
+    },
+    "reference_integrity": "Every digest resolves to immutable content in the captured allowlist. A manifest digest is SHA-256 over its exact stored UTF-8 JSON artifact bytes, and a schema digest is SHA-256 over its exact stored bytes. Representation and port contracts are bound through the module manifest and its exact schema bindings. Unknown, duplicate or unavailable binding identities fail closed.",
+    "frozen_bindings_whitelist": [
+      "registry_binding",
+      "module_bindings",
+      "observable_bindings",
+      "schema_bindings",
+      "engine_bindings"
+    ]
+  },
+  "recipes": {
+    "input_sha256": {
+      "stored_at": "revision/run input_sha256",
+      "projection": "The complete validated user-authored definition object, exactly as authored, before sweep expansion, source inheritance, overrides, default insertion or generated metadata.",
+      "top_level_whitelist": [
+        "unit_system",
+        "scales",
+        "system",
+        "numerics",
+        "protocol",
+        "observables",
+        "extensions"
+      ],
+      "presence": "Preserve optional member presence exactly as authored. The generic and registered definition schemas must already have rejected unregistered members.",
+      "excluded": "Revision envelope metadata, title, generated identifiers, timestamps and every hash field.",
+      "freeze_point": "Immutable revision creation."
+    },
+    "run_resolved_input_sha256": {
+      "stored_at": "run-level resolved_input_sha256",
+      "top_level_whitelist": [
+        "contract_version",
+        "input_sha256",
+        "branch_bases",
+        "expanded_steps",
+        "frozen_bindings"
+      ],
+      "branch_base_item_whitelist": [
+        "branch_index",
+        "sweep_assignments",
+        "definition"
+      ],
+      "branch_base_definition": "The definition_projection of the authored branch base after that branch's sweep assignments. No prior-step output and no current-step override is injected here.",
+      "sweep_assignment_item_whitelist": [
+        "axis_index",
+        "value_index",
+        "path",
+        "value"
+      ],
+      "expanded_step_item_whitelist": [
+        "branch_index",
+        "step_index",
+        "step_id",
+        "operation",
+        "source_alias",
+        "source_output_port",
+        "target_input_port",
+        "overrides",
+        "active_observable_refs"
+      ],
+      "overrides_item_whitelist": [
+        "path",
+        "value"
+      ],
+      "active_observable_refs": "Use the observable_bindings item whitelist and deterministic sort, restricted to the requested observables eligible for this step. Required solver state and diagnostics remain mandatory independently.",
+      "frozen_bindings": "Use binding_sets.frozen_bindings_whitelist with the exact captured registry, module, observable, schema and selected implementation identities.",
+      "ordering": "branch_bases by branch_index; expanded_steps by branch_index then step_index; sweep_assignments by authored axis_index. Branch allocation is deterministic from the authored sweep-axis and value order.",
+      "source_rule": "source_alias is initial or an earlier authored step ID in the same branch. source_output_port is null for initial and the frozen registered output port for an earlier step. References remain symbolic: do not fabricate future state data or UUIDs.",
+      "excluded": "Every generated UUID, timestamp, typed runtime state, effective input, result, log, progress field and this digest itself.",
+      "freeze_point": "Submission acceptance, after static expansion and binding validation but before calculation. The frozen plan is never rewritten when later states become available."
+    },
+    "step_resolved_input_sha256": {
+      "stored_at": "step-level resolved_input_sha256 and the prepared input state's resolved_input_sha256",
+      "top_level_whitelist": [
+        "contract_version",
+        "effective_definition",
+        "operation",
+        "active_observable_refs",
+        "frozen_bindings",
+        "source_scientific_content_sha256"
+      ],
+      "effective_definition": "Apply the registered inheritance rule to the selected initial or earlier successful definition/state, apply the current step's overrides, revalidate, then take definition_projection. This is the actual post-override scientific input, not the entire submission plan.",
+      "active_observable_refs": "Use the observable_bindings item whitelist and deterministic sort for this step's eligible selected observables.",
+      "frozen_bindings": "Use the same captured binding-set identities as the submission plan, restricted to those required by this step; no substitution with newer contracts or implementations.",
+      "source_scientific_content_sha256": "Apply the state_content_sha256 recipe to the original unchanged source state before the current step's overrides. Preserve source_state_ref as that source; effective_input_state_ref identifies a distinct prepared_input state.",
+      "excluded": "Step/run/state UUIDs, step ID, branch index, producer provenance, parent UUIDs, timestamps, solver output, result statuses, logs and this digest itself.",
+      "freeze_point": "After the original source exists and the effective input is fully validated, immediately before this step executes. If preparation cannot complete, this digest is unavailable; do not invent a digest for a skipped or unprepared step."
+    },
+    "state_content_sha256": {
+      "stored_at": "Server-owned state_content_hashes map: state_id -> scientific_content_sha256. It is a separate immutable manifest/map; no new state.schema.json field is required.",
+      "top_level_whitelist": [
+        "module_id",
+        "module_version",
+        "representation",
+        "representation_version",
+        "unit_context",
+        "time_kind",
+        "physical_time",
+        "data_schema_ref",
+        "data",
+        "metadata_schema_ref",
+        "metadata"
+      ],
+      "unit_context": "Object whitelist: unit_system, scales. Copy their exact validated values from the effective definition linked by the state's resolved_input_sha256; for an initial state use its frozen branch definition. This is a server-derived projection member, not a new state.schema.json field. It binds the meaning of reduced potential data so different L0/E0 contexts cannot share a scientific-content identity merely because state data arrays match.",
+      "data_and_metadata": "Copy the complete registered and semantically validated scientific data and metadata, including declared precision, units, shapes and coordinate/grid meaning. No generated provenance may be inserted into these scientific payloads.",
+      "excluded": "contract envelope version, state_id, producer, parent_state_refs, resolved_input_sha256, generated IDs, timestamps, map entries and every content digest field.",
+      "freeze_point": "When each initial, prepared input or accepted output state is published immutably. Distinct provenance identities may share a scientific-content digest; they remain distinct states.",
+      "map_rule": "Map keys are storage identities and are not themselves hash input. A state ID cannot later be mapped to a different content digest. Partial output artifacts are not promoted to accepted states by computing a content digest.",
+      "resolved_input_link_rule": "An initial state's resolved_input_sha256 links to the frozen run-plan digest and its unit_context is read directly from that branch base; a prepared_input or produced step state's resolved_input_sha256 links to its effective step-input digest and its context comes from that resolved definition, while the linking digest itself is excluded from scientific state-content hashing."
+    },
+    "execution_fingerprint": {
+      "stored_at": "run execution_fingerprint",
+      "top_level_whitelist": [
+        "contract_version",
+        "run_resolved_input_sha256",
+        "implementation_manifest_sha256",
+        "dependency_manifest_sha256",
+        "constants_manifest_sha256",
+        "resource_policy_sha256",
+        "effective_resource_profile_sha256",
+        "environment_manifest_sha256"
+      ],
+      "manifest_rule": "Each value binds the exact immutable code/build, direct and transitive dependency, constants, operational resource policy, effective resource profile and actual execution-environment manifest. Hash exact stored artifact bytes; include actual numerical-library and thread/runtime configuration in the bound environment. This recipe does not define a lossy manifest summary.",
+      "null_policy": "All listed values must resolve before an execution fingerprint is asserted. Modules using no physical constants bind an explicit versioned empty constants manifest rather than an unexplained null. Missing implementation or environment evidence means the fingerprint is unavailable.",
+      "excluded": "Generated UUIDs, timestamps, queue/progress data, results, states, observed acceptance statuses and the fingerprint itself.",
+      "freeze_point": "After the actual implementation and environment have been resolved and before scientific calculation starts. A changed environment or implementation requires a new execution identity; never rewrite an existing fingerprint."
+    }
+  },
+  "source_and_runtime_rules": [
+    "The immutable submission plan and append-only runtime evidence are separate records. Runtime effective inputs and state-content maps reference the frozen plan without altering its projection.",
+    "For an earlier-step source, the original accepted output, its inherited definition, its scientific-content digest and the new prepared input are all preserved. Applying an override never changes the original source record or relabels the prepared input as the producer's output.",
+    "For initial sources, each branch starts from its frozen swept base. The current step's overrides create a distinct prepared input; overrides from unrelated earlier steps are not inherited.",
+    "The source-content digest proves scientific content identity, not ownership, authorization, physical validity or producer provenance. These remain explicit server-validated records.",
+    "Replay preserves the source plan and all frozen scientific/implementation contracts. New UUIDs and timestamps do not change scientific hashes. A different actual environment changes the execution fingerprint and must be reported, not hidden.",
+    "Never compute a fixed point by hashing a record containing its own digest or a future generated result. Every dependency between these recipes follows the directed order: authored definition -> submission plan -> execution fingerprint; original source content -> effective step input -> generated output content."
+  ],
+  "validation_requirements": {
+    "status": "planned_not_executed",
+    "checks": [
+      "Official RFC 8785 vectors, Unicode/key ordering, JSON-number serialization, duplicate-key rejection and invalid-Unicode rejection.",
+      "Generated UUID, timestamp and logging changes leave scientific projections unchanged.",
+      "Scientific input, operation, applicable observable, source content, schema, module or implementation changes alter the relevant projection.",
+      "Prepared input overrides preserve the original source and produce independently identifiable effective input content.",
+      "No earlier-step output data is required to hash the submission plan; unresolved/skipped effective inputs do not receive fabricated step hashes.",
+      "Same scientific state under different provenance identities has the same content digest; mutated scientific content under one immutable state ID is rejected.",
+      "A changed environment/resource/constant/dependency manifest changes execution identity without changing the authored-definition digest."
+    ],
+    "claim_limit": "Writing this contract and checking JSON syntax do not execute canonicalization, hashing compatibility tests, numerical acceptance tests or physical validation."
+  }
+}

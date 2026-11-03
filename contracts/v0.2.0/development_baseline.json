@@ -1,0 +1,156 @@
+{
+  "version": "0.2.0",
+  "decision_id": "DEC-006",
+  "status": "selected_baseline_not_yet_frozen",
+  "observed_on": "2026-11-03",
+  "observation_method": "로컬 실행 환경에서 platform·sys·NumPy·SciPy 버전을 조회했다. 계산 모듈이나 수치 합격 시험을 실행한 결과가 아니다.",
+  "observed_environment": {
+    "implementation": "CPython",
+    "python_version": "3.12.14",
+    "numpy_version": "2.3.5",
+    "scipy_version": "1.17.0",
+    "os": "Linux",
+    "architecture": "x86_64",
+    "compute_target": "CPU",
+    "kernel_release_observed": "6.18.57",
+    "observed_python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python"
+  },
+  "selected_direct_dependencies": [
+    {
+      "name": "CPython",
+      "exact_version": "3.12.14",
+      "selection_basis": "로컬 설치 버전",
+      "validation_status": "version_observed_only"
+    },
+    {
+      "name": "NumPy",
+      "exact_version": "2.3.5",
+      "selection_basis": "로컬 설치 버전",
+      "validation_status": "version_observed_only"
+    },
+    {
+      "name": "SciPy",
+      "exact_version": "1.17.0",
+      "selection_basis": "로컬 설치 버전",
+      "validation_status": "version_observed_only"
+    }
+  ],
+  "thread_policy": {
+    "status": "required_configuration_not_measured",
+    "cpu_workers": 1,
+    "cpu_threads_per_worker": 1,
+    "required_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "verification": "실제 BLAS·LAPACK 구현과 thread 수를 실행 기록에 확인한다. 환경 변수 선언만으로 단일 thread가 확인되었다고 표시하지 않는다."
+  },
+  "numerical_policy": {
+    "initial_compute_dtype": "float64",
+    "pair_derivative": {
+      "selected_method": "AST_forward_automatic_differentiation",
+      "decision": "단일 수식 트리에서 값과 rho에 대한 1차 도함수를 함께 평가한다.",
+      "production_fallback": "none",
+      "independent_references": "해석적 기준식과 여러 간격의 유한차분은 검증용으로만 사용한다."
+    },
+    "pair_solver": {
+      "library": "SciPy",
+      "exact_library_version": "1.17.0",
+      "entry_point": "scipy.optimize.minimize",
+      "method": "L-BFGS-B",
+      "jacobian_source": "AST_forward_automatic_differentiation",
+      "fixed_coordinate_policy": "고정 좌표를 자유 변수에서 제외한다.",
+      "acceptance": "모듈에 정한 자유 기울기 기준을 별도로 확인한다. solver 성공 플래그나 에너지 변화만으로 수치 수렴을 선언하지 않는다."
+    },
+    "quantum_solver": {
+      "library": "SciPy",
+      "exact_library_version": "1.17.0",
+      "entry_point": "scipy.linalg.eigh_tridiagonal",
+      "select": "i",
+      "select_range": "[0, states-1]",
+      "lapack_driver": "stebz",
+      "check_finite": true,
+      "selection_status": "구현 기준 선택, 수치 합격 시험 전",
+      "normalization": "q에서 격자 가중 상태와 SI 상태로의 변환은 모듈 계약을 따른다."
+    }
+  },
+  "standards_dependencies": [
+    {
+      "purpose": "JSON Schema Draft 2020-12 표준 검증",
+      "package_candidate": "jsonschema",
+      "exact_version": null,
+      "distribution_sha256": null,
+      "status": "unresolved_required_before_numerical_implementation",
+      "required_checks": [
+        "Draft 2020-12 지원 확인",
+        "UUID·date-time 형식 검사 설정",
+        "별도 의미·유한값 검사와 역할 구분"
+      ]
+    },
+    {
+      "purpose": "RFC 8785 canonical JSON",
+      "package_candidate": "rfc8785",
+      "exact_version": null,
+      "distribution_sha256": null,
+      "status": "unresolved_required_before_numerical_implementation",
+      "required_checks": [
+        "공식 규격 시험 벡터와 숫자·문자 정렬 검증",
+        "중복 키·비유한 값·잘못된 유니코드의 사전 거부",
+        "일반 키 정렬 직렬화로 조용히 대체하지 않음"
+      ]
+    }
+  ],
+  "reproducibility_artifacts": {
+    "source_control": "Git",
+    "remote_repository_status": "not_selected_or_created",
+    "source_commit": null,
+    "dependency_lockfile": null,
+    "dependency_distribution_hashes": null,
+    "container_image_reference": null,
+    "container_image_digest": null,
+    "actual_blas_lapack_manifest": null,
+    "test_revision": null,
+    "benchmark_inputs_and_expected_references": "버전 관리되는 시험 입력·기준 자료·허용오차로 보존",
+    "execution_record": "코드·입력·의존성·환경·자원 정책·검증 결과의 연결을 보존"
+  },
+  "implementation_gate": {
+    "id": "GATE-BASELINE-001",
+    "status": "required_not_yet_satisfied",
+    "before": "첫 수치 모듈의 구현 착수",
+    "must_complete": [
+      "표준 JSON Schema와 RFC 8785 구현을 확인하고 정확한 버전과 배포 파일 해시를 고정한다.",
+      "직접·전이 의존성이 포함된 잠금 파일을 만들고 시험 환경에서 설치 재현을 확인한다.",
+      "실행 이미지의 실제 digest와 BLAS·LAPACK 구현·thread 설정을 기록한다.",
+      "초기 소스 Git 커밋과 시험 입력·기준 자료·검증 명세 개정본을 고정한다.",
+      "모든 미해결 기준선 필드가 채워졌는지 검사하고 그 결과를 보존한다."
+    ],
+    "authorization": "이미 선택된 구현 준비 절차이며 별도의 사용자 선택 질문을 요구하는 항목으로 취급하지 않는다.",
+    "if_unmet": "명세 작성·정적 계약 검토는 계속할 수 있으나 수치 구현에 고정된 재현 기준선이 있다고 표시하지 않는다."
+  },
+  "evidence_limits": {
+    "numerical_acceptance_tests_executed": 0,
+    "physical_validation_performed": false,
+    "capacity_measured": false
+  },
+  "references": [
+    {
+      "topic": "L-BFGS-B",
+      "url": "https://docs.scipy.org/doc/scipy/reference/optimize.minimize-lbfgsb.html"
+    },
+    {
+      "topic": "실수 대칭 삼중대각 계산",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.eigh_tridiagonal.html"
+    },
+    {
+      "topic": "JSON Schema Draft 2020-12",
+      "url": "https://json-schema.org/draft/2020-12"
+    },
+    {
+      "topic": "RFC 8785",
+      "url": "https://www.rfc-editor.org/rfc/rfc8785.html"
+    }
+  ],
+  "reference_note": "공식 문서 링크는 규격과 계산 인터페이스의 참고이다. 설치 버전의 검증이나 Quanta 계산 정확도를 보증하지 않는다."
+}

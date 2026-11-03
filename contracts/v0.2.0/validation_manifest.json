@@ -1,0 +1,146 @@
+{
+  "version": "0.2.0",
+  "status": "planned_not_executed",
+  "all_thresholds": "Engineering acceptance targets for named smooth well-scaled benchmark cases; not universal experimental error guarantees.",
+  "comparison_rule": "abs(actual-reference) <= atol + rtol*abs(reference) componentwise in declared reduced units unless a metric is explicitly stated.",
+  "cases": [
+    {
+      "id": "A01",
+      "scope": "analytic harmonic pair energy and forces",
+      "atol": 1e-10,
+      "rtol": 1e-10,
+      "status": "planned"
+    },
+    {
+      "id": "A02",
+      "scope": "central finite-difference energy/force consistency",
+      "steps": [
+        0.0001,
+        1e-05,
+        1e-06
+      ],
+      "metric": "maxabs(F+gradient_fd)/max(1,maxabs(F))",
+      "threshold": 1e-06,
+      "status": "planned"
+    },
+    {
+      "id": "A03",
+      "scope": "translation/rotation/permutation and net internal force/torque",
+      "metric": "normalized max residual; torque uses L0 and F0",
+      "threshold": 1e-10,
+      "status": "planned"
+    },
+    {
+      "id": "A04",
+      "scope": "constrained two-point harmonic relaxation",
+      "metric": "free reduced gradient infinity norm",
+      "threshold": 1e-06,
+      "additional": "fixed coordinates identical; rest-distance reduced error <=1e-6; minimum not generally certified",
+      "status": "planned"
+    },
+    {
+      "id": "B01",
+      "scope": "zero potential discrete Dirichlet eigenvalues",
+      "formula": "epsilon_j=4*alpha/dxi^2*sin(j*pi/(2*(n+1)))^2",
+      "atol": 1e-10,
+      "rtol": 1e-08,
+      "status": "planned"
+    },
+    {
+      "id": "B02",
+      "scope": "weighted normalization and orthogonality",
+      "threshold": 1e-10,
+      "status": "planned"
+    },
+    {
+      "id": "B03",
+      "scope": "backward eigen residual",
+      "metric": "||Hphi-epsilon*phi||2 / ((||H||inf+abs(epsilon))*||phi||2)",
+      "threshold": 1e-12,
+      "status": "planned"
+    },
+    {
+      "id": "B04",
+      "scope": "zero potential continuum energies; first 4 states; n=1023",
+      "metric": "maximum relative energy error",
+      "threshold": 2e-05,
+      "additional": "Compared with alpha*(j*pi/B)^2 on exactly the same finite interval.",
+      "status": "planned"
+    },
+    {
+      "id": "B05",
+      "scope": "smooth benchmark second-order grid convergence 127,255,511",
+      "metric": "p=log2(abs(E127-E255)/abs(E255-E511))",
+      "range": [
+        1.8,
+        2.2
+      ],
+      "additional": "Skip p when the numerator/denominator is at <=100*eps*max(1,abs(E)); record roundoff-limited.",
+      "status": "planned"
+    },
+    {
+      "id": "B06",
+      "scope": "quadratic potential boundary and grid error separation",
+      "metric": "compare low-state energies with harmonic reference; keep dx constant when enlarging domain",
+      "threshold": 0.0001,
+      "additional": "Relative error target for first 4 states; n=1023 on [-8,8] and n=1279 on [-10,10] preserve spacing in oscillator length, alpha=0.5. Use the shifted xi center parameter.",
+      "status": "planned"
+    },
+    {
+      "id": "C01",
+      "scope": "revision immutability, replay, unit/scaling equivalence, finite-only exports",
+      "status": "planned"
+    },
+    {
+      "id": "C02",
+      "scope": "workflow source/patch/sweep validation and max expanded steps",
+      "status": "planned"
+    },
+    {
+      "id": "C03",
+      "scope": "idempotency and cancellation race state invariants",
+      "status": "planned"
+    },
+    {
+      "id": "C04",
+      "scope": "invalid domain, unsupported model, missing data and resource-limit diagnostics",
+      "status": "planned"
+    },
+    {
+      "id": "X01",
+      "scope": "Generic envelope admits a registered third representation without adding an A/B oneOf branch; actual executable support still requires complete registration.",
+      "status": "planned"
+    },
+    {
+      "id": "X02",
+      "scope": "Unknown module/version/representation, unregistered fields and unknown extensions fail closed after envelope validation.",
+      "status": "planned"
+    },
+    {
+      "id": "X03",
+      "scope": "Initial modules still require SI units, L0/E0 scales, strict system/numerics schemas and their own protocol limits.",
+      "status": "planned"
+    },
+    {
+      "id": "X04",
+      "scope": "Source aliases resolve to typed states and declared operation ports; wrong dimensions, units, time semantics or partial upstream states are rejected.",
+      "status": "planned"
+    },
+    {
+      "id": "X05",
+      "scope": "Text/config/image artifacts validate without array metadata; array artifacts require dtype, shape, unit, axis_order and precision.",
+      "status": "planned"
+    },
+    {
+      "id": "X06",
+      "scope": "Registry snapshots and result/state/schema versions survive replay without silent implementation substitution.",
+      "status": "planned"
+    },
+    {
+      "id": "X07",
+      "scope": "Mandatory core module result payloads and selected supported observables satisfy their registered schemas without forcing unrequested arrays.",
+      "status": "planned"
+    }
+  ],
+  "contract_validation_scope": "Static schema and contract checks may be executed separately, but every numerical or future runtime case below remains planned until its corresponding implementation is actually run."
+}

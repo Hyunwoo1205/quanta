@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "status": "initial_policy_targets_not_measured",
+  "common_execution": {
+    "cpu_workers": 1,
+    "cpu_threads_per_worker": 1,
+    "memory_mib_per_run": 1024,
+    "wall_seconds_per_step": 60,
+    "wall_seconds_per_run": 120,
+    "max_queue_wait_seconds": 600,
+    "max_queued_runs_per_owner": 10,
+    "max_input_bytes": 1048576,
+    "max_artifact_bytes_per_run": 33554432,
+    "checkpoint_resume": "not supported in first prototype; replay from immutable input; completed artifacts retained as partial if failed or cancelled"
+  },
+  "profiles": {
+    "initial_cpu_modules": {
+      "module_versions": [
+        "quanta.pair_static@0.1.0",
+        "quanta.quantum_stationary@0.1.0"
+      ],
+      "max_ast_depth": 16,
+      "max_ast_nodes": 128,
+      "max_parameters": 32,
+      "max_protocol_steps": 8,
+      "max_expanded_steps": 16,
+      "max_particles": 128,
+      "max_optimization_iterations": 2000,
+      "max_function_gradient_evaluations": 10000,
+      "max_quantum_points": 4095,
+      "max_quantum_states": 16,
+      "max_quantum_refinement_levels": 2,
+      "max_sweep_axes": 2,
+      "max_sweep_values_per_axis": 16
+    }
+  },
+  "extension_rule": "New modules require a registered resource profile or explicit compatible profile binding. The first-module numerical and protocol limits are not imposed by the generic experiment envelope. Common execution limits remain operational policy and are captured for every run.",
+  "status_rule": "These are planned ceilings, not measured performance, accuracy or runtime guarantees. Refusal reports the effective profile, requested value and limit without silently reducing the experiment."
+}

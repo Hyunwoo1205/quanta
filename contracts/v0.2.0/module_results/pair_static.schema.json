@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:module-result:pair_static:0.1.0",
+  "$comment": "Contract only. Run/step outcomes and partial payload eligibility are checked by result.schema.json. Cross-field array dimensions, requested observables, finite numeric values and registry compatibility require semantic validation.",
+  "type": "object",
+  "properties": {
+    "operation": {
+      "enum": [
+        "energy_forces",
+        "relax"
+      ]
+    },
+    "initial_positions_m": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 3,
+        "maxItems": 3
+      },
+      "minItems": 2
+    },
+    "final_positions_m": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 3,
+        "maxItems": 3
+      },
+      "minItems": 2
+    },
+    "energy_j": {
+      "type": "number"
+    },
+    "forces_n": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 3,
+        "maxItems": 3
+      },
+      "minItems": 2
+    },
+    "free_gradient_inf": {
+      "type": "number",
+      "minimum": 0
+    },
+    "iterations": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "evaluations": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stop_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "minimum_confirmed": {
+      "const": false
+    },
+    "diagnostics": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": [
+                  "pass",
+                  "not_converged",
+                  "not_checked",
+                  "not_applicable"
+                ]
+              },
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "tolerance": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "status",
+              "value",
+              "tolerance"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "method",
+        "checks"
+      ],
+      "additionalProperties": false
+    },
+    "pair_energies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "i": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "j": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "distance_m": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "energy_j": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "i",
+          "j",
+          "distance_m",
+          "energy_j"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "optimization_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "iteration": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "energy_j": {
+            "type": "number"
+          },
+          "free_gradient_inf": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "iteration",
+          "energy_j",
+          "free_gradient_inf"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "operation",
+    "initial_positions_m",
+    "final_positions_m",
+    "energy_j",
+    "forces_n",
+    "free_gradient_inf",
+    "iterations",
+    "evaluations",
+    "stop_reason",
+    "minimum_confirmed",
+    "diagnostics"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "energy_forces"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "iterations": {
+            "const": 0
+          }
+        }
+      }
+    }
+  ]
+}

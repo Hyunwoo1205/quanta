@@ -1,0 +1,879 @@
+{
+  "contract_version": "0.2.0",
+  "registry_version": "0.2.0",
+  "status": "specification_only",
+  "physics_module_versions": "0.1.0",
+  "schema_resolution": {
+    "mode": "fixed_offline_bundle_allowlist",
+    "remote_resolution": false,
+    "metadata_schema_refs": "local relative bundled filename plus optional JSON Pointer; traversal and unregistered files are rejected",
+    "validation_order": [
+      "common envelope",
+      "exact registered module definition/input/numerics schema",
+      "registered state data and metadata schemas",
+      "port and semantic compatibility",
+      "exact registered payload and observable schema",
+      "artifact-specific and cross-field checks"
+    ]
+  },
+  "schema_ids": {
+    "urn:quanta:schema:module-manifest:0.2.0": "module_manifest.schema.json",
+    "urn:quanta:schema:observable-manifest:0.2.0": "observable_manifest.schema.json",
+    "urn:quanta:schema:state:0.2.0": "state.schema.json",
+    "urn:quanta:schema:artifact:0.2.0": "artifact.schema.json",
+    "urn:quanta:schema:result:0.2.0": "result.schema.json"
+  },
+  "modules": [
+    {
+      "contract_version": "0.2.0",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "implementation_status": "planned_not_implemented",
+      "description": "Small nonperiodic conservative pair-potential energy/force calculation and local stationarity search. Numerical scope only; no stability or global-minimum certification.",
+      "definition_schema_ref": "module_inputs.schema.json#/$defs/pairDefinition",
+      "input_schema_ref": "module_inputs.schema.json#/$defs/pairSystem",
+      "numerics_schema_ref": "module_inputs.schema.json#/$defs/pairNumerics",
+      "payload_schema_ref": "module_results/pair_static.schema.json",
+      "operations": [
+        "energy_forces",
+        "relax"
+      ],
+      "ports": [
+        {
+          "port_id": "configuration_in",
+          "direction": "input",
+          "representation": "particles_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "module_inputs.schema.json#/$defs/pairSystem",
+          "metadata_schema_ref": "state.schema.json#/$defs/particleMetadata",
+          "time_kind": "static",
+          "required": true,
+          "operations": [
+            "energy_forces",
+            "relax"
+          ],
+          "allowed_sources": [
+            "initial",
+            "previous_success_same_branch"
+          ]
+        },
+        {
+          "port_id": "configuration_out",
+          "direction": "output",
+          "representation": "particles_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "module_inputs.schema.json#/$defs/pairSystem",
+          "metadata_schema_ref": "state.schema.json#/$defs/particleMetadata",
+          "time_kind": "static",
+          "required": true,
+          "operations": [
+            "energy_forces",
+            "relax"
+          ],
+          "allowed_sources": [
+            "not_applicable"
+          ]
+        }
+      ],
+      "observables": [
+        "energy",
+        "forces",
+        "pair_energies",
+        "final_positions",
+        "optimization_history"
+      ],
+      "unit_contract": {
+        "interchange_system": "SI",
+        "scaling_quantities": [
+          "length",
+          "energy"
+        ],
+        "input_quantities": [
+          {
+            "path": "/particles/*/position_m",
+            "unit": "m",
+            "dimension": "length"
+          },
+          {
+            "path": "/min_distance_m",
+            "unit": "m",
+            "dimension": "length"
+          },
+          {
+            "path": "/potential/parameters/*",
+            "unit": "1",
+            "dimension": "dimensionless"
+          }
+        ]
+      },
+      "precision_contract": {
+        "real_dtype": "float64",
+        "complex_encoding": "none",
+        "finite_only": true
+      },
+      "capabilities": {
+        "time_kind": "static",
+        "spatial_dimensions": [
+          3
+        ],
+        "boundaries": [
+          "nonperiodic"
+        ],
+        "expression": {
+          "variables": [
+            "rho"
+          ],
+          "allowed_ops": [
+            "const",
+            "var",
+            "param",
+            "add",
+            "sub",
+            "mul",
+            "div",
+            "neg",
+            "pow",
+            "exp",
+            "log",
+            "sqrt",
+            "sin",
+            "cos"
+          ],
+          "dimensionless": true,
+          "max_depth": 16,
+          "max_nodes": 128,
+          "max_parameters": 32,
+          "integer_power_min": -12,
+          "integer_power_max": 12
+        },
+        "protocol": {
+          "max_steps": 8,
+          "max_sweep_axes": 2,
+          "max_expanded_steps": 16,
+          "source_policy": "initial_or_previous_success_same_branch",
+          "physical_coupling": false
+        },
+        "resource_policy_ref": "resource_policy.json",
+        "resource_profile_pointer": "/profiles/initial_cpu_modules",
+        "limits": {
+          "min_particles": 2,
+          "max_particles": 128,
+          "max_optimization_iterations": 2000,
+          "max_function_gradient_evaluations": 10000
+        },
+        "expression_formats": [
+          {
+            "format_id": "quanta.scalar_ast",
+            "format_version": "0.1.0",
+            "schema_ref": "module_inputs.schema.json#/$defs/expression"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_executed",
+        "manifest_ref": "validation_manifest.json",
+        "case_ids": [
+          "A01",
+          "A02",
+          "A03",
+          "A04"
+        ],
+        "evidence_artifact_ids": [],
+        "scope": "Declared smooth well-scaled benchmark cases only; no measured numerical or experimental acceptance is claimed."
+      }
+    },
+    {
+      "contract_version": "0.2.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "implementation_status": "planned_not_implemented",
+      "description": "Real smooth potential on a finite 1D interval with zero Dirichlet endpoints; low stationary states. No time propagation, state conversion or physical coupling.",
+      "definition_schema_ref": "module_inputs.schema.json#/$defs/quantumDefinition",
+      "input_schema_ref": "module_inputs.schema.json#/$defs/quantumSystem",
+      "numerics_schema_ref": "module_inputs.schema.json#/$defs/quantumNumerics",
+      "payload_schema_ref": "module_results/quantum_stationary.schema.json",
+      "operations": [
+        "eigenstates"
+      ],
+      "ports": [
+        {
+          "port_id": "configuration_in",
+          "direction": "input",
+          "representation": "quantum_grid_1d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "module_inputs.schema.json#/$defs/quantumSystem",
+          "metadata_schema_ref": "state.schema.json#/$defs/quantumConfigurationMetadata",
+          "time_kind": "static",
+          "required": true,
+          "operations": [
+            "eigenstates"
+          ],
+          "allowed_sources": [
+            "initial"
+          ]
+        },
+        {
+          "port_id": "stationary_solution",
+          "direction": "output",
+          "representation": "quantum_stationary_solution_1d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "module_results/quantum_stationary.schema.json",
+          "metadata_schema_ref": "state.schema.json#/$defs/quantumSolutionMetadata",
+          "time_kind": "static",
+          "required": true,
+          "operations": [
+            "eigenstates"
+          ],
+          "allowed_sources": [
+            "not_applicable"
+          ]
+        }
+      ],
+      "observables": [
+        "energies",
+        "states",
+        "density",
+        "x_mean",
+        "x2_mean",
+        "kinetic_mean",
+        "potential_mean"
+      ],
+      "unit_contract": {
+        "interchange_system": "SI",
+        "scaling_quantities": [
+          "length",
+          "energy"
+        ],
+        "input_quantities": [
+          {
+            "path": "/domain/a_m",
+            "unit": "m",
+            "dimension": "length"
+          },
+          {
+            "path": "/domain/b_m",
+            "unit": "m",
+            "dimension": "length"
+          },
+          {
+            "path": "/mass_kg",
+            "unit": "kg",
+            "dimension": "mass"
+          },
+          {
+            "path": "/potential/parameters/*",
+            "unit": "1",
+            "dimension": "dimensionless"
+          }
+        ]
+      },
+      "precision_contract": {
+        "real_dtype": "float64",
+        "complex_encoding": "real_imag_pair",
+        "finite_only": true
+      },
+      "capabilities": {
+        "time_kind": "static",
+        "spatial_dimensions": [
+          1
+        ],
+        "boundaries": [
+          "dirichlet_zero"
+        ],
+        "expression": {
+          "variables": [
+            "xi"
+          ],
+          "allowed_ops": [
+            "const",
+            "var",
+            "param",
+            "add",
+            "sub",
+            "mul",
+            "div",
+            "neg",
+            "pow",
+            "exp",
+            "log",
+            "sqrt",
+            "sin",
+            "cos"
+          ],
+          "dimensionless": true,
+          "max_depth": 16,
+          "max_nodes": 128,
+          "max_parameters": 32,
+          "integer_power_min": -12,
+          "integer_power_max": 12
+        },
+        "protocol": {
+          "max_steps": 8,
+          "max_sweep_axes": 2,
+          "max_expanded_steps": 16,
+          "source_policy": "initial_only",
+          "physical_coupling": false
+        },
+        "resource_policy_ref": "resource_policy.json",
+        "resource_profile_pointer": "/profiles/initial_cpu_modules",
+        "limits": {
+          "min_quantum_points": 31,
+          "max_quantum_points": 4095,
+          "max_quantum_states": 16,
+          "max_quantum_refinement_levels": 2
+        },
+        "expression_formats": [
+          {
+            "format_id": "quanta.scalar_ast",
+            "format_version": "0.1.0",
+            "schema_ref": "module_inputs.schema.json#/$defs/expression"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_executed",
+        "manifest_ref": "validation_manifest.json",
+        "case_ids": [
+          "B01",
+          "B02",
+          "B03",
+          "B04",
+          "B05",
+          "B06"
+        ],
+        "evidence_artifact_ids": [],
+        "scope": "Declared discrete, continuum and convergence benchmarks only; no measured numerical or experimental acceptance is claimed."
+      }
+    }
+  ],
+  "observables": [
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "energy",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "description": "energy",
+      "meaning": "Total non-duplicated pair energy in the returned configuration.",
+      "source_ports": [
+        "configuration_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/energy_j",
+      "output_schema_ref": "module_results/pair_static.schema.json#/properties/energy_j",
+      "quantity": {
+        "value_kind": "scalar",
+        "unit": "J",
+        "dtype": "float64",
+        "shape": [],
+        "axis_order": [],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "A01"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "energy_forces",
+        "relax"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "forces",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "description": "forces",
+      "meaning": "All components of the negative energy gradient, including fixed coordinates.",
+      "source_ports": [
+        "configuration_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/forces_n",
+      "output_schema_ref": "module_results/pair_static.schema.json#/properties/forces_n",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "N",
+        "dtype": "float64",
+        "shape": [
+          "N",
+          3
+        ],
+        "axis_order": [
+          "particle",
+          "cartesian"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "energy_forces",
+        "relax"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "pair_energies",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "description": "pair_energies",
+      "meaning": "One row for each i<j pair; no extra cross-pair model is inferred.",
+      "source_ports": [
+        "configuration_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/pair_energies",
+      "output_schema_ref": "module_results/pair_static.schema.json#/properties/pair_energies",
+      "quantity": {
+        "value_kind": "table",
+        "unit": null,
+        "dtype": null,
+        "shape": [
+          "P"
+        ],
+        "axis_order": [
+          "pair"
+        ],
+        "complex_encoding": "none",
+        "components": [
+          {
+            "path": "/distance_m",
+            "unit": "m",
+            "dtype": "float64"
+          },
+          {
+            "path": "/energy_j",
+            "unit": "J",
+            "dtype": "float64"
+          }
+        ]
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "A01"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "energy_forces",
+        "relax"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "final_positions",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "description": "final_positions",
+      "meaning": "Final configuration; unchanged for energy_forces, last accepted configuration for relax.",
+      "source_ports": [
+        "configuration_out"
+      ],
+      "evaluation_stage": "final_state",
+      "payload_pointer": "/final_positions_m",
+      "output_schema_ref": "module_results/pair_static.schema.json#/properties/final_positions_m",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "m",
+        "dtype": "float64",
+        "shape": [
+          "N",
+          3
+        ],
+        "axis_order": [
+          "particle",
+          "cartesian"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "A04"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "energy_forces",
+        "relax"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "optimization_history",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "description": "optimization_history",
+      "meaning": "Solver iterations, energy and free-gradient diagnostics; iteration is not physical time.",
+      "source_ports": [
+        "configuration_out"
+      ],
+      "evaluation_stage": "iteration_history",
+      "payload_pointer": "/optimization_history",
+      "output_schema_ref": "module_results/pair_static.schema.json#/properties/optimization_history",
+      "quantity": {
+        "value_kind": "table",
+        "unit": null,
+        "dtype": null,
+        "shape": [
+          "I"
+        ],
+        "axis_order": [
+          "iteration"
+        ],
+        "complex_encoding": "none",
+        "components": [
+          {
+            "path": "/energy_j",
+            "unit": "J",
+            "dtype": "float64"
+          },
+          {
+            "path": "/free_gradient_inf",
+            "unit": "1",
+            "dtype": "float64"
+          }
+        ]
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "A04"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "relax"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "energies",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "description": "energies",
+      "meaning": "Lowest selected stationary energies, sorted ascending.",
+      "source_ports": [
+        "stationary_solution"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/energies_j",
+      "output_schema_ref": "module_results/quantum_stationary.schema.json#/properties/energies_j",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "J",
+        "dtype": "float64",
+        "shape": [
+          "K"
+        ],
+        "axis_order": [
+          "state"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "B01",
+          "B04",
+          "B05",
+          "B06"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "eigenstates"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "states",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "description": "states",
+      "meaning": "Weighted-normalized SI stationary state amplitudes; imaginary carrier is zero in this module.",
+      "source_ports": [
+        "stationary_solution"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/states",
+      "output_schema_ref": "module_results/quantum_stationary.schema.json#/properties/states",
+      "quantity": {
+        "value_kind": "complex_array",
+        "unit": "m^-1/2",
+        "dtype": "float64",
+        "shape": [
+          "K",
+          "G"
+        ],
+        "axis_order": [
+          "state",
+          "position"
+        ],
+        "complex_encoding": "real_imag_pair",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "B02",
+          "B03"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "eigenstates"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "density",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "description": "density",
+      "meaning": "Absolute square of SI state amplitudes; endpoint values are zero.",
+      "source_ports": [
+        "stationary_solution"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/density_per_m",
+      "output_schema_ref": "module_results/quantum_stationary.schema.json#/properties/density_per_m",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "m^-1",
+        "dtype": "float64",
+        "shape": [
+          "K",
+          "G"
+        ],
+        "axis_order": [
+          "state",
+          "position"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "B02"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "eigenstates"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "x_mean",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "description": "x_mean",
+      "meaning": "Position expectation with the same interior grid weights.",
+      "source_ports": [
+        "stationary_solution"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/x_mean_m",
+      "output_schema_ref": "module_results/quantum_stationary.schema.json#/properties/x_mean_m",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "m",
+        "dtype": "float64",
+        "shape": [
+          "K"
+        ],
+        "axis_order": [
+          "state"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "B05"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "eigenstates"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "x2_mean",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "description": "x2_mean",
+      "meaning": "Squared-position expectation with the same interior grid weights.",
+      "source_ports": [
+        "stationary_solution"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/x2_mean_m2",
+      "output_schema_ref": "module_results/quantum_stationary.schema.json#/properties/x2_mean_m2",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "m^2",
+        "dtype": "float64",
+        "shape": [
+          "K"
+        ],
+        "axis_order": [
+          "state"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "B05"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "eigenstates"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "kinetic_mean",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "description": "kinetic_mean",
+      "meaning": "Expectation of the same discrete kinetic operator used in the solve.",
+      "source_ports": [
+        "stationary_solution"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/kinetic_mean_j",
+      "output_schema_ref": "module_results/quantum_stationary.schema.json#/properties/kinetic_mean_j",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "J",
+        "dtype": "float64",
+        "shape": [
+          "K"
+        ],
+        "axis_order": [
+          "state"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "B03"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "eigenstates"
+      ]
+    },
+    {
+      "contract_version": "0.2.0",
+      "observable_id": "potential_mean",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.quantum_stationary",
+      "module_version": "0.1.0",
+      "description": "potential_mean",
+      "meaning": "Potential expectation with the same interior grid weights.",
+      "source_ports": [
+        "stationary_solution"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/potential_mean_j",
+      "output_schema_ref": "module_results/quantum_stationary.schema.json#/properties/potential_mean_j",
+      "quantity": {
+        "value_kind": "array",
+        "unit": "J",
+        "dtype": "float64",
+        "shape": [
+          "K"
+        ],
+        "axis_order": [
+          "state"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "B03"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "eigenstates"
+      ]
+    }
+  ],
+  "invariants": [
+    "Registry, module, observable, schema and implementation identities are resolved before execution and included in its immutable fingerprint.",
+    "Validate each manifest with its matching bundled contract; reject duplicate module id+version, duplicate observable id within a module version, duplicate port ids, unresolved local schema refs and undeclared operations.",
+    "Manifest definition/input/numerics/payload refs must be the exact refs resolved for the selected module id+version. No client-selected payload schema or new remote schema is accepted.",
+    "Input system module id/version and representation must match the manifest and input port. Metadata/data are each validated by their registered schemas.",
+    "Every current module is static, so physical_time is null. Solver iterations, sweep branches and grid refinements never become physical time.",
+    "A may bind configuration_in to initial or an earlier successful, non-partial configuration_out from the same branch and module version. Output data is the same configuration schema with final positions updated after relax, unchanged after energy_forces.",
+    "B accepts configuration_in from initial only. Its stationary_solution output is a different representation and cannot be automatically reused as configuration input.",
+    "Resolved portBinding source_state_ref must exist; producer branch/step/port, representation, version, shape, coordinate convention, unit and precision must be compatible with the declared input port.",
+    "conversion_ref is null in this contract. No state conversion, automatic cross-module source, simultaneous coupling or time evolution is implemented.",
+    "Observable declarations control optional presentation/artifact requests, not deletion of mandatory solver state or diagnostics. Validate observable payload pointers and output schemas against the exact module payload schema.",
+    "Successful required steps carry a registry-validated payload and output state. Failed or partial states cannot be admitted as a later source.",
+    "Artifact kind selects metadata requirements. Array rank/axis count/data shape/precision/unit and hash/size consistency are semantic checks; text, image and config are never required to have array metadata.",
+    "Validation statuses are not upgraded by successful schema validation or process completion. All declarations in this registry have not_executed validation status.",
+    "Experiment-level observable requests must each have at least one eligible operation in the complete protocol. At each step evaluate only the intersection of its operation and the requested observable declarations; an inapplicable optional observable is omitted, never fabricated or rejected solely for another step being ineligible. Mandatory core state and diagnostics remain present.",
+    "Each selected module id@version must be listed in its resource policy profile module_versions; module-specific limits remain declared in the manifest and are checked against that profile.",
+    "Every resolved binding preserves source_state_ref as the original immutable source. Branch and step overrides produce a distinct prepared_input state referenced by effective_input_state_ref, whose sole parent is source_state_ref and whose resolved_input_sha256 is the post-override definition hash.",
+    "Top-level partial is false only for overall SUCCEEDED and true otherwise. Earlier successful steps keep their original data and partial=false; failed/cancelled/skipped steps have partial=true and state_ref=null. Incomplete overall runs cannot masquerade as completed experiments.",
+    "The module precision contract declares its calculation/output carrier. Each registered port metadata profile defines its own state carrier; a real B configuration is valid even though B stationary output uses a real/imaginary pair.",
+    "The common manifest permits registered expression formats, source policies and physical coupling capabilities. Current A/B declare only scalar AST, dimensionless potentials, physical_coupling=false and their explicit initial/previous-source policies.",
+    "Common port bindings may name a registered transformation by id, version and manifest_sha256. Current A/B bindings require conversion_ref=null; no transformation or coupling is implemented.",
+    "Current A/B run results require physical_validation_status=unvalidated and physical_validation_evidence_refs=[] regardless of numerical success. A future validated status requires matching registered evidence with verified scope and record hash."
+  ],
+  "precision_and_units": "Finite JSON values remain required. Actual unit, shape, coordinate/basis and dtype requirements belong to registered state/module/observable metadata rather than a universal physical representation."
+}

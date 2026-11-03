@@ -1,0 +1,500 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:module-manifest:0.2.0",
+  "title": "Quanta module manifest contract",
+  "$comment": "Offline contract. Resolve only bundled resources through the fixed allowlist. JSON ingest rejects non-finite numeric values and duplicate keys.",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.2.0"
+    },
+    "module_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$"
+    },
+    "module_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "implementation_status": {
+      "enum": [
+        "planned_not_implemented",
+        "implemented_unvalidated",
+        "implemented"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "definition_schema_ref": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+    },
+    "input_schema_ref": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+    },
+    "numerics_schema_ref": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+    },
+    "payload_schema_ref": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "port_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "direction": {
+            "enum": [
+              "input",
+              "output"
+            ]
+          },
+          "representation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "representation_version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "data_schema_ref": {
+            "type": "string",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+          },
+          "metadata_schema_ref": {
+            "type": "string",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+          },
+          "time_kind": {
+            "enum": [
+              "static",
+              "evolving"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "allowed_sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          }
+        },
+        "required": [
+          "port_id",
+          "direction",
+          "representation",
+          "representation_version",
+          "data_schema_ref",
+          "metadata_schema_ref",
+          "time_kind",
+          "required",
+          "operations",
+          "allowed_sources"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "observables": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "unit_contract": {
+      "type": "object",
+      "properties": {
+        "interchange_system": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scaling_quantities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "input_quantities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^/"
+              },
+              "unit": {
+                "type": "string",
+                "minLength": 1
+              },
+              "dimension": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "path",
+              "unit",
+              "dimension"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "interchange_system",
+        "scaling_quantities",
+        "input_quantities"
+      ],
+      "additionalProperties": false
+    },
+    "precision_contract": {
+      "type": "object",
+      "properties": {
+        "real_dtype": {
+          "type": "string",
+          "minLength": 1
+        },
+        "complex_encoding": {
+          "type": "string",
+          "minLength": 1
+        },
+        "finite_only": {
+          "const": true
+        }
+      },
+      "required": [
+        "real_dtype",
+        "complex_encoding",
+        "finite_only"
+      ],
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "time_kind": {
+          "enum": [
+            "static",
+            "evolving"
+          ]
+        },
+        "spatial_dimensions": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "boundaries": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "expression": {
+          "type": "object",
+          "properties": {
+            "variables": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "allowed_ops": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "dimensionless": {
+              "type": "boolean"
+            },
+            "max_depth": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_nodes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_parameters": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "integer_power_min": {
+              "type": "integer"
+            },
+            "integer_power_max": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "variables",
+            "allowed_ops",
+            "dimensionless",
+            "max_depth",
+            "max_nodes",
+            "max_parameters",
+            "integer_power_min",
+            "integer_power_max"
+          ],
+          "additionalProperties": false
+        },
+        "protocol": {
+          "type": "object",
+          "properties": {
+            "max_steps": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_sweep_axes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_expanded_steps": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "source_policy": {
+              "type": "string",
+              "minLength": 1
+            },
+            "physical_coupling": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "max_steps",
+            "max_sweep_axes",
+            "max_expanded_steps",
+            "source_policy",
+            "physical_coupling"
+          ],
+          "additionalProperties": false
+        },
+        "resource_policy_ref": {
+          "type": "string",
+          "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+        },
+        "resource_profile_pointer": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "limits": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "expression_formats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "format_id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$"
+              },
+              "format_version": {
+                "type": "string",
+                "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+              },
+              "schema_ref": {
+                "type": "string",
+                "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+              }
+            },
+            "required": [
+              "format_id",
+              "format_version",
+              "schema_ref"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "time_kind",
+        "spatial_dimensions",
+        "boundaries",
+        "protocol",
+        "resource_policy_ref",
+        "resource_profile_pointer",
+        "limits",
+        "expression_formats"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "expression"
+            ]
+          },
+          "then": {
+            "properties": {
+              "expression_formats": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "not_executed",
+            "numerically_verified",
+            "physically_compared"
+          ]
+        },
+        "manifest_ref": {
+          "type": "string",
+          "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+        },
+        "case_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "evidence_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "status",
+        "manifest_ref",
+        "case_ids",
+        "evidence_artifact_ids",
+        "scope"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract_version",
+    "module_id",
+    "module_version",
+    "implementation_status",
+    "description",
+    "definition_schema_ref",
+    "input_schema_ref",
+    "numerics_schema_ref",
+    "payload_schema_ref",
+    "operations",
+    "ports",
+    "observables",
+    "unit_contract",
+    "precision_contract",
+    "capabilities",
+    "validation"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "validation": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "numerically_verified",
+                  "physically_compared"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "validation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "validation": {
+            "properties": {
+              "evidence_artifact_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

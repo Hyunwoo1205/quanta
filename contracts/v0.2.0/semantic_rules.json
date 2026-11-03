@@ -1,0 +1,161 @@
+{
+  "version": "0.2.0",
+  "status": "normative_contract_not_implemented",
+  "registry_ref": "registry.json",
+  "validation_order": [
+    "strict_json_parse",
+    "generic_envelope_schema",
+    "registry_resolution",
+    "registered_definition_and_component_schemas",
+    "registered_semantics",
+    "resolved_state_and_port_validation",
+    "resource_profile_check"
+  ],
+  "rules": [
+    [
+      "S01",
+      "All JSON numeric values must be finite; duplicate keys, NaN, Infinity and unpaired surrogate escapes are rejected before schema validation. Common contracts do not require one universal arithmetic precision. Registered profiles declare numeric precision and any lossless string/binary encoding needed beyond interoperable JSON numbers."
+    ],
+    [
+      "S02",
+      "UUID and date-time assertions are mandatory. Step IDs are unique; source references point to initial input or an earlier step in the same expanded branch."
+    ],
+    [
+      "S03",
+      "Resolve an exact module_id and module_version from the captured registry. Missing, disabled or unregistered modules are MODEL_UNSUPPORTED. Contract checks may examine declared planned registrations, but execution separately requires enabled implementation and engine availability. A planned registration or valid envelope never authorizes dispatch."
+    ],
+    [
+      "S04",
+      "Validate the entire definition and its system/numerics payloads against registered local schemas. Unit systems, scales, observables, expressions and boundary conditions are module-specific. A field provisionally admitted by the envelope must be recognized by a registered schema and semantic rule; unknown fields cannot be silently ignored."
+    ],
+    [
+      "S05",
+      "Operations, observable names, override paths and sweep types are accepted only when declared by the selected module version. Every patched definition is fully revalidated before any state binding or calculation."
+    ],
+    [
+      "S06",
+      "Registered resource profiles impose operation and protocol limits. The generic envelope itself does not restrict all future modules to the first two representations, unit systems, solvers or step counts."
+    ],
+    [
+      "S07",
+      "Every initial or produced accepted state validates against state.schema.json and its registered representation-specific data and metadata schemas. State representations retain their own dimensions, units, time semantics and numerical meaning."
+    ],
+    [
+      "S08",
+      "Keep protocol.steps[].source unchanged as user-authored input. On submission, resolve it into a server-owned state_ref and explicit input/output port bindings for each expanded branch and step. Source aliases and canonical typed bindings are both retained in the resolved record."
+    ],
+    [
+      "S09",
+      "Binding requires a registered compatible source representation/version, unit and coordinate/time semantics, receiving input port and any declared conversion. No implicit model coupling or lossy conversion is inferred from matching JSON shapes. Conversions require their own registered and versioned capability."
+    ],
+    [
+      "S10",
+      "Nonconverged, failed, cancelled or partial outputs are not promoted to accepted downstream states. Result payloads, state envelopes and artifact manifests are each validated using their own registered contracts. Numerical and physical validation statuses remain distinct."
+    ],
+    [
+      "S11",
+      "Each experiment-level observable request must resolve to a registered descriptor and at least one compatible operation in the authored protocol. For each step, evaluate only requested observables supported by that operation; omit or mark non-applicable the others. Reject a request with no eligible operation before execution. Mandatory diagnostics and accepted continuation state are never removed by optional observable selection."
+    ],
+    [
+      "S12",
+      "Capture registry/schema/module/representation versions and hashes in the resolved execution record. Replay uses that immutable support snapshot or reports unavailability; it never silently substitutes a newer implementation."
+    ],
+    [
+      "S13",
+      "For the first A/B profiles, physical_validation_status remains unvalidated and evidence refs are empty; conversion_ref is null. The more general common schema does not activate unimplemented validation or conversion capabilities."
+    ],
+    [
+      "S14",
+      "Use hashing_contract.json for distinct authored-input, frozen-plan, effective-step, state-scientific-content and execution-fingerprint projections. Symbolic future sources at submission are not fabricated state snapshots."
+    ]
+  ],
+  "first_module_profiles": {
+    "quanta.pair_static@0.1.0": {
+      "definition_schema": "module_inputs.schema.json#/$defs/pairDefinition",
+      "system_schema": "module_inputs.schema.json#/$defs/pairSystem",
+      "numerics_schema": "module_inputs.schema.json#/$defs/pairNumerics",
+      "resource_profile": "resource_policy.json#/profiles/initial_cpu_modules",
+      "unit_system": "SI",
+      "required_scales": [
+        "length_m",
+        "energy_j"
+      ],
+      "semantics": [
+        "Particle IDs are unique. All accepted pair distances exceed min_distance_m. L0, E0 and reduced values stay positive where required and finite.",
+        "The potential AST accepts rho only; every parameter reference is defined. Derivatives are computed from the same AST by forward-mode AD; no independent derivative expression is accepted.",
+        "energy_forces and relax preserve particles_3d input semantics. relax requires at least one free coordinate and uses solver lbfgsb_forward_ad. Fixed coordinates remain exactly unchanged."
+      ]
+    },
+    "quanta.quantum_stationary@0.1.0": {
+      "definition_schema": "module_inputs.schema.json#/$defs/quantumDefinition",
+      "system_schema": "module_inputs.schema.json#/$defs/quantumSystem",
+      "numerics_schema": "module_inputs.schema.json#/$defs/quantumNumerics",
+      "resource_profile": "resource_policy.json#/profiles/initial_cpu_modules",
+      "unit_system": "SI",
+      "required_scales": [
+        "length_m",
+        "energy_j"
+      ],
+      "semantics": [
+        "a_m < b_m and alpha > 0 finite. The potential AST accepts xi only; every parameter reference is defined.",
+        "finest_n=(n_points+1)*2^refinement_levels-1 <=4095 and states<=min(16,n_points-2). Refinement fixes domain, mass, potential, boundary and scales.",
+        "Only eigenstates is supported. Output state/data schemas determine whether a result can supply a later operation; eigenvector arrays are never implicitly used as a system definition.",
+        "With no registered conversion in this first contract, eigenstates accepts only an initial quantum_grid_1d configuration, not a prior stationary_solution output. Another independent step can use source=initial with its own supported overrides."
+      ]
+    }
+  },
+  "first_profile_rules": [
+    "The two first-module profiles use finite IEEE754 binary64 input and arithmetic. Higher precision is a future registered profile with explicit lossless encoding, units, schemas and validation rules; it is never silently rounded into a binary64 module.",
+    "AST depth <=16, total nodes <=128 and parameters <=32. No arbitrary executable text.",
+    "At most 8 authored steps, 2 sweep axes, 16 values per axis and 16 expanded steps per run; each quantum step includes at most 3 grids within the per-step wall limit.",
+    "Override paths must exist and be allowed by api_and_results.json. Duplicate/overlapping patches and identity/module/unit/scales/protocol changes are rejected. Sweep targets are numeric; fixed masks permit per-step booleans only.",
+    "First-module extension objects are empty. Future extension namespaces require their own registered schemas and explicit compatibility; an unknown namespace never gains executable meaning.",
+    "Resolution order is branch base definition -> sweep-axis values -> source selection (initial branch base, or previous successful same-branch resolved definition plus its produced state) -> current step overrides -> full structure/semantic/domain validation -> immutable input state snapshot and port binding. Previous-step overrides are inherited only through that step as source; source=initial resets to the branch base. Sweep paths are not re-applied over an inherited produced state."
+  ],
+  "resolved_record": {
+    "ownership": "server-owned immutable frozen submission plan plus append-only immutable runtime evidence entries",
+    "required": [
+      "contract_version",
+      "run_id",
+      "revision_id",
+      "input_sha256",
+      "resolved_input_sha256",
+      "registry_snapshot_sha256",
+      "frozen_plan",
+      "runtime_evidence",
+      "engine_bindings"
+    ],
+    "typed_state_schema": "state.schema.json",
+    "binding_fields": [
+      "branch_index",
+      "step_id",
+      "source_alias",
+      "source_state_ref",
+      "source_output_port",
+      "target_input_port",
+      "representation",
+      "representation_version",
+      "conversion_ref",
+      "effective_input_state_ref"
+    ],
+    "conversion_ref": "null in this first contract; future conversions require a separately registered, versioned and validated capability",
+    "source_initial": "Keep the original typed initial state; after sweep/step overrides create a distinct prepared_input state referencing it as parent and bind effective_input_state_ref to that prepared state.",
+    "source_step": "Preserve source_state_ref as the original successful output. After allowed overrides, create a distinct prepared_input state with that source as parent; retain both source and effective input identities. Never relabel a changed input as the prior produced output.",
+    "port_binding_schema": "state.schema.json#/$defs/portBinding",
+    "resolution_order": "branch base; sweep; selected initial or prior successful definition/state; current overrides; revalidate; immutable state and bindings",
+    "submission": "Freeze the deterministic execution plan with symbolic earlier-step sources. Future computed states do not exist at submission. Resolve each effective input only when its source step succeeds and record it immutably before that step executes.",
+    "state_content_hashes": "Server-owned state_id -> scientific_content_sha256 map; exact projections are defined in hashing_contract.json. Do not include IDs, producer provenance, timestamps or a hash field in its own hash input.",
+    "frozen_plan": "Exact run resolved-input projection in hashing_contract.json. Expanded steps retain symbolic future sources. It is immutable after submission.",
+    "runtime_evidence": {
+      "append_only": true,
+      "fields": [
+        "effective_step_inputs",
+        "typed_states",
+        "port_bindings",
+        "state_content_hashes"
+      ],
+      "rule": "Each effective input and binding is captured before its step; produced states follow successful completion. No future output or skipped-step binding is invented. Each published entry is immutable."
+    }
+  },
+  "hashing_contract_ref": "hashing_contract.json"
+}

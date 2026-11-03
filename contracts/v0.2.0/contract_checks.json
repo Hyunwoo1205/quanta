@@ -1,0 +1,31 @@
+{
+  "contract_version": "0.2.0",
+  "status": "selected_contract_consistency_checks_completed",
+  "method": "Offline local subset checker for the schema keywords exercised by these manifests and fixtures; selected semantic checks. Not a full Draft 2020-12 certification or RFC 8785 conformance test.",
+  "schema_refs_resolved": 32,
+  "local_metadata_refs_checked": 58,
+  "module_manifests_checked": 2,
+  "observable_manifests_checked": 12,
+  "valid_input_examples": 2,
+  "invalid_input_mutations_rejected": 10,
+  "future_envelope_admitted_but_unregistered_module_rejected": true,
+  "valid_artifact_kind_fixtures": 4,
+  "invalid_artifact_fixtures_rejected": 4,
+  "synthetic_state_envelopes_checked": 3,
+  "synthetic_port_bindings_checked": 1,
+  "synthetic_result_envelopes_checked": 2,
+  "invalid_static_time_and_false_completion_rejected": true,
+  "fixture_note": "All state/result fixtures are synthetic schema exercises, not calculated scientific results or passed numerical acceptance tests.",
+  "decisions_recorded": 6,
+  "future_candidates_not_started": 6,
+  "numerical_engine_implemented": false,
+  "numerical_acceptance_cases_executed": 0,
+  "independent_physical_validation_performed": false,
+  "remaining_implementation_checks": [
+    "Full standard validator and all semantics",
+    "RFC 8785 official vectors and runtime locks",
+    "State/result semantic and API/race tests",
+    "All numerical acceptance cases",
+    "Independent physical comparison for each claimed scope"
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:artifact:0.2.0",
+  "title": "Quanta discriminated artifact envelope",
+  "$comment": "Array-only metadata MUST NOT be required on text, image or config artifacts. Artifact hashes cover the exact stored bytes. Array rank must equal axis_order length, and byte/data/shape consistency is a semantic check. dtype and precision are declared by the producing module.",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "0.2.0"
+        },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mime_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "const": "array"
+        },
+        "dtype": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shape": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 0
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "axis_order": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "precision": {
+          "type": "object",
+          "properties": {
+            "real_dtype": {
+              "type": "string",
+              "minLength": 1
+            },
+            "complex_encoding": {
+              "type": "string",
+              "minLength": 1
+            },
+            "finite_only": {
+              "const": true
+            }
+          },
+          "required": [
+            "real_dtype",
+            "complex_encoding",
+            "finite_only"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "artifact_id",
+        "sha256",
+        "mime_type",
+        "size_bytes",
+        "kind",
+        "dtype",
+        "shape",
+        "unit",
+        "axis_order",
+        "precision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "0.2.0"
+        },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mime_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "const": "text"
+        },
+        "encoding": {
+          "const": "UTF-8"
+        }
+      },
+      "required": [
+        "contract_version",
+        "artifact_id",
+        "sha256",
+        "mime_type",
+        "size_bytes",
+        "kind",
+        "encoding"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "0.2.0"
+        },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mime_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "const": "image"
+        },
+        "width_px": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height_px": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "contract_version",
+        "artifact_id",
+        "sha256",
+        "mime_type",
+        "size_bytes",
+        "kind",
+        "width_px",
+        "height_px"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "0.2.0"
+        },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mime_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "const": "config"
+        },
+        "format": {
+          "const": "json"
+        },
+        "schema_ref": {
+          "type": "string",
+          "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+        }
+      },
+      "required": [
+        "contract_version",
+        "artifact_id",
+        "sha256",
+        "mime_type",
+        "size_bytes",
+        "kind",
+        "format",
+        "schema_ref"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}
