@@ -5,8 +5,10 @@ import copy
 import itertools
 import math
 import re
+from fractions import Fraction
 from typing import Any
 
+from .autodiff import _fraction_float, _product, _ratio, _sum
 from .hashing import definition_sha256
 from .parsing import StrictJSONError, parse_json, pointer
 from .registry import ContractRegistry
@@ -141,11 +143,14 @@ class _Validation:
                 if not math.isfinite(minimum) or minimum <= 0:
                     raise ValueError
                 if not skip_geometry:
-                    for i, pos in enumerate(reduced):
+                    for i, particle in enumerate(particles):
                         for j in range(i):
-                            rho = math.dist(pos, reduced[j])
-                            if not math.isfinite(rho) or rho <= minimum:
+                            distance = math.dist(particle["position_m"], particles[j]["position_m"])
+                            rho = distance / l0
+                            if not math.isfinite(distance) or distance <= system["min_distance_m"]:
                                 self.fail("INPUT_SEMANTIC", "Every pair distance must exceed the minimum distance", "/definition/system/particles", details={"pair_indices": [j, i]}, **context)
+                            elif not math.isfinite(rho) or rho <= 0:
+                                self.fail("INPUT_SEMANTIC", "Pair distance is outside the finite reduced domain", "/definition/system/particles", details={"pair_indices": [j, i]}, **context)
                             else:
                                 values.append(rho)
             except (OverflowError, ZeroDivisionError, ValueError):
@@ -317,23 +322,25 @@ def _evaluate(node: dict, parameters: dict, variable: float) -> float:
     elif op in {"add", "sub", "mul", "div"}:
         args = [_evaluate(arg, parameters, variable) for arg in node["args"]]
         if op == "add":
-            result = sum(args)
+            result = _sum(args, "/definition/system/potential/expression", "value")
         elif op == "sub":
-            result = args[0] - args[1]
+            result = _sum((args[0], -args[1]), "/definition/system/potential/expression", "value")
         elif op == "mul":
-            result = math.prod(args)
+            result = _product(args, "/definition/system/potential/expression", "value")
         else:
-            result = args[0] / args[1]
+            result = _ratio(args[0], args[1], "/definition/system/potential/expression", "value")
     else:
         arg = _evaluate(node["arg"], parameters, variable)
         if op == "pow":
-            result = arg ** node["exponent"]
+            result = _fraction_float(Fraction(arg) ** int(node["exponent"]), "/definition/system/potential/expression", "value")
         elif op == "neg":
             result = -arg
         else:
             if op == "sqrt" and arg <= 0:
                 raise ValueError("sqrt requires a positive argument in the differentiable first profile")
             result = {"exp": math.exp, "log": math.log, "sqrt": math.sqrt, "sin": math.sin, "cos": math.cos}[op](arg)
+            if op == "exp" and result == 0.0:
+                raise ValueError("Exponential value underflows binary64")
     if not isinstance(result, (int, float)) or not math.isfinite(result):
         raise ValueError("Expression evaluation produced a non-finite value")
     return float(result)
@@ -439,7 +446,14 @@ def validate_experiment(data: bytes | str | dict, *, registry: ContractRegistry 
     if not validation.schema(experiment, "experiment.schema.json", ""):
         report["errors"] = validation.errors
         return report
-    definition = experiment["definition"]
+    return _finish_definition_validation(experiment["definition"], registry, report, validation)
+
+
+def _finish_definition_validation(definition: dict, registry: ContractRegistry,
+                                  report: dict, validation: _Validation) -> dict:
+    if not validation.schema(definition, "experiment.schema.json#/$defs/definition", "/definition"):
+        report["errors"] = validation.errors
+        return report
     system = definition["system"]
     report["module_ref"] = {"module_id": system["module_id"], "module_version": system["module_version"]}
     module = registry.get_module(system["module_id"], system["module_version"])
@@ -457,3 +471,29 @@ def validate_experiment(data: bytes | str | dict, *, registry: ContractRegistry 
         except (ValueError, TypeError, OverflowError) as exc:
             report["errors"].append(_issue("INPUT_SCHEMA", "Authored input cannot be represented by the canonical JSON contract", "/definition", details={"reason": str(exc)[:180]}))
     return report
+
+
+def validate_definition(data: dict, *, registry: ContractRegistry | None = None) -> dict:
+    """Validate a definition without inventing experiment or revision identities."""
+    report = {"valid": False, "errors": [], "warnings": [], "schema_version": "0.2.0",
+              "module_ref": None, "input_sha256": None, "physical_validation_status": "unvalidated"}
+    try:
+        definition = parse_json(data)
+    except StrictJSONError as exc:
+        report["errors"].append(_issue(exc.code, str(exc), exc.path))
+        return report
+    try:
+        registry = registry or ContractRegistry()
+        integrity = registry.validate_integrity()
+        if integrity:
+            report["errors"] = integrity[:_MAX_ERRORS]
+            return report
+        parse_json(data, max_bytes=min(1_048_576, registry.resource_policy["common_execution"]["max_input_bytes"]))
+    except StrictJSONError as exc:
+        report["errors"].append(_issue(exc.code, str(exc), exc.path))
+        return report
+    except (OSError, KeyError, ValueError, TypeError) as exc:
+        report["errors"].append(_issue("REGISTRY_SNAPSHOT_UNAVAILABLE", "Frozen contract bundle could not be loaded",
+                                       details={"reason": str(exc)[:200]}))
+        return report
+    return _finish_definition_validation(definition, registry, report, _Validation(registry))

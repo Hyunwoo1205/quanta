@@ -20,3 +20,5 @@ python -m pytest
 GitHub Actions는 동일 설치·환경 확인·계약 검사·시험·예제 검증과 컨테이너 빌드를 실행하도록 구성했습니다. 공식 Actions는 커밋 SHA, 공식 Python 컨테이너는 Linux amd64 이미지 digest로 고정했습니다. 로컬에는 Docker 실행기가 없어 로컬 이미지 빌드는 실행하지 않았습니다. 원격 CI의 실행 결과는 별도로 확인해야 합니다.
 
 설치 환경과 구현 범위의 실제 확인 결과는 `runtime_manifest.json`에 기록합니다. 이 검사는 물리적 정확도나 계산 엔진의 검증을 뜻하지 않습니다.
+
+`python scripts/verify_numerics.py --output docs/numerical_verification.json`은 지정한 단일 배치의 A01~A03과 SI 척도 동등성만 측정합니다. 독립 해석식, 실제 에너지의 중심차분, 기하 변환과 합력·토크를 사용하며 실제 오차·허용오차·입력·환경·코드 해시를 저장합니다. 실패하면 JSON에 실패를 남기고 비정상 종료합니다. 원래 계약의 계획 상태를 변경하지 않습니다. GitHub Actions에서는 측정 JSON을 실행별 artifact로 보존합니다.

@@ -15,9 +15,13 @@ def _emit(report: dict, output_format: str = "json") -> None:
     if output_format == "json":
         print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
         return
-    print("VALID" if report.get("valid") else "INVALID")
+    print(report["evaluation_status"] if "evaluation_status" in report else ("VALID" if report.get("valid") else "INVALID"))
     if report.get("input_sha256"):
         print("input_sha256: " + report["input_sha256"])
+    if report.get("payload") is not None:
+        print("energy_j: " + str(report["payload"]["energy_j"]))
+        for ident, force in zip(report["particle_ids"], report["payload"]["forces_n"]):
+            print(f"force_n[{ident}]: {force}")
     for severity in ("errors", "warnings"):
         for issue in report.get(severity, []):
             print(f"{severity[:-1]}: {issue.get('code', 'CHECK')}: "
@@ -26,13 +30,16 @@ def _emit(report: dict, output_format: str = "json") -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="quanta", description="Validate Quanta experiment definitions without running a simulation."
+        prog="quanta", description="Validate experiments and evaluate a supported single configuration."
     )
     parser.add_argument("--version", action="version", version=__version__)
     sub = parser.add_subparsers(dest="command", required=True)
     validate = sub.add_parser("validate", help="Validate one UTF-8 experiment revision.")
     validate.add_argument("file", help="Path to an experiment JSON file, or - for standard input.")
     validate.add_argument("--format", choices=("json", "text"), default="json")
+    evaluate = sub.add_parser("evaluate", help="Calculate pair energy and forces for one initial configuration.")
+    evaluate.add_argument("file", help="Single-step experiment JSON, or - for standard input.")
+    evaluate.add_argument("--format", choices=("json", "text"), default="json")
     sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
@@ -61,11 +68,20 @@ def main(argv: list[str] | None = None) -> int:
             with Path(args.file).open("rb") as stream:
                 raw = stream.read(1_048_577)
     except OSError as exc:
-        _emit({"valid": False, "errors": [{"code": "INPUT_READ", "category": "input",
+        report = {"valid": False, "errors": [{"code": "INPUT_READ", "category": "input",
                 "path": None, "message": str(exc), "step_id": None, "branch_index": None,
                 "retryable": False, "details": {}}], "warnings": [],
-                "input_sha256": None, "physical_validation_status": "unvalidated"}, args.format)
+                "input_sha256": None, "physical_validation_status": "unvalidated"}
+        if args.command == "evaluate":
+            report.update(evaluation_status="FAILED", calculation_executed=False, payload=None,
+                          report_version="0.1.0", scope="single_configuration_energy_forces")
+        _emit(report, args.format)
         return 2
+    if args.command == "evaluate":
+        from .evaluation import evaluate_experiment
+        report = evaluate_experiment(raw)
+        _emit(report, args.format)
+        return 0 if report["evaluation_status"] == "SUCCEEDED" else 2
     report = validate_experiment(raw)
     _emit(report, args.format)
     return 0 if report["valid"] else 2

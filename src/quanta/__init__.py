@@ -1,3 +1,3 @@
-"""Quanta research simulation platform: validated experiment contracts."""
+"""Quanta experiment contracts and single-configuration pair evaluation."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

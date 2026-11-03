@@ -48,4 +48,4 @@ def test_cli_version_matches_installed_distribution(capsys):
     with pytest.raises(SystemExit) as exc:
         cli.main(["--version"])
     assert exc.value.code == 0
-    assert capsys.readouterr().out.strip() == __version__ == version("quanta-research-contracts") == "0.1.0"
+    assert capsys.readouterr().out.strip() == __version__ == version("quanta-research-contracts")

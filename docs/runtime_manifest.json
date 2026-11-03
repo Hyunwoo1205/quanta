@@ -1,14 +1,19 @@
 {
   "manifest_version": "1.0.0",
-  "recorded_at": "2026-11-03T16:50:59.748088+00:00",
+  "recorded_at": "2026-11-03T17:30:24.140270+00:00",
   "verification_date": "2026-11-04",
   "verification_timezone": "Asia/Seoul",
-  "scope": "개발 환경·의존성 설치·패키지 배포 구조의 확인 기록",
+  "scope": "개발 환경·의존성 설치·패키지 배포 구조와 지정 단일 배치의 수치 계산 확인 기록",
   "package": {
     "name": "quanta-research-contracts",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "contract_version": "0.2.0",
-    "source_revision_policy": "실행별 Git commit은 GitHub Actions의 checkout과 실행 기록으로 식별합니다."
+    "source_revision_policy": "실행별 Git commit은 GitHub Actions의 checkout과 실행 기록으로 식별합니다.",
+    "numeric_module_ref": {
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "operation": "energy_forces"
+    }
   },
   "baseline": {
     "implementation": "CPython",
@@ -202,7 +207,7 @@
     },
     "clean_venv_reinstall": {
       "status": "passed",
-      "method": "빈 별도 가상 환경에 같은 잠금 휠을 오프라인 설치한 뒤 프로젝트 wheel 설치",
+      "method": "새 빈 가상 환경에 20개 잠금 휠을 오프라인 설치한 뒤 0.2.0 프로젝트 wheel 설치",
       "locked_profile_matches": true
     },
     "pip_check": {
@@ -214,8 +219,8 @@
       "working_directory": "프로젝트 밖의 임시 경로",
       "bundled_contract_files": 24,
       "command": "python -m quanta check-contracts",
-      "wheel_filename": "quanta_research_contracts-0.1.0-py3-none-any.whl",
-      "wheel_sha256": "35c3189bac92a238f0a020894db6869bfcb75e1b16a2affa5012fe474aba8201"
+      "wheel_filename": "quanta_research_contracts-0.2.0-py3-none-any.whl",
+      "wheel_sha256": "50a0c0c741a71843e2839b9f9e287338f3f41b537c4044cd564978755c66bb20"
     },
     "stale_direct_requirements_guard": {
       "status": "passed",
@@ -236,19 +241,73 @@
         "해시 잠금 설치",
         "의존성 및 실제 환경 검사",
         "계약 검사",
-        "시험",
-        "예제 검증",
+        "전체 시험",
+        "실제 수치 측정과 JSON artifact 보존",
+        "예제 검증 및 단일 평가",
         "고정 이미지 빌드",
-        "프로젝트 밖에서 설치 계약과 실제 컨테이너 환경 검사"
-      ]
+        "프로젝트 밖에서 설치 계약·컨테이너 환경·단일 평가 검사"
+      ],
+      "package_version": "0.2.0"
     },
-    "local_test_suite": {
+    "previous_release_local_test_suite": {
       "status": "passed",
       "collected": 59,
       "passed": 59,
       "duration_seconds": 15.32,
       "command": ".venv/bin/python -m pytest -q",
-      "scope": "development contracts and CLI, no numerical engine or physical validation"
+      "scope": "development contracts and CLI, no numerical engine or physical validation",
+      "package_version": "0.1.0"
+    },
+    "installed_wheel_source_comparison": {
+      "status": "passed",
+      "method": "최종 wheel의 모든 Python 소스·계약 24개·README metadata를 현재 파일과 byte 대조"
+    },
+    "installed_wheel_evaluation": {
+      "status": "passed",
+      "working_directory": "프로젝트 밖의 임시 경로",
+      "command": "quanta evaluate <프로젝트 절대 경로>/examples/pair_energy_forces.json",
+      "evaluation_status": "SUCCEEDED",
+      "input_sha256": "b5aa8df8a99cfcb34af88dff27bbc7825adcefa9ead33444f6bc02d2d6ea24e9",
+      "package_version": "0.2.0",
+      "energy_j": 3.999999999999998e-21,
+      "forces_n": [
+        [
+          3.9999999999999985e-11,
+          0.0,
+          0.0
+        ],
+        [
+          -3.9999999999999985e-11,
+          0.0,
+          0.0
+        ]
+      ],
+      "physical_validation_status": "unvalidated"
+    },
+    "numerical_benchmarks": {
+      "status": "passed",
+      "report": "docs/numerical_verification.json",
+      "report_sha256": "885d1cd0f2b1adc73eb5533e2fe03fec2b00df7b2576bdddaceec943a297433d",
+      "measured_at": "2026-11-03T17:25:08.332520+00:00",
+      "cases": {
+        "A01": "passed",
+        "A02": "passed",
+        "A03": "passed",
+        "SI_EQUIVALENCE": "passed"
+      },
+      "source_set_sha256": "cb78743b2fa310689660d9b632fda40793e3d4a8853d655d226e3501bb1420f6",
+      "scope": "Named smooth harmonic pair benchmarks for one-configuration energy_forces only",
+      "physical_validation_status": "unvalidated",
+      "A04_status": "not_executed"
+    },
+    "numeric_suite": {
+      "status": "passed",
+      "collected": 154,
+      "passed": 154,
+      "duration_seconds": 41.91,
+      "package_version": "0.2.0",
+      "scope": "기존 계약 회귀·자동미분·에너지와 힘·단일 평가 API 및 CLI·오류 경로의 최종 전체 시험",
+      "physical_validation_status": "unvalidated"
     }
   },
   "container_base": {
@@ -276,14 +335,24 @@
       "commit": "a26af69be951a213d495a4c3e4e4022e16d87065",
       "source_url": "https://api.github.com/repos/actions/setup-python/git/ref/tags/v5",
       "verified_at": "2026-11-03T16:50:22.917873+00:00"
+    },
+    {
+      "repository": "actions/upload-artifact",
+      "tag_at_verification": "v4",
+      "commit": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+      "source_url": "https://api.github.com/repos/actions/upload-artifact/git/ref/tags/v4",
+      "verified_at": "2026-11-03T17:15:35.595366+00:00"
     }
   ],
   "physical_validation_status": "unvalidated",
-  "simulation_executed": false,
   "limitations": [
-    "이 기록은 계산 엔진 또는 물리적 정확도의 검증 기록이 아닙니다.",
-    "원격 CI 결과와 실행별 소스 commit은 별도 실행 기록에서 확인해야 합니다.",
+    "수치 합격은 보고서에 선언한 매끄럽고 적절히 스케일된 기준 문제와 energy_forces 범위에만 적용됩니다.",
+    "이 기록은 실제 현상과의 대조나 물리적 정확도의 검증 기록이 아닙니다.",
+    "relax·A04·다른 모듈·실행 시스템은 이번 수치 합격에 포함하지 않습니다.",
+    "새 버전의 원격 CI 결과와 실행별 소스 commit은 별도 실행 기록에서 확인해야 합니다.",
     "플랫폼별 바이너리와 수치 라이브러리 빌드가 달라지면 새 환경 기록과 시험이 필요합니다."
   ],
-  "record_phase": "Local checkpoint before first GitHub push; later remote execution evidence is tracked per commit in GitHub Actions."
+  "record_phase": "Local checkpoint before first GitHub push; later remote execution evidence is tracked per commit in GitHub Actions.",
+  "calculation_executed": true,
+  "execution_scope": "single_configuration_energy_forces"
 }
