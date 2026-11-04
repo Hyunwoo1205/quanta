@@ -6,15 +6,19 @@
 
 ## 먼저 확인할 상태
 
-사용자가 OCI 준비 완료를 알렸습니다. 아직 IP/호스트명, SSH 사용자, OS와 안전한 인증 경로, 실제 부트·데이터 볼륨 배치를 전달받지 못했습니다. 비밀키 내용을 채팅·저장소에 넣지 않습니다. 연결할 수 있는 경로가 마련되면 먼저 읽기 전용으로 `uname -m`, OS 버전, `lsblk -f`, `findmnt`, 여유 공간과 기존 서비스·데이터를 확인합니다. 기존 디스크 포맷·데이터 삭제·새 유료 자원 생성은 이 배포 파일에 포함하지 않습니다.
+사용자가 접속 정보를 제공했고, OCI 콘솔에서 Ubuntu 26.04 ARM64·2 OCPU·12 GB와 부트 볼륨 200 GB 한 개·추가 블록 볼륨 없음 구성을 확인했습니다. 기존 PuTTY 접속은 사용자 확인으로 성공 상태입니다. 작업 환경의 직접 SSH 경로는 Network is unreachable로 막혀 있으며, OCI Cloud Shell에서는 서버의 SSH 호스트 키 검사 단계까지 도달했습니다. 서버 내부 명령·설치·재부팅은 아직 확인하지 않았습니다. 비밀키 내용을 채팅·저장소에 넣지 않습니다. 연결할 수 있는 경로가 마련되면 먼저 읽기 전용으로 `uname -m`, OS 버전, `lsblk -f`, `findmnt`, 여유 공간과 기존 서비스·데이터를 확인합니다. 기존 디스크 포맷·데이터 삭제·새 유료 자원 생성은 이 배포 파일에 포함하지 않습니다.
 
 구성은 Linux ARM64 A1, systemd, Docker Engine, `findmnt`를 대상으로 합니다. 정확한 CPython 3.12.14·의존성 27개는 digest 고정 기반 이미지와 두 CPU별 기존 wheel 잠금을 사용합니다. 호스트 Python은 배포 wrapper의 표준 라이브러리만 실행합니다. 실제 OS에 맞는 Docker 설치와 데이터 볼륨 연결·fstab은 점검 후 수행합니다.
 
-## 데이터 볼륨과 컨테이너
+## 데이터 배치와 컨테이너
 
-`/srv/quanta`를 별도 ext4 또는 XFS 파일시스템으로 마운트합니다. `/etc/quanta/deployment.json`의 `filesystem_uuid`에 실제 UUID를 지정하고 `image`에는 검증한 로컬 `sha256:...` 이미지 ID 또는 digest가 붙은 저장소 이미지명을 지정합니다. `--pull=never`를 사용하므로 해당 이미지가 실제로 로컬에 있어야 합니다. 예시 UUID·태그를 그대로 사용하지 않습니다.
+별도 데이터 볼륨을 사용하는 기존 `dedicated` 모드에서는 `/srv/quanta`를 별도 ext4 또는 XFS 파일시스템으로 마운트합니다. `/etc/quanta/deployment.json`의 `filesystem_uuid`에 실제 UUID를 지정하고 `image`에는 검증한 로컬 `sha256:...` 이미지 ID 또는 digest가 붙은 저장소 이미지명을 지정합니다. `--pull=never`를 사용하므로 해당 이미지가 실제로 로컬에 있어야 합니다. 예시 UUID·태그를 그대로 사용하지 않습니다.
 
 서비스는 systemd의 마운트 assertion·의존성에 더해 호스트 `findmnt`의 정확한 mountpoint·UUID·읽기/쓰기 파일시스템을 검사합니다. 마운트 루트는 `root:root 0755`로 두어 경로 접근을 허용하고 group/world 쓰기를 금지하며, 부트 루트와 다른 파일시스템이어야 합니다. `/srv/quanta/data`, `/srv/quanta/backups`는 정확히 0700·UID/GID 10001 소유의 실제 디렉터리로 사전에 준비합니다. 각 디렉터리와 기존 DB·lock도 해당 파일시스템에 속해야 합니다. 루트나 다른 볼륨의 빈 디렉터리를 데이터 볼륨으로 대체하지 않습니다. wrapper는 자동 포맷·마운트·권한 재귀 변경·DB 생성을 수행하지 않습니다. 새 볼륨이 실제 마운트된 것을 확인한 뒤에만 새 디렉터리를 만들고, 기존 데이터가 있으면 먼저 백업·소유권을 점검합니다.
+
+부트 볼륨 200 GB 한 개를 사용하는 경우에는 `deployment.boot.json.example`의 **명시적 `storage_mode: "boot"`**와 boot 전용 unit을 사용합니다. 기존 2개 필드 설정과 기본 CLI는 계속 dedicated 모드이며, 데이터 마운트가 사라졌다고 boot 모드로 자동 전환하지 않습니다. boot 모드는 `/srv/quanta`와 그 상위 경로의 root 소유권·쓰기 권한, `/`의 실제 장치·UUID·ext4/XFS·rw·파일시스템 루트를 확인합니다. data/backups와 기존 DB도 같은 장치에 있어야 합니다. 디스크 분할·축소·재생성은 수행하지 않습니다.
+
+두 배치에서 설정의 `filesystem_uuid`는 실제 저장 파일시스템의 UUID입니다. boot에서는 `findmnt --target /srv/quanta -o TARGET,UUID,FSTYPE`의 대상이 `/`인지 확인합니다. 배포 wrapper와 해당 mode 옵션이 다르면 시작을 거부합니다.
 
 이미지 빌드 예시는 다음과 같습니다. 컨테이너 기본 명령은 계약 검사이고 기본 UID/GID는 10001:10001입니다.
 
@@ -50,6 +54,17 @@ sudo systemctl status quanta.service
 sudo journalctl -u quanta.service --since today
 ```
 
+위 설치·시작 예시는 dedicated 모드입니다. 부트 단독 배치는 `deployment.boot.json.example`을 설정의 출발점으로 삼고, `quanta-boot.service`, `quanta-backup-boot.service`, `quanta-backup-boot.timer`를 같은 systemd 디렉터리에 설치합니다. 기존 설정·데이터가 있으면 먼저 내용과 백업을 확인합니다. 점검·시작은 다음과 같습니다.
+
+```bash
+sudo python3 /usr/local/lib/quanta/runtime.py check --storage-mode boot
+sudo systemctl daemon-reload
+sudo systemctl enable --now quanta-boot.service
+sudo systemctl status quanta-boot.service
+```
+
+기존 배치에서 전환할 때는 새 실행 수락을 중지하고 작업·백업을 비운 다음 이전 앱과 timer를 disable/stop한 뒤 선택한 배치만 enable합니다. 두 배치를 함께 enable하지 않습니다. unit의 상호 충돌과 종료/시작 순서는 중복 컨테이너를 방지하는 보조 경계입니다. boot 모드는 별도 `srv-quanta.mount`를 요구하지 않으며 root 파일시스템 identity 검사를 대신 수행합니다.
+
 실제 unit의 설치 경로와 wrapper 하위 명령은 `deploy/oci/` 파일을 기준으로 합니다. systemd만 재시작을 관리하고 Docker 자체 재시작은 끕니다. 감독자가 치명적으로 중단되면 운영 CLI가 HTTP 정상 종료·작업자 정리를 거쳐 종료 코드 2로 나갑니다. 반복 실패는 systemd 시작 횟수 제한으로 멈추므로 로그·마운트·설정을 수정하고 원인을 확인합니다. 새 worker는 기존 독점 lock을 획득한 뒤에만 중단 실행을 복구하며, 이미 실행한 계산의 부분 체크포인트를 이어가는 기능은 없습니다.
 
 ## 일관된 백업과 새 경로 복구
@@ -79,13 +94,15 @@ sudo systemctl enable --now quanta-backup.timer
 sudo systemctl list-timers quanta-backup.timer
 ```
 
+boot 단독 배치에서는 위 백업 명령의 unit 이름을 `quanta-backup-boot.service`·`quanta-backup-boot.timer`로 바꿉니다.
+
 timer는 매일 UTC 03:00, 최대 5분 분산 지연으로 실행하며 꺼져 있던 동안의 누락은 다음 기동 때 한 번 보완합니다. 실행 실패·용량 부족을 자동으로 해결하지 않으므로 백업 성공 시각과 여유 공간을 확인합니다.
 
 ## 호스트 밖 백업과 업데이트
 
 같은 볼륨의 DB 사본은 볼륨 손실에 대비한 사본이 아닙니다. SQLite 스냅샷 성공 뒤 OCI 관리형 볼륨 백업을 별도로 구성합니다. 관리형 백업은 부트·데이터 합계 5개 무료 한도와 기존 계정 사용량을 점검하며, 앱 내부 일일 timer가 OCI 관리형 백업까지 실행했다고 표시하지 않습니다.
 
-부트 50 GB·데이터 150 GB 기본안에서 새 복원 볼륨을 동시에 추가하면 할당 200 GB를 넘습니다. 초기 시험은 현재 데이터 파일시스템의 새 디렉터리에 복구하고 전체 볼륨 복원과 구분합니다. RPO 24시간·RTO 1시간은 실제 OCI 복구 시험 전의 목표입니다.
+부트 200 GB 단독 배치 또는 부트 50 GB·데이터 150 GB 배치에서 새 복원 볼륨을 동시에 추가하면 할당 200 GB를 넘습니다. 초기 시험은 현재 데이터 파일시스템의 새 디렉터리에 복구하고 전체 볼륨 복원과 구분합니다. RPO 24시간·RTO 1시간은 실제 OCI 복구 시험 전의 목표입니다.
 
 업데이트 전 새 실행 수락을 중지하고 대기·실행 작업을 비웁니다. 이전 image ID·CPU·잠금·검증 백업을 보존한 뒤 단일 서비스를 멈추고 image 설정을 교체합니다. 0.10.0은 전체 구현 해시가 바뀌므로 과거 frozen plan의 엄밀한 replay는 이전의 일치하는 신뢰 환경이 필요합니다. 여러 버전을 같은 DB에 동시에 실행하지 않습니다. 스키마가 다른 백업은 명시적인 호환성 검토 없이 복원·자동 migration하지 않습니다.
 
@@ -93,6 +110,6 @@ timer는 매일 UTC 03:00, 최대 5분 분산 지연으로 실행하며 꺼져 �
 
 `scripts/verify_operations.py`는 실제 계산·SQLite·백업·분리 복구·원본 artifact 비교와 재시작 복구를 측정합니다. 기존 A·SI·B·WF·S·W·P와 물리 검증 `unvalidated`를 유지합니다. 실제 OCI에서는 볼륨 미장착 시작 거부, OS 재부팅 후 단일 서비스 복구, 감독자·자식 종료, 백업·복구·조회·다운로드 시간과 외부 인증 브라우저를 별도로 확인해야 파일럿 완료입니다.
 
-구현 commit `07e26a2`의 [네이티브 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509)에서 ARM·x86 각각 Python 621개·Node 33개, 여덟 측정·설치 패키지 컨테이너와 비 root 읽기 전용 복구 검사를 통과했습니다. 원본 20개 파일·ZIP 해시·450개 코드 해시 참조와 로컬 설치 wheel 근거는 [운영 검증 기록](operations_verification.json)에 있습니다. 전체 실행 API 표시 지연과 실제 단계별 합격을 구분하며, 실제 OCI 접속·마운트·재부팅·외부 로그인은 아직 확인하지 않았습니다.
+구현 commit `07e26a2`의 [네이티브 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509)에서 ARM·x86 각각 Python 621개·Node 33개, 여덟 측정·설치 패키지 컨테이너와 비 root 읽기 전용 복구 검사를 통과했습니다. 원본 20개 파일·ZIP 해시·450개 코드 해시 참조와 로컬 설치 wheel 근거는 [운영 검증 기록](operations_verification.json)에 있습니다. 전체 실행 API 표시 지연과 실제 단계별 합격을 구분하며, 실제 OCI의 콘솔 구성과 Cloud Shell의 SSH 도달은 확인했지만, 인증된 서버 내부 작업·마운트·재부팅·외부 로그인은 아직 확인하지 않았습니다. 부트 단독 모드 보완은 별도의 [배포 검사](boot_storage_verification.json)에 기록하며 이전 네이티브 계산·컨테이너 근거와 구분합니다.
 
 공식 참고: [SQLite online backup](https://www.sqlite.org/backup.html), [Python sqlite3 backup](https://docs.python.org/3.12/library/sqlite3.html#sqlite3.Connection.backup), [SQLite 검사](https://www.sqlite.org/pragma.html), [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html), [Docker bind mount](https://docs.docker.com/engine/storage/bind-mounts/), [Docker 재시작](https://docs.docker.com/engine/containers/start-containers-automatically/).

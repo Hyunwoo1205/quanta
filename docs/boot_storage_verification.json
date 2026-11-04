@@ -1,0 +1,60 @@
+{
+  "record_version": "1.0.0",
+  "recorded_at": "2026-11-04T17:47:22.811714+00:00",
+  "starting_commit": "b53d56d50350617126e8c94dcb72517c4018706c",
+  "package_version": "0.10.0",
+  "scope": "Explicit boot-filesystem deployment selection; deployment-only change, no runtime package changes",
+  "local_tests": {
+    "status": "passed",
+    "tests": 55,
+    "seconds": 0.11,
+    "command": "python -m pytest tests/test_deployment.py tests/test_boot_deployment.py -q",
+    "architecture": "x86_64",
+    "native_arm_boot_guard_tests": "not_performed"
+  },
+  "files_sha256": {
+    "deploy/oci/app.env.example": "7fd6ef51fb96f15e512a37eea2f34f1031327f9bd7258f0265aa99be1527a5a1",
+    "deploy/oci/deployment.boot.json.example": "4ecf71afac7b2f34b247f70055134ca4073dd25ee23be696c81dfa89ce1a3132",
+    "deploy/oci/deployment.json.example": "9b31447fde4e515ab032c32d77e7e650d8e0b9db2bc25d22eaf7bf5d2cc35226",
+    "deploy/oci/quanta-backup-boot.service": "4c8e703a69d332f588c3cd020bfa9da50f9b0a08258f8068fff4c7eb8dc0fa14",
+    "deploy/oci/quanta-backup-boot.timer": "f19f55776c6763b0c0d3480e2b9ba78f3951780095b0870bcf35dafde594a491",
+    "deploy/oci/quanta-backup.service": "ebfdad29c8d304ad6de123dc71f714cfeec5fe094fdce6e829145b1961434d19",
+    "deploy/oci/quanta-backup.timer": "1f1066226ba5dfc1fcb453895d2d6915759312dbd2cae0c4f4807c31ba89e4a8",
+    "deploy/oci/quanta-boot.service": "e2e0ffcb3de234abe263d9e50084f616036abfab3a7d77065035354301893ce7",
+    "deploy/oci/quanta.service": "b290ff688916f1db85301b3e648f1c75a7be3b9871ae69ae2f626bb8923f5d36",
+    "deploy/oci/runtime.py": "88a865b2755c1ecf4a16a0bee18b4d233c63bc937064a6431e50c052ac1abc38",
+    "tests/test_deployment.py": "9ad0fd68f830f315aa15fcce7d5ba74946551b9d9b3d93f274054e6dd4b0969c",
+    "tests/test_boot_deployment.py": "d8e51a7ff3c5eb9a71b0b9e8a10f38577af49795854d7c1d7536d6a0700f7463"
+  },
+  "unchanged": [
+    "src/quanta",
+    "pyproject.toml",
+    "README.md",
+    "contracts",
+    "requirements.in",
+    "requirements.lock.txt",
+    "requirements.lock.json",
+    "requirements.aarch64.lock.txt",
+    "requirements.aarch64.lock.json",
+    "Dockerfile",
+    "Dockerfile.aarch64",
+    ".github/workflows/ci.yml"
+  ],
+  "observations": {
+    "console_configuration_verified": true,
+    "user_reports_putty_success": true,
+    "direct_workspace_ssh": "network_unreachable",
+    "cloud_shell_ssh": "reached_host_key_check",
+    "authenticated_instance_shell": false,
+    "run_command_consume_permission": "not_configured_message_observed",
+    "server_credentials_registered": false,
+    "iam_changed": false,
+    "storage_modified": false,
+    "application_installed": false
+  },
+  "limitations": [
+    "Filesystem metadata branches were tested with controlled fixtures; actual boot UUID and paths still require authenticated server inspection.",
+    "The previous native621-case scientific/container runs remain evidence for the byte-identical package, not physical boot-mode deployment validation.",
+    "No existing private key contents, endpoint, account identifiers, or new client key are included in this public record."
+  ]
+}

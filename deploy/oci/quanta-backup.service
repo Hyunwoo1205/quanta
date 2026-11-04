@@ -3,6 +3,7 @@ Description=Quanta consistent SQLite snapshot to a new directory
 Requires=docker.service
 After=docker.service srv-quanta.mount
 BindsTo=srv-quanta.mount
+Conflicts=quanta-backup-boot.service
 RequiresMountsFor=/srv/quanta
 AssertPathIsMountPoint=/srv/quanta
 

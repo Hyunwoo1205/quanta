@@ -69,8 +69,11 @@ def load_config(path: Path = CONFIG) -> dict:
         config = json.loads(_root_file(path), object_pairs_hook=_unique_object)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise DeploymentError("Deployment configuration must be UTF-8 JSON") from exc
-    if not isinstance(config, dict) or set(config) != {"filesystem_uuid", "image"}:
-        raise DeploymentError("Deployment configuration requires exactly filesystem_uuid and image")
+    required = {"filesystem_uuid", "image"}
+    if not isinstance(config, dict) or set(config) not in (required, required | {"storage_mode"}):
+        raise DeploymentError("Deployment configuration requires filesystem_uuid and image, with optional storage_mode")
+    if "storage_mode" in config and config["storage_mode"] not in ("dedicated", "boot"):
+        raise DeploymentError("Storage mode must be dedicated or boot")
     filesystem_uuid, image = config["filesystem_uuid"], config["image"]
     if not isinstance(filesystem_uuid, str) or not isinstance(image, str):
         raise DeploymentError("Deployment configuration values must be strings")
@@ -81,7 +84,10 @@ def load_config(path: Path = CONFIG) -> dict:
         raise DeploymentError("A canonical filesystem UUID is required") from exc
     if not IMAGE_PATTERN.fullmatch(image):
         raise DeploymentError("An immutable local image ID or repository digest is required")
-    return {"filesystem_uuid": filesystem_uuid.lower(), "image": image}
+    result = {"filesystem_uuid": filesystem_uuid.lower(), "image": image}
+    if "storage_mode" in config:
+        result["storage_mode"] = config["storage_mode"]
+    return result
 
 
 def check_mount(expected_uuid: str, mount: Path = MOUNT, *, runner=subprocess.run) -> None:
@@ -110,6 +116,34 @@ def check_mount(expected_uuid: str, mount: Path = MOUNT, *, runner=subprocess.ru
         raise DeploymentError("The required writable data filesystem is not mounted with the configured UUID") from exc
 
 
+def check_boot_storage(expected_uuid: str, directory: Path = MOUNT, *, runner=subprocess.run) -> None:
+    """Explicit boot-volume layout; never a fallback for a missing data mount."""
+    _no_symlinks(directory)
+    for item in (directory, *directory.parents):
+        info = item.stat()
+        if not stat.S_ISDIR(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
+            raise DeploymentError("Boot storage path must be root-owned and not writable by others")
+    if directory.stat().st_dev != Path("/").stat().st_dev:
+        raise DeploymentError("Boot storage must remain on the boot root filesystem")
+    result = runner([FINDMNT, "--json", "--target", str(directory), "--output",
+                     "TARGET,UUID,FSTYPE,OPTIONS,FSROOT"], check=False,
+                    capture_output=True, text=True, timeout=10)
+    try:
+        filesystems = json.loads(result.stdout).get("filesystems")
+        if result.returncode != 0 or not isinstance(filesystems, list) or len(filesystems) != 1:
+            raise ValueError
+        filesystem = filesystems[0]
+        if (filesystem.get("target") != "/"
+                or str(filesystem.get("uuid", "")).lower() != expected_uuid
+                or filesystem.get("fstype") not in {"ext4", "xfs"}
+                or filesystem.get("fsroot") != "/"
+                or "rw" not in str(filesystem.get("options", "")).split(",")
+                or "ro" in str(filesystem.get("options", "")).split(",")):
+            raise ValueError
+    except (ValueError, AttributeError, TypeError) as exc:
+        raise DeploymentError("The writable boot root does not match the explicitly configured UUID") from exc
+
+
 def check_directory(directory: Path, *, expected_device=None) -> None:
     _no_symlinks(directory)
     info = directory.stat()
@@ -121,9 +155,15 @@ def check_directory(directory: Path, *, expected_device=None) -> None:
 
 
 def check_installation(*, config_path=CONFIG, app_env=APP_ENV, mount=MOUNT,
-                       runner=subprocess.run, application=True) -> dict:
+                       runner=subprocess.run, application=True, required_storage_mode=None) -> dict:
     config = load_config(config_path)
-    check_mount(config["filesystem_uuid"], mount, runner=runner)
+    mode = config.get("storage_mode", "dedicated")
+    if required_storage_mode is not None and mode != required_storage_mode:
+        raise DeploymentError("Selected service does not match the configured storage mode")
+    if mode == "boot":
+        check_boot_storage(config["filesystem_uuid"], mount, runner=runner)
+    else:
+        check_mount(config["filesystem_uuid"], mount, runner=runner)
     device = mount.stat().st_dev
     check_directory(mount / "data", expected_device=device)
     check_directory(mount / "backups", expected_device=device)
@@ -169,11 +209,12 @@ def docker_command(config: dict, *, backup=False, output_name=None) -> list[str]
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("check", "run", "backup"))
+    parser.add_argument("--storage-mode", choices=("dedicated", "boot"), default="dedicated")
     args = parser.parse_args(argv)
     try:
         if os.geteuid() != 0:
             raise DeploymentError("This host wrapper must run as root; the application runs as 10001:10001")
-        config = check_installation(application=args.command != "backup")
+        config = check_installation(application=args.command != "backup", required_storage_mode=args.storage_mode)
         if args.command == "check":
             print("Quanta storage and configuration checks passed; no files were created")
             return 0

@@ -1,5 +1,6 @@
 [Unit]
 Description=Daily Quanta SQLite snapshot
+Conflicts=quanta-backup-boot.timer
 
 [Timer]
 OnCalendar=*-*-* 03:00:00 UTC

@@ -4,6 +4,7 @@ Requires=docker.service
 After=docker.service srv-quanta.mount
 BindsTo=srv-quanta.mount
 PartOf=docker.service
+Conflicts=quanta-boot.service
 RequiresMountsFor=/srv/quanta
 AssertPathIsMountPoint=/srv/quanta
 StartLimitIntervalSec=300
