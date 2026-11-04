@@ -13,6 +13,7 @@ git clone https://github.com/Hyunwoo1205/quanta.git
 cd quanta
 bash scripts/bootstrap.sh
 source .venv/bin/activate
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 quanta environment
 quanta check-contracts
 quanta validate contracts/v0.2.0/examples/pair_revision.json

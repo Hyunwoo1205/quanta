@@ -176,6 +176,22 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
     def equal(left, right) -> bool:
         return canonical_bytes(left) == canonical_bytes(right)
 
+    def record_equal(left, right) -> bool:
+        """Compare record carriers without changing JCS scientific identities."""
+        if not equal(left, right):
+            return False
+
+        def same_zero_signs(a, b) -> bool:
+            if isinstance(a, dict):
+                return all(same_zero_signs(value, b[key]) for key, value in a.items())
+            if isinstance(a, list):
+                return all(same_zero_signs(value, other) for value, other in zip(a, b))
+            if isinstance(a, (int, float)) and not isinstance(a, bool) and a == 0:
+                return math.copysign(1, a) == math.copysign(1, b)
+            return True
+
+        return same_zero_signs(left, right)
+
     try:
         report = ensure_json_value(report)
         require(report.get("report_version") == "0.1.0" and report.get("scope") == "synchronous_workflow",
@@ -325,7 +341,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                     "source_output_port": None if step["source"] == "initial" else port(previous_steps[step["source"]]["operation"], "output")["port_id"],
                     "target_input_port": port(step["operation"], "input")["port_id"], "overrides": step["overrides"],
                     "active_observable_refs": [ref for ref in observable_refs if ref["observable_id"] in eligible]})
-        require(equal(expected_bases, frozen["branch_bases"]) and equal(branches, plan["branch_definitions"])
+        require(equal(expected_bases, frozen["branch_bases"]) and record_equal(branches, plan["branch_definitions"])
                 and equal(expanded, frozen["expanded_steps"]), "Plan does not resolve the authored branches and steps")
         if result is None:
             require(bool(report["errors"]) and report["resolved_record"] is None and not report["state_content_hashes"],
@@ -373,7 +389,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                 and record["registry_snapshot_sha256"] == provenance["registry_snapshot_sha256"]
                 and record["engine_bindings"] == engines, "Resolved support record differs")
         runtime = record["runtime_evidence"]
-        require(equal(runtime["typed_states"], result["states"])
+        require(record_equal(runtime["typed_states"], result["states"])
                 and runtime["state_content_hashes"] == report["state_content_hashes"], "Runtime state evidence differs")
         states = {state["state_id"]: state for state in result["states"]}
         require(len(states) == len(result["states"]) and set(states) == set(report["state_content_hashes"])
@@ -412,7 +428,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             state = states[ident]
             require(0 <= branch < len(branches) and state["producer"] == {"kind": "initial", "revision_id": result["revision_id"]}
                     and state["parent_state_refs"] == [] and state["resolved_input_sha256"] == plan["resolved_input_sha256"]
-                    and equal(state["data"], branches[branch]["system"]), "Initial state does not match its swept branch")
+                    and record_equal(state["data"], branches[branch]["system"]), "Initial state does not match its swept branch")
             require(runtime["state_unit_contexts"][ident] == {key: branches[branch][key] for key in ("unit_system", "scales")},
                     "Initial unit context differs")
             seen_states.add(ident)
@@ -458,7 +474,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             refs = planned["active_observable_refs"]
             effective["observables"] = [ref["observable_id"] for ref in refs] or (["energy"] if module["module_id"] == "quanta.pair_static" else ["energies"])
             effective["protocol"] = {"steps": [{"step_id": step_id, "operation": planned["operation"], "source": "initial", "overrides": []}], "sweep": {"axes": []}}
-            require(equal(effective, row["definition"]) and validate_definition(effective, registry=registry)["valid"],
+            require(record_equal(effective, row["definition"]) and validate_definition(effective, registry=registry)["valid"],
                     "Effective input does not match source inheritance and overrides")
             relevant = [d for d in descriptors if d["observable_id"] in {ref["observable_id"] for ref in refs}]
             step_bindings = {"registry_binding": bindings["registry_binding"], "module_bindings": bindings["module_bindings"],
@@ -475,7 +491,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             context = {name: effective[name] for name in ("unit_system", "scales")}
             require(prepared_id != source_id and prepared["producer"] == {"kind": "prepared_input", "run_id": result["run_id"], "branch_index": branch, "step_id": step_id}
                     and prepared["parent_state_refs"] == [source_id] and prepared["resolved_input_sha256"] == step["resolved_input_sha256"]
-                    and equal(prepared["data"], effective["system"]) and runtime["state_unit_contexts"][prepared_id] == context,
+                    and record_equal(prepared["data"], effective["system"]) and runtime["state_unit_contexts"][prepared_id] == context,
                     "Prepared state identity or content differs")
             for state in (source, prepared):
                 require(all(state[name] == input_port[name] for name in ("representation", "representation_version", "data_schema_ref", "metadata_schema_ref")),
@@ -531,7 +547,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                     require(payload["free_gradient_inf"] <= effective["numerics"]["gradient_tolerance"], "Successful relaxation did not converge")
                 require(output["producer"] == {"kind": "step", "run_id": result["run_id"], "branch_index": branch, "step_id": step_id, "output_port": output_port["port_id"]}
                         and output["parent_state_refs"] == [prepared_id] and output["resolved_input_sha256"] == step["resolved_input_sha256"]
-                        and equal(output["data"], expected_data) and runtime["state_unit_contexts"][output["state_id"]] == context
+                        and record_equal(output["data"], expected_data) and runtime["state_unit_contexts"][output["state_id"]] == context
                         and all(output[name] == output_port[name] for name in ("representation", "representation_version", "data_schema_ref", "metadata_schema_ref")),
                         "Produced state does not match the successful step")
                 seen_states.add(output["state_id"])

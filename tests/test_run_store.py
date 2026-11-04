@@ -56,6 +56,62 @@ def test_negative_zero_fixed_coordinates_survive_record_transport_and_replay(pai
             assert struct.pack("!d", state["data"]["particles"][0]["position_m"][0]) == expected
 
 
+@pytest.mark.parametrize("mutation", ["initial", "prepared_input", "step", "runtime_mirror", "effective_input", "branch_definition"])
+def test_signed_zero_record_contradictions_are_rejected_without_changing_scientific_hashes(pair, tmp_path, mutation):
+    pair["definition"]["protocol"] = {"steps": [{"step_id": "evaluate", "operation": "energy_forces", "source": "initial", "overrides": []}], "sweep": {"axes": []}}
+    pair["definition"]["observables"] = ["energy", "forces"]
+    pair["definition"]["system"]["particles"][0]["position_m"][0] = -0.0
+    pair["definition"]["system"]["particles"][0]["fixed"][0] = True
+    report = run_experiment(pair)
+    path = write_bundle(report, tmp_path / "signed")
+
+    def change_carrier(value):
+        runtime = value["resolved_record"]["runtime_evidence"]
+        if mutation == "effective_input":
+            runtime["effective_step_inputs"][0]["definition"]["system"]["particles"][0]["position_m"][0] = 0.0
+        elif mutation == "branch_definition":
+            value["plan"]["branch_definitions"][0]["system"]["particles"][0]["position_m"][0] = 0.0
+        else:
+            kind = "initial" if mutation == "runtime_mirror" else mutation
+            # Mutate both independently decoded copies so the state checks,
+            # rather than only the duplicate runtime mirror, detect the change.
+            stores = [runtime["typed_states"]]
+            if mutation != "runtime_mirror":
+                stores.append(value["result"]["states"])
+            for states in stores:
+                state = next(state for state in states if state["producer"]["kind"] == kind)
+                state["data"]["particles"][0]["position_m"][0] = 0.0
+
+    changed = json.loads(json.dumps(report))
+    change_carrier(changed)
+    # JCS intentionally normalizes signed zero: scientific identity is stable,
+    # but record consistency must still reject a different coordinate carrier.
+    assert canonical_bytes(changed) == canonical_bytes(report)
+    assert not validate_run_report(changed)["valid"]
+    with pytest.raises(BundleError, match="failed validation"):
+        write_bundle(changed, tmp_path / "contradictory")
+
+    document = json.loads((path / "bundle.json").read_text())
+    change_carrier(document["report"])
+    document["bundle_content_sha256"] = hashlib.sha256(canonical_bytes({key: value for key, value in document.items()
+        if key != "bundle_content_sha256"})).hexdigest()
+    raw = json.dumps(document, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode("utf-8")
+    (path / "bundle.json").write_bytes(raw)
+    (path / "bundle.sha256").write_text(hashlib.sha256(raw).hexdigest() + "\n")
+    with pytest.raises(BundleError, match="failed validation"):
+        read_bundle(path)
+
+
+def test_record_consistency_accepts_equivalent_integer_and_float_coordinates(execution, tmp_path):
+    changed = json.loads(json.dumps(execution))
+    runtime = changed["resolved_record"]["runtime_evidence"]
+    for states in (changed["result"]["states"], runtime["typed_states"]):
+        for state in states:
+            state["data"]["particles"][0]["position_m"][0] = 0.0
+    assert validate_run_report(changed)["valid"]
+    assert read_bundle(write_bundle(changed, tmp_path / "equivalent")) == changed
+
+
 @pytest.mark.parametrize("mutation", ["asset", "metadata", "missing", "symlink", "asset_name"])
 def test_bundle_rejects_modified_missing_or_unsafe_files(execution, tmp_path, mutation):
     path = write_bundle(execution, tmp_path / mutation)
