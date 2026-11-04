@@ -228,7 +228,9 @@ def source_record() -> dict:
 def locked_environment() -> dict:
     """Record all locked distributions, beyond the numerical library baseline."""
     observed = environment_report()
-    lock = json.loads((ROOT / "requirements.lock.json").read_text())
+    from quanta.profiles import load_lock_files, profile_for_host
+    files = load_lock_files((ROOT,))
+    lock = json.loads(files["requirements.lock.json"])
     installed = {}
     for package in lock["packages"]:
         try:
@@ -240,10 +242,11 @@ def locked_environment() -> dict:
                                        "message": "Installed version differs from the exact dependency lock."})
     for filename, field in (("requirements.in", "direct_requirements_sha256"),
                             ("requirements.lock.txt", "requirements_lock_sha256")):
-        if hashlib.sha256((ROOT / filename).read_bytes()).hexdigest() != lock[field]:
+        if hashlib.sha256(files[filename]).hexdigest() != lock[field]:
             observed["errors"].append({"code": "ENV_LOCK", "path": "/" + filename,
                                        "message": "Dependency input or lock changed after lock generation."})
     observed["locked_distributions"] = installed
+    observed["runtime_profile"] = profile_for_host()["profile_id"]
     observed["requirements_lock_sha256"] = lock["requirements_lock_sha256"]
     observed["valid"] = not observed["errors"]
     return observed

@@ -1,0 +1,276 @@
+{
+  "record_version": "1.0.0",
+  "recorded_at": "2026-11-04T14:31:18.332027+00:00",
+  "verification_timezone": "Asia/Seoul",
+  "package_version": "0.8.0",
+  "contract_version": "0.2.0",
+  "scope": "Architecture-specific runtime locks, execution boundaries, native CI, and installed wheel verification",
+  "starting_commit": "903f69d9660dd0fa160fb9b3c1c75675dae961a8",
+  "physical_validation_status": "unvalidated",
+  "observed_local_environment": {
+    "locked_profile_matches": true,
+    "profile": {
+      "profile_id": "cpython-3.12.14-linux-x86_64-cpu-v1",
+      "architecture": "x86_64",
+      "lock_text": "requirements.lock.txt",
+      "lock_manifest": "requirements.lock.json"
+    },
+    "requirements_lock_sha256": "f707157f7ee8ed0d3e6dac568e2b8a5db4241d7af63907f8350ed0567e759583",
+    "errors": [],
+    "observations": {
+      "valid": true,
+      "baseline": {
+        "python": "3.12.14",
+        "numpy": "2.3.5",
+        "scipy": "1.17.0"
+      },
+      "runtime_profile": "cpython-3.12.14-linux-x86_64-cpu-v1",
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.3.5",
+        "scipy": "1.17.0",
+        "jsonschema": "4.26.0",
+        "referencing": "0.37.0",
+        "rfc8785": "0.1.4",
+        "threadpoolctl": "3.6.0"
+      },
+      "implementation": "CPython",
+      "platform": {
+        "os": "Linux",
+        "architecture": "x86_64"
+      },
+      "python_executable": "/workspace/scratch/9d1751731bf6/quanta/.venv/bin/python",
+      "thread_environment": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1"
+      },
+      "threadpools": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libscipy_openblas",
+          "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-fdde5778.so",
+          "version": "0.3.30",
+          "threading_layer": "pthreads",
+          "architecture": "SkylakeX"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libscipy_openblas",
+          "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
+          "version": "0.3.30",
+          "threading_layer": "pthreads",
+          "architecture": "SkylakeX"
+        }
+      ],
+      "numpy_build_configuration": {
+        "Compilers": {
+          "c": {
+            "name": "gcc",
+            "linker": "ld.bfd",
+            "version": "14.2.1",
+            "commands": "cc"
+          },
+          "cython": {
+            "name": "cython",
+            "linker": "cython",
+            "version": "3.2.1",
+            "commands": "cython"
+          },
+          "c++": {
+            "name": "gcc",
+            "linker": "ld.bfd",
+            "version": "14.2.1",
+            "commands": "c++"
+          }
+        },
+        "Machine Information": {
+          "host": {
+            "cpu": "x86_64",
+            "family": "x86_64",
+            "endian": "little",
+            "system": "linux"
+          },
+          "build": {
+            "cpu": "x86_64",
+            "family": "x86_64",
+            "endian": "little",
+            "system": "linux"
+          }
+        },
+        "Build Dependencies": {
+          "blas": {
+            "name": "scipy-openblas",
+            "found": true,
+            "version": "0.3.30",
+            "detection method": "pkgconfig",
+            "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+            "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+            "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+            "pc file directory": "/project/.openblas"
+          },
+          "lapack": {
+            "name": "scipy-openblas",
+            "found": true,
+            "version": "0.3.30",
+            "detection method": "pkgconfig",
+            "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+            "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+            "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+            "pc file directory": "/project/.openblas"
+          }
+        },
+        "Python Information": {
+          "path": "/tmp/build-env-aw1mwcap/bin/python",
+          "version": "3.12"
+        },
+        "SIMD Extensions": {
+          "baseline": [
+            "SSE",
+            "SSE2",
+            "SSE3"
+          ],
+          "found": [
+            "SSSE3",
+            "SSE41",
+            "POPCNT",
+            "SSE42",
+            "AVX",
+            "F16C",
+            "FMA3",
+            "AVX2",
+            "AVX512F",
+            "AVX512CD",
+            "AVX512_SKX",
+            "AVX512_CLX",
+            "AVX512_CNL",
+            "AVX512_ICL"
+          ],
+          "not found": [
+            "AVX512_KNL",
+            "AVX512_KNM",
+            "AVX512_SPR"
+          ]
+        }
+      },
+      "errors": [],
+      "warnings": [],
+      "physical_validation_status": "unvalidated",
+      "simulation_executed": false
+    }
+  },
+  "local_regressions": {
+    "runtime_profiles": {
+      "status": "passed",
+      "tests": 24,
+      "seconds": 13.72
+    },
+    "arm_lock_preparation": {
+      "status": "passed",
+      "tests": 33,
+      "seconds": 0.18
+    },
+    "javascript": {
+      "status": "passed",
+      "tests": 25
+    }
+  },
+  "locked_profiles": {
+    "x86_64": {
+      "target": {
+        "implementation": "CPython",
+        "python": "3.12.14",
+        "os": "Linux",
+        "architecture": "x86_64",
+        "compute": "CPU"
+      },
+      "packages": 20,
+      "lock_text": "requirements.lock.txt",
+      "lock_text_sha256": "f707157f7ee8ed0d3e6dac568e2b8a5db4241d7af63907f8350ed0567e759583",
+      "lock_manifest": "requirements.lock.json",
+      "lock_manifest_sha256": "38d9049d00a429aedc076530bc3c5ee854895d31f6805c11341f69da627b0063",
+      "preparation": {
+        "method": "native-x86-lock"
+      }
+    },
+    "aarch64": {
+      "target": {
+        "implementation": "CPython",
+        "python": "3.12.14",
+        "os": "Linux",
+        "architecture": "aarch64",
+        "compute": "CPU"
+      },
+      "packages": 20,
+      "lock_text": "requirements.aarch64.lock.txt",
+      "lock_text_sha256": "f21165a4ec9cc278e1a47798d24dcade107f83326f2d683ba6a287d29bd30d45",
+      "lock_manifest": "requirements.aarch64.lock.json",
+      "lock_manifest_sha256": "a5fb65a69841612299860bccddfc00f35c7a8989a8bdfe9903db0adcdc6f13cf",
+      "preparation": {
+        "method": "cross-download-exact-pins",
+        "native_arm_validation": "not_performed",
+        "source_lock_manifest_sha256": "38d9049d00a429aedc076530bc3c5ee854895d31f6805c11341f69da627b0063",
+        "source_lock_sha256": "f707157f7ee8ed0d3e6dac568e2b8a5db4241d7af63907f8350ed0567e759583",
+        "source_architecture": "x86_64",
+        "version_policy": "exact-source-lock-parity",
+        "host": {
+          "os": "Linux",
+          "architecture": "x86_64",
+          "python": "3.12.14"
+        }
+      }
+    }
+  },
+  "native_ci": {
+    "status": "pending",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "measurement_files": [
+      "numerical_verification.json",
+      "relaxation_verification.json",
+      "quantum_verification.json",
+      "workflow_verification.json",
+      "service_verification.json",
+      "web_verification.json"
+    ]
+  },
+  "installed_wheel": {
+    "status": "pending",
+    "architecture": "x86_64"
+  },
+  "oci_a1_validation": {
+    "status": "not_performed",
+    "reason": "OCI account, instance and supported remote access have not been supplied or verified"
+  },
+  "historical_evidence": {
+    "package_version": "0.7.0",
+    "source_commit": "959dc2cfceb1e271ee99e7fe6b6e598d4f4d3d43",
+    "ci_run": "https://github.com/Hyunwoo1205/quanta/actions/runs/41829356124",
+    "files": "runtime_manifest.json and six existing measurement JSONs remain historical x86 evidence"
+  },
+  "container_bases": {
+    "x86_64": {
+      "dockerfile": "Dockerfile",
+      "platform": "linux/amd64",
+      "digest": "sha256:1aaa65a85fda306ffb8b910824d4e93bdce61e212c7e87168123ea3073b41a1a"
+    },
+    "aarch64": {
+      "dockerfile": "Dockerfile.aarch64",
+      "platform": "linux/arm64",
+      "digest": "sha256:eb5be8e5b4d0a159c237946bbdd06356dda5d19c30fc4f7843e8046d3a590333",
+      "config_digest": "sha256:75496575cd8e3aeb3fe561f0384f661d490c14770eda935d2302d61ca20a0b2d",
+      "verified_configuration": {
+        "os": "linux",
+        "architecture": "arm64",
+        "PYTHON_VERSION": "3.12.14"
+      }
+    }
+  }
+}

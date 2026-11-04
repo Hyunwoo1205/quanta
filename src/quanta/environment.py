@@ -6,6 +6,8 @@ import os
 import platform
 import sys
 
+from .profiles import profile_for_host
+
 THREAD_VARIABLES = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS")
 BASELINE = {"python": "3.12.14", "numpy": "2.3.5", "scipy": "1.17.0"}
 
@@ -31,9 +33,12 @@ def environment_report() -> dict:
     if platform.python_implementation() != "CPython":
         errors.append({"code": "ENV_IMPLEMENTATION", "path": "/implementation",
                        "message": "The selected baseline requires CPython."})
-    if platform.system() != "Linux" or platform.machine() != "x86_64":
+    runtime_profile = None
+    try:
+        runtime_profile = profile_for_host()["profile_id"]
+    except ValueError as exc:
         errors.append({"code": "ENV_PLATFORM", "path": "/platform",
-                       "message": "The selected baseline requires Linux x86_64."})
+                       "message": str(exc)})
     thread_env = {name: os.environ[name] for name in THREAD_VARIABLES}
     for name, value in thread_env.items():
         if value != "1":
@@ -56,7 +61,7 @@ def environment_report() -> dict:
                            "message": "No numerical thread pool was observed; the baseline cannot be confirmed."})
     except ImportError as exc:
         errors.append({"code": "ENV_IMPORT", "path": "/threadpools", "message": str(exc)})
-    return {"valid": not errors, "baseline": BASELINE, "versions": versions,
+    return {"valid": not errors, "baseline": BASELINE, "runtime_profile": runtime_profile, "versions": versions,
             "implementation": platform.python_implementation(),
             "platform": {"os": platform.system(), "architecture": platform.machine()},
             "python_executable": sys.executable, "thread_environment": thread_env,

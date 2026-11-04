@@ -19,6 +19,7 @@ from . import __version__
 from .autodiff import CalculationError
 from .hashing import canonical_bytes
 from .parsing import parse_json
+from .profiles import load_lock_files
 from .registry import ContractRegistry
 from .validation import _Validation, _assign, validate_definition, validate_experiment
 
@@ -108,22 +109,11 @@ def _schema_bindings(registry: ContractRegistry, refs: list[str]) -> list[dict]:
 
 
 def _lock_files() -> dict[str, bytes]:
-    names = ("requirements.in", "requirements.lock.txt", "requirements.lock.json")
-    candidates = (Path(__file__).resolve().parents[2], Path(sys.prefix) / "share" / "quanta")
-    root = next((path for path in candidates if all((path / name).is_file() for name in names)), None)
-    if root is None:
-        raise PlanningError("The exact dependency lock artifacts are unavailable", code="REGISTRY_SNAPSHOT_UNAVAILABLE",
-                            path=None)
     try:
-        result = {name: (root / name).read_bytes() for name in names}
-        lock = parse_json(result["requirements.lock.json"])
-        if (hashlib.sha256(result["requirements.in"]).hexdigest() != lock["direct_requirements_sha256"]
-                or hashlib.sha256(result["requirements.lock.txt"]).hexdigest() != lock["requirements_lock_sha256"]):
-            raise ValueError("Dependency lock content differs from its provenance")
+        return load_lock_files()
     except (OSError, ValueError, TypeError, KeyError) as exc:
         raise PlanningError("The dependency lock artifacts are invalid", code="REGISTRY_SNAPSHOT_UNAVAILABLE",
                             path=None, details={"reason": str(exc)[:160]}) from exc
-    return result
 
 
 def _implementation_capture(contents: dict[str, str]) -> str:

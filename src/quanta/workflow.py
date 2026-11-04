@@ -99,6 +99,11 @@ def _locked_environment(plan: dict, assets: dict[str, str]) -> dict:
     observed = copy.deepcopy(environment_report())
     dependency_sha = plan["execution_manifests"]["dependency_manifest_sha256"]
     dependency = parse_json(assets[dependency_sha])
+    from .profiles import target_matches_observation
+    lock = parse_json(assets[dependency["files_sha256"]["requirements.lock.json"]])
+    if not target_matches_observation(lock["target"], observed):
+        observed["errors"].append({"code": "ENV_LOCK_TARGET", "path": "/platform",
+                                   "message": "The captured dependency target differs from the observed runtime."})
     versions = {}
     for distribution in dependency["locked_distributions"]:
         name, expected = distribution["name"], distribution["version"]

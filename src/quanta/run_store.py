@@ -368,6 +368,9 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                 and provenance["resource_policy_version"] == resource_policy["version"], "Execution provenance differs")
         observed = json_asset(provenance["environment_manifest_sha256"])
         if result["execution_fingerprint"] is not None:
+            from .profiles import target_matches_observation
+            require(target_matches_observation(lock["target"], observed),
+                    "Executed platform observation contradicts the captured lock target")
             require(observed["valid"] and observed["locked_distribution_versions"] == {
                 package["name"]: package["version"] for package in lock["packages"]},
                 "Executed dependency observation contradicts the captured lock")
