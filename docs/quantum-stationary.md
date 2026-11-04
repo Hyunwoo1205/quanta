@@ -1,6 +1,6 @@
 # 1차원 양자 정적 상태 계산
 
-패키지 `0.4.0` · 모듈 `quanta.quantum_stationary@0.1.0` · 연산 `eigenstates`
+패키지 `0.5.0` · 모듈 `quanta.quantum_stationary@0.1.0` · 연산 `eigenstates`
 
 ## 사용 방법
 

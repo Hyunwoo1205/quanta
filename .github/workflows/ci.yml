@@ -42,6 +42,8 @@ jobs:
         run: python scripts/verify_relaxation.py --output .cache/relaxation_verification.json
       - name: Measure stationary quantum benchmarks
         run: python scripts/verify_quantum.py --output .cache/quantum_verification.json
+      - name: Measure multi-step workflow evidence
+        run: python scripts/verify_workflow.py --output .cache/workflow_verification.json
       - name: Preserve actual numerical measurements
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, verified 2026-11-04 (UTC+09:00)
@@ -51,6 +53,7 @@ jobs:
             .cache/numerical_verification.json
             .cache/relaxation_verification.json
             .cache/quantum_verification.json
+            .cache/workflow_verification.json
           include-hidden-files: true
           if-no-files-found: ignore
       - name: Validate example input
@@ -61,6 +64,12 @@ jobs:
         run: python -m quanta relax examples/pair_relax.json
       - name: Calculate stationary quantum states
         run: python -m quanta eigenstates examples/quantum_eigenstates.json
+      - name: Plan, run and replay supported workflows
+        run: |
+          python -m quanta plan examples/pair_workflow.json --format text
+          python -m quanta run examples/pair_workflow.json --output-dir .cache/ci-pair-run --format text
+          python -m quanta replay .cache/ci-pair-run --output-dir .cache/ci-pair-replay --format text
+          python -m quanta run examples/quantum_workflow.json --output-dir .cache/ci-quantum-run --format text
       - name: Build pinned-base container
         run: docker build --platform linux/amd64 --tag quanta-contracts-ci .
       - name: Check installed-wheel container
@@ -70,3 +79,4 @@ jobs:
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta evaluate /app/examples/pair_energy_forces.json
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta relax /app/examples/pair_relax.json
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta eigenstates /app/examples/quantum_eigenstates.json
+          docker run --rm --workdir /tmp quanta-contracts-ci sh -c 'python -m quanta plan /app/examples/pair_workflow.json --format text && python -m quanta run /app/examples/pair_workflow.json --output-dir /tmp/quanta-run --format text && python -m quanta replay /tmp/quanta-run --output-dir /tmp/quanta-replay --format text && python -m quanta run /app/examples/quantum_workflow.json --output-dir /tmp/quanta-quantum-run --format text'

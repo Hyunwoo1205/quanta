@@ -1,6 +1,6 @@
 # 단일 배치의 에너지·힘 계산
 
-패키지 `0.4.0` · 모듈 `quanta.pair_static@0.1.0` · 이 문서의 연산 `energy_forces`
+패키지 `0.5.0` · 모듈 `quanta.pair_static@0.1.0` · 이 문서의 연산 `energy_forces`
 
 ## 사용 방법
 

@@ -1,3 +1,3 @@
-"""Quanta experiment contracts, pair calculations and stationary quantum states."""
+"""Quanta scientific calculations and reproducible multi-step workflows."""
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"

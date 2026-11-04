@@ -25,4 +25,8 @@ GitHub Actions는 동일 설치·환경 확인·계약 검사·시험·예제 �
 
 `python scripts/verify_relaxation.py --output docs/relaxation_verification.json`은 별도의 A04 제약 조건에서 정지점 탐색을 측정합니다. 최종 거리·자유 기울기를 독립 해석식과 비교하고 고정 좌표 비트·입력 불변성·평가 상한·accepted 이력과 실제 종료 사유를 확인합니다. 이 기록은 최소점의 보증이나 실제 현상에 대한 검증을 뜻하지 않습니다.
 
-`python scripts/verify_quantum.py --output docs/quantum_verification.json`은 B01~B06의 지정된 1차원 정적 상태 기준 문제를 측정합니다. 이산·연속 기준해, 정규화·직교성·방정식 잔차, 격자 수렴과 유한 구간 경계의 영향을 구분해 확인하며 실제 입력·오차·허용오차·코드와 환경을 기록합니다. 임의 조건의 물리적 정확도를 인증하지 않습니다. CI artifact에는 세 측정 JSON만 포함하며, 설치 패키지의 `eigenstates` 예제도 프로젝트 밖 경로에서 실행합니다.
+`python scripts/verify_quantum.py --output docs/quantum_verification.json`은 B01~B06의 지정된 1차원 정적 상태 기준 문제를 측정합니다. 이산·연속 기준해, 정규화·직교성·방정식 잔차, 격자 수렴과 유한 구간 경계의 영향을 구분해 확인하며 실제 입력·오차·허용오차·코드와 환경을 기록합니다. 임의 조건의 물리적 정확도를 인증하지 않습니다.
+
+`python scripts/verify_workflow.py --output docs/workflow_verification.json`은 다단계 실행의 실제 계획·조건별 분기·결과 전달·기록·재실행 근거를 확인합니다. 수치 모형의 검증과 실행 절차의 검증을 구분하며, 가져온 계약의 미실행 항목을 일괄 완료로 바꾸지 않습니다. CI artifact에는 네 측정 JSON만 포함합니다. 설치 패키지의 단일 계산과 계획·실행·번들 재실행을 모두 프로젝트 밖 경로에서 확인합니다.
+
+설치 wheel에는 계약 24개와 `requirements.in`, `requirements.lock.txt`, `requirements.lock.json`의 정확한 바이트를 포함합니다. 실행 계획의 구현·의존성 바인딩은 이 파일과 실제 설치 코드를 함께 캡처하며, 개발 폴더의 파일을 찾을 수 없는 환경에서 다른 잠금 내용으로 조용히 대체하지 않습니다. 실행 번들의 바이트·해시·계약 검증과 실제 재실행은 현재 제공하는 구현에 대한 근거이며, 작업 큐·HTTP 접근 제어·취소 동작을 제공한다는 뜻은 아닙니다.

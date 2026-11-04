@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import time
 from fractions import Fraction
+from typing import Callable
 
 import numpy as np
 from scipy.optimize import minimize
@@ -48,7 +49,8 @@ class _SearchStop(CalculationError):
         self.reason = reason
 
 
-def relax_pair(definition: dict, *, registry: ContractRegistry | None = None) -> dict:
+def relax_pair(definition: dict, *, registry: ContractRegistry | None = None,
+               deadline_check: Callable[[], None] | None = None) -> dict:
     """Search for a stationary configuration with fixed SI coordinates intact.
 
     Counts include the initial evaluation and failed numerical trials. A hard
@@ -81,6 +83,8 @@ def relax_pair(definition: dict, *, registry: ContractRegistry | None = None) ->
     requested_history = "optimization_history" in prepared.definition["observables"]
 
     def check_deadline() -> None:
+        if deadline_check is not None:
+            deadline_check()
         elapsed = time.monotonic() - started
         if elapsed >= wall_limit:
             raise _SearchStop("wall_time_limit", "Relaxation exceeded the step wall-time limit",

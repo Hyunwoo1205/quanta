@@ -15,6 +15,24 @@ def _emit(report: dict, output_format: str = "json") -> None:
     if output_format == "json":
         print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
         return
+    if report.get("scope") in {"synchronous_workflow", "workflow_plan"}:
+        result = report.get("result")
+        plan = report if report.get("scope") == "workflow_plan" else (report.get("plan") or {})
+        print(result["execution_status"] if result else ("PLANNED" if report.get("valid") and not report.get("errors") else "FAILED"))
+        if plan.get("resolved_input_sha256"):
+            print("resolved_input_sha256: " + plan["resolved_input_sha256"])
+        if plan.get("frozen_plan"):
+            print("branches: " + str(len(plan["frozen_plan"]["branch_bases"])))
+            print("expanded_steps: " + str(len(plan["frozen_plan"]["expanded_steps"])))
+        if result:
+            print("run_id: " + result["run_id"])
+            for field in ("numerical_status", "resolution_status", "partial"):
+                print(f"{field}: {result[field]}")
+            for step in result["steps"]:
+                print(f"step[{step['branch_index']}:{step['step_id']}]: {step['outcome']}")
+        for issue in report.get("errors", []) + (result.get("errors", []) if result else []):
+            print(f"error: {issue['code']}: {issue['message']}")
+        return
     print(report["evaluation_status"] if "evaluation_status" in report else ("VALID" if report.get("valid") else "INVALID"))
     if report.get("input_sha256"):
         print("input_sha256: " + report["input_sha256"])
@@ -56,6 +74,17 @@ def main(argv: list[str] | None = None) -> int:
     eigenstates = sub.add_parser("eigenstates", help="Calculate low stationary states on a finite one-dimensional domain.")
     eigenstates.add_argument("file", help="Single-step eigenstates experiment JSON, or - for standard input.")
     eigenstates.add_argument("--format", choices=("json", "text"), default="json")
+    plan = sub.add_parser("plan", help="Validate and freeze a symbolic multi-step execution plan.")
+    plan.add_argument("file", help="Experiment JSON, or - for standard input.")
+    plan.add_argument("--format", choices=("json", "text"), default="json")
+    run = sub.add_parser("run", help="Execute a validated multi-step experiment synchronously.")
+    run.add_argument("file", help="Experiment JSON, or - for standard input.")
+    run.add_argument("--output-dir", help="Create a new content-addressed execution bundle directory.")
+    run.add_argument("--format", choices=("json", "text"), default="json")
+    replay = sub.add_parser("replay", help="Verify a saved bundle and replay with the same frozen implementation.")
+    replay.add_argument("directory", help="Existing execution bundle directory.")
+    replay.add_argument("--output-dir", help="Create a new replay bundle directory.")
+    replay.add_argument("--format", choices=("json", "text"), default="json")
     sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
@@ -77,6 +106,13 @@ def main(argv: list[str] | None = None) -> int:
         _emit({"valid": not errors, "contract_version": "0.2.0", "errors": errors,
                "physical_validation_status": "unvalidated", "simulation_executed": False})
         return 0 if not errors else 2
+    if args.command == "replay":
+        from .run_store import replay_bundle
+        try:
+            report = replay_bundle(args.directory)
+        except (OSError, ValueError) as exc:
+            report = _workflow_read_failure(exc)
+        return _finish_workflow(report, args)
     try:
         if args.file == "-":
             raw = sys.stdin.buffer.read(1_048_577)
@@ -84,6 +120,12 @@ def main(argv: list[str] | None = None) -> int:
             with Path(args.file).open("rb") as stream:
                 raw = stream.read(1_048_577)
     except OSError as exc:
+        if args.command in {"plan", "run"}:
+            report = _workflow_read_failure(exc, code="INPUT_READ")
+            if args.command == "plan":
+                report["scope"] = "workflow_plan"
+            _emit(report, args.format)
+            return 2
         report = {"valid": False, "errors": [{"code": "INPUT_READ", "category": "input",
                 "path": None, "message": str(exc), "step_id": None, "branch_index": None,
                 "retryable": False, "details": {}}], "warnings": [],
@@ -98,6 +140,14 @@ def main(argv: list[str] | None = None) -> int:
                           scope="single_configuration_eigenstates" if quantum else ("single_configuration_relaxation" if args.command == "relax" else "single_configuration_energy_forces"))
         _emit(report, args.format)
         return 2
+    if args.command == "plan":
+        from .planning import plan_experiment
+        report = plan_experiment(raw)
+        _emit({"scope": "workflow_plan", **report}, args.format)
+        return 0 if report["valid"] else 2
+    if args.command == "run":
+        from .workflow import run_experiment
+        return _finish_workflow(run_experiment(raw), args)
     if args.command in {"evaluate", "relax", "eigenstates"}:
         from .evaluation import evaluate_experiment, relax_experiment, eigenstates_experiment
         report = {"evaluate": evaluate_experiment, "relax": relax_experiment,
@@ -107,3 +157,27 @@ def main(argv: list[str] | None = None) -> int:
     report = validate_experiment(raw)
     _emit(report, args.format)
     return 0 if report["valid"] else 2
+
+
+def _workflow_read_failure(exc: Exception, *, code: str | None = None) -> dict:
+    return {"report_version": "0.1.0", "scope": "synchronous_workflow", "valid": False,
+        "result": None, "plan": None, "errors": [{"code": code or getattr(exc, "code", "BUNDLE_INTEGRITY"),
+            "category": "input", "message": str(exc)[:300], "path": None, "step_id": None,
+            "branch_index": None, "retryable": False, "details": getattr(exc, "details", {})}], "warnings": []}
+
+
+def _finish_workflow(report: dict, args) -> int:
+    stored = True
+    if args.output_dir and report.get("plan") is not None:
+        from .run_store import write_bundle
+        try:
+            destination = write_bundle(report, args.output_dir)
+            print("bundle: " + str(destination), file=sys.stderr)
+        except (OSError, ValueError) as exc:
+            stored = False
+            report["errors"].append({"code": getattr(exc, "code", "BUNDLE_WRITE"), "category": "runtime",
+                "message": str(exc)[:300], "path": None, "step_id": None, "branch_index": None,
+                "retryable": False, "details": getattr(exc, "details", {})})
+    _emit(report, args.format)
+    result = report.get("result")
+    return 0 if stored and result and result["execution_status"] == "SUCCEEDED" and not report.get("errors") else 2

@@ -218,12 +218,20 @@ class _PreparedPair:
         return payload
 
 
-def evaluate_pair(definition: dict, *, registry: ContractRegistry | None = None) -> dict:
+def evaluate_pair(definition: dict, *, registry: ContractRegistry | None = None,
+                  deadline_check: Callable[[], None] | None = None) -> dict:
     """Evaluate the initial system once, preserving all authored coordinates.
 
     The bare definition is validated, but its protocol, overrides and sweep axes
     are not executed here. The experiment wrapper enforces the execution scope.
     Domain and numerical range failures, including nonzero underflow, are errors.
     """
+    if deadline_check is not None:
+        deadline_check()
     prepared = _PreparedPair(definition, registry=registry)
-    return prepared.payload(prepared.evaluate(prepared.initial_positions))
+    if deadline_check is not None:
+        deadline_check()
+    result = prepared.payload(prepared.evaluate(prepared.initial_positions, check_deadline=deadline_check))
+    if deadline_check is not None:
+        deadline_check()
+    return result

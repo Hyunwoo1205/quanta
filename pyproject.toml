@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quanta-research-contracts"
-version = "0.4.0"
-description = "Validated contracts, pair calculations and stationary quantum states for Quanta"
+version = "0.5.0"
+description = "Validated scientific calculations and reproducible multi-step workflows for Quanta"
 readme = "README.md"
 requires-python = "==3.12.14"
 dependencies = [
@@ -27,6 +27,7 @@ quanta = "quanta.cli:main"
 where = ["src"]
 
 [tool.setuptools.data-files]
+"share/quanta" = ["requirements.in", "requirements.lock.txt", "requirements.lock.json"]
 "share/quanta/contracts/v0.2.0" = ["contracts/v0.2.0/*.json", "contracts/v0.2.0/README.txt"]
 "share/quanta/contracts/v0.2.0/examples" = ["contracts/v0.2.0/examples/*.json"]
 "share/quanta/contracts/v0.2.0/module_results" = ["contracts/v0.2.0/module_results/*.json"]

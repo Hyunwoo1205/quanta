@@ -12,6 +12,7 @@ import math
 import time
 from fractions import Fraction
 from itertools import islice
+from typing import Callable
 
 import numpy as np
 from scipy.linalg import eigh_tridiagonal
@@ -107,7 +108,8 @@ def _check_payload(payload: dict, *, registry: ContractRegistry, schema_ref: str
                                details={"bytes": len(encoded), "limit": max_bytes})
 
 
-def eigenstates(definition: dict, *, registry: ContractRegistry | None = None) -> dict:
+def eigenstates(definition: dict, *, registry: ContractRegistry | None = None,
+                deadline_check: Callable[[], None] | None = None) -> dict:
     """Return the finest completed stationary solution, or raise QuantumError.
 
     Mandatory states include the two zero endpoints and SI amplitudes. All
@@ -136,6 +138,8 @@ def eigenstates(definition: dict, *, registry: ContractRegistry | None = None) -
                                    path="/definition", details={"reason": str(exc)[:200]}) from exc
 
         def check_deadline() -> None:
+            if deadline_check is not None:
+                deadline_check()
             elapsed = time.monotonic() - started
             if elapsed >= wall_limit:
                 raise CalculationError("Stationary calculation exceeded the step wall-time limit", code="RESOURCE_LIMIT",
