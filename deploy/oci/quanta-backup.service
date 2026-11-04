@@ -1,0 +1,18 @@
+[Unit]
+Description=Quanta consistent SQLite snapshot to a new directory
+Requires=docker.service
+After=docker.service srv-quanta.mount
+BindsTo=srv-quanta.mount
+RequiresMountsFor=/srv/quanta
+AssertPathIsMountPoint=/srv/quanta
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+ExecStart=/usr/bin/python3 /usr/local/lib/quanta/runtime.py backup
+ExecStop=-/usr/bin/docker stop --time 20 quanta-backup
+TimeoutStartSec=180
+TimeoutStopSec=40
+KillMode=control-group

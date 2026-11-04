@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import pytest
-import uvicorn
+from quanta.production_server import ProductionServer
 
 from quanta.cli import main
 
@@ -29,9 +29,9 @@ def test_entry_point_keeps_single_loopback_process_despite_environment(tmp_path,
     monkeypatch.setenv("WEB_CONCURRENCY", "12")
     monkeypatch.setenv("UVICORN_HOST", "0.0.0.0")
     calls = []
-    monkeypatch.setattr(uvicorn, "run", lambda app, **kwargs: calls.append((app, kwargs)))
+    monkeypatch.setattr(ProductionServer, "run", lambda server: (calls.append(server), setattr(server, "started", True)))
     assert main(["serve-production", "--store", str(tmp_path / "service"), "--port", "9876"]) == 0
-    app, options = calls[0]
+    app, options = calls[0].quanta_app, vars(calls[0].config)
     assert app.config.owner == "local"
     assert options["host"] == "127.0.0.1" and options["port"] == 9876
     assert options["workers"] == 1 and options["reload"] is False

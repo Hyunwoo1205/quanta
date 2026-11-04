@@ -1,0 +1,399 @@
+{
+  "status": "passed",
+  "package_version": "0.10.0",
+  "architecture": "x86_64",
+  "python": "3.12.14",
+  "wheel": {
+    "filename": "quanta_research_contracts-0.10.0-py3-none-any.whl",
+    "size_bytes": 201624,
+    "sha256": "2e0fad8c40135d11e50f539d888f56c7b900c12c82a2a8a172ded76fd758fce3"
+  },
+  "exact_distribution_count": 28,
+  "installed_distributions": {
+    "cryptography": "50.0.2",
+    "six": "1.17.0",
+    "referencing": "0.37.0",
+    "threadpoolctl": "3.6.0",
+    "numpy": "2.3.5",
+    "rfc3339-validator": "0.1.4",
+    "pygments": "2.21.0",
+    "rpds-py": "2026.9.1",
+    "typing-extensions": "4.16.0",
+    "pluggy": "1.7.0",
+    "packaging": "26.3",
+    "uvicorn": "0.54.0",
+    "cffi": "2.1.1",
+    "attrs": "26.1.0",
+    "h11": "0.16.0",
+    "jsonschema-specifications": "2025.9.1",
+    "pip": "25.3",
+    "pycparser": "3.12",
+    "quanta-research-contracts": "0.10.0",
+    "click": "8.5.0",
+    "scipy": "1.17.0",
+    "iniconfig": "2.3.1",
+    "pytest": "9.0.2",
+    "rfc8785": "0.1.4",
+    "wheel": "0.45.1",
+    "jsonschema": "4.26.0",
+    "pyjwt": "2.15.1",
+    "setuptools": "80.9.0"
+  },
+  "source_wheel_installed_file_counts": {
+    "python": 25,
+    "web": 5,
+    "contracts": 24,
+    "locks": 5
+  },
+  "files": {
+    "python": [
+      {
+        "path": "quanta/__init__.py",
+        "sha256": "7ea2d2e0e05035396e56107300614588590fc3f9cfea815f551a7decd103d91a"
+      },
+      {
+        "path": "quanta/__main__.py",
+        "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d"
+      },
+      {
+        "path": "quanta/access_auth.py",
+        "sha256": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de"
+      },
+      {
+        "path": "quanta/autodiff.py",
+        "sha256": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2"
+      },
+      {
+        "path": "quanta/backup.py",
+        "sha256": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe"
+      },
+      {
+        "path": "quanta/cli.py",
+        "sha256": "aa3541c2a153c59b27ca2eeebbf647a75cbfd8ae046f70b26c1862c3636296ee"
+      },
+      {
+        "path": "quanta/environment.py",
+        "sha256": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f"
+      },
+      {
+        "path": "quanta/evaluation.py",
+        "sha256": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4"
+      },
+      {
+        "path": "quanta/hashing.py",
+        "sha256": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e"
+      },
+      {
+        "path": "quanta/job_store.py",
+        "sha256": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b"
+      },
+      {
+        "path": "quanta/pair.py",
+        "sha256": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8"
+      },
+      {
+        "path": "quanta/parsing.py",
+        "sha256": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26"
+      },
+      {
+        "path": "quanta/planning.py",
+        "sha256": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365"
+      },
+      {
+        "path": "quanta/production.py",
+        "sha256": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0"
+      },
+      {
+        "path": "quanta/production_server.py",
+        "sha256": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880"
+      },
+      {
+        "path": "quanta/profiles.py",
+        "sha256": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096"
+      },
+      {
+        "path": "quanta/quantum.py",
+        "sha256": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2"
+      },
+      {
+        "path": "quanta/registry.py",
+        "sha256": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161"
+      },
+      {
+        "path": "quanta/relaxation.py",
+        "sha256": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23"
+      },
+      {
+        "path": "quanta/run_store.py",
+        "sha256": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1"
+      },
+      {
+        "path": "quanta/server.py",
+        "sha256": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543"
+      },
+      {
+        "path": "quanta/service.py",
+        "sha256": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee"
+      },
+      {
+        "path": "quanta/validation.py",
+        "sha256": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253"
+      },
+      {
+        "path": "quanta/worker.py",
+        "sha256": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99"
+      },
+      {
+        "path": "quanta/workflow.py",
+        "sha256": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb"
+      }
+    ],
+    "web": [
+      {
+        "path": "quanta/web/app.css",
+        "sha256": "fdf248685259ca20f5844ba048b9406f96ce4dcf485f09f447ea57251426fb6b"
+      },
+      {
+        "path": "quanta/web/app.js",
+        "sha256": "e29df92c7ef70f99244239aabd136e2286d69f06f6d9970313e347edd8bca65c"
+      },
+      {
+        "path": "quanta/web/examples.json",
+        "sha256": "b80e2ea197db4dbfd7ac558e653020c8dc8f5de5a2195feecfcfb88faad93af1"
+      },
+      {
+        "path": "quanta/web/index.html",
+        "sha256": "e974000ec6103fd7bc4f61611d695caf56b8892e9009773429331b1a1274b31e"
+      },
+      {
+        "path": "quanta/web/view-model.mjs",
+        "sha256": "6404f4c15777521d850a4e9bba88de21894736eeed3f54adc2b95a6d549dedf3"
+      }
+    ],
+    "contracts": [
+      {
+        "path": "contracts/v0.2.0/README.txt",
+        "sha256": "01a8bed46ea8f4c40cf9fd73fa71c9bcec91bcae8b8f4a6fda844c91f9d71972"
+      },
+      {
+        "path": "contracts/v0.2.0/SHA256SUMS.json",
+        "sha256": "95aae5662cdfe7a015c6d3342b6660410efcd6ce4d822eb90d22d6bf6c4b3c4a"
+      },
+      {
+        "path": "contracts/v0.2.0/api_and_results.json",
+        "sha256": "f9c8e2714b188f35b40c475ae49bc0d4a5820ff6cf856e4993864584a1ffb791"
+      },
+      {
+        "path": "contracts/v0.2.0/artifact.schema.json",
+        "sha256": "407fdae2a9b7d2f2a10a2f449bb26a4a6f43acc6d23e545243f43c1b43000a73"
+      },
+      {
+        "path": "contracts/v0.2.0/contract_checks.json",
+        "sha256": "0b8532e18657b62ae201b4aee8963add393739ca7409b2df9becd74a849c8b37"
+      },
+      {
+        "path": "contracts/v0.2.0/decisions.json",
+        "sha256": "38a4183083d2c1efd58bf73d98916c119d3c0219705b5353152a3ac96a06ec33"
+      },
+      {
+        "path": "contracts/v0.2.0/development_baseline.json",
+        "sha256": "b1279da591a6cc65c378195eaaae31f7b3a6dcf081e7eeeb5b1bbe1686886c52"
+      },
+      {
+        "path": "contracts/v0.2.0/document_links.json",
+        "sha256": "1a04ee28e0c7a5e117ef4931facb7e742790045d0b11e951b927a09333a2a6e7"
+      },
+      {
+        "path": "contracts/v0.2.0/examples/pair_revision.json",
+        "sha256": "184403c6050cb82437ec12bb6273fa633b10dcf9ca50d71febf24eb86858b88a"
+      },
+      {
+        "path": "contracts/v0.2.0/examples/quantum_revision.json",
+        "sha256": "16c432b409a8e9360905f7ccca9ad0cf4121b5b151cc8b069c8d30d93b5905ab"
+      },
+      {
+        "path": "contracts/v0.2.0/expansion_candidates.json",
+        "sha256": "7948268ebecf9f1e32b9ac9e07c3739dfd050b5a5684c1dc5eb62aa742598742"
+      },
+      {
+        "path": "contracts/v0.2.0/experiment.schema.json",
+        "sha256": "f2cb609a29518c581de5bb4e97025233f3fc09bf2ea50fa2d4044d419c8afe58"
+      },
+      {
+        "path": "contracts/v0.2.0/hashing_contract.json",
+        "sha256": "6d94234874742737d0a0fdd0c725513128c8a77ad66268b40682a4b50233fb57"
+      },
+      {
+        "path": "contracts/v0.2.0/module_inputs.schema.json",
+        "sha256": "87e1087b8c8b3bf81714b3551aa747418a1f3dc38a9f6710ff90b1869db893cf"
+      },
+      {
+        "path": "contracts/v0.2.0/module_manifest.schema.json",
+        "sha256": "b253365db09a7850938796b07e4293632136cd63e0b12fc14d1d21c0e30cbadb"
+      },
+      {
+        "path": "contracts/v0.2.0/module_results/pair_static.schema.json",
+        "sha256": "7f15292f3976f5c705f7265f29470352a3c0387fdf743b86909d8e074de5845e"
+      },
+      {
+        "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+        "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4"
+      },
+      {
+        "path": "contracts/v0.2.0/observable_manifest.schema.json",
+        "sha256": "617922b88c2ebab984c2e8faf07867cc1cde325495935295918aae26b43d7aa4"
+      },
+      {
+        "path": "contracts/v0.2.0/registry.json",
+        "sha256": "48bd959b199217a011f8abbd56f56c3548ce14a3060cafe78f0fa15272fe7911"
+      },
+      {
+        "path": "contracts/v0.2.0/resource_policy.json",
+        "sha256": "8404259ad2d39e5fd201bafa3a69268d95462638601208b129382124eb457f7b"
+      },
+      {
+        "path": "contracts/v0.2.0/result.schema.json",
+        "sha256": "f05352191bd70a3ae4212072d65f7728a80a72514839a2d735d17976c33948af"
+      },
+      {
+        "path": "contracts/v0.2.0/semantic_rules.json",
+        "sha256": "905b0898d21d1d12c924073ed4cae65e5d1b5aaba6abbcd7ad3be46732832ece"
+      },
+      {
+        "path": "contracts/v0.2.0/state.schema.json",
+        "sha256": "49625ec7dacbbea4aa07a89b046d5c99da48893c8edcf937e857be5aaa5379a6"
+      },
+      {
+        "path": "contracts/v0.2.0/validation_manifest.json",
+        "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7"
+      }
+    ],
+    "locks": [
+      {
+        "path": "requirements.aarch64.lock.json",
+        "sha256": "8debe43f5cffa3dca31664d17598f484ba7ffa0f568ef9826ff2e8bf777487f2"
+      },
+      {
+        "path": "requirements.aarch64.lock.txt",
+        "sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f"
+      },
+      {
+        "path": "requirements.in",
+        "sha256": "0e4a1c85b00e3d723eed5b8b74906b96112b64c8c7f3dcbd58fbd5432fa26dac"
+      },
+      {
+        "path": "requirements.lock.json",
+        "sha256": "8ee8490d4eb00ab9e6e790e022153ec7081ceff99c33724476ba6bfc45768a29"
+      },
+      {
+        "path": "requirements.lock.txt",
+        "sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5"
+      }
+    ]
+  },
+  "readme_sha256": "914131412e43389ba4f95f1dd51c6ac144496c283259225c478d2d401120c0dd",
+  "readme_metadata_equal": true,
+  "source_wheel_installed_bytes_equal": true,
+  "installed_module_path": "/workspace/scratch/9d1751731bf6/quanta/.venv-operations-clean/lib/python3.12/site-packages/quanta/__init__.py",
+  "outside_checkout_commands": [
+    {
+      "arguments": [
+        "-m",
+        "quanta",
+        "check-contracts"
+      ],
+      "exit_code": 0,
+      "seconds": 0.503
+    },
+    {
+      "arguments": [
+        "-m",
+        "quanta",
+        "environment"
+      ],
+      "exit_code": 0,
+      "seconds": 0.424
+    },
+    {
+      "arguments": [
+        "-c",
+        "from quanta.job_store import JobStore; import sys,json; s=JobStore(sys.argv[1]); print(json.dumps(s.create_experiment('local','installed package preservation')))",
+        "/tmp/quanta-operations-installed-lu6qt6nc/source"
+      ],
+      "exit_code": 0,
+      "seconds": 0.072
+    },
+    {
+      "arguments": [
+        "-m",
+        "quanta",
+        "backup-store",
+        "--store",
+        "/tmp/quanta-operations-installed-lu6qt6nc/source",
+        "--output",
+        "/tmp/quanta-operations-installed-lu6qt6nc/snapshot"
+      ],
+      "exit_code": 0,
+      "seconds": 0.158
+    },
+    {
+      "arguments": [
+        "-m",
+        "quanta",
+        "verify-backup",
+        "/tmp/quanta-operations-installed-lu6qt6nc/snapshot"
+      ],
+      "exit_code": 0,
+      "seconds": 0.14
+    },
+    {
+      "arguments": [
+        "-m",
+        "quanta",
+        "restore-store",
+        "/tmp/quanta-operations-installed-lu6qt6nc/snapshot",
+        "--output",
+        "/tmp/quanta-operations-installed-lu6qt6nc/restored"
+      ],
+      "exit_code": 0,
+      "seconds": 0.142
+    },
+    {
+      "arguments": [
+        "-c",
+        "from quanta.job_store import JobStore; import sys,json; print(json.dumps(JobStore(sys.argv[1]).get_experiment('local',sys.argv[2])))",
+        "/tmp/quanta-operations-installed-lu6qt6nc/restored",
+        "d4c0d713-b5e5-4b94-ae35-bdb0243aa976"
+      ],
+      "exit_code": 0,
+      "seconds": 0.052
+    },
+    {
+      "arguments": [
+        "-m",
+        "quanta",
+        "restore-store",
+        "/tmp/quanta-operations-installed-lu6qt6nc/snapshot",
+        "--output",
+        "/tmp/quanta-operations-installed-lu6qt6nc/restored"
+      ],
+      "exit_code": 2,
+      "seconds": 0.131
+    },
+    {
+      "arguments": [
+        "/workspace/scratch/9d1751731bf6/quanta/scripts/verify_operations.py",
+        "--output",
+        "/workspace/scratch/9d1751731bf6/quanta/.cache/operations-package-measurement.json"
+      ],
+      "exit_code": 0,
+      "seconds": 24.676
+    }
+  ],
+  "operations_measurement": {
+    "path": ".cache/operations-package-measurement.json",
+    "sha256": "af71b27401f55bb14c088230c3968438d51813177043ff7910432d801caaf4da",
+    "status": "passed"
+  },
+  "seconds": 26.367
+}

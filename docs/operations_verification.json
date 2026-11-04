@@ -1,0 +1,68 @@
+{
+  "record_version": "1.0.0",
+  "recorded_at": "2026-11-04T17:07:39.149273+00:00",
+  "package_version": "0.10.0",
+  "contract_version": "0.2.0",
+  "starting_commit": "8a2a8fd04a62e40daa56fab9b25d99e841e74990",
+  "scope": "Persistent OCI deployment configuration and checked SQLite logical backup/restore; actual local numerical child and installed-wheel verification",
+  "local_targeted_tests": {
+    "production_backup_cli_and_supervision": {
+      "passed": 24,
+      "seconds": 19.99
+    },
+    "deployment": {
+      "passed": 28,
+      "seconds": 0.15
+    },
+    "node": {
+      "passed": 33
+    }
+  },
+  "local_full_regression": {
+    "status": "in_progress",
+    "collected": 593,
+    "note": "28 deployment cases were completed after collection and tested separately; native CI will collect the full final tree."
+  },
+  "local_operations": {
+    "status": "passed",
+    "seconds": 27.152102289997856,
+    "cases": {
+      "O01": "passed",
+      "O02": "passed",
+      "O03": "passed",
+      "O04": "passed"
+    },
+    "source_hash_references_verified": 28
+  },
+  "local_evidence": [
+    {
+      "path": "docs/verification/v0.10.0/local_x86_64/installed_operations_verification.json",
+      "size_bytes": 34530,
+      "sha256": "af71b27401f55bb14c088230c3968438d51813177043ff7910432d801caaf4da"
+    },
+    {
+      "path": "docs/verification/v0.10.0/local_x86_64/operations_verification.json",
+      "size_bytes": 34479,
+      "sha256": "f476992983c5fb3d18b52d64504db199200c6b4da5602433acef100afbd9e21e"
+    },
+    {
+      "path": "docs/verification/v0.10.0/local_x86_64/package_verification.json",
+      "size_bytes": 13066,
+      "sha256": "a32561c3694f26f03b512c1a24107ab12842ccdc5fa5b6a910d9ee194c503a00"
+    }
+  ],
+  "native_ci": {
+    "status": "pending"
+  },
+  "oci": {
+    "instance_ready": "user_reported",
+    "connection_details_received": false,
+    "remote_connected": false,
+    "deployment_verified": false,
+    "mount_and_reboot_verified": false,
+    "managed_volume_backup_verified": false,
+    "external_login_verified": false
+  },
+  "dependencies": "Existing 27-package architecture-specific locks unchanged",
+  "physical_validation_status": "unvalidated"
+}

@@ -278,7 +278,15 @@
         "digest": "sha256:eba9311666870b50e4e73786b7e37a48328da1f3926c4a4c53fe92a8db550db4",
         "expires_at": "2027-02-02T15:41:46Z"
       }
-    ]
+    ],
+    "aggregate_status_recheck": {
+      "checked_at": "2026-11-04T16:59:02.758944+00:00",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 41860407599,
+      "head_sha": "2218d81d2a3e41d516455ae2be4257fe8b3e8c66",
+      "note": "Initial in_progress observations above are retained as the original checkpoint."
+    }
   },
   "installed_wheel": {
     "status": "passed",

@@ -1,0 +1,898 @@
+{
+  "report_version": "1.0.0",
+  "measured_at": "2026-11-04T17:06:51.866992+00:00",
+  "status": "passed",
+  "package_version": "0.10.0",
+  "scope": "Local consistent SQLite snapshot, isolated logical restore and new exclusive worker with actual numerical replay",
+  "elapsed_seconds": 24.228787764994195,
+  "measurement_metadata": {
+    "origin": "actual_executed_checks",
+    "case_namespace": "O01--O04",
+    "source_unchanged_during_measurement": true,
+    "oci_deployment_verified": false,
+    "oci_volume_restore_verified": false,
+    "host_mount_identity_verified": false,
+    "systemd_restart_verified": false,
+    "process_crash_induced": false,
+    "checkpoint_resume": false
+  },
+  "cases": [
+    {
+      "id": "O01",
+      "status": "passed",
+      "checks": {
+        "actual_numerical_child_succeeded": true,
+        "independent_energy_reference": true,
+        "independent_force_and_fixed_reaction_reference": true,
+        "original_report_evidence_valid": true,
+        "live_wal_contains_committed_pages": true,
+        "committed_wal_marker_in_snapshot": true,
+        "all_source_values_in_consistent_snapshot": true,
+        "manifest_passes_independent_readback": true
+      },
+      "reference_method": "Actual numerical child and harmonic closed form; online SQLite backup while an older reader pins committed WAL pages",
+      "run_id": "d9e1862a-de51-4e55-b056-71d17c7703b6",
+      "numerical_elapsed_seconds": 7.922528650000459,
+      "wal_size_bytes": 16512,
+      "energy_error_reduced": 1.1102230246251565e-16,
+      "force_error_reduced": 0.0,
+      "tolerance_reduced": 1e-12,
+      "database": {
+        "tables": {
+          "experiments": {
+            "row_count": 2,
+            "values_sha256": "53407708819cd4355564371ee0f49f6145c035134fc4cac71f1f06d9db0fa926"
+          },
+          "revisions": {
+            "row_count": 1,
+            "values_sha256": "ff8f90f0fa11c50b01de762fb7385f9c95782939e8c3e7552e137a1b9eac41c4"
+          },
+          "runs": {
+            "row_count": 2,
+            "values_sha256": "d0c6afebc221d9133c54d6ed4799de3a70fa47a9c941ecd7f72c97fd242931e5"
+          },
+          "idempotency": {
+            "row_count": 2,
+            "values_sha256": "5b445fa1aad4a031c842498b1762404d311b6946253ff30af51b3bc5a4271a87"
+          },
+          "events": {
+            "row_count": 5,
+            "values_sha256": "51ba7e8f88d5748a13ebffeaee7f21e046ccf75c010cbac48cd2b2aaa49f3cdd"
+          },
+          "artifacts": {
+            "row_count": 69,
+            "values_sha256": "b388802d929eb97a70c158f66d4dfa06ec301dfb4c46ec404a4ae85cf36676e3"
+          },
+          "sqlite_sequence": {
+            "row_count": 3,
+            "values_sha256": "9d6d71b20ee54cdb5367d3950cae7712015c714d2135788d11ed04762d436dd9"
+          }
+        },
+        "all_values_sha256": "66be750ad1fd4a00b790d8aee515baee29cd0a6ce3a3eb7bf08fd9cce36c8167"
+      },
+      "backup_manifest": {
+        "format": "quanta.sqlite.backup",
+        "version": 1,
+        "created_at": "2026-11-04T17:06:37.440105Z",
+        "quanta_version": "0.10.0",
+        "sqlite_version": "3.53.1",
+        "schema_sha256": "440e81d9bf3b895feb6eb56cc954facd2256c05a2d0649980cb608e3da782b1e",
+        "database": {
+          "name": "jobs.sqlite3",
+          "size_bytes": 4677632,
+          "sha256": "01cc5505578e826faa7ce4349623bf9e2d046a674daeee3e4e4dd457e6020dde"
+        },
+        "checks": {
+          "integrity": "ok",
+          "foreign_keys": "ok",
+          "artifact_bytes": "ok"
+        },
+        "counts": {
+          "experiments": 2,
+          "revisions": 1,
+          "runs": 2,
+          "idempotency": 2,
+          "events": 5,
+          "artifacts": 69
+        },
+        "run_status_counts": {
+          "RUNNING": 1,
+          "SUCCEEDED": 1
+        }
+      },
+      "interrupted_fixture_method": "One durable run manually claimed under the exclusive worker lock after stopping the actual worker; no process crash induced"
+    },
+    {
+      "id": "O02",
+      "status": "passed",
+      "checks": {
+        "new_directory_has_identical_database_values": true,
+        "immutable_revision_unchanged": true,
+        "accepted_frozen_plan_unchanged": true,
+        "complete_report_unchanged_and_valid": true,
+        "every_original_artifact_byte_preserved": true,
+        "restore_did_not_recover_or_run_jobs": true,
+        "source_values_unchanged": true
+      },
+      "reference_method": "Every SQLite table value and raw artifact byte compared before starting any restored worker",
+      "restore_summary": {
+        "restored": true,
+        "database": {
+          "name": "jobs.sqlite3",
+          "size_bytes": 4677632,
+          "sha256": "01cc5505578e826faa7ce4349623bf9e2d046a674daeee3e4e4dd457e6020dde"
+        },
+        "counts": {
+          "experiments": 2,
+          "revisions": 1,
+          "runs": 2,
+          "idempotency": 2,
+          "events": 5,
+          "artifacts": 69
+        },
+        "run_status_counts": {
+          "RUNNING": 1,
+          "SUCCEEDED": 1
+        },
+        "snapshot_created_at": "2026-11-04T17:06:37.440105Z",
+        "worker_started": false,
+        "replay_performed": false
+      },
+      "restored_database": {
+        "tables": {
+          "experiments": {
+            "row_count": 2,
+            "values_sha256": "53407708819cd4355564371ee0f49f6145c035134fc4cac71f1f06d9db0fa926"
+          },
+          "revisions": {
+            "row_count": 1,
+            "values_sha256": "ff8f90f0fa11c50b01de762fb7385f9c95782939e8c3e7552e137a1b9eac41c4"
+          },
+          "runs": {
+            "row_count": 2,
+            "values_sha256": "d0c6afebc221d9133c54d6ed4799de3a70fa47a9c941ecd7f72c97fd242931e5"
+          },
+          "idempotency": {
+            "row_count": 2,
+            "values_sha256": "5b445fa1aad4a031c842498b1762404d311b6946253ff30af51b3bc5a4271a87"
+          },
+          "events": {
+            "row_count": 5,
+            "values_sha256": "51ba7e8f88d5748a13ebffeaee7f21e046ccf75c010cbac48cd2b2aaa49f3cdd"
+          },
+          "artifacts": {
+            "row_count": 69,
+            "values_sha256": "b388802d929eb97a70c158f66d4dfa06ec301dfb4c46ec404a4ae85cf36676e3"
+          },
+          "sqlite_sequence": {
+            "row_count": 3,
+            "values_sha256": "9d6d71b20ee54cdb5367d3950cae7712015c714d2135788d11ed04762d436dd9"
+          }
+        },
+        "all_values_sha256": "66be750ad1fd4a00b790d8aee515baee29cd0a6ce3a3eb7bf08fd9cce36c8167"
+      },
+      "statuses_before_worker_start": [
+        "RUNNING"
+      ],
+      "artifacts": [
+        {
+          "artifact_id": "673f8f88-2fc4-4871-9fea-397a74174d47",
+          "size_bytes": 3560,
+          "sha256": "01a8bed46ea8f4c40cf9fd73fa71c9bcec91bcae8b8f4a6fda844c91f9d71972",
+          "passed": true
+        },
+        {
+          "artifact_id": "ece81495-90d6-40dd-9107-7b8e0fc436c3",
+          "size_bytes": 8771,
+          "sha256": "f9c8e2714b188f35b40c475ae49bc0d4a5820ff6cf856e4993864584a1ffb791",
+          "passed": true
+        },
+        {
+          "artifact_id": "2603545c-3a38-49ac-b8b5-3ba09384dbf5",
+          "size_bytes": 5470,
+          "sha256": "407fdae2a9b7d2f2a10a2f449bb26a4a6f43acc6d23e545243f43c1b43000a73",
+          "passed": true
+        },
+        {
+          "artifact_id": "cd270bf7-6603-494b-bd0a-bd4c8e49dd35",
+          "size_bytes": 1492,
+          "sha256": "0b8532e18657b62ae201b4aee8963add393739ca7409b2df9becd74a849c8b37",
+          "passed": true
+        },
+        {
+          "artifact_id": "eb702b14-dab6-4d36-89fa-43b7aebea624",
+          "size_bytes": 6791,
+          "sha256": "38a4183083d2c1efd58bf73d98916c119d3c0219705b5353152a3ac96a06ec33",
+          "passed": true
+        },
+        {
+          "artifact_id": "ac43d9b3-1725-42e8-bdfc-0948fcf21798",
+          "size_bytes": 6608,
+          "sha256": "b1279da591a6cc65c378195eaaae31f7b3a6dcf081e7eeeb5b1bbe1686886c52",
+          "passed": true
+        },
+        {
+          "artifact_id": "ebff3071-42a1-4a88-9d8d-b143bee9ad8d",
+          "size_bytes": 479,
+          "sha256": "1a04ee28e0c7a5e117ef4931facb7e742790045d0b11e951b927a09333a2a6e7",
+          "passed": true
+        },
+        {
+          "artifact_id": "2868c653-f19b-4474-9019-813b09c765e0",
+          "size_bytes": 2548,
+          "sha256": "184403c6050cb82437ec12bb6273fa633b10dcf9ca50d71febf24eb86858b88a",
+          "passed": true
+        },
+        {
+          "artifact_id": "74d86a39-f45e-44aa-8da9-38a4dd9d5da5",
+          "size_bytes": 1423,
+          "sha256": "16c432b409a8e9360905f7ccca9ad0cf4121b5b151cc8b069c8d30d93b5905ab",
+          "passed": true
+        },
+        {
+          "artifact_id": "7a3f288c-b48d-48f3-b646-7ae6dbe53899",
+          "size_bytes": 6338,
+          "sha256": "7948268ebecf9f1e32b9ac9e07c3739dfd050b5a5684c1dc5eb62aa742598742",
+          "passed": true
+        },
+        {
+          "artifact_id": "0acdee7b-db28-48c9-b32f-e512f9ab4d86",
+          "size_bytes": 5673,
+          "sha256": "f2cb609a29518c581de5bb4e97025233f3fc09bf2ea50fa2d4044d419c8afe58",
+          "passed": true
+        },
+        {
+          "artifact_id": "807f3c63-01d0-4828-adc7-effd0cb48eb2",
+          "size_bytes": 16406,
+          "sha256": "6d94234874742737d0a0fdd0c725513128c8a77ad66268b40682a4b50233fb57",
+          "passed": true
+        },
+        {
+          "artifact_id": "937da951-9058-449a-9f0f-23cdcc5d30be",
+          "size_bytes": 14388,
+          "sha256": "87e1087b8c8b3bf81714b3551aa747418a1f3dc38a9f6710ff90b1869db893cf",
+          "passed": true
+        },
+        {
+          "artifact_id": "f55a39c7-6a91-44eb-9151-b84f1ac4c22f",
+          "size_bytes": 13133,
+          "sha256": "b253365db09a7850938796b07e4293632136cd63e0b12fc14d1d21c0e30cbadb",
+          "passed": true
+        },
+        {
+          "artifact_id": "26468626-04a3-4c17-94ff-cca7d922daf6",
+          "size_bytes": 4651,
+          "sha256": "7f15292f3976f5c705f7265f29470352a3c0387fdf743b86909d8e074de5845e",
+          "passed": true
+        },
+        {
+          "artifact_id": "7c3aef15-0773-4c83-9a95-902148880136",
+          "size_bytes": 4281,
+          "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+          "passed": true
+        },
+        {
+          "artifact_id": "4c751f1b-7a27-4452-97e3-59b9323da07b",
+          "size_bytes": 5956,
+          "sha256": "617922b88c2ebab984c2e8faf07867cc1cde325495935295918aae26b43d7aa4",
+          "passed": true
+        },
+        {
+          "artifact_id": "28941069-3ae1-4535-873c-19e9443b4fe8",
+          "size_bytes": 29268,
+          "sha256": "48bd959b199217a011f8abbd56f56c3548ce14a3060cafe78f0fa15272fe7911",
+          "passed": true
+        },
+        {
+          "artifact_id": "64625af6-3e8a-494f-9cc9-fe8cdcc64289",
+          "size_bytes": 1676,
+          "sha256": "8404259ad2d39e5fd201bafa3a69268d95462638601208b129382124eb457f7b",
+          "passed": true
+        },
+        {
+          "artifact_id": "6ace569e-f86a-4c49-be9b-a79f0a28a2f9",
+          "size_bytes": 18973,
+          "sha256": "f05352191bd70a3ae4212072d65f7728a80a72514839a2d735d17976c33948af",
+          "passed": true
+        },
+        {
+          "artifact_id": "8e8c2199-443f-4320-af3b-c1cfc99c5c8c",
+          "size_bytes": 11143,
+          "sha256": "905b0898d21d1d12c924073ed4cae65e5d1b5aaba6abbcd7ad3be46732832ece",
+          "passed": true
+        },
+        {
+          "artifact_id": "46cd5113-be95-44b7-a966-5fe47ecc9148",
+          "size_bytes": 16301,
+          "sha256": "49625ec7dacbbea4aa07a89b046d5c99da48893c8edcf937e857be5aaa5379a6",
+          "passed": true
+        },
+        {
+          "artifact_id": "0d82c662-e1bd-4778-a52d-0c2195c4c029",
+          "size_bytes": 5316,
+          "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7",
+          "passed": true
+        },
+        {
+          "artifact_id": "e778d5b0-1d11-4d97-acf8-c2c241d0015b",
+          "size_bytes": 100,
+          "sha256": "7ea2d2e0e05035396e56107300614588590fc3f9cfea815f551a7decd103d91a",
+          "passed": true
+        },
+        {
+          "artifact_id": "c18add99-e5a6-4b49-85b9-cca779b4fcbb",
+          "size_bytes": 48,
+          "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+          "passed": true
+        },
+        {
+          "artifact_id": "9c6c4d00-a4f5-48a9-b037-facfa7bb5e35",
+          "size_bytes": 10794,
+          "sha256": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+          "passed": true
+        },
+        {
+          "artifact_id": "422d6071-2610-44a7-b9fb-7b0443c5b6da",
+          "size_bytes": 9971,
+          "sha256": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+          "passed": true
+        },
+        {
+          "artifact_id": "664fd7b6-304b-43fe-a0cf-6384112dd787",
+          "size_bytes": 17165,
+          "sha256": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+          "passed": true
+        },
+        {
+          "artifact_id": "a071a4bb-3bd7-403d-b61b-ca11af88b895",
+          "size_bytes": 14857,
+          "sha256": "aa3541c2a153c59b27ca2eeebbf647a75cbfd8ae046f70b26c1862c3636296ee",
+          "passed": true
+        },
+        {
+          "artifact_id": "52affbb5-2eb2-4d01-ab88-3745b82d7269",
+          "size_bytes": 3655,
+          "sha256": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+          "passed": true
+        },
+        {
+          "artifact_id": "75c3fb46-5af7-418e-9100-d9dda0e9ca96",
+          "size_bytes": 7908,
+          "sha256": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+          "passed": true
+        },
+        {
+          "artifact_id": "c180ab33-949d-45be-a426-c4e291ced63e",
+          "size_bytes": 933,
+          "sha256": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+          "passed": true
+        },
+        {
+          "artifact_id": "278f3707-df2c-4f19-8ec2-e936e1ba4fe6",
+          "size_bytes": 27471,
+          "sha256": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+          "passed": true
+        },
+        {
+          "artifact_id": "5ff4fac9-97ac-4972-ae6b-9ef00b5bae9c",
+          "size_bytes": 15469,
+          "sha256": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+          "passed": true
+        },
+        {
+          "artifact_id": "9937433a-451a-4dd9-8743-b5d8c4a6c458",
+          "size_bytes": 5385,
+          "sha256": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+          "passed": true
+        },
+        {
+          "artifact_id": "563f0713-d548-4188-ad67-5caaec0bb7e6",
+          "size_bytes": 22775,
+          "sha256": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+          "passed": true
+        },
+        {
+          "artifact_id": "f8435699-037f-44b2-bcc9-2f4690c6ebef",
+          "size_bytes": 11587,
+          "sha256": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+          "passed": true
+        },
+        {
+          "artifact_id": "b0f536d7-270c-46bd-ab5a-ced6f10cf557",
+          "size_bytes": 1512,
+          "sha256": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+          "passed": true
+        },
+        {
+          "artifact_id": "59d96a45-8c22-4c35-b16d-fc17ac3ff145",
+          "size_bytes": 3782,
+          "sha256": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+          "passed": true
+        },
+        {
+          "artifact_id": "b9cb205e-f017-4461-802f-a05ecd39d115",
+          "size_bytes": 21954,
+          "sha256": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+          "passed": true
+        },
+        {
+          "artifact_id": "4bcf0288-bc6c-4474-987b-cf62b3cd3b4c",
+          "size_bytes": 11767,
+          "sha256": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+          "passed": true
+        },
+        {
+          "artifact_id": "b90c667d-64ea-4065-a958-fce5ef14cdc3",
+          "size_bytes": 12980,
+          "sha256": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+          "passed": true
+        },
+        {
+          "artifact_id": "e49228ef-cdc3-4974-a734-3cfa56d57aae",
+          "size_bytes": 42275,
+          "sha256": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+          "passed": true
+        },
+        {
+          "artifact_id": "c2a8d57e-9471-434a-8426-5dd5bbb44f19",
+          "size_bytes": 10540,
+          "sha256": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+          "passed": true
+        },
+        {
+          "artifact_id": "27d1b4d2-441a-42b6-895e-bc22b9356ee4",
+          "size_bytes": 10996,
+          "sha256": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+          "passed": true
+        },
+        {
+          "artifact_id": "b7845a14-a9f4-4a1b-aeb2-836c93a761e8",
+          "size_bytes": 29605,
+          "sha256": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+          "passed": true
+        },
+        {
+          "artifact_id": "0babe777-3915-43e9-a128-69cfb840fc84",
+          "size_bytes": 9251,
+          "sha256": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+          "passed": true
+        },
+        {
+          "artifact_id": "4c5bc27a-9598-46d6-9be0-fd44486ef76f",
+          "size_bytes": 35608,
+          "sha256": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+          "passed": true
+        },
+        {
+          "artifact_id": "7b56f9a8-a99b-4716-908f-a112ed1e93db",
+          "size_bytes": 2385,
+          "sha256": "711e48cd479298210f4820fe6e76b1b0ef76db909e9be56933170757f78a1b0d",
+          "passed": true
+        },
+        {
+          "artifact_id": "7774360f-879d-496e-92a0-b5c91dea48a2",
+          "size_bytes": 287,
+          "sha256": "0e4a1c85b00e3d723eed5b8b74906b96112b64c8c7f3dcbd58fbd5432fa26dac",
+          "passed": true
+        },
+        {
+          "artifact_id": "a142f1d8-4981-4cc9-b468-00419a4c21cd",
+          "size_bytes": 2797,
+          "sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5",
+          "passed": true
+        },
+        {
+          "artifact_id": "ea89aaa9-b924-49ac-81ca-19d423c2670b",
+          "size_bytes": 22059,
+          "sha256": "8ee8490d4eb00ab9e6e790e022153ec7081ceff99c33724476ba6bfc45768a29",
+          "passed": true
+        },
+        {
+          "artifact_id": "0df89c89-dc48-4322-a1a1-33e059d63e5e",
+          "size_bytes": 18192,
+          "sha256": "280bef0841bf7576c8e719245057dd4e5513ee60a884e8fd581faee132d9f4d2",
+          "passed": true
+        },
+        {
+          "artifact_id": "bfa633bf-0948-41c0-82a7-2bb157e0b103",
+          "size_bytes": 101,
+          "sha256": "c27cca4736965a2d6e355bc9ed277128c603a5b93636419ce2f664b2e0e2b0f1",
+          "passed": true
+        },
+        {
+          "artifact_id": "256fe785-59c6-49ae-a4c6-fe4856a6d852",
+          "size_bytes": 1024,
+          "sha256": "142b70280d35284f7747e30b7f83cb3913b4f87c6194cd0168b547ef2e061d14",
+          "passed": true
+        },
+        {
+          "artifact_id": "4bc5a9e0-4063-4af0-98c9-deff93344156",
+          "size_bytes": 716,
+          "sha256": "60124d70078c8592594749e494d3e2783ec43546758a07cc11e872bdf6b51f57",
+          "passed": true
+        },
+        {
+          "artifact_id": "cae79684-11e8-46ef-875d-3d7b2fb8f270",
+          "size_bytes": 767,
+          "sha256": "f67d2b9b8168e0e72ce2d2ceccb1a6ee1aa31a0da2299728b50eba83d048a2fd",
+          "passed": true
+        },
+        {
+          "artifact_id": "eea20686-5c31-49fa-beeb-1af207084a71",
+          "size_bytes": 847,
+          "sha256": "b8556a2d89004a476a8ae2af6d0101bb9100c6bd02fb7007facc86a5187407ce",
+          "passed": true
+        },
+        {
+          "artifact_id": "e3ca2c1b-503e-4d64-8b1d-fe4b5365e675",
+          "size_bytes": 804,
+          "sha256": "319e4f9c5f3c610759e3277b01b2a1483753af5882f2d7ba0d549851ca0fd12c",
+          "passed": true
+        },
+        {
+          "artifact_id": "c20c47b2-7c8e-4366-9b53-3bf606babcd9",
+          "size_bytes": 256,
+          "sha256": "c5d17a279dd8aa56b373d6334a6a3ce139ad9d921775f485b1219888bd136a7a",
+          "passed": true
+        },
+        {
+          "artifact_id": "e81db380-84e5-4432-9d14-c56684900be6",
+          "size_bytes": 3016,
+          "sha256": "85bd3ee01ddc750014924df1f784fd583148fd9b1c254d1b90a800684f45a192",
+          "passed": true
+        },
+        {
+          "artifact_id": "53ecb2cb-6f7f-42a3-995b-f3f7c8dbc8ba",
+          "size_bytes": 947,
+          "sha256": "960a1b4f7904d2bd3c2d129a27de6a25802f1b42cd3951f3d42d9c8583236deb",
+          "passed": true
+        },
+        {
+          "artifact_id": "5ec3c979-ab05-48db-9eb9-19399909820c",
+          "size_bytes": 7436,
+          "sha256": "53fa6accca58188dd68c7747fc678cbdb16ddbe6e4d15c9577aa570736c32aaa",
+          "passed": true
+        },
+        {
+          "artifact_id": "f8615990-7b6b-44f9-89e4-20813c7e8711",
+          "size_bytes": 3699,
+          "sha256": "38df322375c49a30f92f735e6320d0be989db0dcfe3178308586e5d262985c5c",
+          "passed": true
+        },
+        {
+          "artifact_id": "c58aeed1-cb85-4469-a5fc-1d915339e528",
+          "size_bytes": 706,
+          "sha256": "a830dbbb16978b8c452ef605c4891cadef13aaf6abd51753a0a086c3e37bd8b4",
+          "passed": true
+        },
+        {
+          "artifact_id": "93039f63-3139-4a0e-a3ef-4953bc5ac4e5",
+          "size_bytes": 1186,
+          "sha256": "c1e79f34374784871b2ed7d268b50e4ee42bdb1ac86f8f76f0f2efd66ccfc574",
+          "passed": true
+        },
+        {
+          "artifact_id": "167e9ad6-1ed0-4b18-9438-b220235ec429",
+          "size_bytes": 7229,
+          "sha256": "ff30e947e567d8af7fabe036e1fac77eef6c60c26ccc227e02e3b3a3fab2d9ec",
+          "passed": true
+        },
+        {
+          "artifact_id": "01b30158-8e6f-4101-897c-ca7e764dfc0b",
+          "size_bytes": 740,
+          "sha256": "df7dc501f1c8f764a85e6c4e531ee9f00c13f0ddbb276357b17b422985bd3369",
+          "passed": true
+        },
+        {
+          "artifact_id": "b8c84431-4099-4e95-9fbb-eab275231ca1",
+          "size_bytes": 740,
+          "sha256": "df7dc501f1c8f764a85e6c4e531ee9f00c13f0ddbb276357b17b422985bd3369",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "O03",
+      "status": "passed",
+      "checks": {
+        "exclusive_restored_worker": true,
+        "interrupted_running_failed": true,
+        "interrupted_cancellation_cancelled": true,
+        "interruption_diagnostics_retained": true,
+        "no_checkpoint_result_fabricated": true,
+        "historical_success_unchanged": true,
+        "new_replay_run_accepted": true,
+        "actual_replay_child_succeeded": true,
+        "replay_result_evidence_valid": true,
+        "same_scientific_and_execution_hashes": true,
+        "same_computed_payload": true,
+        "replay_source_retained": true
+      },
+      "reference_method": "New exclusive worker recovers a manually claimed RUNNING fixture and executes a replay child; a later separate worker start recovers a manually claimed CANCEL_REQUESTED fixture",
+      "recovered_statuses": [
+        "FAILED",
+        "CANCELLED"
+      ],
+      "fixture_recovery_events": [
+        [
+          {
+            "execution_status": "QUEUED",
+            "at": "2026-11-04T17:06:36.634599Z"
+          },
+          {
+            "execution_status": "RUNNING",
+            "at": "2026-11-04T17:06:36.651695Z"
+          },
+          {
+            "execution_status": "FAILED",
+            "at": "2026-11-04T17:06:41.310185Z"
+          }
+        ],
+        [
+          {
+            "execution_status": "QUEUED",
+            "at": "2026-11-04T17:06:49.259223Z"
+          },
+          {
+            "execution_status": "RUNNING",
+            "at": "2026-11-04T17:06:49.278681Z"
+          },
+          {
+            "execution_status": "CANCEL_REQUESTED",
+            "at": "2026-11-04T17:06:49.292029Z"
+          },
+          {
+            "execution_status": "CANCELLED",
+            "at": "2026-11-04T17:06:49.307139Z"
+          }
+        ]
+      ],
+      "competing_worker": {
+        "status": 409,
+        "code": "WORKER_ACTIVE"
+      },
+      "replay_run_id": "621a828e-5717-4515-9b9f-796b231fe023",
+      "source_run_id": "d9e1862a-de51-4e55-b056-71d17c7703b6",
+      "replay_elapsed_seconds": 6.375370149005903,
+      "preserved_hashes": {
+        "input_sha256": "960a1b4f7904d2bd3c2d129a27de6a25802f1b42cd3951f3d42d9c8583236deb",
+        "resolved_input_sha256": "53fa6accca58188dd68c7747fc678cbdb16ddbe6e4d15c9577aa570736c32aaa",
+        "execution_fingerprint": "a830dbbb16978b8c452ef605c4891cadef13aaf6abd51753a0a086c3e37bd8b4"
+      }
+    },
+    {
+      "id": "O04",
+      "status": "passed",
+      "checks": {
+        "backup_existing_destination": true,
+        "restore_existing_destination": true,
+        "tampered_snapshot_verification": true,
+        "tampered_snapshot_restore": true,
+        "existing_destination_bytes_unchanged": true,
+        "invalid_restore_not_published": true,
+        "original_snapshot_still_verifies": true,
+        "original_source_values_still_unchanged": true
+      },
+      "reference_method": "Existing-target refusal and single-byte tampering of a copied backup; original source and known-good snapshot remain intact"
+    }
+  ],
+  "environment": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "runtime_profile": "cpython-3.12.14-linux-x86_64-cpu-v1",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "x86_64"
+    },
+    "python_executable": "/workspace/scratch/9d1751731bf6/quanta/.venv-operations-clean/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv-operations-clean/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-fdde5778.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv-operations-clean/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-aw1mwcap/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "SSE",
+          "SSE2",
+          "SSE3"
+        ],
+        "found": [
+          "SSSE3",
+          "SSE41",
+          "POPCNT",
+          "SSE42",
+          "AVX",
+          "F16C",
+          "FMA3",
+          "AVX2",
+          "AVX512F",
+          "AVX512CD",
+          "AVX512_SKX",
+          "AVX512_CLX",
+          "AVX512_CNL",
+          "AVX512_ICL"
+        ],
+        "not found": [
+          "AVX512_KNL",
+          "AVX512_KNM",
+          "AVX512_SPR"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false,
+    "locked_distributions": {
+      "attrs": "26.1.0",
+      "cffi": "2.1.1",
+      "click": "8.5.0",
+      "cryptography": "50.0.2",
+      "h11": "0.16.0",
+      "iniconfig": "2.3.1",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "numpy": "2.3.5",
+      "packaging": "26.3",
+      "pip": "25.3",
+      "pluggy": "1.7.0",
+      "pycparser": "3.12",
+      "pygments": "2.21.0",
+      "pyjwt": "2.15.1",
+      "pytest": "9.0.2",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc8785": "0.1.4",
+      "rpds-py": "2026.9.1",
+      "scipy": "1.17.0",
+      "setuptools": "80.9.0",
+      "six": "1.17.0",
+      "threadpoolctl": "3.6.0",
+      "typing-extensions": "4.16.0",
+      "uvicorn": "0.54.0",
+      "wheel": "0.45.1"
+    },
+    "requirements_lock_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5"
+  },
+  "code_source": {
+    "files_sha256": {
+      "scripts/verify_numerics.py": "f2a90cc3fe6cc18f06696b2fbf7f89ae210389cc0e929170ef6da9b223d45d63",
+      "scripts/verify_operations.py": "0e623f890f0f202b8d86f274ad9fd822d5206db3969d40bba8490f764d812c4b",
+      "scripts/verify_service.py": "68959ef1289c313280687b3a1e0a0177713aa5439f0a4b533df79c600091bed0",
+      "src/quanta/__init__.py": "7ea2d2e0e05035396e56107300614588590fc3f9cfea815f551a7decd103d91a",
+      "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "src/quanta/access_auth.py": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+      "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+      "src/quanta/backup.py": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+      "src/quanta/cli.py": "aa3541c2a153c59b27ca2eeebbf647a75cbfd8ae046f70b26c1862c3636296ee",
+      "src/quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+      "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+      "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+      "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+      "src/quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+      "src/quanta/production.py": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+      "src/quanta/production_server.py": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+      "src/quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+      "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+      "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+      "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+      "src/quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+      "src/quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+      "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+      "src/quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+      "src/quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb"
+    },
+    "source_set_sha256": "78a82d30856e8a8fd0fc2a89a54606c2b343a99d251f02a5d20433305979b3ab",
+    "source_set_hash_rule": "RFC 8785 of relative alias to actual imported Python source raw SHA256; report excluded",
+    "git_head": "8a2a8fd04a62e40daa56fab9b25d99e841e74990",
+    "git_worktree_dirty": true
+  },
+  "physical_validation_status": "unvalidated",
+  "limitations": [
+    "Temporary local directories test the logical database restore; no OCI volume is created, mounted or restored.",
+    "Interrupted states are explicit manual-claim fixtures under the worker lock, not a claim of a host/process crash or checkpoint resume.",
+    "Replay requires the same frozen implementation, dependencies and contracts; this check does not certify a cross-architecture replay.",
+    "No cloud login, Tunnel, public TLS, systemd reboot, remote backup durability, measured RPO/RTO or physical model accuracy is certified."
+  ]
+}

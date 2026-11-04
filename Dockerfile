@@ -14,4 +14,6 @@ COPY requirements.lock.txt ./requirements.lock.txt
 RUN python -m pip install --only-binary=:all: --require-hashes -r requirements.lock.txt
 COPY . .
 RUN python -m pip install --no-deps --no-build-isolation .
+RUN groupadd --gid 10001 quanta && useradd --uid 10001 --gid 10001 --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin quanta
+USER 10001:10001
 CMD ["python", "-m", "quanta", "check-contracts"]

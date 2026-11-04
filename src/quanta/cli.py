@@ -93,15 +93,38 @@ def main(argv: list[str] | None = None) -> int:
     production = sub.add_parser("serve-production", help="Run one loopback ASGI process behind configured Access and Tunnel.")
     production.add_argument("--store", required=True, help="Private persistent directory for SQLite service records.")
     production.add_argument("--port", type=int, default=8765)
+    backup = sub.add_parser("backup-store", help="Create a checked SQLite snapshot in a new directory.")
+    backup.add_argument("--store", required=True)
+    backup.add_argument("--output", required=True)
+    verify_backup = sub.add_parser("verify-backup", help="Check backup bytes, schema and SQLite integrity.")
+    verify_backup.add_argument("directory")
+    restore = sub.add_parser("restore-store", help="Restore a checked backup to a new store directory.")
+    restore.add_argument("directory")
+    restore.add_argument("--output", required=True)
     sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
+
+    if args.command in {"backup-store", "verify-backup", "restore-store"}:
+        from .backup import BackupError, backup_store, verify_backup, restore_backup
+        try:
+            if args.command == "backup-store":
+                report = backup_store(args.store, args.output)
+            elif args.command == "verify-backup":
+                report = verify_backup(args.directory)
+            else:
+                report = restore_backup(args.directory, args.output)
+            print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
+            return 0
+        except (BackupError, OSError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
 
     if args.command == "serve-production":
         from .access_auth import AccessConfig
         from .production import create_app
         from .service import ExecutionService
-        import uvicorn
+        from .production_server import run_production
         try:
             config = AccessConfig(public_origin=os.environ.get("QUANTA_PUBLIC_ORIGIN", ""),
                 team_domain=os.environ.get("QUANTA_ACCESS_TEAM_DOMAIN", ""),
@@ -110,12 +133,7 @@ def main(argv: list[str] | None = None) -> int:
             if not 0 <= args.port <= 65535:
                 raise ValueError("The port must be between 0 and 65535")
             app = create_app(ExecutionService(args.store), config)
-            uvicorn.run(app, host="127.0.0.1", port=args.port, workers=1, reload=False,
-                        proxy_headers=False, forwarded_allow_ips="", access_log=False,
-                        server_header=False, log_level="warning", http="h11", ws="none",
-                        lifespan="on", limit_concurrency=32, backlog=32,
-                        timeout_keep_alive=5, timeout_graceful_shutdown=20)
-            return 0
+            return run_production(app, port=args.port)
         except (OSError, ValueError, RuntimeError) as exc:
             print(str(exc), file=sys.stderr)
             return 2
