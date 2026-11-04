@@ -1,6 +1,6 @@
 # 고정 좌표 조건의 정적 상태 탐색
 
-패키지 `0.3.0` · 모듈 `quanta.pair_static@0.1.0` · 연산 `relax`
+패키지 `0.4.0` · 모듈 `quanta.pair_static@0.1.0` · 연산 `relax`
 
 ## 사용 방법
 

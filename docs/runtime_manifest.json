@@ -1,22 +1,31 @@
 {
   "manifest_version": "1.0.0",
-  "recorded_at": "2026-11-03T22:37:51.671333+00:00",
+  "recorded_at": "2026-11-04T07:27:17.820990+00:00",
   "verification_date": "2026-11-04",
   "verification_timezone": "Asia/Seoul",
-  "scope": "개발 환경·배포 구조·지정 배치 계산과 제약 정지점 탐색의 실제 확인 기록",
+  "scope": "개발 환경·배포 구조·지정 배치 계산·제약 정지점 탐색과 유한 구간 정적 상태의 실제 확인 기록",
   "package": {
     "name": "quanta-research-contracts",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "contract_version": "0.2.0",
     "source_revision_policy": "실행별 Git commit은 GitHub Actions의 checkout과 실행 기록으로 식별합니다.",
-    "numeric_module_ref": {
-      "module_id": "quanta.pair_static",
-      "module_version": "0.1.0",
-      "operations": [
-        "energy_forces",
-        "relax"
-      ]
-    }
+    "numeric_module_refs": [
+      {
+        "module_id": "quanta.pair_static",
+        "module_version": "0.1.0",
+        "operations": [
+          "energy_forces",
+          "relax"
+        ]
+      },
+      {
+        "module_id": "quanta.quantum_stationary",
+        "module_version": "0.1.0",
+        "operations": [
+          "eigenstates"
+        ]
+      }
+    ]
   },
   "baseline": {
     "implementation": "CPython",
@@ -188,17 +197,21 @@
       {
         "user_api": "blas",
         "internal_api": "openblas",
-        "prefix": "libscipy_openblas",
         "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv-quantum-clean/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-fdde5778.so",
         "version": "0.3.30",
+        "threading_layer": "pthreads",
         "architecture": "SkylakeX"
       },
       {
         "user_api": "blas",
         "internal_api": "openblas",
-        "prefix": "libscipy_openblas",
         "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv-quantum-clean/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
         "version": "0.3.30",
+        "threading_layer": "pthreads",
         "architecture": "SkylakeX"
       }
     ]
@@ -206,15 +219,15 @@
   "verification": {
     "project_venv_install": {
       "status": "passed",
-      "method": "공식 해시 대조가 끝난 캐시 휠의 오프라인 설치와 editable 설치",
-      "package_version": "0.3.0"
+      "method": "기존 잠금 환경의 editable 설치 metadata를 0.4.0으로 갱신",
+      "package_version": "0.4.0"
     },
     "clean_venv_reinstall": {
       "status": "passed",
-      "method": "새 빈 전용 환경에 잠금 휠 20개를 오프라인 설치한 뒤 최종 0.3.0 wheel 설치",
+      "method": "pip 없는 새 빈 전용 환경에 잠금 휠 20개를 오프라인 설치한 뒤 최종 0.4.0 wheel 설치",
       "locked_profile_matches": true,
       "installed_distributions": 21,
-      "distribution_set": "정확한 잠금 20개와 Quanta 0.3.0만 확인"
+      "distribution_set": "정확한 잠금 20개와 Quanta 0.4.0만 확인"
     },
     "pip_check": {
       "status": "passed",
@@ -225,16 +238,13 @@
       "working_directory": "프로젝트 밖의 임시 경로",
       "bundled_contract_files": 24,
       "command": "python -m quanta check-contracts",
-      "wheel_filename": "quanta_research_contracts-0.3.0-py3-none-any.whl",
-      "wheel_sha256": "73572ee5fbe2658430d1c34feb353cc76fb9af5d607da3cc10e0d22d728017df"
+      "wheel_filename": "quanta_research_contracts-0.4.0-py3-none-any.whl",
+      "wheel_sha256": "011f4788d60b2cd3b5cb3de280300225133afb1ae00da6f3db373b4f226adf6a"
     },
-    "stale_direct_requirements_guard": {
+    "installed_wheel_source_comparison": {
       "status": "passed",
-      "result": "직접 의존성 입력이 변경되면 환경 검사가 실패합니다."
-    },
-    "nonbaseline_thread_guard": {
-      "status": "passed",
-      "result": "스레드 수가 기준과 다르면 환경 검사가 실패합니다."
+      "method": "최종 wheel·설치본·현재 Python 소스 13개와 계약 24개·README metadata를 byte 대조",
+      "python_source_files": 13
     },
     "local_container_build": {
       "status": "not_run",
@@ -246,90 +256,173 @@
       "checks": [
         "잠금 설치와 환경",
         "계약·전체 시험",
-        "A01~A03·SI·A04 실제 측정 및 정확히 두 JSON artifact",
-        "단일 평가와 relax CLI",
+        "A01~A04·SI·B01~B06 실제 측정 및 정확히 세 JSON artifact",
+        "evaluate·relax·eigenstates CLI",
         "고정 이미지 빌드",
-        "프로젝트 밖 설치 패키지의 환경·평가·relax 실행"
+        "프로젝트 밖 설치 패키지의 환경·evaluate·relax·eigenstates 실행"
       ],
-      "package_version": "0.3.0"
+      "package_version": "0.4.0"
     },
-    "previous_release_local_test_suite": {
+    "numeric_suite": {
       "status": "passed",
-      "collected": 59,
-      "passed": 59,
-      "duration_seconds": 15.32,
-      "command": ".venv/bin/python -m pytest -q",
-      "scope": "development contracts and CLI, no numerical engine or physical validation",
-      "package_version": "0.1.0"
-    },
-    "installed_wheel_source_comparison": {
-      "status": "passed",
-      "method": "최종 wheel·설치본·현재 Python 소스 전부와 계약 24개·README metadata를 byte 대조"
+      "collected": 228,
+      "passed": 228,
+      "duration_seconds": 128.19,
+      "package_version": "0.4.0",
+      "scope": "최종 수치·공개 API·CLI·입력·오류 경로와 기존 계약의 전체 회귀 시험",
+      "physical_validation_status": "unvalidated"
     },
     "numerical_benchmarks": {
       "status": "passed",
       "report": "docs/numerical_verification.json",
-      "report_sha256": "1f641f726d3f5500ed1caa6ef6439ae869885bf2cbbe106bacb8d318c92fa1a4",
-      "measured_at": "2026-11-03T22:34:48.426340+00:00",
+      "report_sha256": "fdc5dac1660ed7388a8942b9b759292bc25f5b4a9e9974730d47d1cad2eb08ce",
+      "measured_at": "2026-11-04T07:25:02.376689+00:00",
       "cases": {
         "A01": "passed",
         "A02": "passed",
         "A03": "passed",
         "SI_EQUIVALENCE": "passed"
       },
-      "source_set_sha256": "6baef20475862aeb6cbd8e825096178e7718ec95d62477be28ebbdf8a4de30c7",
+      "source_set_sha256": "4b5e83910547d373b99e522586e7c5291b5a58c74b438cb9b0cbf0ee248af7a4",
       "scope": "Named smooth harmonic pair benchmarks for one-configuration energy_forces only",
-      "physical_validation_status": "unvalidated",
-      "A04_status_in_this_report": "not_executed; separate relaxation report"
-    },
-    "numeric_suite": {
-      "status": "passed",
-      "collected": 186,
-      "passed": 186,
-      "duration_seconds": 100.04,
-      "package_version": "0.3.0",
-      "scope": "최종 수치 코드의 전체 회귀 시험; 이후 CLI 읽기 오류 상태 필드 보완은 별도 회귀로 확인",
-      "follow_up": "final_cli_regression",
-      "physical_validation_status": "unvalidated"
-    },
-    "installer_metadata_hygiene": {
-      "status": "passed",
-      "method": "전용 검증 환경에 남은 비활성 pip 25.0.1 metadata만 제거하고 실제 pip 25.3 및 전체 배포 버전을 확인"
-    },
-    "installed_wheel_relaxation": {
-      "status": "passed",
-      "working_directory": "프로젝트 밖의 임시 경로",
-      "command": "quanta relax <프로젝트 절대 경로>/examples/pair_relax.json",
-      "evaluation_status": "SUCCEEDED",
-      "numerical_status": "pass",
-      "input_sha256": "6d7e695598fc43392949b78f74e1458abdbeb692430034472010c53a1e76d4da",
-      "package_version": "0.3.0",
-      "free_gradient_inf": 0.0,
-      "stop_reason": "gradient_tolerance",
-      "iterations": 1,
-      "evaluations": 3,
       "physical_validation_status": "unvalidated"
     },
     "relaxation_benchmark": {
       "status": "passed",
       "report": "docs/relaxation_verification.json",
-      "report_sha256": "e6dc6d3480cb7a7c7461bb4b156b4f21198a552b70592c2f685f69a3dc361823",
-      "measured_at": "2026-11-03T22:34:09.298354+00:00",
+      "report_sha256": "d134c3e971031c28ef6b2ddd80cca29f35173fa6ce2c799be2d0d16751b30065",
+      "measured_at": "2026-11-04T07:24:30.962643+00:00",
       "cases": {
         "A04": "passed"
       },
-      "source_set_sha256": "35abf03a15a0ca5443f28c8129fc6f9f2487601e6464d836f6ac6b667e775687",
+      "source_set_sha256": "00035b6efbfa97d489d98377dceaa4d162ec5bde0a1f0def918960faf8c87fd1",
       "scope": "A04 constrained two-point harmonic local stationarity search only",
-      "rest_distance_reduced_error": 0.0,
-      "free_gradient_inf": 0.0,
       "physical_validation_status": "unvalidated",
-      "minimum_certification": "not_performed"
+      "rest_distance_reduced_error": 0.0,
+      "free_gradient_inf": 0.0
     },
-    "final_cli_regression": {
+    "quantum_benchmarks": {
       "status": "passed",
-      "passed": 15,
-      "duration_seconds": 13.55,
-      "scope": "마지막 INPUT_READ 상태 필드 보완 뒤 누락 파일 relax 1개와 기존 evaluate 14개 회귀"
+      "report": "docs/quantum_verification.json",
+      "report_sha256": "250b8a8680cc3792ac85d4816d372c4bf3210c1d46831d1a2f3dd31873bf436e",
+      "measured_at": "2026-11-04T07:24:37.545884+00:00",
+      "cases": {
+        "B01": "passed",
+        "B02": "passed",
+        "B03": "passed",
+        "B04": "passed",
+        "B05": "passed",
+        "B06": "passed"
+      },
+      "source_set_sha256": "82e17f5f27f2d04c67237dfb931314691f748c2ae55eba1894dbc582e39a429e",
+      "scope": "B01--B06 finite-interval stationary-state numerical benchmarks only",
+      "physical_validation_status": "unvalidated",
+      "measured_metrics": {
+        "B01_max_error_to_tolerance": 0.00014671430522618273,
+        "B02_max_normalization_error": 4.440892098500626e-16,
+        "B02_max_off_diagonal_overlap": 2.384185791015625e-16,
+        "B03_max_backward_residual": 1.8779741010204297e-16,
+        "B04_max_relative_error": 1.2549786074617167e-05,
+        "B05_state_measurements": [
+          {
+            "state_index": 0,
+            "coarse_difference_reduced": 0.00036665935350799206,
+            "fine_difference_reduced": 9.158069578807382e-05,
+            "roundoff_floor_reduced": 2.220446049250313e-14,
+            "order_status": "measured",
+            "observed_order": 2.001324912007851,
+            "passed": true
+          },
+          {
+            "state_index": 1,
+            "coarse_difference_reduced": 0.0018350987732662638,
+            "fine_difference_reduced": 0.00045801545182544423,
+            "roundoff_floor_reduced": 3.3303302234619817e-14,
+            "order_status": "measured",
+            "observed_order": 2.0023895417949102,
+            "passed": true
+          },
+          {
+            "state_index": 2,
+            "coarse_difference_reduced": 0.004776503664576381,
+            "fine_difference_reduced": 0.0011911652234255499,
+            "roundoff_floor_reduced": 5.5502340640413046e-14,
+            "order_status": "measured",
+            "observed_order": 2.0035814319060266,
+            "passed": true
+          },
+          {
+            "state_index": 3,
+            "coarse_difference_reduced": 0.009196350542521436,
+            "fine_difference_reduced": 0.0022913670130026986,
+            "roundoff_floor_reduced": 7.769866729898158e-14,
+            "order_status": "measured",
+            "observed_order": 2.004852902526108,
+            "passed": true
+          }
+        ],
+        "B06_max_relative_error": 5.449870252111871e-05,
+        "B06_same_grid_spacing": true
+      }
+    },
+    "installed_wheel_evaluation": {
+      "status": "passed",
+      "working_directory": "프로젝트 밖의 임시 경로",
+      "evaluation_status": "SUCCEEDED",
+      "numerical_status": "not_applicable",
+      "resolution_status": "not_applicable",
+      "input_sha256": "b5aa8df8a99cfcb34af88dff27bbc7825adcefa9ead33444f6bc02d2d6ea24e9",
+      "package_version": "0.4.0",
+      "physical_validation_status": "unvalidated",
+      "energy_j": 3.999999999999998e-21,
+      "forces_n": [
+        [
+          3.9999999999999985e-11,
+          0.0,
+          0.0
+        ],
+        [
+          -3.9999999999999985e-11,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    "installed_wheel_relaxation": {
+      "status": "passed",
+      "working_directory": "프로젝트 밖의 임시 경로",
+      "evaluation_status": "SUCCEEDED",
+      "numerical_status": "pass",
+      "resolution_status": "not_applicable",
+      "input_sha256": "6d7e695598fc43392949b78f74e1458abdbeb692430034472010c53a1e76d4da",
+      "package_version": "0.4.0",
+      "physical_validation_status": "unvalidated",
+      "free_gradient_inf": 0.0,
+      "stop_reason": "gradient_tolerance",
+      "iterations": 1,
+      "evaluations": 3
+    },
+    "installed_wheel_eigenstates": {
+      "status": "passed",
+      "working_directory": "프로젝트 밖의 임시 경로",
+      "evaluation_status": "SUCCEEDED",
+      "numerical_status": "pass",
+      "resolution_status": "pass",
+      "input_sha256": "1c3e6f17d619378f9fe78b39514c9dac89b17b6ee2144831cf8287e729708aca",
+      "package_version": "0.4.0",
+      "physical_validation_status": "unvalidated",
+      "energies_j": [
+        5.488096399305276e-20,
+        2.1952333941699908e-19,
+        4.93925576590667e-19,
+        8.780850927321694e-19
+      ],
+      "grid_points": [
+        255,
+        511,
+        1023
+      ],
+      "state_count": 4
     }
   },
   "container_base": {
@@ -368,15 +461,16 @@
   ],
   "physical_validation_status": "unvalidated",
   "limitations": [
-    "합격은 보고서에 선언한 매끄럽고 적절히 스케일된 기준 문제와 실제 호출한 연산 범위에만 적용됩니다.",
-    "기울기 수렴은 최소점·전역해·안정성의 보증이나 실제 현상에 대한 검증이 아닙니다.",
-    "다른 계산 모듈·다단계 실행·실행 시스템은 이번 수치 합격에 포함하지 않습니다.",
+    "합격은 보고서에 선언한 기준 문제와 실제 호출한 연산 범위에만 적용됩니다.",
+    "기울기 수렴은 최소점·전역해·안정성이나 실제 현상에 대한 검증이 아닙니다.",
+    "정적 상태의 수치 잔차와 격자 수렴은 유한 구간 경계 오차 및 실제 현상 검증과 구분합니다.",
+    "다단계 실행·시간 변화·모형 결합·실행 시스템은 이번 합격에 포함하지 않습니다.",
     "새 버전의 원격 CI 결과는 후속 Actions 실행 기록에서 확인해야 합니다.",
     "release_checkpoints의 경로와 SHA는 명시된 과거 Git commit의 내용이며 현재 보고서와 구분합니다."
   ],
-  "record_phase": "Local checkpoint before first GitHub push; later remote execution evidence is tracked per commit in GitHub Actions.",
+  "record_phase": "Local checkpoint before publishing this version; remote execution evidence is tracked per commit in GitHub Actions.",
   "calculation_executed": true,
-  "execution_scope": "single_operation_energy_forces_or_constrained_relax",
+  "execution_scope": "single_operation_energy_forces_or_relax_or_eigenstates",
   "release_checkpoints": [
     {
       "package_version": "0.2.0",
@@ -438,6 +532,60 @@
         "status": "passed",
         "method": "새 빈 가상 환경에 20개 잠금 휠을 오프라인 설치한 뒤 0.2.0 프로젝트 wheel 설치",
         "locked_profile_matches": true
+      },
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "package_version": "0.3.0",
+      "source_commit": "25b5ae0342b821dbb98a1313277b00ffd7c42d48",
+      "recorded_at": "2026-11-03T22:37:51.671333+00:00",
+      "scope_note": "경로와 SHA는 source_commit 시점의 파일 내용이며 현재 보고서와 구분합니다.",
+      "historical_manifest": {
+        "path_at_commit": "docs/runtime_manifest.json",
+        "sha256_at_commit": "a5e4dbb82b779b3af5235cc7f6679a3c28566c7ad4592f9b593673aaa4df5640"
+      },
+      "historical_reports": [
+        {
+          "path_at_commit": "docs/numerical_verification.json",
+          "sha256_at_commit": "1f641f726d3f5500ed1caa6ef6439ae869885bf2cbbe106bacb8d318c92fa1a4",
+          "cases": {
+            "A01": "passed",
+            "A02": "passed",
+            "A03": "passed",
+            "SI_EQUIVALENCE": "passed"
+          }
+        },
+        {
+          "path_at_commit": "docs/relaxation_verification.json",
+          "sha256_at_commit": "e6dc6d3480cb7a7c7461bb4b156b4f21198a552b70592c2f685f69a3dc361823",
+          "cases": {
+            "A04": "passed"
+          }
+        }
+      ],
+      "test_suite": {
+        "status": "passed",
+        "collected": 186,
+        "passed": 186,
+        "duration_seconds": 100.04,
+        "package_version": "0.3.0",
+        "scope": "최종 수치 코드의 전체 회귀 시험; 이후 CLI 읽기 오류 상태 필드 보완은 별도 회귀로 확인",
+        "follow_up": "final_cli_regression",
+        "physical_validation_status": "unvalidated"
+      },
+      "final_cli_regression": {
+        "status": "passed",
+        "passed": 15,
+        "duration_seconds": 13.55,
+        "scope": "마지막 INPUT_READ 상태 필드 보완 뒤 누락 파일 relax 1개와 기존 evaluate 14개 회귀"
+      },
+      "installed_wheel": {
+        "status": "passed",
+        "working_directory": "프로젝트 밖의 임시 경로",
+        "bundled_contract_files": 24,
+        "command": "python -m quanta check-contracts",
+        "wheel_filename": "quanta_research_contracts-0.3.0-py3-none-any.whl",
+        "wheel_sha256": "73572ee5fbe2658430d1c34feb353cc76fb9af5d607da3cc10e0d22d728017df"
       },
       "physical_validation_status": "unvalidated"
     }

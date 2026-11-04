@@ -19,9 +19,15 @@ def _emit(report: dict, output_format: str = "json") -> None:
     if report.get("input_sha256"):
         print("input_sha256: " + report["input_sha256"])
     if report.get("payload") is not None:
-        print("energy_j: " + str(report["payload"]["energy_j"]))
-        for ident, force in zip(report["particle_ids"], report["payload"]["forces_n"]):
-            print(f"force_n[{ident}]: {force}")
+        if report["payload"]["operation"] == "eigenstates":
+            print("energies_j: " + str(report["payload"]["energies_j"]))
+            print("grid_points_including_boundaries: " + str(len(report["payload"]["x_m"])))
+            for field in ("numerical_status", "resolution_status", "partial"):
+                print(f"{field}: {report[field]}")
+        else:
+            print("energy_j: " + str(report["payload"]["energy_j"]))
+            for ident, force in zip(report["particle_ids"], report["payload"]["forces_n"]):
+                print(f"force_n[{ident}]: {force}")
         if report["payload"]["operation"] == "relax":
             for field in ("free_gradient_inf", "iterations", "evaluations", "stop_reason"):
                 print(f"{field}: {report['payload'][field]}")
@@ -47,6 +53,9 @@ def main(argv: list[str] | None = None) -> int:
     relax = sub.add_parser("relax", help="Search for a stationary configuration with fixed coordinates preserved.")
     relax.add_argument("file", help="Single-step relaxation experiment JSON, or - for standard input.")
     relax.add_argument("--format", choices=("json", "text"), default="json")
+    eigenstates = sub.add_parser("eigenstates", help="Calculate low stationary states on a finite one-dimensional domain.")
+    eigenstates.add_argument("file", help="Single-step eigenstates experiment JSON, or - for standard input.")
+    eigenstates.add_argument("--format", choices=("json", "text"), default="json")
     sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
@@ -79,18 +88,20 @@ def main(argv: list[str] | None = None) -> int:
                 "path": None, "message": str(exc), "step_id": None, "branch_index": None,
                 "retryable": False, "details": {}}], "warnings": [],
                 "input_sha256": None, "physical_validation_status": "unvalidated"}
-        if args.command in {"evaluate", "relax"}:
+        if args.command in {"evaluate", "relax", "eigenstates"}:
+            quantum = args.command == "eigenstates"
             report.update(evaluation_status="FAILED", calculation_executed=False, payload=None,
                           report_version="0.2.0", partial=False,
-                          input_validation_status="failed", resolution_status="not_applicable",
-                          numerical_status="not_checked" if args.command == "relax" else "not_applicable",
+                          input_validation_status="failed", resolution_status="not_checked" if quantum else "not_applicable",
+                          numerical_status="not_applicable" if args.command == "evaluate" else "not_checked",
                           module_ref=None, provenance=None,
-                          scope="single_configuration_relaxation" if args.command == "relax" else "single_configuration_energy_forces")
+                          scope="single_configuration_eigenstates" if quantum else ("single_configuration_relaxation" if args.command == "relax" else "single_configuration_energy_forces"))
         _emit(report, args.format)
         return 2
-    if args.command in {"evaluate", "relax"}:
-        from .evaluation import evaluate_experiment, relax_experiment
-        report = (relax_experiment if args.command == "relax" else evaluate_experiment)(raw)
+    if args.command in {"evaluate", "relax", "eigenstates"}:
+        from .evaluation import evaluate_experiment, relax_experiment, eigenstates_experiment
+        report = {"evaluate": evaluate_experiment, "relax": relax_experiment,
+                  "eigenstates": eigenstates_experiment}[args.command](raw)
         _emit(report, args.format)
         return 0 if report["evaluation_status"] == "SUCCEEDED" else 2
     report = validate_experiment(raw)

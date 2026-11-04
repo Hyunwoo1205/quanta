@@ -1,3 +1,3 @@
-"""Quanta experiment contracts, pair evaluation and constrained relaxation."""
+"""Quanta experiment contracts, pair calculations and stationary quantum states."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
