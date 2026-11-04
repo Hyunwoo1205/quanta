@@ -1,0 +1,802 @@
+{
+  "report_version": "1.0.0",
+  "measured_at": "2026-11-04T17:16:23.083791+00:00",
+  "status": "passed",
+  "package_version": "0.10.0",
+  "scope": "Verified Access assertions over actual Uvicorn HTTP, immutable inputs and actual numerical child",
+  "measurement_metadata": {
+    "origin": "actual_executed_checks",
+    "case_namespace": "P01--P06",
+    "source_unchanged_during_measurement": true,
+    "signing_keys": "ephemeral in-memory measurement fixtures",
+    "external_cloudflare_login_verified": false,
+    "public_tls_verified": false,
+    "browser_rendering_verified": false,
+    "oci_deployment_verified": false
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "status": "passed",
+      "checks": {
+        "verified_session_maps_to_configured_owner": true,
+        "unauthenticated_session_not_authorized": true,
+        "untrusted_assertions_rejected": true,
+        "shell_uses_same_identity_boundary": true,
+        "public_host_and_origin_enforced": true,
+        "credentials_not_returned_and_private_responses_not_cached": true
+      },
+      "reference_method": "Real Uvicorn HTTP with ephemeral RSA signatures and rejected identity variants",
+      "rejected_assertion_statuses": {
+        "wrong_signature": 401,
+        "expired_assertion": 401,
+        "foreign_email": 401,
+        "wrong_audience": 401
+      },
+      "wrong_host_status": 400,
+      "cross_origin_status": 403
+    },
+    {
+      "id": "P02",
+      "status": "passed",
+      "checks": {
+        "input_validated": true,
+        "immutable_revision_saved_and_reread": true,
+        "raw_negative_zero_preserved": true,
+        "idempotent_retry_keeps_one_run": true,
+        "expired_session_cannot_read_accepted_run": true
+      },
+      "reference_method": "Raw signed-zero JSON, immutable reread and repeated authenticated submission",
+      "revision_id": "3fb56f58-ea84-4f6c-bbca-e1cfcd218f77",
+      "run_id": "19509eff-dbe0-4942-8615-0d7bfb2e37d1",
+      "history_count": 1
+    },
+    {
+      "id": "P03",
+      "status": "passed",
+      "checks": {
+        "real_numerical_child_succeeded": true,
+        "independent_harmonic_energy": true,
+        "independent_cartesian_forces_and_fixed_reaction": true,
+        "fixed_negative_zero_retained": true,
+        "status_axes_are_separate": true
+      },
+      "reference_method": "U/E0=(2/2)*(1.2-1)^2; anchor force/(E0/L0)=2*(1.2-1), probe opposite",
+      "energy_actual_j": 3.999999999999998e-21,
+      "energy_reference_j": 4e-21,
+      "energy_error_reduced": 2.0816681711721685e-17,
+      "forces_actual_n": [
+        [
+          3.9999999999999985e-11,
+          0.0,
+          0.0
+        ],
+        [
+          -3.9999999999999985e-11,
+          0.0,
+          0.0
+        ]
+      ],
+      "forces_reference_n": [
+        [
+          4e-11,
+          0,
+          0
+        ],
+        [
+          -4e-11,
+          0,
+          0
+        ]
+      ],
+      "force_error_reduced": 1.6653345369377348e-16,
+      "tolerance_reduced": 1e-12,
+      "observed_progress": [
+        {
+          "execution_status": "QUEUED",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": "measure",
+            "active_branch": 0
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "SUCCEEDED",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "P04",
+      "status": "passed",
+      "checks": {
+        "every_authenticated_artifact_matches_original_bytes": true,
+        "downloads_require_verified_session": true
+      },
+      "reference_method": "Every actual downloaded artifact size and SHA-256 compared with its immutable manifest",
+      "download_count": 68,
+      "transfers": [
+        {
+          "artifact_id": "9ffdf2be-dfc0-4a10-aa75-2b7940e504c1",
+          "size_bytes": 3560,
+          "sha256": "01a8bed46ea8f4c40cf9fd73fa71c9bcec91bcae8b8f4a6fda844c91f9d71972",
+          "passed": true
+        },
+        {
+          "artifact_id": "2ccb17a9-0d7b-4e13-a41d-9901a595a71c",
+          "size_bytes": 8771,
+          "sha256": "f9c8e2714b188f35b40c475ae49bc0d4a5820ff6cf856e4993864584a1ffb791",
+          "passed": true
+        },
+        {
+          "artifact_id": "39ef3276-3a86-468c-b509-284b9c11ad8a",
+          "size_bytes": 5470,
+          "sha256": "407fdae2a9b7d2f2a10a2f449bb26a4a6f43acc6d23e545243f43c1b43000a73",
+          "passed": true
+        },
+        {
+          "artifact_id": "3aae5879-2127-44ca-981c-746b25a7a0b0",
+          "size_bytes": 1492,
+          "sha256": "0b8532e18657b62ae201b4aee8963add393739ca7409b2df9becd74a849c8b37",
+          "passed": true
+        },
+        {
+          "artifact_id": "7271fcd2-631b-42a0-bdd6-6a41d15c25be",
+          "size_bytes": 6791,
+          "sha256": "38a4183083d2c1efd58bf73d98916c119d3c0219705b5353152a3ac96a06ec33",
+          "passed": true
+        },
+        {
+          "artifact_id": "815773a4-c9b2-4caa-aa21-63e87c2ff8e8",
+          "size_bytes": 6608,
+          "sha256": "b1279da591a6cc65c378195eaaae31f7b3a6dcf081e7eeeb5b1bbe1686886c52",
+          "passed": true
+        },
+        {
+          "artifact_id": "64d4f20b-4757-4927-a196-a9a3428b54c0",
+          "size_bytes": 479,
+          "sha256": "1a04ee28e0c7a5e117ef4931facb7e742790045d0b11e951b927a09333a2a6e7",
+          "passed": true
+        },
+        {
+          "artifact_id": "b23a9e26-cd4a-4e17-a65f-5503a5c4208c",
+          "size_bytes": 2548,
+          "sha256": "184403c6050cb82437ec12bb6273fa633b10dcf9ca50d71febf24eb86858b88a",
+          "passed": true
+        },
+        {
+          "artifact_id": "a0ac6902-a6ef-4d2a-a471-4111d5d56ea3",
+          "size_bytes": 1423,
+          "sha256": "16c432b409a8e9360905f7ccca9ad0cf4121b5b151cc8b069c8d30d93b5905ab",
+          "passed": true
+        },
+        {
+          "artifact_id": "243836a3-daa8-42c3-bf71-b5da53ef589a",
+          "size_bytes": 6338,
+          "sha256": "7948268ebecf9f1e32b9ac9e07c3739dfd050b5a5684c1dc5eb62aa742598742",
+          "passed": true
+        },
+        {
+          "artifact_id": "dbde7ac8-0d02-4e5b-bbdd-b80ef9cac1d9",
+          "size_bytes": 5673,
+          "sha256": "f2cb609a29518c581de5bb4e97025233f3fc09bf2ea50fa2d4044d419c8afe58",
+          "passed": true
+        },
+        {
+          "artifact_id": "4d83a0b9-6401-49d2-84a0-2eefb447180d",
+          "size_bytes": 16406,
+          "sha256": "6d94234874742737d0a0fdd0c725513128c8a77ad66268b40682a4b50233fb57",
+          "passed": true
+        },
+        {
+          "artifact_id": "4eac486d-96ff-4bbd-bd5f-d169ee0f64b9",
+          "size_bytes": 14388,
+          "sha256": "87e1087b8c8b3bf81714b3551aa747418a1f3dc38a9f6710ff90b1869db893cf",
+          "passed": true
+        },
+        {
+          "artifact_id": "30c64ad7-493b-44ba-9f84-4709d661679e",
+          "size_bytes": 13133,
+          "sha256": "b253365db09a7850938796b07e4293632136cd63e0b12fc14d1d21c0e30cbadb",
+          "passed": true
+        },
+        {
+          "artifact_id": "aade6c03-3555-46fd-8551-8562415476a8",
+          "size_bytes": 4651,
+          "sha256": "7f15292f3976f5c705f7265f29470352a3c0387fdf743b86909d8e074de5845e",
+          "passed": true
+        },
+        {
+          "artifact_id": "8762cb67-c4d2-4c62-a223-9a57df103832",
+          "size_bytes": 4281,
+          "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+          "passed": true
+        },
+        {
+          "artifact_id": "dd637d9d-f0fd-4283-a27f-806ee41c3083",
+          "size_bytes": 5956,
+          "sha256": "617922b88c2ebab984c2e8faf07867cc1cde325495935295918aae26b43d7aa4",
+          "passed": true
+        },
+        {
+          "artifact_id": "5d975a8c-cce8-4484-94c0-cb8e59ec6a20",
+          "size_bytes": 29268,
+          "sha256": "48bd959b199217a011f8abbd56f56c3548ce14a3060cafe78f0fa15272fe7911",
+          "passed": true
+        },
+        {
+          "artifact_id": "c8fd3b48-2e98-40ef-818f-39611f6109db",
+          "size_bytes": 1676,
+          "sha256": "8404259ad2d39e5fd201bafa3a69268d95462638601208b129382124eb457f7b",
+          "passed": true
+        },
+        {
+          "artifact_id": "2bb80d10-c168-47b5-b44b-e73b3208dd69",
+          "size_bytes": 18973,
+          "sha256": "f05352191bd70a3ae4212072d65f7728a80a72514839a2d735d17976c33948af",
+          "passed": true
+        },
+        {
+          "artifact_id": "616bc3fe-7bbf-4b98-beeb-fe6cb88823f6",
+          "size_bytes": 11143,
+          "sha256": "905b0898d21d1d12c924073ed4cae65e5d1b5aaba6abbcd7ad3be46732832ece",
+          "passed": true
+        },
+        {
+          "artifact_id": "d0935c4d-35bd-483e-bedf-734005d6172a",
+          "size_bytes": 16301,
+          "sha256": "49625ec7dacbbea4aa07a89b046d5c99da48893c8edcf937e857be5aaa5379a6",
+          "passed": true
+        },
+        {
+          "artifact_id": "4eb08eab-efd7-46b5-8add-927271de7004",
+          "size_bytes": 5316,
+          "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7",
+          "passed": true
+        },
+        {
+          "artifact_id": "0711ade3-1bf0-410b-ae08-a3f2199e2fa2",
+          "size_bytes": 100,
+          "sha256": "7ea2d2e0e05035396e56107300614588590fc3f9cfea815f551a7decd103d91a",
+          "passed": true
+        },
+        {
+          "artifact_id": "3ebdc0d5-b7bb-470e-85e9-d0d84eafe3e9",
+          "size_bytes": 48,
+          "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+          "passed": true
+        },
+        {
+          "artifact_id": "b3497fc4-d00e-477b-aaaf-579b4e17177c",
+          "size_bytes": 10794,
+          "sha256": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+          "passed": true
+        },
+        {
+          "artifact_id": "5143b1a1-715c-47ad-be95-07c17d452bef",
+          "size_bytes": 9971,
+          "sha256": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+          "passed": true
+        },
+        {
+          "artifact_id": "5331e980-2f79-48ab-8f6e-4350bb27c8d3",
+          "size_bytes": 17165,
+          "sha256": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+          "passed": true
+        },
+        {
+          "artifact_id": "9e53989f-e8e2-439c-b558-54472a15d4c4",
+          "size_bytes": 14857,
+          "sha256": "aa3541c2a153c59b27ca2eeebbf647a75cbfd8ae046f70b26c1862c3636296ee",
+          "passed": true
+        },
+        {
+          "artifact_id": "6d1c281a-b1a0-49d0-9a25-dc6408deed5f",
+          "size_bytes": 3655,
+          "sha256": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+          "passed": true
+        },
+        {
+          "artifact_id": "edb27ae5-b278-4128-a1d1-d37089f067cf",
+          "size_bytes": 7908,
+          "sha256": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+          "passed": true
+        },
+        {
+          "artifact_id": "ebfcc61d-983b-4961-9ab4-105c610e2b7a",
+          "size_bytes": 933,
+          "sha256": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+          "passed": true
+        },
+        {
+          "artifact_id": "0105a26f-3682-431f-9bb6-1ce70b8c4f5c",
+          "size_bytes": 27471,
+          "sha256": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+          "passed": true
+        },
+        {
+          "artifact_id": "2daacdd0-7f54-4d18-8325-09245832d207",
+          "size_bytes": 15469,
+          "sha256": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+          "passed": true
+        },
+        {
+          "artifact_id": "4c7b3a6d-a580-40a9-9251-a889058e21e1",
+          "size_bytes": 5385,
+          "sha256": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+          "passed": true
+        },
+        {
+          "artifact_id": "75d5381d-c3a6-4aba-aea0-fb4bb12bb074",
+          "size_bytes": 22775,
+          "sha256": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+          "passed": true
+        },
+        {
+          "artifact_id": "b400773a-c2ec-46a2-8660-0b6e5f7bc648",
+          "size_bytes": 11587,
+          "sha256": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+          "passed": true
+        },
+        {
+          "artifact_id": "edaae7d2-0b79-495a-8d20-f1c4f89b21db",
+          "size_bytes": 1512,
+          "sha256": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+          "passed": true
+        },
+        {
+          "artifact_id": "4d020228-c7e1-436f-8dad-106e48109654",
+          "size_bytes": 3782,
+          "sha256": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+          "passed": true
+        },
+        {
+          "artifact_id": "9bec31fe-39f3-4c36-878d-aece3934eb72",
+          "size_bytes": 21954,
+          "sha256": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+          "passed": true
+        },
+        {
+          "artifact_id": "08511ce0-ac00-4140-ac29-e2a8cb7be20e",
+          "size_bytes": 11767,
+          "sha256": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+          "passed": true
+        },
+        {
+          "artifact_id": "089b6da7-8deb-476a-9a87-4614afd98bcd",
+          "size_bytes": 12980,
+          "sha256": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+          "passed": true
+        },
+        {
+          "artifact_id": "2c85c456-a4b6-4ba0-b980-defb27c43f08",
+          "size_bytes": 42275,
+          "sha256": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+          "passed": true
+        },
+        {
+          "artifact_id": "e7c792c4-c65e-48f3-a51b-1e1a32c5b88a",
+          "size_bytes": 10540,
+          "sha256": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+          "passed": true
+        },
+        {
+          "artifact_id": "c903a6b4-9e8e-4a8f-9dde-646a46094069",
+          "size_bytes": 10996,
+          "sha256": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+          "passed": true
+        },
+        {
+          "artifact_id": "a41feda5-5130-44d2-8882-03599f3e4589",
+          "size_bytes": 29605,
+          "sha256": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+          "passed": true
+        },
+        {
+          "artifact_id": "a14373bb-0709-4abd-b9ab-f66dcff64b95",
+          "size_bytes": 9251,
+          "sha256": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+          "passed": true
+        },
+        {
+          "artifact_id": "6f06469c-c297-475c-871b-92a74c0318b6",
+          "size_bytes": 35608,
+          "sha256": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+          "passed": true
+        },
+        {
+          "artifact_id": "35ff52b3-b7a6-4adc-87ad-3e9f82866880",
+          "size_bytes": 2385,
+          "sha256": "711e48cd479298210f4820fe6e76b1b0ef76db909e9be56933170757f78a1b0d",
+          "passed": true
+        },
+        {
+          "artifact_id": "fb2ce684-0f8f-4e41-9a61-20d58c7aa69a",
+          "size_bytes": 287,
+          "sha256": "0e4a1c85b00e3d723eed5b8b74906b96112b64c8c7f3dcbd58fbd5432fa26dac",
+          "passed": true
+        },
+        {
+          "artifact_id": "d1cf3790-1b25-469e-a1a3-738b453a3e55",
+          "size_bytes": 2815,
+          "sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f",
+          "passed": true
+        },
+        {
+          "artifact_id": "340380af-ae5b-460a-abde-aff83015f7db",
+          "size_bytes": 22360,
+          "sha256": "8debe43f5cffa3dca31664d17598f484ba7ffa0f568ef9826ff2e8bf777487f2",
+          "passed": true
+        },
+        {
+          "artifact_id": "d5fa9a20-fe82-470d-86b8-a6a8b370f67f",
+          "size_bytes": 18210,
+          "sha256": "f106ce166de68c2db0a610125fc5b352447c52937f0cdcffda9b972353c115b1",
+          "passed": true
+        },
+        {
+          "artifact_id": "b74ec28a-f13e-4227-97d5-fd8b26a9f07d",
+          "size_bytes": 101,
+          "sha256": "c27cca4736965a2d6e355bc9ed277128c603a5b93636419ce2f664b2e0e2b0f1",
+          "passed": true
+        },
+        {
+          "artifact_id": "156bfee1-df37-40bb-8f87-54ee0619f52a",
+          "size_bytes": 1024,
+          "sha256": "142b70280d35284f7747e30b7f83cb3913b4f87c6194cd0168b547ef2e061d14",
+          "passed": true
+        },
+        {
+          "artifact_id": "ec6a7aa9-feea-4a71-9dc3-643ae2db223d",
+          "size_bytes": 716,
+          "sha256": "60124d70078c8592594749e494d3e2783ec43546758a07cc11e872bdf6b51f57",
+          "passed": true
+        },
+        {
+          "artifact_id": "22746bad-949a-48b4-8c9b-b8588b5e3f46",
+          "size_bytes": 767,
+          "sha256": "f67d2b9b8168e0e72ce2d2ceccb1a6ee1aa31a0da2299728b50eba83d048a2fd",
+          "passed": true
+        },
+        {
+          "artifact_id": "4d56ee28-0e9b-4413-ae17-6a6328b0a6ad",
+          "size_bytes": 804,
+          "sha256": "319e4f9c5f3c610759e3277b01b2a1483753af5882f2d7ba0d549851ca0fd12c",
+          "passed": true
+        },
+        {
+          "artifact_id": "ecca0d3e-14d6-4d0c-8369-05e408014ff9",
+          "size_bytes": 256,
+          "sha256": "c5d17a279dd8aa56b373d6334a6a3ce139ad9d921775f485b1219888bd136a7a",
+          "passed": true
+        },
+        {
+          "artifact_id": "6f03c7a2-734c-4356-89b3-396411a1b6d3",
+          "size_bytes": 3016,
+          "sha256": "85bd3ee01ddc750014924df1f784fd583148fd9b1c254d1b90a800684f45a192",
+          "passed": true
+        },
+        {
+          "artifact_id": "2cc306bd-07d2-42a7-bb12-c9432ec8d625",
+          "size_bytes": 930,
+          "sha256": "268375eb66fad08f83a0ca0e834ded5a580948501e6468df5cf85ea9e58dcb0b",
+          "passed": true
+        },
+        {
+          "artifact_id": "595eed91-5a12-406a-a80a-e72fb549c48d",
+          "size_bytes": 6858,
+          "sha256": "0291f8e495612d86d7e31891780ddb36ccbeddad2182ade5be3704e7560e4dcc",
+          "passed": true
+        },
+        {
+          "artifact_id": "b4825d65-5a9e-4145-a3fe-5ba90d14e0b3",
+          "size_bytes": 3516,
+          "sha256": "57c893fad411fa82c57abbf3116b74875a253df24ee1350312b72e9c2e20a86e",
+          "passed": true
+        },
+        {
+          "artifact_id": "cb281849-3205-4f96-9003-aa6ec52cde65",
+          "size_bytes": 706,
+          "sha256": "7f7033c02c565aaa1296f917416004a3a8db69b83c9e98332426320df3ce1e1c",
+          "passed": true
+        },
+        {
+          "artifact_id": "f6b742c0-861f-49a5-adae-b89e6b1e7934",
+          "size_bytes": 1185,
+          "sha256": "9bca05708c82088fd49cc0af87da711c0dc5b6b054044478366626060cae2190",
+          "passed": true
+        },
+        {
+          "artifact_id": "781cb60b-824d-4bd7-84f0-4d2d35731b33",
+          "size_bytes": 6651,
+          "sha256": "20de444bf0cbd9a468e2899c6cbebb6158c686b5ada50f368172ed72be2dbc37",
+          "passed": true
+        },
+        {
+          "artifact_id": "46c30806-cd3e-47a4-afe6-6ab66a121515",
+          "size_bytes": 729,
+          "sha256": "38f0cf7c1d39965f50db098f366c2f9d4fd1c39215461fc45d9fea2898d7919b",
+          "passed": true
+        },
+        {
+          "artifact_id": "d70f736c-6303-491e-b3c6-811212e501ba",
+          "size_bytes": 729,
+          "sha256": "38f0cf7c1d39965f50db098f366c2f9d4fd1c39215461fc45d9fea2898d7919b",
+          "passed": true
+        }
+      ],
+      "unauthenticated_download_status": 401
+    },
+    {
+      "id": "P05",
+      "status": "passed",
+      "checks": {
+        "fresh_assertion_maps_to_same_owner": true,
+        "expired_assertion_did_not_cancel_job": true,
+        "fresh_session_reads_unchanged_result": true,
+        "fresh_session_does_not_resubmit": true
+      },
+      "reference_method": "Fresh synthetic session and reopened SQLite records after rejected expired assertion",
+      "durable_run_id": "19509eff-dbe0-4942-8615-0d7bfb2e37d1",
+      "durable_execution_status": "SUCCEEDED"
+    },
+    {
+      "id": "P06",
+      "status": "passed",
+      "checks": {
+        "healthy_supervisor_is_ready": true,
+        "readiness_is_authenticated": true,
+        "second_actual_worker_refused": true,
+        "observed_fatal_worker_error_blocks_readiness_and_admission": true,
+        "durable_record_reads_remain_available": true
+      },
+      "reference_method": "Actual exclusive supervisor lock and explicitly injected supervisor error flag; no process crash claim",
+      "initial_health_status": 200,
+      "competing_worker_status": 409,
+      "failed_health_status": 503,
+      "blocked_submission_status": 503,
+      "durable_read_status": 200
+    }
+  ],
+  "environment": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "runtime_profile": "cpython-3.12.14-linux-aarch64-cpu-v1",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "aarch64"
+    },
+    "python_executable": "/opt/hostedtoolcache/Python/3.12.14/arm64/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/arm64/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-1f73132b.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "neoversev2"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/arm64/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-c5a9b014.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "neoversev2"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "aarch64",
+          "family": "aarch64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "aarch64",
+          "family": "aarch64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-eyrtyfpu/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "NEON",
+          "NEON_FP16",
+          "NEON_VFPV4",
+          "ASIMD"
+        ],
+        "found": [
+          "ASIMDHP",
+          "ASIMDFHM",
+          "SVE"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false,
+    "locked_distributions": {
+      "attrs": "26.1.0",
+      "cffi": "2.1.1",
+      "click": "8.5.0",
+      "cryptography": "50.0.2",
+      "h11": "0.16.0",
+      "iniconfig": "2.3.1",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "numpy": "2.3.5",
+      "packaging": "26.3",
+      "pip": "25.3",
+      "pluggy": "1.7.0",
+      "pycparser": "3.12",
+      "pygments": "2.21.0",
+      "pyjwt": "2.15.1",
+      "pytest": "9.0.2",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc8785": "0.1.4",
+      "rpds-py": "2026.9.1",
+      "scipy": "1.17.0",
+      "setuptools": "80.9.0",
+      "six": "1.17.0",
+      "threadpoolctl": "3.6.0",
+      "typing-extensions": "4.16.0",
+      "uvicorn": "0.54.0",
+      "wheel": "0.45.1"
+    },
+    "requirements_lock_sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f"
+  },
+  "code_source": {
+    "files_sha256": {
+      "scripts/verify_numerics.py": "f2a90cc3fe6cc18f06696b2fbf7f89ae210389cc0e929170ef6da9b223d45d63",
+      "scripts/verify_production.py": "eb329dbfa3e3b42a6669bc856207458304747c52543a83574c79164b98c92ebf",
+      "src/quanta/__init__.py": "7ea2d2e0e05035396e56107300614588590fc3f9cfea815f551a7decd103d91a",
+      "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "src/quanta/access_auth.py": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+      "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+      "src/quanta/backup.py": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+      "src/quanta/cli.py": "aa3541c2a153c59b27ca2eeebbf647a75cbfd8ae046f70b26c1862c3636296ee",
+      "src/quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+      "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+      "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+      "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+      "src/quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+      "src/quanta/production.py": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+      "src/quanta/production_server.py": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+      "src/quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+      "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+      "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+      "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+      "src/quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+      "src/quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+      "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+      "src/quanta/web/app.css": "fdf248685259ca20f5844ba048b9406f96ce4dcf485f09f447ea57251426fb6b",
+      "src/quanta/web/app.js": "e29df92c7ef70f99244239aabd136e2286d69f06f6d9970313e347edd8bca65c",
+      "src/quanta/web/examples.json": "b80e2ea197db4dbfd7ac558e653020c8dc8f5de5a2195feecfcfb88faad93af1",
+      "src/quanta/web/index.html": "e974000ec6103fd7bc4f61611d695caf56b8892e9009773429331b1a1274b31e",
+      "src/quanta/web/view-model.mjs": "6404f4c15777521d850a4e9bba88de21894736eeed3f54adc2b95a6d549dedf3",
+      "src/quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+      "src/quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb"
+    },
+    "source_set_sha256": "e675eba53a14d08439da0de996f3e962573570fb738968139b0a49f2961a8fc7",
+    "source_set_hash_rule": "RFC 8785 of relative alias to actual imported source/asset raw SHA256; report excluded",
+    "git_head": "07e26a2720f404c9dc83756b55d95297b22c02a1",
+    "git_worktree_dirty": false
+  },
+  "physical_validation_status": "unvalidated",
+  "limitations": [
+    "Synthetic signed assertions verify the origin boundary; they are not external Cloudflare login sessions.",
+    "Transport is actual loopback HTTP behind the configured HTTPS-origin policy; public TLS and Tunnel are not exercised.",
+    "Session-expiry and renewed-session cases use synthetic timestamps; browser cookies and rendered UI require separate QA.",
+    "The readiness failure case injects the supervisor error flag and does not claim a process crash or OCI recovery test."
+  ]
+}

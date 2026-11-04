@@ -1,0 +1,2085 @@
+{
+  "report_version": "1.0.0",
+  "measured_at": "2026-11-04T17:16:01.660780+00:00",
+  "status": "passed",
+  "package_version": "0.10.0",
+  "scope": "Declared synchronous workflow, hash, source and persisted-replay checks only",
+  "acceptance_plan": {
+    "path": "contracts/v0.2.0/validation_manifest.json",
+    "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7",
+    "cases_at_plan_snapshot": [
+      {
+        "id": "C01",
+        "scope": "revision immutability, replay, unit/scaling equivalence, finite-only exports",
+        "status": "planned"
+      },
+      {
+        "id": "C02",
+        "scope": "workflow source/patch/sweep validation and max expanded steps",
+        "status": "planned"
+      },
+      {
+        "id": "C03",
+        "scope": "idempotency and cancellation race state invariants",
+        "status": "planned"
+      },
+      {
+        "id": "C04",
+        "scope": "invalid domain, unsupported model, missing data and resource-limit diagnostics",
+        "status": "planned"
+      }
+    ],
+    "coverage": {
+      "C01": "Partial: authored immutability, exact scientific identities, persisted replay and finite JSON",
+      "C02": "Synchronous source/override/sweep ordering and expanded-step cap",
+      "C03": "not_executed: HTTP idempotency, cancellation and races are outside this engine",
+      "C04": "Partial: invalid geometry, unknown version, incompatible source, budget and corrupt bundle assets"
+    }
+  },
+  "measurement_metadata": {
+    "origin": "actual_executed_checks",
+    "case_namespace": "WF01--WF06",
+    "reference_policy": "Independent authored inputs, Cartesian enumeration, closed-form energies/forces and explicit JCS hash projections",
+    "state_storage": "Declared inputs, selected observations, IDs and digests; full runs are reproducible from inputs"
+  },
+  "cases": [
+    {
+      "id": "WF01",
+      "status": "passed",
+      "checks": {
+        "accepted_input": true,
+        "registered_result_and_payload_schemas": true,
+        "registered_state_schemas": true,
+        "input_digest": true,
+        "frozen_plan_digest": true,
+        "frozen_plan_unchanged": true,
+        "state_content_digests": true,
+        "effective_step_digests": true,
+        "selected_frozen_bindings": true,
+        "typed_source_links": true,
+        "registered_manifest_and_schema_bindings": true,
+        "symbolic_plan_whitelists": true,
+        "captured_exact_byte_digests": true,
+        "artifact_exact_bytes": true,
+        "execution_fingerprint": true,
+        "finite_json_export": true,
+        "physical_validation_unclaimed": true,
+        "authored_input_unchanged": true,
+        "deterministic_cartesian_order": true,
+        "four_branches_twelve_steps": true,
+        "plan_before_execution_same_identity": true,
+        "equal_effective_content_distinct_provenance": true,
+        "original_source_content_retained_in_step_identity": true,
+        "manual_branch_oracles": true,
+        "overall_success": true
+      },
+      "reference_method": "Manual Cartesian ordering, explicit inheritance/reset rules and independent harmonic closed form",
+      "input": {
+        "schema_version": "0.2.0",
+        "experiment_id": "77e77777-7777-4777-8777-777777777777",
+        "revision_id": "88e88888-8888-4888-8888-888888888888",
+        "title": "Independent two-axis workflow reference",
+        "created_at": "2026-11-04T00:00:00+09:00",
+        "definition": {
+          "unit_system": "SI",
+          "scales": {
+            "length_m": 1e-09,
+            "energy_j": 1e-19
+          },
+          "system": {
+            "representation": "particles_3d",
+            "module_id": "quanta.pair_static",
+            "module_version": "0.1.0",
+            "boundary": "nonperiodic",
+            "min_distance_m": 1e-17,
+            "particles": [
+              {
+                "id": "p1",
+                "position_m": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  true,
+                  true,
+                  true
+                ]
+              },
+              {
+                "id": "p2",
+                "position_m": [
+                  1.4e-09,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  false,
+                  true,
+                  true
+                ]
+              }
+            ],
+            "potential": {
+              "expression": {
+                "op": "mul",
+                "args": [
+                  {
+                    "op": "const",
+                    "value": 0.5
+                  },
+                  {
+                    "op": "param",
+                    "name": "k"
+                  },
+                  {
+                    "op": "pow",
+                    "arg": {
+                      "op": "sub",
+                      "args": [
+                        {
+                          "op": "var",
+                          "name": "rho"
+                        },
+                        {
+                          "op": "param",
+                          "name": "rho0"
+                        }
+                      ]
+                    },
+                    "exponent": 2
+                  }
+                ]
+              },
+              "parameters": {
+                "k": 2.0,
+                "rho0": 1.0
+              }
+            }
+          },
+          "numerics": {
+            "solver": "lbfgsb_forward_ad",
+            "gradient_tolerance": 1e-06,
+            "energy_ftol": 1e-12,
+            "max_iterations": 2000,
+            "max_evaluations": 10000
+          },
+          "protocol": {
+            "steps": [
+              {
+                "step_id": "equilibrate",
+                "operation": "relax",
+                "source": "initial",
+                "overrides": [
+                  {
+                    "path": "/system/potential/parameters/k",
+                    "value": 6.0
+                  }
+                ]
+              },
+              {
+                "step_id": "inherit",
+                "operation": "energy_forces",
+                "source": "equilibrate",
+                "overrides": [
+                  {
+                    "path": "/system/particles/1/position_m/0",
+                    "value": 1.3e-09
+                  }
+                ]
+              },
+              {
+                "step_id": "reset",
+                "operation": "energy_forces",
+                "source": "initial",
+                "overrides": []
+              }
+            ],
+            "sweep": {
+              "axes": [
+                {
+                  "path": "/system/potential/parameters/k",
+                  "values": [
+                    2.0,
+                    4.0
+                  ]
+                },
+                {
+                  "path": "/system/potential/parameters/rho0",
+                  "values": [
+                    1.0,
+                    1.1
+                  ]
+                }
+              ]
+            }
+          },
+          "observables": [
+            "energy",
+            "forces",
+            "pair_energies",
+            "final_positions",
+            "optimization_history"
+          ],
+          "extensions": {}
+        }
+      },
+      "measurements": [
+        {
+          "branch_index": 0,
+          "swept_parameters": {
+            "k": 2.0,
+            "rho0": 1.0
+          },
+          "checks": {
+            "step_success": true,
+            "sweep_then_override": true,
+            "definition_inherited": true,
+            "initial_resets_overrides": true,
+            "original_source_retained": true,
+            "prepared_override_distinct": true,
+            "initial_coordinate_reset": true,
+            "rest_distance": true,
+            "free_gradient": true,
+            "independent_energy_forces": true
+          },
+          "relax": {
+            "passed": true,
+            "distance_reduced": 1.0,
+            "energy_reduced": 0.0,
+            "reference_energy_reduced": 0.0,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "inherit": {
+            "passed": true,
+            "distance_reduced": 1.3,
+            "energy_reduced": 0.2700000000000001,
+            "reference_energy_reduced": 0.2700000000000001,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 4.440892098500626e-16,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "reset": {
+            "passed": true,
+            "distance_reduced": 1.4,
+            "energy_reduced": 0.15999999999999992,
+            "reference_energy_reduced": 0.15999999999999992,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          }
+        },
+        {
+          "branch_index": 1,
+          "swept_parameters": {
+            "k": 2.0,
+            "rho0": 1.1
+          },
+          "checks": {
+            "step_success": true,
+            "sweep_then_override": true,
+            "definition_inherited": true,
+            "initial_resets_overrides": true,
+            "original_source_retained": true,
+            "prepared_override_distinct": true,
+            "initial_coordinate_reset": true,
+            "rest_distance": true,
+            "free_gradient": true,
+            "independent_energy_forces": true
+          },
+          "relax": {
+            "passed": true,
+            "distance_reduced": 1.0999999999999999,
+            "energy_reduced": 1.4791141972893971e-31,
+            "reference_energy_reduced": 1.4791141972893971e-31,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 1.9721522630525295e-31,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "inherit": {
+            "passed": true,
+            "distance_reduced": 1.3,
+            "energy_reduced": 0.11999999999999994,
+            "reference_energy_reduced": 0.11999999999999994,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 2.220446049250313e-16,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "reset": {
+            "passed": true,
+            "distance_reduced": 1.4,
+            "energy_reduced": 0.0899999999999999,
+            "reference_energy_reduced": 0.0899999999999999,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          }
+        },
+        {
+          "branch_index": 2,
+          "swept_parameters": {
+            "k": 4.0,
+            "rho0": 1.0
+          },
+          "checks": {
+            "step_success": true,
+            "sweep_then_override": true,
+            "definition_inherited": true,
+            "initial_resets_overrides": true,
+            "original_source_retained": true,
+            "prepared_override_distinct": true,
+            "initial_coordinate_reset": true,
+            "rest_distance": true,
+            "free_gradient": true,
+            "independent_energy_forces": true
+          },
+          "relax": {
+            "passed": true,
+            "distance_reduced": 1.0,
+            "energy_reduced": 0.0,
+            "reference_energy_reduced": 0.0,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "inherit": {
+            "passed": true,
+            "distance_reduced": 1.3,
+            "energy_reduced": 0.2700000000000001,
+            "reference_energy_reduced": 0.2700000000000001,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 4.440892098500626e-16,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "reset": {
+            "passed": true,
+            "distance_reduced": 1.4,
+            "energy_reduced": 0.31999999999999984,
+            "reference_energy_reduced": 0.31999999999999984,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          }
+        },
+        {
+          "branch_index": 3,
+          "swept_parameters": {
+            "k": 4.0,
+            "rho0": 1.1
+          },
+          "checks": {
+            "step_success": true,
+            "sweep_then_override": true,
+            "definition_inherited": true,
+            "initial_resets_overrides": true,
+            "original_source_retained": true,
+            "prepared_override_distinct": true,
+            "initial_coordinate_reset": true,
+            "rest_distance": true,
+            "free_gradient": true,
+            "independent_energy_forces": true
+          },
+          "relax": {
+            "passed": true,
+            "distance_reduced": 1.0999999999999999,
+            "energy_reduced": 1.4791141972893971e-31,
+            "reference_energy_reduced": 1.4791141972893971e-31,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 1.9721522630525295e-31,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "inherit": {
+            "passed": true,
+            "distance_reduced": 1.3,
+            "energy_reduced": 0.11999999999999994,
+            "reference_energy_reduced": 0.11999999999999994,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 2.220446049250313e-16,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          },
+          "reset": {
+            "passed": true,
+            "distance_reduced": 1.4,
+            "energy_reduced": 0.1799999999999998,
+            "reference_energy_reduced": 0.1799999999999998,
+            "energy_absolute_error_reduced": 0.0,
+            "max_force_error_reduced": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10
+          }
+        }
+      ],
+      "run": {
+        "run_id": "bc559866-35a5-424b-adec-72ce35477534",
+        "input_sha256": "91b85a8ab56b581158a23865fcf7cec582e3316fc48fd160e6f202d0d57b5bd8",
+        "resolved_input_sha256": "413d4699e8b55b4129d6d510e7596250120f608549d1d7eb6da796651136b4ff",
+        "execution_fingerprint": "704fef525d785b6a7fb629fe8ea3f027dbe5e4fe3a16b45c5d25b2c934920b83",
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "not_applicable",
+        "state_count": 28,
+        "artifact_count": 107,
+        "steps": [
+          {
+            "branch_index": 0,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "5a8113081e5209e537ec873abc5c497f51b180fcd5bd963399ad8eb7093206c5",
+            "state_ref": "fec44fb8-ee32-4c99-b35c-1647836bdb82",
+            "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7b752fef49bdd6b8034ae51fa19710683a76383cca2cbab7bb8f7bc02d5b4641",
+            "state_ref": "20754c2f-1783-40b7-81e0-980cb9f5c49e",
+            "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "a511fca3becb35bff2bb17891d2e0b34699ebc63f603666c7a5177617ea56017",
+            "state_ref": "81c8b592-0a18-41fd-a02b-34702acb94dd",
+            "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "ddc16ce75c36faed6cac19d991bf3ed448de504f70978951983319f05d097c74",
+            "state_ref": "23733b80-7729-4e81-b222-97beef568ce2",
+            "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "d9fe531ec52118d079305912f35a86fe3d0e06760b8769a552f53399782020af",
+            "state_ref": "729c1876-3df6-4738-ba27-38a7f8f9afe9",
+            "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "b5fb7c2a3b2ddc3719b1c98dc1b4bca9394253c37292c6038a743123f44e6e7a",
+            "state_ref": "3e224923-7b70-45bf-a836-ce89815f9e1e",
+            "payload_sha256": "44940ee87504293607e5eeb8b37f439d888bbfdfe39eb87c24661c8d26e1823c"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "acf6f74fd9e401acecba4c6453c342d640a871c3f351d564d758bff00c7af453",
+            "state_ref": "cfb19415-52c6-43ac-bdc8-5632e2acd391",
+            "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7b752fef49bdd6b8034ae51fa19710683a76383cca2cbab7bb8f7bc02d5b4641",
+            "state_ref": "fd2dd98e-0d96-404b-a5e5-567ff7a8d57d",
+            "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7ce6385cb16f5e29b3a03a5b9e5f46179d5f82e757f9a9851c6d643c4c1d4396",
+            "state_ref": "d9f9033a-3b0f-482a-8416-55b05d59002b",
+            "payload_sha256": "f611a92e272c188f7192896f0600adf52cb9e66fa387c037bb7d712f9daf03e6"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "badde13efe743a99bf1bd4ff449b1fc6d71f0d307c035ff4f829547d171745d0",
+            "state_ref": "1dd9baa5-a91c-4590-bf13-3fc12ad79e00",
+            "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "d9fe531ec52118d079305912f35a86fe3d0e06760b8769a552f53399782020af",
+            "state_ref": "53f9feb5-0f22-4bf7-b709-64aaa335ed21",
+            "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "2fa48a6280cae6beb62dbfa0d4d3c3890bd4f67b22de6fcd0c6f2fa76a2caeb3",
+            "state_ref": "1df58a4d-ad7f-48b3-b477-1215fd33dc8d",
+            "payload_sha256": "b735bdfd09e2632a34a84cba3008de744164aabdc27f306c1f8150ed3bbbb057"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WF02",
+      "status": "passed",
+      "checks": {
+        "accepted_input": true,
+        "registered_result_and_payload_schemas": true,
+        "registered_state_schemas": true,
+        "input_digest": true,
+        "frozen_plan_digest": true,
+        "frozen_plan_unchanged": true,
+        "state_content_digests": true,
+        "effective_step_digests": true,
+        "selected_frozen_bindings": true,
+        "typed_source_links": true,
+        "registered_manifest_and_schema_bindings": true,
+        "symbolic_plan_whitelists": true,
+        "captured_exact_byte_digests": true,
+        "artifact_exact_bytes": true,
+        "execution_fingerprint": true,
+        "finite_json_export": true,
+        "physical_validation_unclaimed": true,
+        "empty_active_selection_is_executable": true,
+        "mandatory_payload_preserved": true,
+        "unrequested_optional_outputs_absent": true,
+        "eligible_history_returned": true,
+        "overall_success": true
+      },
+      "reference_method": "Mandatory core output is independent of the empty per-step optional selection",
+      "input": {
+        "schema_version": "0.2.0",
+        "experiment_id": "77e77777-7777-4777-8777-777777777777",
+        "revision_id": "88e88888-8888-4888-8888-888888888888",
+        "title": "Independent empty-active-observable reference",
+        "created_at": "2026-11-04T00:00:00+09:00",
+        "definition": {
+          "unit_system": "SI",
+          "scales": {
+            "length_m": 1e-09,
+            "energy_j": 1e-19
+          },
+          "system": {
+            "representation": "particles_3d",
+            "module_id": "quanta.pair_static",
+            "module_version": "0.1.0",
+            "boundary": "nonperiodic",
+            "min_distance_m": 1e-17,
+            "particles": [
+              {
+                "id": "p1",
+                "position_m": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  true,
+                  true,
+                  true
+                ]
+              },
+              {
+                "id": "p2",
+                "position_m": [
+                  1.4e-09,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  false,
+                  true,
+                  true
+                ]
+              }
+            ],
+            "potential": {
+              "expression": {
+                "op": "mul",
+                "args": [
+                  {
+                    "op": "const",
+                    "value": 0.5
+                  },
+                  {
+                    "op": "param",
+                    "name": "k"
+                  },
+                  {
+                    "op": "pow",
+                    "arg": {
+                      "op": "sub",
+                      "args": [
+                        {
+                          "op": "var",
+                          "name": "rho"
+                        },
+                        {
+                          "op": "param",
+                          "name": "rho0"
+                        }
+                      ]
+                    },
+                    "exponent": 2
+                  }
+                ]
+              },
+              "parameters": {
+                "k": 2.0,
+                "rho0": 1.0
+              }
+            }
+          },
+          "numerics": {
+            "solver": "lbfgsb_forward_ad",
+            "gradient_tolerance": 1e-06,
+            "energy_ftol": 1e-12,
+            "max_iterations": 2000,
+            "max_evaluations": 10000
+          },
+          "protocol": {
+            "steps": [
+              {
+                "step_id": "first",
+                "operation": "energy_forces",
+                "source": "initial",
+                "overrides": []
+              },
+              {
+                "step_id": "second",
+                "operation": "relax",
+                "source": "first",
+                "overrides": []
+              }
+            ],
+            "sweep": {
+              "axes": []
+            }
+          },
+          "observables": [
+            "optimization_history"
+          ],
+          "extensions": {}
+        }
+      },
+      "run": {
+        "run_id": "5f2636a7-a3be-40b4-9a1d-0ef5bd9181e0",
+        "input_sha256": "557f7405ef472c8a359e0cfba85ced98a069ae470eb8b3e1c07e8c021eab24e9",
+        "resolved_input_sha256": "ba174bde62f9d692b9bc0867b37e29b547fb4a32f088c0b48aff9cfbed49da44",
+        "execution_fingerprint": "1e5c8cebe74be7b3e96d0718607dbff31a36f9b11acefaa29d72ccde530665ea",
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "not_applicable",
+        "state_count": 5,
+        "artifact_count": 71,
+        "steps": [
+          {
+            "branch_index": 0,
+            "step_id": "first",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "4367c521138a08309678cb79085088f5fc0ab8aa5f5ce7624f62f1624a84208d",
+            "state_ref": "36443bd7-2b98-49b2-b990-d5869e4c10c5",
+            "payload_sha256": "0caf9cd9881aec9a2eab6b93c6f75a328ddb2f62c5c4e9fcdbbaed4b85fe74db"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "second",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "ee75c8c77055f2c22e80489f841fe79d2c8a2300de5716e2c006722ab88f115a",
+            "state_ref": "5e0a2487-da49-4b4f-b446-cc24ef4a9685",
+            "payload_sha256": "ebefb949b5155d4cf2b2cb381c9193adb01f4a8c3c77632bd3345665655f2421"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WF03",
+      "status": "passed",
+      "checks": {
+        "accepted_input": true,
+        "registered_result_and_payload_schemas": true,
+        "registered_state_schemas": true,
+        "input_digest": true,
+        "frozen_plan_digest": true,
+        "frozen_plan_unchanged": true,
+        "state_content_digests": true,
+        "effective_step_digests": true,
+        "selected_frozen_bindings": true,
+        "typed_source_links": true,
+        "registered_manifest_and_schema_bindings": true,
+        "symbolic_plan_whitelists": true,
+        "captured_exact_byte_digests": true,
+        "artifact_exact_bytes": true,
+        "execution_fingerprint": true,
+        "finite_json_export": true,
+        "physical_validation_unclaimed": true,
+        "failed_run_is_partial": true,
+        "last_valid_partial_payload_kept": true,
+        "partial_not_promoted": true,
+        "dependent_skipped_without_fabricated_preparation": true,
+        "independent_initial_step_continues": true,
+        "resource_reason_recorded": true,
+        "independent_energy_forces": true
+      },
+      "reference_method": "Real one-evaluation budget exhaustion, explicit dependent skip and initial-source continuation",
+      "input": {
+        "schema_version": "0.2.0",
+        "experiment_id": "77e77777-7777-4777-8777-777777777777",
+        "revision_id": "88e88888-8888-4888-8888-888888888888",
+        "title": "Independent partial and dependency reference",
+        "created_at": "2026-11-04T00:00:00+09:00",
+        "definition": {
+          "unit_system": "SI",
+          "scales": {
+            "length_m": 1e-09,
+            "energy_j": 1e-19
+          },
+          "system": {
+            "representation": "particles_3d",
+            "module_id": "quanta.pair_static",
+            "module_version": "0.1.0",
+            "boundary": "nonperiodic",
+            "min_distance_m": 1e-17,
+            "particles": [
+              {
+                "id": "p1",
+                "position_m": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  true,
+                  true,
+                  true
+                ]
+              },
+              {
+                "id": "p2",
+                "position_m": [
+                  1.4e-09,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  false,
+                  true,
+                  true
+                ]
+              }
+            ],
+            "potential": {
+              "expression": {
+                "op": "mul",
+                "args": [
+                  {
+                    "op": "const",
+                    "value": 0.5
+                  },
+                  {
+                    "op": "param",
+                    "name": "k"
+                  },
+                  {
+                    "op": "pow",
+                    "arg": {
+                      "op": "sub",
+                      "args": [
+                        {
+                          "op": "var",
+                          "name": "rho"
+                        },
+                        {
+                          "op": "param",
+                          "name": "rho0"
+                        }
+                      ]
+                    },
+                    "exponent": 2
+                  }
+                ]
+              },
+              "parameters": {
+                "k": 2.0,
+                "rho0": 1.0
+              }
+            }
+          },
+          "numerics": {
+            "solver": "lbfgsb_forward_ad",
+            "gradient_tolerance": 1e-06,
+            "energy_ftol": 1e-12,
+            "max_iterations": 2000,
+            "max_evaluations": 1
+          },
+          "protocol": {
+            "steps": [
+              {
+                "step_id": "limited",
+                "operation": "relax",
+                "source": "initial",
+                "overrides": []
+              },
+              {
+                "step_id": "dependent",
+                "operation": "energy_forces",
+                "source": "limited",
+                "overrides": []
+              },
+              {
+                "step_id": "independent",
+                "operation": "energy_forces",
+                "source": "initial",
+                "overrides": []
+              }
+            ],
+            "sweep": {
+              "axes": []
+            }
+          },
+          "observables": [
+            "energy",
+            "forces",
+            "pair_energies",
+            "final_positions",
+            "optimization_history"
+          ],
+          "extensions": {}
+        }
+      },
+      "run": {
+        "run_id": "b7527b1e-0cf0-4b6b-9478-7d57c2d7567d",
+        "input_sha256": "a6cb0b4359287048b9ef1e17c153f3ebb3b6a630cc74a2ad8dd8b20fca111dad",
+        "resolved_input_sha256": "4e95ab185a07330ce6fbdeb5629e9dcf318e2094c2730d6daae567f8f7dc19ae",
+        "execution_fingerprint": "1f3b3ca1469988e06d9d758374b303af278f1054fed765afb331048d69f8d3a0",
+        "execution_status": "FAILED",
+        "numerical_status": "not_converged",
+        "resolution_status": "not_applicable",
+        "state_count": 4,
+        "artifact_count": 74,
+        "steps": [
+          {
+            "branch_index": 0,
+            "step_id": "limited",
+            "outcome": "FAILED",
+            "partial": true,
+            "resolved_input_sha256": "790f962341fe1dcc66c8ca47b361f9273c15ae85f3156d177621a953807dd146",
+            "state_ref": null,
+            "payload_sha256": "4a3c76769c638c9bd90656e8e6a11da3998312dfc336ed0b6961505be5111a0f"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "dependent",
+            "outcome": "SKIPPED",
+            "partial": true,
+            "resolved_input_sha256": null,
+            "state_ref": null,
+            "payload_sha256": null
+          },
+          {
+            "branch_index": 0,
+            "step_id": "independent",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "96311da84f7210797af6f3af60b81ad9bd503d5ce36cdfba30f636488d6eb835",
+            "state_ref": "2bb09bf1-7b0f-48de-b516-b760de407198",
+            "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WF04",
+      "status": "passed",
+      "checks": {
+        "accepted_input": true,
+        "registered_result_and_payload_schemas": true,
+        "registered_state_schemas": true,
+        "input_digest": true,
+        "frozen_plan_digest": true,
+        "frozen_plan_unchanged": true,
+        "state_content_digests": true,
+        "effective_step_digests": true,
+        "selected_frozen_bindings": true,
+        "typed_source_links": true,
+        "registered_manifest_and_schema_bindings": true,
+        "symbolic_plan_whitelists": true,
+        "captured_exact_byte_digests": true,
+        "artifact_exact_bytes": true,
+        "execution_fingerprint": true,
+        "finite_json_export": true,
+        "physical_validation_unclaimed": true,
+        "two_independent_initial_steps": true,
+        "independent_discrete_spectrum": true,
+        "resolution_not_claimed_without_refinement": true,
+        "overall_success": true
+      },
+      "reference_method": "Closed-form discrete zero-potential spectrum with independent initial mass override",
+      "input": {
+        "schema_version": "0.2.0",
+        "experiment_id": "77e77777-7777-4777-8777-777777777777",
+        "revision_id": "88e88888-8888-4888-8888-888888888888",
+        "title": "Independent stationary workflow reference",
+        "created_at": "2026-11-04T00:00:00+09:00",
+        "definition": {
+          "unit_system": "SI",
+          "scales": {
+            "length_m": 1e-09,
+            "energy_j": 1e-20
+          },
+          "system": {
+            "representation": "quantum_grid_1d",
+            "module_id": "quanta.quantum_stationary",
+            "module_version": "0.1.0",
+            "domain": {
+              "a_m": 0.0,
+              "b_m": 1e-09
+            },
+            "mass_kg": 1e-30,
+            "boundary": "dirichlet_zero",
+            "potential": {
+              "expression": {
+                "op": "const",
+                "value": 0.0
+              },
+              "parameters": {}
+            }
+          },
+          "numerics": {
+            "solver": "symmetric_tridiagonal_lowest",
+            "n_points": 63,
+            "states": 2,
+            "refinement_levels": 0,
+            "grid_energy_atol": 1e-08,
+            "grid_energy_rtol": 0.001
+          },
+          "protocol": {
+            "steps": [
+              {
+                "step_id": "first",
+                "operation": "eigenstates",
+                "source": "initial",
+                "overrides": []
+              },
+              {
+                "step_id": "second",
+                "operation": "eigenstates",
+                "source": "initial",
+                "overrides": [
+                  {
+                    "path": "/system/mass_kg",
+                    "value": 2e-30
+                  }
+                ]
+              }
+            ],
+            "sweep": {
+              "axes": []
+            }
+          },
+          "observables": [
+            "energies",
+            "states",
+            "density",
+            "x_mean"
+          ],
+          "extensions": {}
+        }
+      },
+      "measurements": [
+        {
+          "step_id": "first",
+          "mass_kg": 1e-30,
+          "energies_j": [
+            5.486998795062419e-20,
+            2.193477651954786e-19
+          ],
+          "reference_energies_j": [
+            5.486998795062255e-20,
+            2.1934776519547383e-19
+          ],
+          "absolute_errors_reduced": [
+            1.6370404527291505e-13,
+            4.766676612358409e-13
+          ],
+          "passed": true
+        },
+        {
+          "step_id": "second",
+          "mass_kg": 2e-30,
+          "energies_j": [
+            2.7434993975312094e-20,
+            1.096738825977393e-19
+          ],
+          "reference_energies_j": [
+            2.7434993975311275e-20,
+            1.0967388259773691e-19
+          ],
+          "absolute_errors_reduced": [
+            8.185202263645752e-14,
+            2.3833383061792046e-13
+          ],
+          "passed": true
+        }
+      ],
+      "run": {
+        "run_id": "383065b9-5f4e-447f-b5ca-585b06d0154d",
+        "input_sha256": "1d472cfd61eda3d2b8e59734514533e10200edcb9fdd7a03657b6659b55e7a31",
+        "resolved_input_sha256": "5c7e91fe475ded99e849a331da59d45aeb11129ca4afdb561c8a505d72f0baef",
+        "execution_fingerprint": "546d3f19ae3c20f02e53e0ef85492415b0ee1488423b3261c1617d2007260ea6",
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "not_checked",
+        "state_count": 5,
+        "artifact_count": 75,
+        "steps": [
+          {
+            "branch_index": 0,
+            "step_id": "first",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "434d03a86b3debc41663b9355fc9f11eacf5451ccf7ec5335212a10654737ba9",
+            "state_ref": "db228dd9-0593-4437-8dc0-295bdac900e7",
+            "payload_sha256": "267dcf7c8f0b98ec3089d7911c54580e067fe4c68b6bceb95704166013ecbf8c"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "second",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "c807cc2cee72cf78cd67b6dda7ffe06ef02d8a7c53b0bbf4895ff4acb225979b",
+            "state_ref": "2a39ff6d-74fe-4ce9-958d-49633bfbdcf1",
+            "payload_sha256": "19cf977d83eccfdcf8c492f1406e1c782103d10e5dfd77de41db2dbc23dcc736"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WF05",
+      "status": "passed",
+      "checks": {
+        "accepted_input": true,
+        "registered_result_and_payload_schemas": true,
+        "registered_state_schemas": true,
+        "input_digest": true,
+        "frozen_plan_digest": true,
+        "frozen_plan_unchanged": true,
+        "state_content_digests": true,
+        "effective_step_digests": true,
+        "selected_frozen_bindings": true,
+        "typed_source_links": true,
+        "registered_manifest_and_schema_bindings": true,
+        "symbolic_plan_whitelists": true,
+        "captured_exact_byte_digests": true,
+        "artifact_exact_bytes": true,
+        "execution_fingerprint": true,
+        "finite_json_export": true,
+        "physical_validation_unclaimed": true,
+        "bundle_restores_exact_report": true,
+        "new_run_identity": true,
+        "new_state_identities": true,
+        "authored_and_plan_hashes_preserved": true,
+        "same_actual_environment_same_fingerprint": true,
+        "effective_step_hashes_preserved": true,
+        "scientific_state_contents_preserved": true,
+        "replay_provenance": true,
+        "replay_success": true,
+        "tampered_asset_rejected": true
+      },
+      "reference_method": "Persisted exact-byte round trip and actual replay with new IDs but stable scientific identities",
+      "original_run": {
+        "run_id": "bc559866-35a5-424b-adec-72ce35477534",
+        "input_sha256": "91b85a8ab56b581158a23865fcf7cec582e3316fc48fd160e6f202d0d57b5bd8",
+        "resolved_input_sha256": "413d4699e8b55b4129d6d510e7596250120f608549d1d7eb6da796651136b4ff",
+        "execution_fingerprint": "704fef525d785b6a7fb629fe8ea3f027dbe5e4fe3a16b45c5d25b2c934920b83",
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "not_applicable",
+        "state_count": 28,
+        "artifact_count": 107,
+        "steps": [
+          {
+            "branch_index": 0,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "5a8113081e5209e537ec873abc5c497f51b180fcd5bd963399ad8eb7093206c5",
+            "state_ref": "fec44fb8-ee32-4c99-b35c-1647836bdb82",
+            "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7b752fef49bdd6b8034ae51fa19710683a76383cca2cbab7bb8f7bc02d5b4641",
+            "state_ref": "20754c2f-1783-40b7-81e0-980cb9f5c49e",
+            "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "a511fca3becb35bff2bb17891d2e0b34699ebc63f603666c7a5177617ea56017",
+            "state_ref": "81c8b592-0a18-41fd-a02b-34702acb94dd",
+            "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "ddc16ce75c36faed6cac19d991bf3ed448de504f70978951983319f05d097c74",
+            "state_ref": "23733b80-7729-4e81-b222-97beef568ce2",
+            "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "d9fe531ec52118d079305912f35a86fe3d0e06760b8769a552f53399782020af",
+            "state_ref": "729c1876-3df6-4738-ba27-38a7f8f9afe9",
+            "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "b5fb7c2a3b2ddc3719b1c98dc1b4bca9394253c37292c6038a743123f44e6e7a",
+            "state_ref": "3e224923-7b70-45bf-a836-ce89815f9e1e",
+            "payload_sha256": "44940ee87504293607e5eeb8b37f439d888bbfdfe39eb87c24661c8d26e1823c"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "acf6f74fd9e401acecba4c6453c342d640a871c3f351d564d758bff00c7af453",
+            "state_ref": "cfb19415-52c6-43ac-bdc8-5632e2acd391",
+            "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7b752fef49bdd6b8034ae51fa19710683a76383cca2cbab7bb8f7bc02d5b4641",
+            "state_ref": "fd2dd98e-0d96-404b-a5e5-567ff7a8d57d",
+            "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7ce6385cb16f5e29b3a03a5b9e5f46179d5f82e757f9a9851c6d643c4c1d4396",
+            "state_ref": "d9f9033a-3b0f-482a-8416-55b05d59002b",
+            "payload_sha256": "f611a92e272c188f7192896f0600adf52cb9e66fa387c037bb7d712f9daf03e6"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "badde13efe743a99bf1bd4ff449b1fc6d71f0d307c035ff4f829547d171745d0",
+            "state_ref": "1dd9baa5-a91c-4590-bf13-3fc12ad79e00",
+            "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "d9fe531ec52118d079305912f35a86fe3d0e06760b8769a552f53399782020af",
+            "state_ref": "53f9feb5-0f22-4bf7-b709-64aaa335ed21",
+            "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "2fa48a6280cae6beb62dbfa0d4d3c3890bd4f67b22de6fcd0c6f2fa76a2caeb3",
+            "state_ref": "1df58a4d-ad7f-48b3-b477-1215fd33dc8d",
+            "payload_sha256": "b735bdfd09e2632a34a84cba3008de744164aabdc27f306c1f8150ed3bbbb057"
+          }
+        ]
+      },
+      "replayed_run": {
+        "run_id": "8d295eb5-c9d6-4db4-983c-e5eefa2a3c53",
+        "input_sha256": "91b85a8ab56b581158a23865fcf7cec582e3316fc48fd160e6f202d0d57b5bd8",
+        "resolved_input_sha256": "413d4699e8b55b4129d6d510e7596250120f608549d1d7eb6da796651136b4ff",
+        "execution_fingerprint": "704fef525d785b6a7fb629fe8ea3f027dbe5e4fe3a16b45c5d25b2c934920b83",
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "not_applicable",
+        "state_count": 28,
+        "artifact_count": 107,
+        "steps": [
+          {
+            "branch_index": 0,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "5a8113081e5209e537ec873abc5c497f51b180fcd5bd963399ad8eb7093206c5",
+            "state_ref": "ef8b313b-9449-41f7-bb27-7df16ee612d4",
+            "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7b752fef49bdd6b8034ae51fa19710683a76383cca2cbab7bb8f7bc02d5b4641",
+            "state_ref": "456ded5f-610d-4c2a-8e40-1b3bfd09639a",
+            "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
+          },
+          {
+            "branch_index": 0,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "a511fca3becb35bff2bb17891d2e0b34699ebc63f603666c7a5177617ea56017",
+            "state_ref": "73f54313-cba9-4f9a-97d7-d8fdad4cf29b",
+            "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "ddc16ce75c36faed6cac19d991bf3ed448de504f70978951983319f05d097c74",
+            "state_ref": "4b27b93c-994c-4fe4-8927-90b6cf80126b",
+            "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "d9fe531ec52118d079305912f35a86fe3d0e06760b8769a552f53399782020af",
+            "state_ref": "09f7eb6a-6d8d-43f0-9b56-2f55cc8bc4aa",
+            "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
+          },
+          {
+            "branch_index": 1,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "b5fb7c2a3b2ddc3719b1c98dc1b4bca9394253c37292c6038a743123f44e6e7a",
+            "state_ref": "da151532-2b8f-4a02-a010-430e90b4575a",
+            "payload_sha256": "44940ee87504293607e5eeb8b37f439d888bbfdfe39eb87c24661c8d26e1823c"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "acf6f74fd9e401acecba4c6453c342d640a871c3f351d564d758bff00c7af453",
+            "state_ref": "342b777b-bdb1-4c5a-bc1c-04f151bce7cf",
+            "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7b752fef49bdd6b8034ae51fa19710683a76383cca2cbab7bb8f7bc02d5b4641",
+            "state_ref": "ed92101c-0fc3-4d9f-be7b-3ea8462ce8c7",
+            "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
+          },
+          {
+            "branch_index": 2,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "7ce6385cb16f5e29b3a03a5b9e5f46179d5f82e757f9a9851c6d643c4c1d4396",
+            "state_ref": "1812be9f-9d0a-470f-863f-d8cc55da62cb",
+            "payload_sha256": "f611a92e272c188f7192896f0600adf52cb9e66fa387c037bb7d712f9daf03e6"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "equilibrate",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "badde13efe743a99bf1bd4ff449b1fc6d71f0d307c035ff4f829547d171745d0",
+            "state_ref": "83b59ebd-57c1-4ffb-ac9d-74380f70d00b",
+            "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "inherit",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "d9fe531ec52118d079305912f35a86fe3d0e06760b8769a552f53399782020af",
+            "state_ref": "9c393f26-6295-4764-b36e-3defdc2bccb3",
+            "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
+          },
+          {
+            "branch_index": 3,
+            "step_id": "reset",
+            "outcome": "SUCCEEDED",
+            "partial": false,
+            "resolved_input_sha256": "2fa48a6280cae6beb62dbfa0d4d3c3890bd4f67b22de6fcd0c6f2fa76a2caeb3",
+            "state_ref": "5cec62cd-a159-4943-a39b-5a31f34e57d1",
+            "payload_sha256": "b735bdfd09e2632a34a84cba3008de744164aabdc27f306c1f8150ed3bbbb057"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WF06",
+      "status": "passed",
+      "checks": {
+        "all_preflight_refusals": true
+      },
+      "reference_method": "Invalid input, unsupported version, incompatible source and expanded-step cap refusal before dispatch",
+      "measurements": [
+        {
+          "case": "eighteen_expanded_steps",
+          "expected_error_code": "RESOURCE_LIMIT",
+          "checks": {
+            "rejected_before_run": true,
+            "expected_reason": true,
+            "authored_input_unchanged": true
+          },
+          "errors": [
+            {
+              "code": "RESOURCE_LIMIT",
+              "category": "resource",
+              "message": "Expanded protocol exceeds the resource profile",
+              "path": "/definition/protocol",
+              "step_id": null,
+              "branch_index": null,
+              "retryable": false,
+              "details": {
+                "expanded_steps": 18
+              }
+            }
+          ],
+          "input": {
+            "schema_version": "0.2.0",
+            "experiment_id": "77e77777-7777-4777-8777-777777777777",
+            "revision_id": "88e88888-8888-4888-8888-888888888888",
+            "title": "Resource refusal reference",
+            "created_at": "2026-11-04T00:00:00+09:00",
+            "definition": {
+              "unit_system": "SI",
+              "scales": {
+                "length_m": 1e-09,
+                "energy_j": 1e-19
+              },
+              "system": {
+                "representation": "particles_3d",
+                "module_id": "quanta.pair_static",
+                "module_version": "0.1.0",
+                "boundary": "nonperiodic",
+                "min_distance_m": 1e-17,
+                "particles": [
+                  {
+                    "id": "p1",
+                    "position_m": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "fixed": [
+                      true,
+                      true,
+                      true
+                    ]
+                  },
+                  {
+                    "id": "p2",
+                    "position_m": [
+                      1.4e-09,
+                      0.0,
+                      0.0
+                    ],
+                    "fixed": [
+                      false,
+                      true,
+                      true
+                    ]
+                  }
+                ],
+                "potential": {
+                  "expression": {
+                    "op": "mul",
+                    "args": [
+                      {
+                        "op": "const",
+                        "value": 0.5
+                      },
+                      {
+                        "op": "param",
+                        "name": "k"
+                      },
+                      {
+                        "op": "pow",
+                        "arg": {
+                          "op": "sub",
+                          "args": [
+                            {
+                              "op": "var",
+                              "name": "rho"
+                            },
+                            {
+                              "op": "param",
+                              "name": "rho0"
+                            }
+                          ]
+                        },
+                        "exponent": 2
+                      }
+                    ]
+                  },
+                  "parameters": {
+                    "k": 2.0,
+                    "rho0": 1.0
+                  }
+                }
+              },
+              "numerics": {
+                "solver": "lbfgsb_forward_ad",
+                "gradient_tolerance": 1e-06,
+                "energy_ftol": 1e-12,
+                "max_iterations": 2000,
+                "max_evaluations": 10000
+              },
+              "protocol": {
+                "steps": [
+                  {
+                    "step_id": "one",
+                    "operation": "energy_forces",
+                    "source": "initial",
+                    "overrides": []
+                  },
+                  {
+                    "step_id": "two",
+                    "operation": "energy_forces",
+                    "source": "initial",
+                    "overrides": []
+                  }
+                ],
+                "sweep": {
+                  "axes": [
+                    {
+                      "path": "/system/potential/parameters/k",
+                      "values": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9
+                      ]
+                    }
+                  ]
+                }
+              },
+              "observables": [
+                "energy"
+              ],
+              "extensions": {}
+            }
+          }
+        },
+        {
+          "case": "initial_collision",
+          "expected_error_code": "INPUT_SEMANTIC",
+          "checks": {
+            "rejected_before_run": true,
+            "expected_reason": true,
+            "authored_input_unchanged": true
+          },
+          "errors": [
+            {
+              "code": "INPUT_SEMANTIC",
+              "category": "input",
+              "message": "Every pair distance must exceed the minimum distance",
+              "path": "/definition/system/particles",
+              "step_id": null,
+              "branch_index": null,
+              "retryable": false,
+              "details": {
+                "pair_indices": [
+                  0,
+                  1
+                ]
+              }
+            }
+          ],
+          "input": {
+            "schema_version": "0.2.0",
+            "experiment_id": "77e77777-7777-4777-8777-777777777777",
+            "revision_id": "88e88888-8888-4888-8888-888888888888",
+            "title": "Domain refusal reference",
+            "created_at": "2026-11-04T00:00:00+09:00",
+            "definition": {
+              "unit_system": "SI",
+              "scales": {
+                "length_m": 1e-09,
+                "energy_j": 1e-19
+              },
+              "system": {
+                "representation": "particles_3d",
+                "module_id": "quanta.pair_static",
+                "module_version": "0.1.0",
+                "boundary": "nonperiodic",
+                "min_distance_m": 1e-17,
+                "particles": [
+                  {
+                    "id": "p1",
+                    "position_m": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "fixed": [
+                      true,
+                      true,
+                      true
+                    ]
+                  },
+                  {
+                    "id": "p2",
+                    "position_m": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "fixed": [
+                      false,
+                      true,
+                      true
+                    ]
+                  }
+                ],
+                "potential": {
+                  "expression": {
+                    "op": "mul",
+                    "args": [
+                      {
+                        "op": "const",
+                        "value": 0.5
+                      },
+                      {
+                        "op": "param",
+                        "name": "k"
+                      },
+                      {
+                        "op": "pow",
+                        "arg": {
+                          "op": "sub",
+                          "args": [
+                            {
+                              "op": "var",
+                              "name": "rho"
+                            },
+                            {
+                              "op": "param",
+                              "name": "rho0"
+                            }
+                          ]
+                        },
+                        "exponent": 2
+                      }
+                    ]
+                  },
+                  "parameters": {
+                    "k": 2.0,
+                    "rho0": 1.0
+                  }
+                }
+              },
+              "numerics": {
+                "solver": "lbfgsb_forward_ad",
+                "gradient_tolerance": 1e-06,
+                "energy_ftol": 1e-12,
+                "max_iterations": 2000,
+                "max_evaluations": 10000
+              },
+              "protocol": {
+                "steps": [
+                  {
+                    "step_id": "measure",
+                    "operation": "energy_forces",
+                    "source": "initial",
+                    "overrides": []
+                  }
+                ],
+                "sweep": {
+                  "axes": []
+                }
+              },
+              "observables": [
+                "energy"
+              ],
+              "extensions": {}
+            }
+          }
+        },
+        {
+          "case": "unknown_exact_version",
+          "expected_error_code": "MODEL_UNSUPPORTED",
+          "checks": {
+            "rejected_before_run": true,
+            "expected_reason": true,
+            "authored_input_unchanged": true
+          },
+          "errors": [
+            {
+              "code": "MODEL_UNSUPPORTED",
+              "category": "support",
+              "message": "The exact module/version is not registered",
+              "path": "/definition/system",
+              "step_id": null,
+              "branch_index": null,
+              "retryable": false,
+              "details": {}
+            }
+          ],
+          "input": {
+            "schema_version": "0.2.0",
+            "experiment_id": "77e77777-7777-4777-8777-777777777777",
+            "revision_id": "88e88888-8888-4888-8888-888888888888",
+            "title": "Support refusal reference",
+            "created_at": "2026-11-04T00:00:00+09:00",
+            "definition": {
+              "unit_system": "SI",
+              "scales": {
+                "length_m": 1e-09,
+                "energy_j": 1e-19
+              },
+              "system": {
+                "representation": "particles_3d",
+                "module_id": "quanta.pair_static",
+                "module_version": "9.9.9",
+                "boundary": "nonperiodic",
+                "min_distance_m": 1e-17,
+                "particles": [
+                  {
+                    "id": "p1",
+                    "position_m": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "fixed": [
+                      true,
+                      true,
+                      true
+                    ]
+                  },
+                  {
+                    "id": "p2",
+                    "position_m": [
+                      1.4e-09,
+                      0.0,
+                      0.0
+                    ],
+                    "fixed": [
+                      false,
+                      true,
+                      true
+                    ]
+                  }
+                ],
+                "potential": {
+                  "expression": {
+                    "op": "mul",
+                    "args": [
+                      {
+                        "op": "const",
+                        "value": 0.5
+                      },
+                      {
+                        "op": "param",
+                        "name": "k"
+                      },
+                      {
+                        "op": "pow",
+                        "arg": {
+                          "op": "sub",
+                          "args": [
+                            {
+                              "op": "var",
+                              "name": "rho"
+                            },
+                            {
+                              "op": "param",
+                              "name": "rho0"
+                            }
+                          ]
+                        },
+                        "exponent": 2
+                      }
+                    ]
+                  },
+                  "parameters": {
+                    "k": 2.0,
+                    "rho0": 1.0
+                  }
+                }
+              },
+              "numerics": {
+                "solver": "lbfgsb_forward_ad",
+                "gradient_tolerance": 1e-06,
+                "energy_ftol": 1e-12,
+                "max_iterations": 2000,
+                "max_evaluations": 10000
+              },
+              "protocol": {
+                "steps": [
+                  {
+                    "step_id": "measure",
+                    "operation": "energy_forces",
+                    "source": "initial",
+                    "overrides": []
+                  }
+                ],
+                "sweep": {
+                  "axes": []
+                }
+              },
+              "observables": [
+                "energy"
+              ],
+              "extensions": {}
+            }
+          }
+        },
+        {
+          "case": "solution_is_not_configuration",
+          "expected_error_code": "PORT_INCOMPATIBLE",
+          "checks": {
+            "rejected_before_run": true,
+            "expected_reason": true,
+            "authored_input_unchanged": true
+          },
+          "errors": [
+            {
+              "code": "PORT_INCOMPATIBLE",
+              "category": "support",
+              "message": "A stationary solution cannot be used as a configuration input",
+              "path": "/definition/protocol/steps/1/source",
+              "step_id": "second",
+              "branch_index": null,
+              "retryable": false,
+              "details": {}
+            }
+          ],
+          "input": {
+            "schema_version": "0.2.0",
+            "experiment_id": "77e77777-7777-4777-8777-777777777777",
+            "revision_id": "88e88888-8888-4888-8888-888888888888",
+            "title": "Independent stationary workflow reference",
+            "created_at": "2026-11-04T00:00:00+09:00",
+            "definition": {
+              "unit_system": "SI",
+              "scales": {
+                "length_m": 1e-09,
+                "energy_j": 1e-20
+              },
+              "system": {
+                "representation": "quantum_grid_1d",
+                "module_id": "quanta.quantum_stationary",
+                "module_version": "0.1.0",
+                "domain": {
+                  "a_m": 0.0,
+                  "b_m": 1e-09
+                },
+                "mass_kg": 1e-30,
+                "boundary": "dirichlet_zero",
+                "potential": {
+                  "expression": {
+                    "op": "const",
+                    "value": 0.0
+                  },
+                  "parameters": {}
+                }
+              },
+              "numerics": {
+                "solver": "symmetric_tridiagonal_lowest",
+                "n_points": 63,
+                "states": 2,
+                "refinement_levels": 0,
+                "grid_energy_atol": 1e-08,
+                "grid_energy_rtol": 0.001
+              },
+              "protocol": {
+                "steps": [
+                  {
+                    "step_id": "first",
+                    "operation": "eigenstates",
+                    "source": "initial",
+                    "overrides": []
+                  },
+                  {
+                    "step_id": "second",
+                    "operation": "eigenstates",
+                    "source": "first",
+                    "overrides": [
+                      {
+                        "path": "/system/mass_kg",
+                        "value": 2e-30
+                      }
+                    ]
+                  }
+                ],
+                "sweep": {
+                  "axes": []
+                }
+              },
+              "observables": [
+                "energies",
+                "states",
+                "density",
+                "x_mean"
+              ],
+              "extensions": {}
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "environment": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "runtime_profile": "cpython-3.12.14-linux-aarch64-cpu-v1",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "aarch64"
+    },
+    "python_executable": "/opt/hostedtoolcache/Python/3.12.14/arm64/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/arm64/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-1f73132b.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "neoversev2"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/arm64/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-c5a9b014.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "neoversev2"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "aarch64",
+          "family": "aarch64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "aarch64",
+          "family": "aarch64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-eyrtyfpu/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "NEON",
+          "NEON_FP16",
+          "NEON_VFPV4",
+          "ASIMD"
+        ],
+        "found": [
+          "ASIMDHP",
+          "ASIMDFHM",
+          "SVE"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false,
+    "locked_distributions": {
+      "attrs": "26.1.0",
+      "cffi": "2.1.1",
+      "click": "8.5.0",
+      "cryptography": "50.0.2",
+      "h11": "0.16.0",
+      "iniconfig": "2.3.1",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "numpy": "2.3.5",
+      "packaging": "26.3",
+      "pip": "25.3",
+      "pluggy": "1.7.0",
+      "pycparser": "3.12",
+      "pygments": "2.21.0",
+      "pyjwt": "2.15.1",
+      "pytest": "9.0.2",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc8785": "0.1.4",
+      "rpds-py": "2026.9.1",
+      "scipy": "1.17.0",
+      "setuptools": "80.9.0",
+      "six": "1.17.0",
+      "threadpoolctl": "3.6.0",
+      "typing-extensions": "4.16.0",
+      "uvicorn": "0.54.0",
+      "wheel": "0.45.1"
+    },
+    "requirements_lock_sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f"
+  },
+  "code_source": {
+    "files_sha256": {
+      "src/quanta/__init__.py": "7ea2d2e0e05035396e56107300614588590fc3f9cfea815f551a7decd103d91a",
+      "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "src/quanta/access_auth.py": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+      "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+      "src/quanta/backup.py": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+      "src/quanta/cli.py": "aa3541c2a153c59b27ca2eeebbf647a75cbfd8ae046f70b26c1862c3636296ee",
+      "src/quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+      "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+      "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+      "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+      "src/quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+      "src/quanta/production.py": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+      "src/quanta/production_server.py": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+      "src/quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+      "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+      "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+      "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+      "src/quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+      "src/quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+      "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+      "src/quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+      "src/quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+      "scripts/verify_numerics.py": "f2a90cc3fe6cc18f06696b2fbf7f89ae210389cc0e929170ef6da9b223d45d63",
+      "scripts/verify_workflow.py": "e27eb4e363132486e20296fd24cf4d326e175748ea1df86cbd8a88ea5ca5ce66"
+    },
+    "source_set_sha256": "9775296844e1235efcdfae8584ca1a44318487318f9c9115257a9f86d64c23c0",
+    "source_set_hash_rule": "RFC 8785 of the relative-path to raw-file-SHA256 map; report excluded",
+    "git_head": "07e26a2720f404c9dc83756b55d95297b22c02a1",
+    "git_worktree_dirty": false,
+    "git_worktree_status": []
+  },
+  "physical_validation_status": "unvalidated",
+  "limitations": [
+    "These checks cover the declared synchronous execution paths only.",
+    "HTTP authentication, queues, cancellation, idempotency and checkpoint resume were not executed.",
+    "Replay uses matching trusted installed implementations; captured source text is never executed.",
+    "No new physical model, implicit conversion, physical coupling or experimental accuracy is certified."
+  ]
+}

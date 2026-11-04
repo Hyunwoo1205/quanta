@@ -14,7 +14,7 @@
 
 `/srv/quanta`를 별도 ext4 또는 XFS 파일시스템으로 마운트합니다. `/etc/quanta/deployment.json`의 `filesystem_uuid`에 실제 UUID를 지정하고 `image`에는 검증한 로컬 `sha256:...` 이미지 ID 또는 digest가 붙은 저장소 이미지명을 지정합니다. `--pull=never`를 사용하므로 해당 이미지가 실제로 로컬에 있어야 합니다. 예시 UUID·태그를 그대로 사용하지 않습니다.
 
-서비스는 systemd의 마운트 assertion·의존성에 더해 호스트 `findmnt`의 정확한 mountpoint·UUID·읽기/쓰기 파일시스템을 검사합니다. 마운트 루트는 root 소유이며 group/world 쓰기를 금지하고, 부트 루트와 다른 파일시스템이어야 합니다. `/srv/quanta/data`, `/srv/quanta/backups`는 정확히 0700·UID/GID 10001 소유의 실제 디렉터리로 사전에 준비합니다. 각 디렉터리와 기존 DB·lock도 해당 파일시스템에 속해야 합니다. 루트나 다른 볼륨의 빈 디렉터리를 데이터 볼륨으로 대체하지 않습니다. wrapper는 자동 포맷·마운트·권한 재귀 변경·DB 생성을 수행하지 않습니다. 새 볼륨이 실제 마운트된 것을 확인한 뒤에만 새 디렉터리를 만들고, 기존 데이터가 있으면 먼저 백업·소유권을 점검합니다.
+서비스는 systemd의 마운트 assertion·의존성에 더해 호스트 `findmnt`의 정확한 mountpoint·UUID·읽기/쓰기 파일시스템을 검사합니다. 마운트 루트는 `root:root 0755`로 두어 경로 접근을 허용하고 group/world 쓰기를 금지하며, 부트 루트와 다른 파일시스템이어야 합니다. `/srv/quanta/data`, `/srv/quanta/backups`는 정확히 0700·UID/GID 10001 소유의 실제 디렉터리로 사전에 준비합니다. 각 디렉터리와 기존 DB·lock도 해당 파일시스템에 속해야 합니다. 루트나 다른 볼륨의 빈 디렉터리를 데이터 볼륨으로 대체하지 않습니다. wrapper는 자동 포맷·마운트·권한 재귀 변경·DB 생성을 수행하지 않습니다. 새 볼륨이 실제 마운트된 것을 확인한 뒤에만 새 디렉터리를 만들고, 기존 데이터가 있으면 먼저 백업·소유권을 점검합니다.
 
 이미지 빌드 예시는 다음과 같습니다. 컨테이너 기본 명령은 계약 검사이고 기본 UID/GID는 10001:10001입니다.
 
@@ -92,5 +92,7 @@ timer는 매일 UTC 03:00, 최대 5분 분산 지연으로 실행하며 꺼져 �
 ## 확인 범위
 
 `scripts/verify_operations.py`는 실제 계산·SQLite·백업·분리 복구·원본 artifact 비교와 재시작 복구를 측정합니다. 기존 A·SI·B·WF·S·W·P와 물리 검증 `unvalidated`를 유지합니다. 실제 OCI에서는 볼륨 미장착 시작 거부, OS 재부팅 후 단일 서비스 복구, 감독자·자식 종료, 백업·복구·조회·다운로드 시간과 외부 인증 브라우저를 별도로 확인해야 파일럿 완료입니다.
+
+구현 commit `07e26a2`의 [네이티브 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509)에서 ARM·x86 각각 Python 621개·Node 33개, 여덟 측정·설치 패키지 컨테이너와 비 root 읽기 전용 복구 검사를 통과했습니다. 원본 20개 파일·ZIP 해시·450개 코드 해시 참조와 로컬 설치 wheel 근거는 [운영 검증 기록](operations_verification.json)에 있습니다. 전체 실행 API 표시 지연과 실제 단계별 합격을 구분하며, 실제 OCI 접속·마운트·재부팅·외부 로그인은 아직 확인하지 않았습니다.
 
 공식 참고: [SQLite online backup](https://www.sqlite.org/backup.html), [Python sqlite3 backup](https://docs.python.org/3.12/library/sqlite3.html#sqlite3.Connection.backup), [SQLite 검사](https://www.sqlite.org/pragma.html), [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html), [Docker bind mount](https://docs.docker.com/engine/storage/bind-mounts/), [Docker 재시작](https://docs.docker.com/engine/containers/start-containers-automatically/).

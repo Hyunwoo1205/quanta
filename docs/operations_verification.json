@@ -1,6 +1,6 @@
 {
   "record_version": "1.0.0",
-  "recorded_at": "2026-11-04T17:07:39.149273+00:00",
+  "recorded_at": "2026-11-04T17:24:56.601612+00:00",
   "package_version": "0.10.0",
   "contract_version": "0.2.0",
   "starting_commit": "8a2a8fd04a62e40daa56fab9b25d99e841e74990",
@@ -19,9 +19,16 @@
     }
   },
   "local_full_regression": {
-    "status": "in_progress",
-    "collected": 593,
-    "note": "28 deployment cases were completed after collection and tested separately; native CI will collect the full final tree."
+    "status": "passed",
+    "tests": 593,
+    "seconds": 633.88,
+    "additional_final_deployment_tests": 28,
+    "total_unique_final_tests": 621,
+    "note": "593 cases were collected before the separate deployment test file was finalized; all final28 deployment cases also passed. Native CI collects the complete621-case final tree.",
+    "warnings": {
+      "count": 4,
+      "reason": "pytest record_property metadata is incompatible with the default xunit2 report; no execution failure"
+    }
   },
   "local_operations": {
     "status": "passed",
@@ -52,7 +59,747 @@
     }
   ],
   "native_ci": {
-    "status": "pending"
+    "status": "all_steps_passed",
+    "source_commit": "07e26a2720f404c9dc83756b55d95297b22c02a1",
+    "run_id": 41874725509,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509",
+    "aggregate_run_status": "in_progress",
+    "aggregate_run_conclusion": null,
+    "aggregate_status_note": "Both jobs have all32steps including Complete job completed/success; aggregate/job API status lag is recorded separately.",
+    "architectures": {
+      "aarch64": {
+        "job_id": 126730917764,
+        "status": "completed",
+        "conclusion": "success",
+        "python_tests": 621,
+        "python_test_seconds": 315.56,
+        "node_tests": 33,
+        "measurements": [
+          {
+            "status": "passed",
+            "output": ".cache/numerical_verification.json",
+            "cases": {
+              "A01": "passed",
+              "A02": "passed",
+              "A03": "passed",
+              "SI_EQUIVALENCE": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/relaxation_verification.json",
+            "cases": {
+              "A04": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/quantum_verification.json",
+            "cases": {
+              "B01": "passed",
+              "B02": "passed",
+              "B03": "passed",
+              "B04": "passed",
+              "B05": "passed",
+              "B06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/workflow_verification.json",
+            "cases": {
+              "WF01": "passed",
+              "WF02": "passed",
+              "WF03": "passed",
+              "WF04": "passed",
+              "WF05": "passed",
+              "WF06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/service_verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/web_verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/production_verification.json",
+            "cases": {
+              "P01": "passed",
+              "P02": "passed",
+              "P03": "passed",
+              "P04": "passed",
+              "P05": "passed",
+              "P06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/operations_verification.json",
+            "cases": {
+              "O01": "passed",
+              "O02": "passed",
+              "O03": "passed",
+              "O04": "passed"
+            }
+          }
+        ],
+        "installed_measurements": [
+          {
+            "status": "passed",
+            "output": "/tmp/service-verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": "/tmp/web-verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": "/tmp/production-verification.json",
+            "cases": {
+              "P01": "passed",
+              "P02": "passed",
+              "P03": "passed",
+              "P04": "passed",
+              "P05": "passed",
+              "P06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": "/tmp/operations-verification.json",
+            "cases": {
+              "O01": "passed",
+              "O02": "passed",
+              "O03": "passed",
+              "O04": "passed"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Require native runner architecture",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Require native CPython runtime",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install exact locked wheels and editable package",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check observed environment",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check contracts and canonicalization",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check browser view models",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run tests",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure named numerical benchmarks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure constrained relaxation benchmark",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure stationary quantum benchmarks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure multi-step workflow evidence",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure HTTP service and asynchronous numerical worker",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure packaged web workspace and actual execution flow",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure Access origin and authenticated ASGI execution",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure consistent backup, separate restore and worker recovery",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preserve actual numerical measurements",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Validate example input",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Evaluate a single configuration",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Relax a constrained configuration",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Calculate stationary quantum states",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Plan, run and replay supported workflows",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build pinned-base container",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check installed-wheel container",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check hardened non-root installed-container operations",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "all_steps_completed_success": true
+      },
+      "x86_64": {
+        "job_id": 126730917012,
+        "status": "in_progress",
+        "conclusion": null,
+        "all_steps_completed_success": true,
+        "python_tests": 621,
+        "python_test_seconds": 485.23,
+        "node_tests": 33,
+        "measurements": [
+          {
+            "status": "passed",
+            "output": ".cache/numerical_verification.json",
+            "cases": {
+              "A01": "passed",
+              "A02": "passed",
+              "A03": "passed",
+              "SI_EQUIVALENCE": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/relaxation_verification.json",
+            "cases": {
+              "A04": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/quantum_verification.json",
+            "cases": {
+              "B01": "passed",
+              "B02": "passed",
+              "B03": "passed",
+              "B04": "passed",
+              "B05": "passed",
+              "B06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/workflow_verification.json",
+            "cases": {
+              "WF01": "passed",
+              "WF02": "passed",
+              "WF03": "passed",
+              "WF04": "passed",
+              "WF05": "passed",
+              "WF06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/service_verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/web_verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/production_verification.json",
+            "cases": {
+              "P01": "passed",
+              "P02": "passed",
+              "P03": "passed",
+              "P04": "passed",
+              "P05": "passed",
+              "P06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/operations_verification.json",
+            "cases": {
+              "O01": "passed",
+              "O02": "passed",
+              "O03": "passed",
+              "O04": "passed"
+            }
+          }
+        ],
+        "installed_measurements": [
+          {
+            "status": "passed",
+            "output": "/tmp/service-verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": "/tmp/web-verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": "/tmp/production-verification.json",
+            "cases": {
+              "P01": "passed",
+              "P02": "passed",
+              "P03": "passed",
+              "P04": "passed",
+              "P05": "passed",
+              "P06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": "/tmp/operations-verification.json",
+            "cases": {
+              "O01": "passed",
+              "O02": "passed",
+              "O03": "passed",
+              "O04": "passed"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Require native runner architecture",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Require native CPython runtime",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install exact locked wheels and editable package",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check observed environment",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check contracts and canonicalization",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check browser view models",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run tests",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure named numerical benchmarks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure constrained relaxation benchmark",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure stationary quantum benchmarks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure multi-step workflow evidence",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure HTTP service and asynchronous numerical worker",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure packaged web workspace and actual execution flow",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure Access origin and authenticated ASGI execution",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Measure consistent backup, separate restore and worker recovery",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preserve actual numerical measurements",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Validate example input",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Evaluate a single configuration",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Relax a constrained configuration",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Calculate stationary quantum states",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Plan, run and replay supported workflows",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build pinned-base container",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check installed-wheel container",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Check hardened non-root installed-container operations",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    "artifacts": [
+      {
+        "id": 13346917443,
+        "name": "numerical-verification-x86_64-07e26a2720f404c9dc83756b55d95297b22c02a1",
+        "size_in_bytes": 75674,
+        "digest": "sha256:90243893a41e03f39f48df535c8d22d3b8b54e840976d85b99fe7a18953462a5",
+        "expires_at": "2027-02-02T17:09:09Z"
+      },
+      {
+        "id": 13346138545,
+        "name": "numerical-verification-aarch64-07e26a2720f404c9dc83756b55d95297b22c02a1",
+        "size_in_bytes": 75122,
+        "digest": "sha256:a5e8d2693d0a6adf67639fac6d0e290c07d49bb0e3616c76f571a075be89e73f",
+        "expires_at": "2027-02-02T17:09:09Z"
+      }
+    ],
+    "preserved_files": [
+      {
+        "path": "docs/verification/v0.10.0/aarch64/environment_verification.json",
+        "size_bytes": 4429,
+        "sha256": "be1731629d0e5bc955a3f871137161e4cc0aa72fd2172649c081d7b0dc13ba04"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/numerical_verification.json",
+        "size_bytes": 43120,
+        "sha256": "b90c0b5bb19590e5ac0ee620416497116f895bce0d3b54598a9729f67714a5ca"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/operations_verification.json",
+        "size_bytes": 34187,
+        "sha256": "82521cbb18e923ea75a05f96be7bf655988c1e94e1a079f65e80bcf69ed74601"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/production_verification.json",
+        "size_bytes": 30474,
+        "sha256": "98b9816a63e26314f7e927a6650abfc80d33690a51cd6320a8aedb16dd526c70"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/quantum_verification.json",
+        "size_bytes": 67073,
+        "sha256": "8a5eb4349b7ca534f5ece65306732fc6d29f5027e1179b99e00fbec9ca387e42"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/relaxation_verification.json",
+        "size_bytes": 20599,
+        "sha256": "018e4bbbd680b1b673201273e671514707f57cf2449413f379c2573fdf90c90f"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/selected_lock_sha256.txt",
+        "size_bytes": 275,
+        "sha256": "ed994314b76546862ed4d3ed6fe2fc0dc26b26a3b0d1f313279d57dacc9b44ab"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/service_verification.json",
+        "size_bytes": 36533,
+        "sha256": "d5216ec193aa28041ed4f2c99b473fd89fa8226670e9bb050ea86ddaeebb8642"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/web_verification.json",
+        "size_bytes": 22937,
+        "sha256": "3239f65d08942686c8aa48fc7db212a9d508c6b6594f70fdd153785754e99768"
+      },
+      {
+        "path": "docs/verification/v0.10.0/aarch64/workflow_verification.json",
+        "size_bytes": 74820,
+        "sha256": "cb6dd45f95bf1ffbca79d706b3fd8c0d5dad79f48701357590f0b05f7772ee75"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/environment_verification.json",
+        "size_bytes": 4688,
+        "sha256": "085e6c8cd152800b0adcc267d65b45d9cd4a13c031d23bcd7b7cf4dfc6012e2e"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/numerical_verification.json",
+        "size_bytes": 43397,
+        "sha256": "9f9aafc347aff1bd7d1f93c9f9c2fae38588daf715a09257495af866f66169d3"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/operations_verification.json",
+        "size_bytes": 34463,
+        "sha256": "da8a0ebaf342dc3ee1f49471df179165234a7970d41f392f9db4911607d5f2d1"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/production_verification.json",
+        "size_bytes": 30751,
+        "sha256": "8724943110d07ed2efc2f7125fc4bd2e6d9d1c4032361b71830bb1622b165d08"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/quantum_verification.json",
+        "size_bytes": 67396,
+        "sha256": "07e6ebeac5679c6a1f19daba46cdeaa005e7175d0925379f375582557245a8f1"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/relaxation_verification.json",
+        "size_bytes": 20876,
+        "sha256": "81e21b8e903cf8f89b720238bb7865c6400ce3568faf6ab3de830a5891fbc369"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/selected_lock_sha256.txt",
+        "size_bytes": 259,
+        "sha256": "4acee360898477b8c54d5b0c08355280fe421ab9b4c19beab26946971d5dea52"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/service_verification.json",
+        "size_bytes": 36809,
+        "sha256": "9b65116212748027430980e85f258b38df0cad3c86dd45abeff48c4f0492403d"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/web_verification.json",
+        "size_bytes": 23214,
+        "sha256": "e7655309606e14511d7f34dbc439d4c0c60eba621101716a84b8bd7e2e61b95f"
+      },
+      {
+        "path": "docs/verification/v0.10.0/x86_64/workflow_verification.json",
+        "size_bytes": 75097,
+        "sha256": "de71e1681a4b7e04cf0ba661d9f2b8cac4330df21e9a48967f050126ccb83b8a"
+      }
+    ],
+    "source_hash_references_verified": 450,
+    "selected_lock_files_verified": true
   },
   "oci": {
     "instance_ready": "user_reported",
@@ -64,5 +811,17 @@
     "external_login_verified": false
   },
   "dependencies": "Existing 27-package architecture-specific locks unchanged",
-  "physical_validation_status": "unvalidated"
+  "physical_validation_status": "unvalidated",
+  "deployment_files_sha256": {
+    "Dockerfile": "1f334aaddd89cb1781f63004da7c2dafbbc3d636540f850a3f764d8e7aee2e22",
+    "Dockerfile.aarch64": "2bcfb6192445451d1efcaabba2c59b14e3f91582cae695133e1aeb6e433c47b6",
+    ".github/workflows/ci.yml": "ca4852f07ca9cb89a675294dad7b419a2dd3a24adc9388c5e8549715791e9388",
+    "deploy/oci/app.env.example": "7fd6ef51fb96f15e512a37eea2f34f1031327f9bd7258f0265aa99be1527a5a1",
+    "deploy/oci/deployment.json.example": "9b31447fde4e515ab032c32d77e7e650d8e0b9db2bc25d22eaf7bf5d2cc35226",
+    "deploy/oci/quanta-backup.service": "bb76aac0d66ee97312442f923ba3cbb20287286f7412d0d080236120c2c629f9",
+    "deploy/oci/quanta-backup.timer": "f619b068d839d25e76b54c3c877bf1a0ee60372da87a4131592976f160633b26",
+    "deploy/oci/quanta.service": "81b7db3502768b9c844205a77331415728fd5e488a74cd3175342687560f0028",
+    "deploy/oci/runtime.py": "838d01da1e619203e0ce5b2ec6d086b28f0be0df8e4fde8139ab73a0c6f9565f"
+  },
+  "evidence_commit_policy": "Evidence-only follow-up preserves source, tests, README, dependency locks, deployment configuration and CI workflow bytes from tested commit07e26a2; no new runtime verification is asserted for documentation changes."
 }

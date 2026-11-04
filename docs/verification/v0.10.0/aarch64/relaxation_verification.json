@@ -1,0 +1,669 @@
+{
+  "report_version": "1.0.0",
+  "measured_at": "2026-11-04T17:15:14.380537+00:00",
+  "status": "passed",
+  "package_version": "0.10.0",
+  "scope": "A04 constrained two-point harmonic local stationarity search only",
+  "baseline_definition": {
+    "unit_system": "SI",
+    "scales": {
+      "length_m": 1e-09,
+      "energy_j": 1e-19
+    },
+    "system": {
+      "representation": "particles_3d",
+      "module_id": "quanta.pair_static",
+      "module_version": "0.1.0",
+      "boundary": "nonperiodic",
+      "min_distance_m": 1e-17,
+      "particles": [
+        {
+          "id": "p1",
+          "position_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fixed": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "id": "p2",
+          "position_m": [
+            1.2e-09,
+            0.0,
+            0.0
+          ],
+          "fixed": [
+            false,
+            true,
+            true
+          ]
+        }
+      ],
+      "potential": {
+        "expression": {
+          "op": "mul",
+          "args": [
+            {
+              "op": "const",
+              "value": 0.5
+            },
+            {
+              "op": "param",
+              "name": "k"
+            },
+            {
+              "op": "pow",
+              "arg": {
+                "op": "sub",
+                "args": [
+                  {
+                    "op": "var",
+                    "name": "rho"
+                  },
+                  {
+                    "op": "param",
+                    "name": "rho0"
+                  }
+                ]
+              },
+              "exponent": 2
+            }
+          ]
+        },
+        "parameters": {
+          "k": 2.0,
+          "rho0": 1.0
+        }
+      }
+    },
+    "numerics": {
+      "solver": "lbfgsb_forward_ad",
+      "gradient_tolerance": 1e-06,
+      "energy_ftol": 1e-12,
+      "max_iterations": 2000,
+      "max_evaluations": 10000
+    },
+    "protocol": {
+      "steps": [
+        {
+          "step_id": "relax",
+          "operation": "relax",
+          "source": "initial",
+          "overrides": []
+        }
+      ],
+      "sweep": {
+        "axes": []
+      }
+    },
+    "observables": [
+      "energy",
+      "forces",
+      "pair_energies",
+      "final_positions",
+      "optimization_history"
+    ],
+    "extensions": {}
+  },
+  "baseline_input_sha256": "6d7e695598fc43392949b78f74e1458abdbeb692430034472010c53a1e76d4da",
+  "acceptance_plan": {
+    "path": "contracts/v0.2.0/validation_manifest.json",
+    "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7",
+    "case_at_plan_snapshot": {
+      "id": "A04",
+      "scope": "constrained two-point harmonic relaxation",
+      "metric": "free reduced gradient infinity norm",
+      "threshold": 1e-06,
+      "additional": "fixed coordinates identical; rest-distance reduced error <=1e-6; minimum not generally certified",
+      "status": "planned"
+    }
+  },
+  "measurement_metadata": {
+    "origin": "actual_executed_benchmark",
+    "target_source": "src/quanta/relaxation.py",
+    "target_module": "quanta.pair_static@0.1.0",
+    "operation": "relax",
+    "solver": "lbfgsb_forward_ad",
+    "energy_scale_j": 1e-19,
+    "force_scale_n": 9.999999999999999e-11,
+    "history_semantics": "Initial accepted point and accepted iterations; trial evaluations are counted separately"
+  },
+  "cases": [
+    {
+      "id": "A04",
+      "status": "passed",
+      "input_sha256": "6d7e695598fc43392949b78f74e1458abdbeb692430034472010c53a1e76d4da",
+      "checks": {
+        "registered_payload_schema": true,
+        "operation_relax": true,
+        "distance_tolerance": true,
+        "reported_free_gradient_tolerance": true,
+        "independent_free_gradient_tolerance": true,
+        "independent_payload_agreement": true,
+        "fixed_coordinate_bits_unchanged": true,
+        "authored_definition_unchanged": true,
+        "initial_output_unchanged": true,
+        "counter_limits": true,
+        "accepted_history_consistent": true,
+        "explicit_gradient_termination": true,
+        "gradient_diagnostic_consistent": true,
+        "fixed_coordinate_diagnostic": true,
+        "requested_pair_table_complete": true,
+        "requested_pair_table_agreement": true,
+        "minimum_not_certified": true
+      },
+      "thresholds": {
+        "free_gradient_inf": 1e-06,
+        "rest_distance_reduced_error": 1e-06
+      },
+      "reference": {
+        "method": "Independent two-point constrained harmonic closed form",
+        "formula": "u=k/2*(rho-rho0)^2; F2_reduced=-k*(rho-rho0)*(x2_reduced-x1_reduced)/rho; F1=-F2",
+        "stationary_distance_reduced": 1.0,
+        "stationary_energy_reduced": 0.0,
+        "one_reference_configuration_m": [
+          [
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            1e-09,
+            0.0,
+            0.0
+          ]
+        ],
+        "branch_note": "Both signs of the free separation can be stationary; acceptance uses rest distance.",
+        "at_final_configuration": {
+          "distance_m": 1e-09,
+          "distance_reduced": 1.0,
+          "energy_reduced": 0.0,
+          "forces_reduced": [
+            [
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              -0.0,
+              -0.0,
+              -0.0
+            ]
+          ],
+          "free_gradient_inf": 0.0
+        }
+      },
+      "measurements": {
+        "distance_m": 1e-09,
+        "distance_reduced": 1.0,
+        "rest_distance_reduced_error": 0.0,
+        "reported_free_gradient_inf": 0.0,
+        "independent_free_gradient_inf": 0.0,
+        "payload_comparisons": {
+          "final_energy_reduced": {
+            "actual": 0.0,
+            "reference": 0.0,
+            "absolute_error": 0.0,
+            "max_absolute_error": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10,
+            "passed": true
+          },
+          "final_forces_reduced": {
+            "actual": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "reference": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                -0.0,
+                -0.0,
+                -0.0
+              ]
+            ],
+            "absolute_error": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "max_absolute_error": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10,
+            "passed": true
+          },
+          "free_gradient_inf": {
+            "actual": 0.0,
+            "reference": 0.0,
+            "absolute_error": 0.0,
+            "max_absolute_error": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10,
+            "passed": true
+          }
+        },
+        "fixed_coordinates": [
+          {
+            "particle_index": 0,
+            "axis": 0,
+            "initial_bits_be": "0000000000000000",
+            "final_bits_be": "0000000000000000",
+            "unchanged": true
+          },
+          {
+            "particle_index": 0,
+            "axis": 1,
+            "initial_bits_be": "0000000000000000",
+            "final_bits_be": "0000000000000000",
+            "unchanged": true
+          },
+          {
+            "particle_index": 0,
+            "axis": 2,
+            "initial_bits_be": "0000000000000000",
+            "final_bits_be": "0000000000000000",
+            "unchanged": true
+          },
+          {
+            "particle_index": 1,
+            "axis": 1,
+            "initial_bits_be": "0000000000000000",
+            "final_bits_be": "0000000000000000",
+            "unchanged": true
+          },
+          {
+            "particle_index": 1,
+            "axis": 2,
+            "initial_bits_be": "0000000000000000",
+            "final_bits_be": "0000000000000000",
+            "unchanged": true
+          }
+        ],
+        "pair_table_comparisons": {
+          "distance_reduced": {
+            "actual": 1.0,
+            "reference": 1.0,
+            "absolute_error": 0.0,
+            "max_absolute_error": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10,
+            "passed": true
+          },
+          "energy_reduced": {
+            "actual": 0.0,
+            "reference": 0.0,
+            "absolute_error": 0.0,
+            "max_absolute_error": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10,
+            "passed": true
+          }
+        },
+        "iterations": 1,
+        "evaluations": 3,
+        "history_entries": 2,
+        "history_indices": [
+          0,
+          1
+        ],
+        "history_initial_comparisons": {
+          "energy_reduced": {
+            "actual": 0.03999999999999998,
+            "reference": 0.03999999999999998,
+            "absolute_error": 0.0,
+            "max_absolute_error": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10,
+            "passed": true
+          },
+          "free_gradient_inf": {
+            "actual": 0.3999999999999999,
+            "reference": 0.3999999999999999,
+            "absolute_error": 0.0,
+            "max_absolute_error": 0.0,
+            "atol": 1e-10,
+            "rtol": 1e-10,
+            "passed": true
+          }
+        },
+        "history_last_matches_payload_bits": true,
+        "convergence_diagnostic": [
+          {
+            "id": "free_gradient_tolerance",
+            "status": "pass",
+            "value": 0.0,
+            "tolerance": 1e-06
+          }
+        ],
+        "stop_reason": "gradient_tolerance"
+      },
+      "registered_payload_schema": {
+        "path": "contracts/v0.2.0/module_results/pair_static.schema.json",
+        "sha256": "7f15292f3976f5c705f7265f29470352a3c0387fdf743b86909d8e074de5845e",
+        "errors": []
+      },
+      "actual_payload": {
+        "operation": "relax",
+        "initial_positions_m": [
+          [
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            1.2e-09,
+            0.0,
+            0.0
+          ]
+        ],
+        "final_positions_m": [
+          [
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            1e-09,
+            0.0,
+            0.0
+          ]
+        ],
+        "energy_j": 0.0,
+        "forces_n": [
+          [
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "free_gradient_inf": 0.0,
+        "iterations": 1,
+        "evaluations": 3,
+        "stop_reason": "gradient_tolerance",
+        "minimum_confirmed": false,
+        "diagnostics": {
+          "method": "lbfgsb_forward_ad_all_pairs_no_cutoff",
+          "checks": [
+            {
+              "id": "all_pairs_evaluated",
+              "status": "pass",
+              "value": 1,
+              "tolerance": 0
+            },
+            {
+              "id": "finite_binary64_output",
+              "status": "pass",
+              "value": null,
+              "tolerance": null
+            },
+            {
+              "id": "fixed_coordinates_unchanged",
+              "status": "pass",
+              "value": 0,
+              "tolerance": 0
+            },
+            {
+              "id": "free_gradient_tolerance",
+              "status": "pass",
+              "value": 0.0,
+              "tolerance": 1e-06
+            }
+          ]
+        },
+        "pair_energies": [
+          {
+            "i": 0,
+            "j": 1,
+            "distance_m": 1e-09,
+            "energy_j": 0.0
+          }
+        ],
+        "optimization_history": [
+          {
+            "iteration": 0,
+            "energy_j": 3.999999999999998e-21,
+            "free_gradient_inf": 0.3999999999999999
+          },
+          {
+            "iteration": 1,
+            "energy_j": 0.0,
+            "free_gradient_inf": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "environment": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "runtime_profile": "cpython-3.12.14-linux-aarch64-cpu-v1",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "aarch64"
+    },
+    "python_executable": "/opt/hostedtoolcache/Python/3.12.14/arm64/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/arm64/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-1f73132b.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "neoversev2"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/arm64/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-c5a9b014.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "neoversev2"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "aarch64",
+          "family": "aarch64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "aarch64",
+          "family": "aarch64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY neoversev2 MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-eyrtyfpu/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "NEON",
+          "NEON_FP16",
+          "NEON_VFPV4",
+          "ASIMD"
+        ],
+        "found": [
+          "ASIMDHP",
+          "ASIMDFHM",
+          "SVE"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false,
+    "locked_distributions": {
+      "attrs": "26.1.0",
+      "cffi": "2.1.1",
+      "click": "8.5.0",
+      "cryptography": "50.0.2",
+      "h11": "0.16.0",
+      "iniconfig": "2.3.1",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "numpy": "2.3.5",
+      "packaging": "26.3",
+      "pip": "25.3",
+      "pluggy": "1.7.0",
+      "pycparser": "3.12",
+      "pygments": "2.21.0",
+      "pyjwt": "2.15.1",
+      "pytest": "9.0.2",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc8785": "0.1.4",
+      "rpds-py": "2026.9.1",
+      "scipy": "1.17.0",
+      "setuptools": "80.9.0",
+      "six": "1.17.0",
+      "threadpoolctl": "3.6.0",
+      "typing-extensions": "4.16.0",
+      "uvicorn": "0.54.0",
+      "wheel": "0.45.1"
+    },
+    "requirements_lock_sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f"
+  },
+  "code_source": {
+    "files_sha256": {
+      "src/quanta/__init__.py": "7ea2d2e0e05035396e56107300614588590fc3f9cfea815f551a7decd103d91a",
+      "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "src/quanta/access_auth.py": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+      "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+      "src/quanta/backup.py": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+      "src/quanta/cli.py": "aa3541c2a153c59b27ca2eeebbf647a75cbfd8ae046f70b26c1862c3636296ee",
+      "src/quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+      "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+      "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+      "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+      "src/quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+      "src/quanta/production.py": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+      "src/quanta/production_server.py": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+      "src/quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+      "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+      "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+      "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+      "src/quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+      "src/quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+      "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+      "src/quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+      "src/quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+      "scripts/verify_numerics.py": "f2a90cc3fe6cc18f06696b2fbf7f89ae210389cc0e929170ef6da9b223d45d63",
+      "scripts/verify_relaxation.py": "d348563dbd43083b006c9eab37a179a03334d28e2c72ebba3a46aa7dc90c5b2d"
+    },
+    "source_set_sha256": "e2a09adfe34c576d58a22910a617f2b544c84b57597c2cc4a2f24d9bb935f17b",
+    "source_set_hash_rule": "RFC 8785 of the relative-path to raw-file-SHA256 map; report excluded",
+    "git_head": "07e26a2720f404c9dc83756b55d95297b22c02a1",
+    "git_worktree_dirty": false,
+    "git_worktree_status": []
+  },
+  "physical_validation_status": "unvalidated",
+  "minimum_certification": "not_performed",
+  "limitations": [
+    "Acceptance applies to this smooth constrained harmonic input only.",
+    "Stationarity does not certify a minimum, a global solution, or agreement with physical experiments.",
+    "Other modules, multistep execution, and future runtime features are outside this report."
+  ]
+}
