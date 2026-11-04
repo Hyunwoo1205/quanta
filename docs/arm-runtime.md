@@ -50,6 +50,8 @@ ARM 잠금의 `preparation.native_arm_validation=not_performed`는 **잠금 생�
 
 CI는 두 실제 아키텍처에서 OS·CPU·Python을 먼저 관측하고, 전체 Python·Node 시험, A·SI·B·WF·S·W 여섯 측정과 설치 컨테이너의 계산·HTTP·웹 흐름을 실행합니다. 환경·선택 잠금 해시·측정 JSON은 CPU별 artifact로 분리합니다. 이 기록은 OCI A1의 성능·디스크·접속·장애 복구 검증과 구분합니다. A1에서는 배포 전에 같은 흐름을 다시 확인합니다.
 
+구현 commit `2265913`의 [CI 41848627402](https://github.com/Hyunwoo1205/quanta/actions/runs/41848627402)는 x86_64에서 Python **456개(223.91초)**, aarch64에서 **456개(297.56초)**와 각각 Node **25개**, 여섯 측정·설치 컨테이너 검증을 통과했습니다. artifact 보존 기한과 별개로 [x86 원본 측정](verification/v0.8.0/x86_64/)과 [ARM 원본 측정](verification/v0.8.0/aarch64/)을 저장소에 보존합니다. ZIP digest·원본 파일 SHA·실행 환경·로컬 설치 wheel 검증은 [검증 기록](arm_runtime_verification.json)에 있습니다. 이후 문서·측정 원본 보존 변경은 검증한 구현·README·잠금을 바꾸지 않습니다.
+
 ## 저장 기록과 재실행
 
 패키지에는 양쪽 아키텍처의 잠금 다섯 파일을 포함합니다. 실행 번들의 기존 논리 이름 `requirements.in`, `requirements.lock.txt`, `requirements.lock.json`은 유지하면서 실제 호스트에서 선택한 파일 bytes를 캡처합니다. 따라서 ARM 잠금의 target·배포 해시는 x86와 다른 의존성 manifest로 고정됩니다. 서로 다른 설치 위치에서 잠금 일부를 혼합하지 않습니다.

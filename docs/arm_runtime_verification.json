@@ -1,6 +1,6 @@
 {
   "record_version": "1.0.0",
-  "recorded_at": "2026-11-04T14:31:18.332027+00:00",
+  "recorded_at": "2026-11-04T14:44:24.905456+00:00",
   "verification_timezone": "Asia/Seoul",
   "package_version": "0.8.0",
   "contract_version": "0.2.0",
@@ -227,7 +227,7 @@
     }
   },
   "native_ci": {
-    "status": "pending",
+    "status": "passed",
     "architectures": [
       "x86_64",
       "aarch64"
@@ -239,11 +239,439 @@
       "workflow_verification.json",
       "service_verification.json",
       "web_verification.json"
+    ],
+    "run_id": 41848627402,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/41848627402",
+    "source_commit": "2265913efc85678dd721565fd8a85818a346aee1",
+    "conclusion": "success",
+    "completed_at": "2026-11-04T14:41:39Z",
+    "jobs": [
+      {
+        "architecture": "x86_64",
+        "job_id": 126638636816,
+        "conclusion": "success",
+        "python_tests": 456,
+        "python_test_seconds": 223.91,
+        "node_tests": 25,
+        "measurements": [
+          {
+            "status": "passed",
+            "output": ".cache/numerical_verification.json",
+            "cases": {
+              "A01": "passed",
+              "A02": "passed",
+              "A03": "passed",
+              "SI_EQUIVALENCE": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/relaxation_verification.json",
+            "cases": {
+              "A04": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/quantum_verification.json",
+            "cases": {
+              "B01": "passed",
+              "B02": "passed",
+              "B03": "passed",
+              "B04": "passed",
+              "B05": "passed",
+              "B06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/workflow_verification.json",
+            "cases": {
+              "WF01": "passed",
+              "WF02": "passed",
+              "WF03": "passed",
+              "WF04": "passed",
+              "WF05": "passed",
+              "WF06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/service_verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/web_verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          }
+        ],
+        "container_build": "passed",
+        "installed_container": "passed"
+      },
+      {
+        "architecture": "aarch64",
+        "job_id": 126638637108,
+        "conclusion": "success",
+        "python_tests": 456,
+        "python_test_seconds": 297.56,
+        "node_tests": 25,
+        "measurements": [
+          {
+            "status": "passed",
+            "output": ".cache/numerical_verification.json",
+            "cases": {
+              "A01": "passed",
+              "A02": "passed",
+              "A03": "passed",
+              "SI_EQUIVALENCE": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/relaxation_verification.json",
+            "cases": {
+              "A04": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/quantum_verification.json",
+            "cases": {
+              "B01": "passed",
+              "B02": "passed",
+              "B03": "passed",
+              "B04": "passed",
+              "B05": "passed",
+              "B06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/workflow_verification.json",
+            "cases": {
+              "WF01": "passed",
+              "WF02": "passed",
+              "WF03": "passed",
+              "WF04": "passed",
+              "WF05": "passed",
+              "WF06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/service_verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/web_verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          }
+        ],
+        "container_build": "passed",
+        "installed_container": "passed"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": 13334960460,
+        "name": "numerical-verification-aarch64-2265913efc85678dd721565fd8a85818a346aee1",
+        "size_in_bytes": 54523,
+        "digest": "sha256:be7697596aeb51db812c4b44f7d04915286c6318dcfb7ce3b81326e56ebfdaff",
+        "expires_at": "2027-02-02T14:32:46Z"
+      },
+      {
+        "id": 13331774297,
+        "name": "numerical-verification-x86_64-2265913efc85678dd721565fd8a85818a346aee1",
+        "size_in_bytes": 54954,
+        "digest": "sha256:0e7bc3110d4e07fae00dde3dc242ff14a65cb41087ce2b175427c424d692787c",
+        "expires_at": "2027-02-02T14:32:46Z"
+      }
     ]
   },
   "installed_wheel": {
-    "status": "pending",
-    "architecture": "x86_64"
+    "status": "passed",
+    "architecture": "x86_64",
+    "wheel": {
+      "path": "/workspace/scratch/9d1751731bf6/quanta/.cache/arm-support/dist/quanta_research_contracts-0.8.0-py3-none-any.whl",
+      "sha256": "52ff46e548a0cff8eb10cef80893ff4847f9141d83ab0e56faf26221824d45a0",
+      "bytes": 181539
+    },
+    "distributions": {
+      "count": 21,
+      "exact_locked_set": true,
+      "versions": {
+        "six": "1.17.0",
+        "referencing": "0.37.0",
+        "threadpoolctl": "3.6.0",
+        "numpy": "2.3.5",
+        "rfc3339-validator": "0.1.4",
+        "pygments": "2.21.0",
+        "rpds-py": "2026.9.1",
+        "typing-extensions": "4.16.0",
+        "pluggy": "1.7.0",
+        "packaging": "26.3",
+        "attrs": "26.1.0",
+        "quanta-research-contracts": "0.8.0",
+        "jsonschema-specifications": "2025.9.1",
+        "pip": "25.3",
+        "scipy": "1.17.0",
+        "iniconfig": "2.3.1",
+        "pytest": "9.0.2",
+        "rfc8785": "0.1.4",
+        "wheel": "0.45.1",
+        "jsonschema": "4.26.0",
+        "setuptools": "80.9.0"
+      }
+    },
+    "byte_comparison": {
+      "python_files": 21,
+      "web_files": 5,
+      "contract_files": 24,
+      "lock_files": 5,
+      "readme_metadata_matches": true,
+      "source_wheel_installed_match": true,
+      "python_sha256": {
+        "quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+        "quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+        "quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+        "quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+        "quanta/__init__.py": "ad9c52c394758cb64ec577b4e0bdaa3ff6f925c4047870a5ad05888d382597c0",
+        "quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+        "quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+        "quanta/worker.py": "6c6c3196a3d1a45a1bfbc151f8f8876a26b8365e0bd95e7e0a01eeb73d021f3c",
+        "quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+        "quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+        "quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+        "quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+        "quanta/server.py": "d08bbfffd99556cc0f06cfbc847ca56a44d7e2dedefcd34e3d408a48157af550",
+        "quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+        "quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+        "quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+        "quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+        "quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+        "quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+        "quanta/cli.py": "d0907c28f54ebb817a1b272e629050dc0555d351582e4dea416c07ee81f68a1c"
+      },
+      "lock_sha256": {
+        "requirements.in": "4a76404a7a824b8f25f40d6cf9b7410a68c2bc90bbddd2688ef325081022a2d9",
+        "requirements.lock.txt": "f707157f7ee8ed0d3e6dac568e2b8a5db4241d7af63907f8350ed0567e759583",
+        "requirements.lock.json": "38d9049d00a429aedc076530bc3c5ee854895d31f6805c11341f69da627b0063",
+        "requirements.aarch64.lock.txt": "f21165a4ec9cc278e1a47798d24dcade107f83326f2d683ba6a287d29bd30d45",
+        "requirements.aarch64.lock.json": "a5fb65a69841612299860bccddfc00f35c7a8989a8bdfe9903db0adcdc6f13cf"
+      }
+    },
+    "outside_checkout_checks": [
+      {
+        "name": "pip_check",
+        "arguments": [
+          "-m",
+          "pip",
+          "check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4093365089938743,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "environment",
+        "arguments": [
+          "-m",
+          "quanta",
+          "environment"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5634503429901088,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "contracts",
+        "arguments": [
+          "-m",
+          "quanta",
+          "check-contracts"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6269301029969938,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "energy",
+        "arguments": [
+          "-m",
+          "quanta",
+          "evaluate",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_energy_forces.json"
+        ],
+        "exit_code": 0,
+        "seconds": 1.5280785729992203,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "relax",
+        "arguments": [
+          "-m",
+          "quanta",
+          "relax",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_relax.json"
+        ],
+        "exit_code": 0,
+        "seconds": 2.064127429999644,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "quantum",
+        "arguments": [
+          "-m",
+          "quanta",
+          "eigenstates",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/quantum_eigenstates.json"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2192775670118863,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "plan",
+        "arguments": [
+          "-m",
+          "quanta",
+          "plan",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_workflow.json"
+        ],
+        "exit_code": 0,
+        "seconds": 0.7214459060051013,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "pair_workflow",
+        "arguments": [
+          "-m",
+          "quanta",
+          "run",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_workflow.json",
+          "--output-dir",
+          "/tmp/quanta-arm-support-wheel-t58r4beh/pair-run"
+        ],
+        "exit_code": 0,
+        "seconds": 13.546964449997176,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "pair_replay",
+        "arguments": [
+          "-m",
+          "quanta",
+          "replay",
+          "/tmp/quanta-arm-support-wheel-t58r4beh/pair-run",
+          "--output-dir",
+          "/tmp/quanta-arm-support-wheel-t58r4beh/pair-replay"
+        ],
+        "exit_code": 0,
+        "seconds": 21.267726143996697,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "quantum_workflow",
+        "arguments": [
+          "-m",
+          "quanta",
+          "run",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/quantum_workflow.json",
+          "--output-dir",
+          "/tmp/quanta-arm-support-wheel-t58r4beh/quantum-run"
+        ],
+        "exit_code": 0,
+        "seconds": 9.745884424002725,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "service_measurement",
+        "arguments": [
+          "/workspace/scratch/9d1751731bf6/quanta/scripts/verify_service.py",
+          "--output",
+          "/workspace/scratch/9d1751731bf6/quanta/.cache/arm-support/installed-service-verification.json"
+        ],
+        "exit_code": 0,
+        "seconds": 19.18527837700094,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "web_measurement",
+        "arguments": [
+          "/workspace/scratch/9d1751731bf6/quanta/scripts/verify_web.py",
+          "--output",
+          "/workspace/scratch/9d1751731bf6/quanta/.cache/arm-support/installed-web-verification.json"
+        ],
+        "exit_code": 0,
+        "seconds": 13.54225344999577,
+        "cwd_outside_checkout": true
+      }
+    ],
+    "source_unchanged_after_verification": true,
+    "elapsed_seconds": 85.42715784499887,
+    "native_arm_validation": "not_performed_locally",
+    "measurement_reports": {
+      "installed-service-verification.json": {
+        "path": ".cache/arm-support/installed-service-verification.json",
+        "sha256": "7910b4dc0f168790b2cba530de9dfa607f4d9f9286188d31a04cd5596ca720b1",
+        "summary": {
+          "status": "passed",
+          "package_version": "0.8.0"
+        },
+        "case_ids": [
+          "S01",
+          "S02",
+          "S03",
+          "S04",
+          "S05",
+          "S06"
+        ]
+      },
+      "installed-web-verification.json": {
+        "path": ".cache/arm-support/installed-web-verification.json",
+        "sha256": "4baa95f7bc675ecff0e361c821f3df7558e982c62cfe9c1369acb6ed7330dd82",
+        "summary": {
+          "status": "passed",
+          "package_version": "0.8.0"
+        },
+        "case_ids": [
+          "W01",
+          "W02",
+          "W03",
+          "W04",
+          "W05"
+        ]
+      }
+    }
   },
   "oci_a1_validation": {
     "status": "not_performed",
@@ -272,5 +700,113 @@
         "PYTHON_VERSION": "3.12.14"
       }
     }
+  },
+  "source_commit": "2265913efc85678dd721565fd8a85818a346aee1",
+  "local_bootstrap": {
+    "status": "passed",
+    "method": "offline exact-hash wheels, new .venv-arm-bootstrap-test",
+    "architecture": "x86_64",
+    "scope": "shell profile selection, dependency installation, editable package, pip check, environment check"
+  },
+  "legacy_bundle_reads": {
+    "status": "passed",
+    "original_package_version": "0.5.0",
+    "bundles": 2,
+    "original_execution_status": "SUCCEEDED",
+    "scope": "read and validate captured historical records; no historical code execution or replay"
+  },
+  "preserved_ci_measurements": {
+    "x86_64": {
+      "environment_verification.json": {
+        "path": "docs/verification/v0.8.0/x86_64/environment_verification.json",
+        "sha256": "7c86f73c16011795c4e7a8f6c94192c7b854528e0183b51a33389de5cd9e87be",
+        "bytes": 4690
+      },
+      "numerical_verification.json": {
+        "path": "docs/verification/v0.8.0/x86_64/numerical_verification.json",
+        "sha256": "bde5f2b05c699ae50a62b78fd61711ed0a47bae667c929f6702eda9ffa4a183e",
+        "bytes": 42861
+      },
+      "quantum_verification.json": {
+        "path": "docs/verification/v0.8.0/x86_64/quantum_verification.json",
+        "sha256": "59150fcd61a680984ba0af12bf35eb679e1966e8f431ea0adfa2cceb5cae1732",
+        "bytes": 66800
+      },
+      "relaxation_verification.json": {
+        "path": "docs/verification/v0.8.0/x86_64/relaxation_verification.json",
+        "sha256": "394b2486185f983d99ed2204f51dda99c8291a17392f3de43fbf2f8d2df44dad",
+        "bytes": 20284
+      },
+      "selected_lock_sha256.txt": {
+        "path": "docs/verification/v0.8.0/x86_64/selected_lock_sha256.txt",
+        "sha256": "1e320d07a17aa6f6913539c129e0f19bc2e010f233f4ebc198fba98db4367e2c",
+        "bytes": 259
+      },
+      "service_verification.json": {
+        "path": "docs/verification/v0.8.0/x86_64/service_verification.json",
+        "sha256": "bacd7cfe985b8206e3b341620c2fc83473204a971ce17fd744bd37f4c7cefb1d",
+        "bytes": 35299
+      },
+      "web_verification.json": {
+        "path": "docs/verification/v0.8.0/x86_64/web_verification.json",
+        "sha256": "0107da8244d29314db464f2eab2c9c8b7c929207a934ee073e8ac37bfb02f29e",
+        "bytes": 22178
+      },
+      "workflow_verification.json": {
+        "path": "docs/verification/v0.8.0/x86_64/workflow_verification.json",
+        "sha256": "be55bb8a72cb60d9e9ca1425550371e45cd55236e0acc951de102782f4cff159",
+        "bytes": 74505
+      }
+    },
+    "aarch64": {
+      "environment_verification.json": {
+        "path": "docs/verification/v0.8.0/aarch64/environment_verification.json",
+        "sha256": "d1f69fd351d7ed6aab04a99a1ce38d7bb739a17003ad72c94246a3995f4dd2fd",
+        "bytes": 4429
+      },
+      "numerical_verification.json": {
+        "path": "docs/verification/v0.8.0/aarch64/numerical_verification.json",
+        "sha256": "824a231faf93cfa64b376bc11c9d2f2402659c8794cbe03585f2f0534d2554af",
+        "bytes": 42526
+      },
+      "quantum_verification.json": {
+        "path": "docs/verification/v0.8.0/aarch64/quantum_verification.json",
+        "sha256": "2c6f8e18515530f5f82761859d24df77fd7961ab44f71333b65cb58617cd4f18",
+        "bytes": 66479
+      },
+      "relaxation_verification.json": {
+        "path": "docs/verification/v0.8.0/aarch64/relaxation_verification.json",
+        "sha256": "d1e67f90c974e408b2f83ea0e84979c4e0c242304facda089ca3932ed93df61c",
+        "bytes": 20005
+      },
+      "selected_lock_sha256.txt": {
+        "path": "docs/verification/v0.8.0/aarch64/selected_lock_sha256.txt",
+        "sha256": "888708e92f41653eb6522064b887a0f1e2c43d2eb5579a49f37ca825cb6f5157",
+        "bytes": 275
+      },
+      "service_verification.json": {
+        "path": "docs/verification/v0.8.0/aarch64/service_verification.json",
+        "sha256": "04ced88931aa038cc7ac25b4c51b9014f0c6cbd86614d5b8c0d80428272a6359",
+        "bytes": 35019
+      },
+      "web_verification.json": {
+        "path": "docs/verification/v0.8.0/aarch64/web_verification.json",
+        "sha256": "a91eb081ee685b16df5fc4a1b28572e3b189d557eb6125cb7f0da3b9e4e75195",
+        "bytes": 21899
+      },
+      "workflow_verification.json": {
+        "path": "docs/verification/v0.8.0/aarch64/workflow_verification.json",
+        "sha256": "9d9ff2116594b2525586627fd93aafc9fe4b22eb883b7774efd3add69429037b",
+        "bytes": 74226
+      }
+    }
+  },
+  "measurement_integrity": {
+    "status": "passed",
+    "archives": 2,
+    "exact_archive_sha256_matches_github": true,
+    "reports": 12,
+    "all_reported_code_hashes_match_current_files": true,
+    "original_report_bytes_preserved": true
   }
 }
