@@ -65,3 +65,7 @@ python scripts/verify_production.py --output .cache/production_verification.json
 P01~P06은 실제 HTTP·서명·저장·중복 제출·자식 계산·독립 해석식·원본 산출물 SHA·로그인 갱신·작업자 상태를 측정합니다. 주입한 상태 오류 검사를 실제 프로세스 crash 검증으로 표시하지 않습니다. 기존 A·SI·B·WF·S·W 기준과 물리 검증 `unvalidated`를 유지합니다. 구현·잠금이 바뀌었으므로 업그레이드 전 실행 수락 중지·작업 비우기·기존 이미지 보존은 [배포 계획](deployment-plan.md)을 따릅니다.
 
 공식 참고: [Access JWT](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/), [앱 토큰 필드](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/application-token/), [Tunnel 원본 설정](https://developers.cloudflare.com/tunnel/reference/origin-parameters/), [Uvicorn 설정](https://uvicorn.dev/settings/), [ASGI 수명 관리](https://asgi.readthedocs.io/en/stable/specs/lifespan.html).
+
+## 확인한 결과
+
+검증 commit `2218d81`의 [실행 기록](https://github.com/Hyunwoo1205/quanta/actions/runs/41860407599)에서 실제 x86·ARM 각각 Python 573개·Node 33개, 일곱 측정과 설치 컨테이너의 모든 검사가 통과했습니다. GitHub 전체 실행 API의 완료 표시는 지연되어 단계별 합격과 별도로 기록했습니다. 원본 [x86 측정](verification/v0.9.0/x86_64/)·[ARM 측정](verification/v0.9.0/aarch64/)과 ZIP·파일 해시는 검증 기록에 보존합니다. 공개 주소의 실제 인증 브라우저·이메일 로그인과 OCI A1의 성능·배포는 별도 확인이 필요합니다.

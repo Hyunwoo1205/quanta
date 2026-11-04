@@ -1,6 +1,6 @@
 {
   "record_version": "1.0.0",
-  "recorded_at": "2026-11-04T15:33:09.810441+00:00",
+  "recorded_at": "2026-11-04T15:56:46.900693+00:00",
   "verification_timezone": "Asia/Seoul",
   "package_version": "0.9.0",
   "contract_version": "0.2.0",
@@ -48,13 +48,13 @@
     }
   },
   "native_ci": {
-    "status": "pending_rerun",
+    "status": "all_steps_passed",
     "architectures": [
       "x86_64",
       "aarch64"
     ],
     "measurement_count_per_architecture": 7,
-    "source_commit": "47364e4205e6eb74a28a2951ba629fa5d508ad36",
+    "source_commit": "2218d81d2a3e41d516455ae2be4257fe8b3e8c66",
     "initial_attempt": {
       "run_id": 41859232501,
       "source_commit": "47364e4205e6eb74a28a2951ba629fa5d508ad36",
@@ -64,8 +64,221 @@
         "passed": 3,
         "seconds": 4.64
       },
-      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/41859232501"
-    }
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/41859232501",
+      "jobs": {
+        "aarch64": {
+          "failed": 3,
+          "passed": 570,
+          "seconds": 217.0
+        },
+        "x86_64": {
+          "failed": 3,
+          "passed": 570,
+          "seconds": 303.11
+        }
+      }
+    },
+    "run_id": 41860407599,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/41860407599",
+    "aggregate_run_status": "in_progress",
+    "aggregate_run_conclusion": null,
+    "aggregate_status_note": "API still reports in_progress although all steps including Complete job are completed/success for both architectures; no overall completion is asserted",
+    "jobs": [
+      {
+        "architecture": "aarch64",
+        "job_id": 126680327019,
+        "python_tests": 573,
+        "python_test_seconds": 306.15,
+        "node_tests": 33,
+        "measurements": [
+          {
+            "status": "passed",
+            "output": ".cache/numerical_verification.json",
+            "cases": {
+              "A01": "passed",
+              "A02": "passed",
+              "A03": "passed",
+              "SI_EQUIVALENCE": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/relaxation_verification.json",
+            "cases": {
+              "A04": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/quantum_verification.json",
+            "cases": {
+              "B01": "passed",
+              "B02": "passed",
+              "B03": "passed",
+              "B04": "passed",
+              "B05": "passed",
+              "B06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/workflow_verification.json",
+            "cases": {
+              "WF01": "passed",
+              "WF02": "passed",
+              "WF03": "passed",
+              "WF04": "passed",
+              "WF05": "passed",
+              "WF06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/service_verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/web_verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/production_verification.json",
+            "cases": {
+              "P01": "passed",
+              "P02": "passed",
+              "P03": "passed",
+              "P04": "passed",
+              "P05": "passed",
+              "P06": "passed"
+            }
+          }
+        ],
+        "container_build": "passed",
+        "installed_container": "passed",
+        "all_job_steps": "completed_success",
+        "reported_job_status": "in_progress"
+      },
+      {
+        "architecture": "x86_64",
+        "job_id": 126680327619,
+        "python_tests": 573,
+        "python_test_seconds": 394.12,
+        "node_tests": 33,
+        "measurements": [
+          {
+            "status": "passed",
+            "output": ".cache/numerical_verification.json",
+            "cases": {
+              "A01": "passed",
+              "A02": "passed",
+              "A03": "passed",
+              "SI_EQUIVALENCE": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/relaxation_verification.json",
+            "cases": {
+              "A04": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/quantum_verification.json",
+            "cases": {
+              "B01": "passed",
+              "B02": "passed",
+              "B03": "passed",
+              "B04": "passed",
+              "B05": "passed",
+              "B06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/workflow_verification.json",
+            "cases": {
+              "WF01": "passed",
+              "WF02": "passed",
+              "WF03": "passed",
+              "WF04": "passed",
+              "WF05": "passed",
+              "WF06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/service_verification.json",
+            "cases": {
+              "S01": "passed",
+              "S02": "passed",
+              "S03": "passed",
+              "S04": "passed",
+              "S05": "passed",
+              "S06": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/web_verification.json",
+            "cases": {
+              "W01": "passed",
+              "W02": "passed",
+              "W03": "passed",
+              "W04": "passed",
+              "W05": "passed"
+            }
+          },
+          {
+            "status": "passed",
+            "output": ".cache/production_verification.json",
+            "cases": {
+              "P01": "passed",
+              "P02": "passed",
+              "P03": "passed",
+              "P04": "passed",
+              "P05": "passed",
+              "P06": "passed"
+            }
+          }
+        ],
+        "container_build": "passed",
+        "installed_container": "passed",
+        "all_job_steps": "completed_success",
+        "reported_job_status": "in_progress"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": 13341075061,
+        "name": "numerical-verification-aarch64-2218d81d2a3e41d516455ae2be4257fe8b3e8c66",
+        "size_in_bytes": 64597,
+        "digest": "sha256:d425b14ff9fd5ff6ad71f058104998aaf74e51ff200fca89f42765de6e7dc836",
+        "expires_at": "2027-02-02T15:41:46Z"
+      },
+      {
+        "id": 13340670941,
+        "name": "numerical-verification-x86_64-2218d81d2a3e41d516455ae2be4257fe8b3e8c66",
+        "size_in_bytes": 65100,
+        "digest": "sha256:eba9311666870b50e4e73786b7e37a48328da1f3926c4a4c53fe92a8db550db4",
+        "expires_at": "2027-02-02T15:41:46Z"
+      }
+    ]
   },
   "installed_wheel": {
     "status": "passed",
@@ -399,10 +612,113 @@
       "verified_previous_packages_preserved": 20
     }
   },
-  "source_commit": "47364e4205e6eb74a28a2951ba629fa5d508ad36",
+  "source_commit": "2218d81d2a3e41d516455ae2be4257fe8b3e8c66",
   "local_bootstrap": {
     "status": "passed",
     "architecture": "x86_64",
     "method": "fresh venv, offline exact27-wheel install and observed environment check"
+  },
+  "preserved_ci_measurements": {
+    "x86_64": {
+      "environment_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/environment_verification.json",
+        "sha256": "ff3b9e6b718c93fe77d72ff948e12bb5fef72d4459db080950541439e67396b8",
+        "bytes": 4690
+      },
+      "numerical_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/numerical_verification.json",
+        "sha256": "090ed4709a004ddcf8ec4b7a792629d99aad588acd2daa2196fde6317e3c0980",
+        "bytes": 43247
+      },
+      "production_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/production_verification.json",
+        "sha256": "402a55fb07ecd9e187faeb293934ec8f63c7a5eadd712f03aaaee6658893c9c5",
+        "bytes": 29857
+      },
+      "quantum_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/quantum_verification.json",
+        "sha256": "880df7b6c8e8e2022c63c97019806c20e7188ffed6f06d2c0760e04488ccc82c",
+        "bytes": 67186
+      },
+      "relaxation_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/relaxation_verification.json",
+        "sha256": "dfb712c8421dfa810df1cd15266ff54dadb31d00050d4f295f352310d8ea0362",
+        "bytes": 20670
+      },
+      "selected_lock_sha256.txt": {
+        "path": "docs/verification/v0.9.0/x86_64/selected_lock_sha256.txt",
+        "sha256": "4acee360898477b8c54d5b0c08355280fe421ab9b4c19beab26946971d5dea52",
+        "bytes": 259
+      },
+      "service_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/service_verification.json",
+        "sha256": "e30d162fb8ddc303eff2f08002bdaaf858581cd040356f8f675e26ec62beffcd",
+        "bytes": 36144
+      },
+      "web_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/web_verification.json",
+        "sha256": "f0e6066365cdbbd61ec6f1c2eac824468c468b3e8fa82e2a42c13e406bf173bf",
+        "bytes": 22786
+      },
+      "workflow_verification.json": {
+        "path": "docs/verification/v0.9.0/x86_64/workflow_verification.json",
+        "sha256": "2c90d28036d7dd6a7d22a44b82afb2f219960b5fb3657fc630334c2826abb191",
+        "bytes": 74891
+      }
+    },
+    "aarch64": {
+      "environment_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/environment_verification.json",
+        "sha256": "be1731629d0e5bc955a3f871137161e4cc0aa72fd2172649c081d7b0dc13ba04",
+        "bytes": 4429
+      },
+      "numerical_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/numerical_verification.json",
+        "sha256": "5cd1e537cb6849312e29ca3f6d90f7495d6b8016617f91d430570a292d2dd773",
+        "bytes": 42912
+      },
+      "production_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/production_verification.json",
+        "sha256": "92978143b16fc5e28b9223135b129d9ccba2236284826284c5d300da3b010d1d",
+        "bytes": 29806
+      },
+      "quantum_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/quantum_verification.json",
+        "sha256": "c51d32864ac472a6eba0cec82a11ebcb528c87dc8a6929a80677bc8fb8dd08ef",
+        "bytes": 66865
+      },
+      "relaxation_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/relaxation_verification.json",
+        "sha256": "0918d29373bfebbdc2cf9f6bb65327de8705ea4f83c51c5dc938676aae1f908c",
+        "bytes": 20391
+      },
+      "selected_lock_sha256.txt": {
+        "path": "docs/verification/v0.9.0/aarch64/selected_lock_sha256.txt",
+        "sha256": "ed994314b76546862ed4d3ed6fe2fc0dc26b26a3b0d1f313279d57dacc9b44ab",
+        "bytes": 275
+      },
+      "service_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/service_verification.json",
+        "sha256": "667042fd420c21ffcf8ac7f8e7cd2a64aeccc9a831e73e56cf148109a9c4b6f8",
+        "bytes": 35864
+      },
+      "web_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/web_verification.json",
+        "sha256": "5126d3093319cb47966a15f30d3a213ffde34490034d9e6f3036cc2da2f260f9",
+        "bytes": 22507
+      },
+      "workflow_verification.json": {
+        "path": "docs/verification/v0.9.0/aarch64/workflow_verification.json",
+        "sha256": "6139c17073d43e8f73cf52b73fd767f882eaecdf048c0a3c78ddc13847ecfb98",
+        "bytes": 74612
+      }
+    }
+  },
+  "measurement_integrity": {
+    "status": "passed",
+    "exact_archive_sha256_matches_github": true,
+    "original_files_preserved": 18,
+    "measurement_reports": 14,
+    "all_reported_code_hashes_match_verified_implementation": true
   }
 }

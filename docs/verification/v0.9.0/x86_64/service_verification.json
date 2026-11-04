@@ -1,0 +1,1013 @@
+{
+  "report_version": "1.0.0",
+  "measured_at": "2026-11-04T15:50:35.343997+00:00",
+  "status": "passed",
+  "package_version": "0.9.0",
+  "scope": "Single-host authenticated HTTP API, durable queue, actual subprocess calculation, artifacts and replay",
+  "acceptance_plan": {
+    "path": "contracts/v0.2.0/validation_manifest.json",
+    "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7",
+    "coverage": {
+      "C01": "Partial: server-assigned immutable revisions, durable result/replay and finite JSON",
+      "C03": "Partial actual HTTP measurement: configured 24h-window idempotent retry/conflict, queued cancellation and terminal immutability; running cancellation/concurrent races are regression tests",
+      "C04": "Partial: authenticated ownership boundaries and no fabricated numerical result when replaying terminal immutable input"
+    }
+  },
+  "measurement_metadata": {
+    "origin": "actual_executed_checks",
+    "case_namespace": "S01--S06",
+    "reference_policy": "Independent two-particle harmonic closed form, actual HTTP status transitions and raw-byte SHA256",
+    "source_unchanged_during_measurement": true
+  },
+  "cases": [
+    {
+      "id": "S01",
+      "status": "passed",
+      "checks": {
+        "unauthenticated_request_rejected": true,
+        "authenticated_capabilities": true,
+        "validated_without_compute": true,
+        "validation_has_no_storage_effects": true,
+        "physical_validation_separate": true
+      },
+      "reference_method": "Real authenticated HTTP and storage counts before/after validation",
+      "stored_counts_before": {
+        "experiments": 0,
+        "revisions": 0,
+        "runs": 0,
+        "artifacts": 0
+      },
+      "stored_counts_after": {
+        "experiments": 0,
+        "revisions": 0,
+        "runs": 0,
+        "artifacts": 0
+      }
+    },
+    {
+      "id": "S02",
+      "status": "passed",
+      "checks": {
+        "created_experiment_and_revision": true,
+        "server_assigned_v4_ids": true,
+        "revision_roundtrip_immutable": true,
+        "client_cannot_assign_revision_id": true,
+        "experiment_links_revision": true
+      },
+      "reference_method": "Submitted copy compared with durable server envelope; no update route",
+      "experiment_id": "cc94fc5e-4c06-47e4-8ced-a862f9186f78",
+      "revision_id": "228a7faf-f302-419c-b90f-f942cdd08591",
+      "input": {
+        "schema_version": "0.2.0",
+        "title": "Harmonic service reference",
+        "definition": {
+          "unit_system": "SI",
+          "scales": {
+            "length_m": 2e-09,
+            "energy_j": 4e-20
+          },
+          "system": {
+            "representation": "particles_3d",
+            "module_id": "quanta.pair_static",
+            "module_version": "0.1.0",
+            "boundary": "nonperiodic",
+            "min_distance_m": 1e-17,
+            "particles": [
+              {
+                "id": "anchor",
+                "position_m": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  true,
+                  true,
+                  true
+                ]
+              },
+              {
+                "id": "probe",
+                "position_m": [
+                  3e-09,
+                  0.0,
+                  0.0
+                ],
+                "fixed": [
+                  false,
+                  true,
+                  true
+                ]
+              }
+            ],
+            "potential": {
+              "expression": {
+                "op": "mul",
+                "args": [
+                  {
+                    "op": "const",
+                    "value": 0.5
+                  },
+                  {
+                    "op": "param",
+                    "name": "k"
+                  },
+                  {
+                    "op": "pow",
+                    "arg": {
+                      "op": "sub",
+                      "args": [
+                        {
+                          "op": "var",
+                          "name": "rho"
+                        },
+                        {
+                          "op": "param",
+                          "name": "rho0"
+                        }
+                      ]
+                    },
+                    "exponent": 2
+                  }
+                ]
+              },
+              "parameters": {
+                "k": 3.0,
+                "rho0": 0.75
+              }
+            }
+          },
+          "numerics": {
+            "solver": "lbfgsb_forward_ad",
+            "gradient_tolerance": 1e-06,
+            "energy_ftol": 1e-12,
+            "max_iterations": 2000,
+            "max_evaluations": 10000
+          },
+          "protocol": {
+            "steps": [
+              {
+                "step_id": "measure",
+                "operation": "energy_forces",
+                "source": "initial",
+                "overrides": []
+              }
+            ],
+            "sweep": {
+              "axes": []
+            }
+          },
+          "observables": [
+            "energy",
+            "forces",
+            "pair_energies",
+            "final_positions"
+          ],
+          "extensions": {}
+        }
+      }
+    },
+    {
+      "id": "S03",
+      "status": "passed",
+      "checks": {
+        "queued_asynchronously": true,
+        "idempotent_retry_same_run": true,
+        "one_accepted_queue_record": true,
+        "different_body_conflict": true,
+        "foreign_resources_return_404": true
+      },
+      "reference_method": "HTTP retry and conflicting body inside the configured 86400-second window; second-principal access attempts",
+      "run_id": "747f1d59-a8ea-45fc-9610-094db4a30148",
+      "configured_idempotency_seconds": 86400,
+      "foreign_statuses": {
+        "revision": 404,
+        "run": 404,
+        "cancel": 404,
+        "replay": 404,
+        "artifacts": 404
+      }
+    },
+    {
+      "id": "S04",
+      "status": "passed",
+      "checks": {
+        "exclusive_worker": true,
+        "actual_subprocess_succeeded": true,
+        "expected_state_order": true,
+        "energy_closed_form": true,
+        "forces_closed_form_and_fixed_reaction": true,
+        "progress_complete": true,
+        "manifest_and_raw_hashes": true,
+        "foreign_raw_artifact_404": true,
+        "physical_validation_unvalidated": true
+      },
+      "reference_method": "Actual worker process, HTTP results and analytic two-particle harmonic reference; every manifest raw transfer checked",
+      "elapsed_seconds": 4.4412176700000146,
+      "observed_progress": [
+        {
+          "execution_status": "QUEUED",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": "measure",
+            "active_branch": 0
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "SUCCEEDED",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        }
+      ],
+      "reference_energy_j": 3.375e-20,
+      "actual_energy_j": 3.375e-20,
+      "energy_error_reduced": 1.1102230246251565e-16,
+      "reference_forces_n": [
+        [
+          4.4999999999999993e-11,
+          0.0,
+          0.0
+        ],
+        [
+          -4.4999999999999993e-11,
+          0.0,
+          0.0
+        ]
+      ],
+      "actual_forces_n": [
+        [
+          4.5e-11,
+          0.0,
+          0.0
+        ],
+        [
+          -4.5e-11,
+          0.0,
+          0.0
+        ]
+      ],
+      "force_max_absolute_error_reduced": 0.0,
+      "tolerance_reduced": 1e-12,
+      "artifacts": [
+        {
+          "artifact_id": "45a4312c-1686-4a46-956c-d9e0c3a002e4",
+          "size_bytes": 3560,
+          "sha256": "01a8bed46ea8f4c40cf9fd73fa71c9bcec91bcae8b8f4a6fda844c91f9d71972",
+          "passed": true
+        },
+        {
+          "artifact_id": "f6fbc5b2-483b-4ede-a4cc-0408cdf686e8",
+          "size_bytes": 8771,
+          "sha256": "f9c8e2714b188f35b40c475ae49bc0d4a5820ff6cf856e4993864584a1ffb791",
+          "passed": true
+        },
+        {
+          "artifact_id": "04671979-2c33-49ed-8aca-3346b19ed043",
+          "size_bytes": 5470,
+          "sha256": "407fdae2a9b7d2f2a10a2f449bb26a4a6f43acc6d23e545243f43c1b43000a73",
+          "passed": true
+        },
+        {
+          "artifact_id": "8c52df31-b7c9-42e1-94a8-241ddb5794bf",
+          "size_bytes": 1492,
+          "sha256": "0b8532e18657b62ae201b4aee8963add393739ca7409b2df9becd74a849c8b37",
+          "passed": true
+        },
+        {
+          "artifact_id": "ac80cddd-c62b-4789-962f-30e777fe2e6e",
+          "size_bytes": 6791,
+          "sha256": "38a4183083d2c1efd58bf73d98916c119d3c0219705b5353152a3ac96a06ec33",
+          "passed": true
+        },
+        {
+          "artifact_id": "b184e085-7800-493f-bf41-19868d2aa3a6",
+          "size_bytes": 6608,
+          "sha256": "b1279da591a6cc65c378195eaaae31f7b3a6dcf081e7eeeb5b1bbe1686886c52",
+          "passed": true
+        },
+        {
+          "artifact_id": "c9095a7d-3686-4411-8071-29660ca947fc",
+          "size_bytes": 479,
+          "sha256": "1a04ee28e0c7a5e117ef4931facb7e742790045d0b11e951b927a09333a2a6e7",
+          "passed": true
+        },
+        {
+          "artifact_id": "9722ba43-a1bc-45e2-bee0-5e2cc42920ee",
+          "size_bytes": 2548,
+          "sha256": "184403c6050cb82437ec12bb6273fa633b10dcf9ca50d71febf24eb86858b88a",
+          "passed": true
+        },
+        {
+          "artifact_id": "1003c500-7563-4ec8-9b3b-38295b88820f",
+          "size_bytes": 1423,
+          "sha256": "16c432b409a8e9360905f7ccca9ad0cf4121b5b151cc8b069c8d30d93b5905ab",
+          "passed": true
+        },
+        {
+          "artifact_id": "ad878fd1-855d-4c51-99dd-cb89acd240d9",
+          "size_bytes": 6338,
+          "sha256": "7948268ebecf9f1e32b9ac9e07c3739dfd050b5a5684c1dc5eb62aa742598742",
+          "passed": true
+        },
+        {
+          "artifact_id": "d7e22e6a-8acc-4590-8e98-dc9a4b3d52c8",
+          "size_bytes": 5673,
+          "sha256": "f2cb609a29518c581de5bb4e97025233f3fc09bf2ea50fa2d4044d419c8afe58",
+          "passed": true
+        },
+        {
+          "artifact_id": "33e67fcb-2f62-4b9c-8d46-f780ccfbbc39",
+          "size_bytes": 16406,
+          "sha256": "6d94234874742737d0a0fdd0c725513128c8a77ad66268b40682a4b50233fb57",
+          "passed": true
+        },
+        {
+          "artifact_id": "0f120a3b-43a0-4ecd-93c8-065344e96975",
+          "size_bytes": 14388,
+          "sha256": "87e1087b8c8b3bf81714b3551aa747418a1f3dc38a9f6710ff90b1869db893cf",
+          "passed": true
+        },
+        {
+          "artifact_id": "aa9fc3a2-f19b-4492-9a0b-8e1c01cd2ab3",
+          "size_bytes": 13133,
+          "sha256": "b253365db09a7850938796b07e4293632136cd63e0b12fc14d1d21c0e30cbadb",
+          "passed": true
+        },
+        {
+          "artifact_id": "469a7783-27b8-4cc6-8a90-5b4106e6b5fa",
+          "size_bytes": 4651,
+          "sha256": "7f15292f3976f5c705f7265f29470352a3c0387fdf743b86909d8e074de5845e",
+          "passed": true
+        },
+        {
+          "artifact_id": "9325b97b-764f-42c0-abc3-6b0190475d1c",
+          "size_bytes": 4281,
+          "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+          "passed": true
+        },
+        {
+          "artifact_id": "3dc799a0-bd65-494e-81a7-2831db2eff97",
+          "size_bytes": 5956,
+          "sha256": "617922b88c2ebab984c2e8faf07867cc1cde325495935295918aae26b43d7aa4",
+          "passed": true
+        },
+        {
+          "artifact_id": "6e80d525-709e-403b-a457-67bf08bcb85b",
+          "size_bytes": 29268,
+          "sha256": "48bd959b199217a011f8abbd56f56c3548ce14a3060cafe78f0fa15272fe7911",
+          "passed": true
+        },
+        {
+          "artifact_id": "1c64bb58-7aa4-4902-bdb2-939731861291",
+          "size_bytes": 1676,
+          "sha256": "8404259ad2d39e5fd201bafa3a69268d95462638601208b129382124eb457f7b",
+          "passed": true
+        },
+        {
+          "artifact_id": "495a509d-3cb3-499f-992c-c76fcf82fb61",
+          "size_bytes": 18973,
+          "sha256": "f05352191bd70a3ae4212072d65f7728a80a72514839a2d735d17976c33948af",
+          "passed": true
+        },
+        {
+          "artifact_id": "a05356ea-1c12-4e78-bf37-cc71f7dd7361",
+          "size_bytes": 11143,
+          "sha256": "905b0898d21d1d12c924073ed4cae65e5d1b5aaba6abbcd7ad3be46732832ece",
+          "passed": true
+        },
+        {
+          "artifact_id": "795d09dd-5f4c-448d-863c-6ee8d4eb332d",
+          "size_bytes": 16301,
+          "sha256": "49625ec7dacbbea4aa07a89b046d5c99da48893c8edcf937e857be5aaa5379a6",
+          "passed": true
+        },
+        {
+          "artifact_id": "0829f771-897d-48ef-a4c8-1605ad91c74f",
+          "size_bytes": 5316,
+          "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7",
+          "passed": true
+        },
+        {
+          "artifact_id": "09e554fa-bbad-467f-a3ae-b8348d77a037",
+          "size_bytes": 99,
+          "sha256": "30ae03765870ef953ace06de0e0946c1e007265c9d63103febf12b2670430bbf",
+          "passed": true
+        },
+        {
+          "artifact_id": "a6923df2-edf3-4cf0-95e6-b3a0cd5cc18c",
+          "size_bytes": 48,
+          "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+          "passed": true
+        },
+        {
+          "artifact_id": "d88a6ec0-a779-42d3-9b16-7521fda28809",
+          "size_bytes": 10794,
+          "sha256": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+          "passed": true
+        },
+        {
+          "artifact_id": "0747554d-71c4-442d-8b54-f34680ae2bc1",
+          "size_bytes": 9971,
+          "sha256": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+          "passed": true
+        },
+        {
+          "artifact_id": "04fca6bc-2f83-43cc-8bb4-16689cadb01e",
+          "size_bytes": 13957,
+          "sha256": "49240df1b7070eba94dd4a06bed468d50667dc7d5beb72e6755f530e4d625579",
+          "passed": true
+        },
+        {
+          "artifact_id": "7e97ba10-0d47-428f-93f3-9216873bf090",
+          "size_bytes": 3655,
+          "sha256": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+          "passed": true
+        },
+        {
+          "artifact_id": "0a27b620-7179-4d0e-8e1b-bcadb8573d82",
+          "size_bytes": 7908,
+          "sha256": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+          "passed": true
+        },
+        {
+          "artifact_id": "dab31116-9926-4a1e-9102-c7bdbcc04359",
+          "size_bytes": 933,
+          "sha256": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+          "passed": true
+        },
+        {
+          "artifact_id": "13d53e72-b33c-4cc8-9254-7169cf63ddbb",
+          "size_bytes": 27471,
+          "sha256": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+          "passed": true
+        },
+        {
+          "artifact_id": "aa259c97-5133-4d4c-a2db-ecdb79124777",
+          "size_bytes": 15469,
+          "sha256": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+          "passed": true
+        },
+        {
+          "artifact_id": "793fa813-19f9-44f3-945b-abb48cda6f19",
+          "size_bytes": 5385,
+          "sha256": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+          "passed": true
+        },
+        {
+          "artifact_id": "8f383370-89ee-4b99-8c94-dcb11eae7991",
+          "size_bytes": 22775,
+          "sha256": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+          "passed": true
+        },
+        {
+          "artifact_id": "491e5762-6bec-4119-8235-687cc28ccf88",
+          "size_bytes": 11587,
+          "sha256": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+          "passed": true
+        },
+        {
+          "artifact_id": "614b199d-d693-430d-b509-a596af52eb6d",
+          "size_bytes": 3782,
+          "sha256": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+          "passed": true
+        },
+        {
+          "artifact_id": "3cb43d8f-37ee-48be-9283-5c68a0188095",
+          "size_bytes": 21954,
+          "sha256": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+          "passed": true
+        },
+        {
+          "artifact_id": "663b611d-dee8-4594-a0a1-caff28558e47",
+          "size_bytes": 11767,
+          "sha256": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+          "passed": true
+        },
+        {
+          "artifact_id": "209ef831-ac84-4b13-8e2d-0e75b2b4ccf3",
+          "size_bytes": 12980,
+          "sha256": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+          "passed": true
+        },
+        {
+          "artifact_id": "b56b7163-bfb5-4705-91c7-6285cf1742aa",
+          "size_bytes": 42275,
+          "sha256": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+          "passed": true
+        },
+        {
+          "artifact_id": "f680a03d-57c8-473a-82d1-a3c40fa145e2",
+          "size_bytes": 10540,
+          "sha256": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+          "passed": true
+        },
+        {
+          "artifact_id": "47de2e2e-bb92-4600-9364-651a753e4735",
+          "size_bytes": 10996,
+          "sha256": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+          "passed": true
+        },
+        {
+          "artifact_id": "199e2d5b-c4a6-4e2a-9041-7e70991964a1",
+          "size_bytes": 29605,
+          "sha256": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+          "passed": true
+        },
+        {
+          "artifact_id": "0a1b904e-6314-448c-9c91-95a9e8b97b5d",
+          "size_bytes": 9251,
+          "sha256": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+          "passed": true
+        },
+        {
+          "artifact_id": "de1aeadd-9f20-4a9e-ae84-da430f50a3d6",
+          "size_bytes": 35608,
+          "sha256": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+          "passed": true
+        },
+        {
+          "artifact_id": "ee7c4f81-9ef1-4324-be8c-ff8c026bf845",
+          "size_bytes": 2193,
+          "sha256": "0ab3852783f3b9db7fe00673c3c6b30a4b85bb08ca2e8a4b20cfaba256ed2180",
+          "passed": true
+        },
+        {
+          "artifact_id": "f4330415-bd17-418e-80c3-39c90880eb4e",
+          "size_bytes": 287,
+          "sha256": "0e4a1c85b00e3d723eed5b8b74906b96112b64c8c7f3dcbd58fbd5432fa26dac",
+          "passed": true
+        },
+        {
+          "artifact_id": "a9adf43c-2ce3-409c-a8bb-2cf68d209ae2",
+          "size_bytes": 2797,
+          "sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5",
+          "passed": true
+        },
+        {
+          "artifact_id": "3dc35ed3-de23-442f-9bbf-ee26d73d130f",
+          "size_bytes": 22059,
+          "sha256": "8ee8490d4eb00ab9e6e790e022153ec7081ceff99c33724476ba6bfc45768a29",
+          "passed": true
+        },
+        {
+          "artifact_id": "00387eb6-607f-4cad-b228-30660826811f",
+          "size_bytes": 18192,
+          "sha256": "280bef0841bf7576c8e719245057dd4e5513ee60a884e8fd581faee132d9f4d2",
+          "passed": true
+        },
+        {
+          "artifact_id": "1093831f-ab63-4843-8960-abe2d6693d03",
+          "size_bytes": 101,
+          "sha256": "c27cca4736965a2d6e355bc9ed277128c603a5b93636419ce2f664b2e0e2b0f1",
+          "passed": true
+        },
+        {
+          "artifact_id": "7e3f5b55-a9e4-44fa-863c-7d11a10abe1b",
+          "size_bytes": 1024,
+          "sha256": "142b70280d35284f7747e30b7f83cb3913b4f87c6194cd0168b547ef2e061d14",
+          "passed": true
+        },
+        {
+          "artifact_id": "ef84e6a5-9ec3-44bf-8af1-57267eed9e78",
+          "size_bytes": 716,
+          "sha256": "60124d70078c8592594749e494d3e2783ec43546758a07cc11e872bdf6b51f57",
+          "passed": true
+        },
+        {
+          "artifact_id": "04c381b3-5497-4db3-a30d-343c8498841e",
+          "size_bytes": 767,
+          "sha256": "f67d2b9b8168e0e72ce2d2ceccb1a6ee1aa31a0da2299728b50eba83d048a2fd",
+          "passed": true
+        },
+        {
+          "artifact_id": "954d1cd8-11f9-48a5-8490-ecd8f597fc43",
+          "size_bytes": 847,
+          "sha256": "b8556a2d89004a476a8ae2af6d0101bb9100c6bd02fb7007facc86a5187407ce",
+          "passed": true
+        },
+        {
+          "artifact_id": "cc53761d-6845-4d7b-bdea-7c90dd19e054",
+          "size_bytes": 804,
+          "sha256": "319e4f9c5f3c610759e3277b01b2a1483753af5882f2d7ba0d549851ca0fd12c",
+          "passed": true
+        },
+        {
+          "artifact_id": "cf8ee49d-b7a0-49d3-bc31-2ea86a017afc",
+          "size_bytes": 256,
+          "sha256": "b149108cac3a0d47fab3fa6ba38919d7ae74e4de4847ebf65b0a63b7afe8f2ff",
+          "passed": true
+        },
+        {
+          "artifact_id": "8c13e7db-fdba-41d9-8d9c-301abad89f73",
+          "size_bytes": 3016,
+          "sha256": "85bd3ee01ddc750014924df1f784fd583148fd9b1c254d1b90a800684f45a192",
+          "passed": true
+        },
+        {
+          "artifact_id": "ce1d5b89-bb76-4b84-ae2b-860fbe68709b",
+          "size_bytes": 947,
+          "sha256": "960a1b4f7904d2bd3c2d129a27de6a25802f1b42cd3951f3d42d9c8583236deb",
+          "passed": true
+        },
+        {
+          "artifact_id": "fdde1d02-93cc-4822-9699-d29a4e0c35c5",
+          "size_bytes": 7436,
+          "sha256": "7df6d26a63d80aba90abfdecadb0a487dc7d5082007ec8b5a45d40a97a4cf5d7",
+          "passed": true
+        },
+        {
+          "artifact_id": "e762198b-c562-424c-9588-7d9b802d17f8",
+          "size_bytes": 3631,
+          "sha256": "9f9bbfa1cacadb0a811ce334bf70b1a07c347b74f283cefa77199022506c97a1",
+          "passed": true
+        },
+        {
+          "artifact_id": "75762f23-83cf-4a7d-8ee8-0fc8d1687634",
+          "size_bytes": 706,
+          "sha256": "ea4462478a80a358fffa8fa2a686839d66f15c75e54ace41539de7c690655710",
+          "passed": true
+        },
+        {
+          "artifact_id": "ac5a55c6-352e-4de4-bef1-721fc394b735",
+          "size_bytes": 1186,
+          "sha256": "c1e79f34374784871b2ed7d268b50e4ee42bdb1ac86f8f76f0f2efd66ccfc574",
+          "passed": true
+        },
+        {
+          "artifact_id": "b20bbf40-ad36-4867-a506-fa4c7baa8996",
+          "size_bytes": 7229,
+          "sha256": "588294da4b25b7fa86d9bb37414c68a73baa080b125da7136dc8ca5641fd4018",
+          "passed": true
+        },
+        {
+          "artifact_id": "71d89937-92d0-4335-a2f7-f63f98e5a875",
+          "size_bytes": 740,
+          "sha256": "df7dc501f1c8f764a85e6c4e531ee9f00c13f0ddbb276357b17b422985bd3369",
+          "passed": true
+        },
+        {
+          "artifact_id": "a25cb9e1-5755-4db0-9c07-7a271486ad12",
+          "size_bytes": 740,
+          "sha256": "df7dc501f1c8f764a85e6c4e531ee9f00c13f0ddbb276357b17b422985bd3369",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "status": "passed",
+      "checks": {
+        "accepted_new_run": true,
+        "replay_idempotent": true,
+        "replay_succeeded": true,
+        "same_scientific_and_execution_hashes": true,
+        "same_computed_payload": true,
+        "source_provenance": true,
+        "reopened_result_unchanged": true,
+        "reopened_revision_unchanged": true
+      },
+      "reference_method": "Actual new subprocess replay and reopened SQLite records",
+      "replay_run_id": "d0294ac3-0638-4dd3-8f68-d0f63eda79a5",
+      "source_run_id": "747f1d59-a8ea-45fc-9610-094db4a30148",
+      "preserved_hashes": {
+        "input_sha256": "960a1b4f7904d2bd3c2d129a27de6a25802f1b42cd3951f3d42d9c8583236deb",
+        "resolved_input_sha256": "7df6d26a63d80aba90abfdecadb0a487dc7d5082007ec8b5a45d40a97a4cf5d7",
+        "execution_fingerprint": "ea4462478a80a358fffa8fa2a686839d66f15c75e54ace41539de7c690655710"
+      },
+      "observed_progress": [
+        {
+          "execution_status": "QUEUED",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": "measure",
+            "active_branch": 0
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "SUCCEEDED",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        }
+      ],
+      "elapsed_seconds": 4.499824032999982
+    },
+    {
+      "id": "S06",
+      "status": "passed",
+      "checks": {
+        "queued_then_cancelled": true,
+        "cancel_is_terminal_and_repeatable": true,
+        "cancelled_retry_same_run": true,
+        "cancelled_without_computation": true,
+        "committed_success_is_immutable": true,
+        "terminal_input_replay_accepted": true,
+        "no_fabricated_source_or_replay_result": true,
+        "queued_replay_cleanly_cancelled": true
+      },
+      "reference_method": "HTTP queued cancellation, repeated cancellation/idempotent retry, terminal success immutability and new replay from immutable cancelled input",
+      "cancelled_run_id": "f50b4eab-a21f-4bc5-bf9e-0e98038b5cb4",
+      "cancellation_events": [
+        {
+          "execution_status": "QUEUED",
+          "at": "2026-11-04T15:50:34.863203Z"
+        },
+        {
+          "execution_status": "CANCELLED",
+          "at": "2026-11-04T15:50:34.878038Z"
+        }
+      ],
+      "cancelled_progress": {
+        "completed_steps": 0,
+        "total_steps": 1,
+        "active_step": null,
+        "active_branch": null
+      },
+      "input_replay_run_id": "5b6b6ff2-8220-4666-a225-7eefa0060f82",
+      "input_replay_source_run_id": "f50b4eab-a21f-4bc5-bf9e-0e98038b5cb4",
+      "source_result_http_status": 409,
+      "queued_replay_result_http_status": 409,
+      "race_coverage": "These measurements exercise both committed state orderings. Simultaneous transaction races and running cooperative cancellation are separate regression tests."
+    }
+  ],
+  "environment": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "runtime_profile": "cpython-3.12.14-linux-x86_64-cpu-v1",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "x86_64"
+    },
+    "python_executable": "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-fdde5778.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-aw1mwcap/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "SSE",
+          "SSE2",
+          "SSE3"
+        ],
+        "found": [
+          "SSSE3",
+          "SSE41",
+          "POPCNT",
+          "SSE42",
+          "AVX",
+          "F16C",
+          "FMA3",
+          "AVX2",
+          "AVX512F",
+          "AVX512CD",
+          "AVX512_SKX",
+          "AVX512_CLX",
+          "AVX512_CNL",
+          "AVX512_ICL"
+        ],
+        "not found": [
+          "AVX512_KNL",
+          "AVX512_KNM",
+          "AVX512_SPR"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false,
+    "locked_distributions": {
+      "attrs": "26.1.0",
+      "cffi": "2.1.1",
+      "click": "8.5.0",
+      "cryptography": "50.0.2",
+      "h11": "0.16.0",
+      "iniconfig": "2.3.1",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "numpy": "2.3.5",
+      "packaging": "26.3",
+      "pip": "25.3",
+      "pluggy": "1.7.0",
+      "pycparser": "3.12",
+      "pygments": "2.21.0",
+      "pyjwt": "2.15.1",
+      "pytest": "9.0.2",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc8785": "0.1.4",
+      "rpds-py": "2026.9.1",
+      "scipy": "1.17.0",
+      "setuptools": "80.9.0",
+      "six": "1.17.0",
+      "threadpoolctl": "3.6.0",
+      "typing-extensions": "4.16.0",
+      "uvicorn": "0.54.0",
+      "wheel": "0.45.1"
+    },
+    "requirements_lock_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5"
+  },
+  "code_source": {
+    "files_sha256": {
+      "src/quanta/__init__.py": "30ae03765870ef953ace06de0e0946c1e007265c9d63103febf12b2670430bbf",
+      "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "src/quanta/access_auth.py": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de",
+      "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+      "src/quanta/cli.py": "49240df1b7070eba94dd4a06bed468d50667dc7d5beb72e6755f530e4d625579",
+      "src/quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+      "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+      "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+      "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+      "src/quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+      "src/quanta/production.py": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+      "src/quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+      "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+      "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+      "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+      "src/quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+      "src/quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+      "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+      "src/quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+      "src/quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+      "scripts/verify_numerics.py": "f2a90cc3fe6cc18f06696b2fbf7f89ae210389cc0e929170ef6da9b223d45d63",
+      "scripts/verify_service.py": "68959ef1289c313280687b3a1e0a0177713aa5439f0a4b533df79c600091bed0"
+    },
+    "source_set_sha256": "0551678aa5f395f79dd338032777635844e64c8ace48f1d7ce9b84f8b9447a7d",
+    "source_set_hash_rule": "RFC 8785 of the relative-path to raw-file-SHA256 map; report excluded",
+    "git_head": "2218d81d2a3e41d516455ae2be4257fe8b3e8c66",
+    "git_worktree_dirty": false,
+    "git_worktree_status": []
+  },
+  "physical_validation_status": "unvalidated",
+  "limitations": [
+    "These service checks cover one host and one configured bearer principal; no public deployment or account provider is tested.",
+    "Retry is observed inside the configured 86400-second retention window; this measurement does not wait 24 hours.",
+    "Simultaneous cancel/publication transactions, running cooperative cancellation, queue expiry and crash recovery have separate regression tests.",
+    "No checkpoint resume, distributed execution, new physical model or experimental accuracy is certified."
+  ]
+}
