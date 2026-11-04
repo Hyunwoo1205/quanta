@@ -48,15 +48,312 @@
     }
   },
   "native_ci": {
-    "status": "pending",
+    "status": "pending_rerun",
     "architectures": [
       "x86_64",
       "aarch64"
     ],
-    "measurement_count_per_architecture": 7
+    "measurement_count_per_architecture": 7,
+    "source_commit": "47364e4205e6eb74a28a2951ba629fa5d508ad36",
+    "initial_attempt": {
+      "run_id": 41859232501,
+      "source_commit": "47364e4205e6eb74a28a2951ba629fa5d508ad36",
+      "status": "failed",
+      "reason": "Three workflow tests assumed exactly20dependencies after the intentional27-package lock update; changed tests to compare the entire actual trusted lock and all unaffected observed versions",
+      "local_fixed_cases": {
+        "passed": 3,
+        "seconds": 4.64
+      },
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/41859232501"
+    }
   },
   "installed_wheel": {
-    "status": "pending"
+    "status": "passed",
+    "architecture": "x86_64",
+    "wheel": {
+      "path": "/workspace/scratch/9d1751731bf6/quanta/.cache/access-wheel/dist/quanta_research_contracts-0.9.0-py3-none-any.whl",
+      "sha256": "60cb95f8a71899b347d64052ce41e6dc799cd5c7c1c44897aa3abf7f9afc8779",
+      "bytes": 195016
+    },
+    "distributions": {
+      "count": 28,
+      "exact_locked_set": true,
+      "versions": {
+        "cryptography": "50.0.2",
+        "six": "1.17.0",
+        "referencing": "0.37.0",
+        "threadpoolctl": "3.6.0",
+        "numpy": "2.3.5",
+        "rfc3339-validator": "0.1.4",
+        "pygments": "2.21.0",
+        "rpds-py": "2026.9.1",
+        "typing-extensions": "4.16.0",
+        "pluggy": "1.7.0",
+        "packaging": "26.3",
+        "uvicorn": "0.54.0",
+        "cffi": "2.1.1",
+        "attrs": "26.1.0",
+        "h11": "0.16.0",
+        "jsonschema-specifications": "2025.9.1",
+        "pip": "25.3",
+        "pycparser": "3.12",
+        "click": "8.5.0",
+        "scipy": "1.17.0",
+        "iniconfig": "2.3.1",
+        "pytest": "9.0.2",
+        "rfc8785": "0.1.4",
+        "wheel": "0.45.1",
+        "jsonschema": "4.26.0",
+        "pyjwt": "2.15.1",
+        "setuptools": "80.9.0",
+        "quanta-research-contracts": "0.9.0"
+      }
+    },
+    "byte_comparison": {
+      "python_files": 23,
+      "web_files": 5,
+      "contract_files": 24,
+      "lock_files": 5,
+      "readme_metadata_matches": true,
+      "source_wheel_installed_match": true,
+      "python_sha256": {
+        "quanta/production.py": "86d3e23ca8c546f7629e79eed610af75b3c009cad43ed662df7301d3498ec8f0",
+        "quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+        "quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+        "quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+        "quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+        "quanta/__init__.py": "30ae03765870ef953ace06de0e0946c1e007265c9d63103febf12b2670430bbf",
+        "quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+        "quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+        "quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+        "quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+        "quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+        "quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+        "quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+        "quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+        "quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+        "quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+        "quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+        "quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+        "quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+        "quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+        "quanta/cli.py": "49240df1b7070eba94dd4a06bed468d50667dc7d5beb72e6755f530e4d625579",
+        "quanta/access_auth.py": "e1b5b0e0173bd5073ff25988d9404720263b8a23eff4c155cb6f5dbd893153de"
+      },
+      "lock_sha256": {
+        "requirements.in": "0e4a1c85b00e3d723eed5b8b74906b96112b64c8c7f3dcbd58fbd5432fa26dac",
+        "requirements.lock.txt": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5",
+        "requirements.lock.json": "8ee8490d4eb00ab9e6e790e022153ec7081ceff99c33724476ba6bfc45768a29",
+        "requirements.aarch64.lock.txt": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f",
+        "requirements.aarch64.lock.json": "8debe43f5cffa3dca31664d17598f484ba7ffa0f568ef9826ff2e8bf777487f2"
+      },
+      "readme_sha256": "a28ae163cebb457f843a971aece14c1f1919c77852b7b5dfe18da67e9aa8fe1a"
+    },
+    "outside_checkout_checks": [
+      {
+        "name": "pip_check",
+        "arguments": [
+          "-m",
+          "pip",
+          "check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.9225347060128115,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "environment",
+        "arguments": [
+          "-m",
+          "quanta",
+          "environment"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5183500520070083,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "contracts",
+        "arguments": [
+          "-m",
+          "quanta",
+          "check-contracts"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5151634250069037,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "energy",
+        "arguments": [
+          "-m",
+          "quanta",
+          "evaluate",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_energy_forces.json"
+        ],
+        "exit_code": 0,
+        "seconds": 1.150659862003522,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "relax",
+        "arguments": [
+          "-m",
+          "quanta",
+          "relax",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_relax.json"
+        ],
+        "exit_code": 0,
+        "seconds": 1.6207957839942537,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "quantum",
+        "arguments": [
+          "-m",
+          "quanta",
+          "eigenstates",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/quantum_eigenstates.json"
+        ],
+        "exit_code": 0,
+        "seconds": 2.242199961998267,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "plan",
+        "arguments": [
+          "-m",
+          "quanta",
+          "plan",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_workflow.json"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6363803840067703,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "pair_workflow",
+        "arguments": [
+          "-m",
+          "quanta",
+          "run",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/pair_workflow.json",
+          "--output-dir",
+          "/tmp/quanta-access-wheel-cbpkppj8/pair-run"
+        ],
+        "exit_code": 0,
+        "seconds": 12.553857780992985,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "pair_replay",
+        "arguments": [
+          "-m",
+          "quanta",
+          "replay",
+          "/tmp/quanta-access-wheel-cbpkppj8/pair-run",
+          "--output-dir",
+          "/tmp/quanta-access-wheel-cbpkppj8/pair-replay"
+        ],
+        "exit_code": 0,
+        "seconds": 20.782816450999235,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "quantum_workflow",
+        "arguments": [
+          "-m",
+          "quanta",
+          "run",
+          "/workspace/scratch/9d1751731bf6/quanta/examples/quantum_workflow.json",
+          "--output-dir",
+          "/tmp/quanta-access-wheel-cbpkppj8/quantum-run"
+        ],
+        "exit_code": 0,
+        "seconds": 9.463471042006859,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "service_measurement",
+        "arguments": [
+          "/workspace/scratch/9d1751731bf6/quanta/scripts/verify_service.py",
+          "--output",
+          "/workspace/scratch/9d1751731bf6/quanta/.cache/access-wheel/installed-service-verification.json"
+        ],
+        "exit_code": 0,
+        "seconds": 19.801569561997894,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "web_measurement",
+        "arguments": [
+          "/workspace/scratch/9d1751731bf6/quanta/scripts/verify_web.py",
+          "--output",
+          "/workspace/scratch/9d1751731bf6/quanta/.cache/access-wheel/installed-web-verification.json"
+        ],
+        "exit_code": 0,
+        "seconds": 8.924371218003216,
+        "cwd_outside_checkout": true
+      },
+      {
+        "name": "production_measurement",
+        "arguments": [
+          "/workspace/scratch/9d1751731bf6/quanta/scripts/verify_production.py",
+          "--output",
+          "/workspace/scratch/9d1751731bf6/quanta/.cache/access-wheel/installed-production-verification.json"
+        ],
+        "exit_code": 0,
+        "seconds": 9.440149025991559,
+        "cwd_outside_checkout": true
+      }
+    ],
+    "source_unchanged_after_verification": true,
+    "elapsed_seconds": 88.57968080700084,
+    "measurement_reports": {
+      "installed-service-verification.json": {
+        "path": "/workspace/scratch/9d1751731bf6/quanta/.cache/access-wheel/installed-service-verification.json",
+        "sha256": "d763d1859be6b74b99167c5fff2af88a4b9ada0fd423b4738342bcbacced0afe",
+        "status": "passed",
+        "package_version": "0.9.0",
+        "case_ids": [
+          "S01",
+          "S02",
+          "S03",
+          "S04",
+          "S05",
+          "S06"
+        ]
+      },
+      "installed-web-verification.json": {
+        "path": "/workspace/scratch/9d1751731bf6/quanta/.cache/access-wheel/installed-web-verification.json",
+        "sha256": "d97834fdd5cc9843b7e24dbb479b38f7ce63318a27841367c2fbeb41376149a2",
+        "status": "passed",
+        "package_version": "0.9.0",
+        "case_ids": [
+          "W01",
+          "W02",
+          "W03",
+          "W04",
+          "W05"
+        ]
+      },
+      "installed-production-verification.json": {
+        "path": "/workspace/scratch/9d1751731bf6/quanta/.cache/access-wheel/installed-production-verification.json",
+        "sha256": "4be4de8234914cbdb391cf47fcd9be18247f3d2ad970fe9b657ee084f302e49c",
+        "status": "passed",
+        "package_version": "0.9.0",
+        "case_ids": [
+          "P01",
+          "P02",
+          "P03",
+          "P04",
+          "P05",
+          "P06"
+        ]
+      }
+    },
+    "native_arm_validation": "not_performed_locally"
   },
   "external_validation": {
     "oci_connection": "not_performed",
@@ -83,7 +380,8 @@
         "os": "Linux",
         "architecture": "x86_64",
         "compute": "CPU"
-      }
+      },
+      "verified_previous_packages_preserved": 20
     },
     "aarch64": {
       "packages": 27,
@@ -97,7 +395,14 @@
         "os": "Linux",
         "architecture": "aarch64",
         "compute": "CPU"
-      }
+      },
+      "verified_previous_packages_preserved": 20
     }
+  },
+  "source_commit": "47364e4205e6eb74a28a2951ba629fa5d508ad36",
+  "local_bootstrap": {
+    "status": "passed",
+    "architecture": "x86_64",
+    "method": "fresh venv, offline exact27-wheel install and observed environment check"
   }
 }

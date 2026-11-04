@@ -18,6 +18,12 @@ CONTENT = ("module_id", "module_version", "representation", "representation_vers
            "physical_time", "data_schema_ref", "data", "metadata_schema_ref", "metadata")
 
 
+def locked_versions():
+    from quanta.profiles import load_lock_files
+    lock = json.loads(load_lock_files()["requirements.lock.json"])
+    return {item["name"]: item["version"] for item in lock["packages"]}
+
+
 def digest(value):
     return hashlib.sha256(rfc8785.dumps(value)).hexdigest()
 
@@ -325,7 +331,7 @@ def test_artifact_byte_hashes_and_bound_execution_manifests_are_actual(pair):
     environment = json.loads(report["captured_artifacts"][result["provenance"]["environment_manifest_sha256"]])
     dependency = json.loads(report["captured_artifacts"][manifests["dependency_manifest_sha256"]])
     expected_versions = {item["name"]: item["version"] for item in dependency["locked_distributions"]}
-    assert len(expected_versions) == 20
+    assert expected_versions == locked_versions()
     assert environment["locked_distribution_versions"] == expected_versions
     assert environment["package_distribution"]["version"] == environment["package_distribution"]["expected_version"]
 
@@ -448,7 +454,10 @@ def test_transitive_locked_dependency_fault_stops_before_fingerprint_or_dispatch
     assert result["errors"][0]["code"] == "MODEL_UNSUPPORTED"
     environment = json.loads(report["captured_artifacts"][result["provenance"]["environment_manifest_sha256"]])
     assert not environment["valid"]
-    assert len(environment["locked_distribution_versions"]) == 20
+    expected = locked_versions()
+    assert set(environment["locked_distribution_versions"]) == set(expected)
+    assert {name: value for name, value in environment["locked_distribution_versions"].items() if name != "attrs"} == {
+        name: value for name, value in expected.items() if name != "attrs"}
     assert environment["locked_distribution_versions"]["attrs"] == (None if fault == "missing" else "0.0.0")
     expected_code = "ENV_DEPENDENCY" if fault == "missing" else "ENV_LOCK_VERSION"
     assert any(error["code"] == expected_code and error["path"] == "/locked_distribution_versions/attrs"
