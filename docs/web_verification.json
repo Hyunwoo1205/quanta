@@ -1,0 +1,681 @@
+{
+  "report_version": "1.0.0",
+  "measured_at": "2026-11-04T12:17:04.330042+00:00",
+  "status": "passed",
+  "package_version": "0.7.0",
+  "scope": "Packaged web assets, browser-origin authenticated HTTP workflow, immutable revisions and actual numerical child",
+  "measurement_metadata": {
+    "origin": "actual_executed_checks",
+    "case_namespace": "W01--W05",
+    "source_unchanged_during_measurement": true,
+    "browser_rendering_tested_by_this_script": false
+  },
+  "cases": [
+    {
+      "id": "W01",
+      "status": "passed",
+      "checks": {
+        "public_shell_served": true,
+        "local_assets_served": true,
+        "trusted_examples_available": true,
+        "no_token_in_public_document_or_examples": true,
+        "api_still_requires_bearer": true,
+        "same_origin_boundary": true,
+        "security_headers": true
+      },
+      "reference_method": "Actual shell, asset and example HTTP responses plus browser-origin rejection",
+      "assets": [
+        {
+          "path": "/assets/app.css",
+          "status": 200,
+          "size_bytes": 22110,
+          "sha256": "a582df7c9ac7cbbb2485d5dea8526e8bb7e6276f0dadf24eaefed1a5e7137da0",
+          "mime_type": "text/css; charset=utf-8"
+        },
+        {
+          "path": "/assets/app.js",
+          "status": 200,
+          "size_bytes": 35933,
+          "sha256": "15e0f1d8e646a67d80fb9f58e0103c39bae80b4abc17af7d5d28a561b3409227",
+          "mime_type": "text/javascript; charset=utf-8"
+        },
+        {
+          "path": "/assets/view-model.mjs",
+          "status": 200,
+          "size_bytes": 11088,
+          "sha256": "1ce37021183f6077731558594f19c3ebea12774ff4e0b2837249e03de78febb3",
+          "mime_type": "text/javascript; charset=utf-8"
+        }
+      ],
+      "example_count": 5,
+      "public_document_sha256": "1701c0da5f5d9a6650d5a19833dafb582400f577db083ed25333daa31cecfb47",
+      "cross_origin_status": 403,
+      "rebinding_status": 400
+    },
+    {
+      "id": "W02",
+      "status": "passed",
+      "checks": {
+        "validated_without_storage_effect": true,
+        "saved_immutable_revision": true,
+        "negative_zero_carrier_preserved": true,
+        "title_remains_json_data": true,
+        "invalid_input_has_pointer_and_code": true
+      },
+      "reference_method": "Browser-equivalent validate and raw JSON revision requests, separate immutable reread",
+      "experiment_id": "a59c189f-e9bb-47c8-85fe-135972a246cc",
+      "revision_id": "61f7822d-2b7c-4097-9e5d-05c59789e794",
+      "validation_storage_before": {
+        "experiments": 0,
+        "revisions": 0,
+        "runs": 0,
+        "artifacts": 0
+      },
+      "validation_storage_after": {
+        "experiments": 0,
+        "revisions": 0,
+        "runs": 0,
+        "artifacts": 0
+      },
+      "invalid_errors": [
+        {
+          "code": "INPUT_SEMANTIC",
+          "category": "input",
+          "message": "Every pair distance must exceed the minimum distance",
+          "path": "/definition/system/particles",
+          "step_id": null,
+          "branch_index": null,
+          "retryable": false,
+          "details": {
+            "pair_indices": [
+              0,
+              1
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "W03",
+      "status": "passed",
+      "checks": {
+        "asynchronous_submit_and_idempotent_retry": true,
+        "pending_does_not_fabricate_result": true,
+        "actual_worker_result": true,
+        "independent_energy": true,
+        "independent_forces_and_fixed_reaction": true,
+        "separate_status_axes": true,
+        "experiment_history_lists_result": true
+      },
+      "reference_method": "Actual numerical child and independent two-particle analytic energy/Cartesian forces",
+      "energy_actual_j": 9.375e-21,
+      "energy_reference_j": 9.375e-21,
+      "energy_error_reduced": 0.0,
+      "forces_actual_n": [
+        [
+          7.5e-11,
+          0.0,
+          0.0
+        ],
+        [
+          -7.5e-11,
+          0.0,
+          0.0
+        ]
+      ],
+      "forces_reference_n": [
+        [
+          7.5e-11,
+          0,
+          0
+        ],
+        [
+          -7.5e-11,
+          0,
+          0
+        ]
+      ],
+      "force_error_reduced": 0.0,
+      "tolerance_reduced": 1e-12,
+      "observed_progress": [
+        {
+          "execution_status": "QUEUED",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 0,
+            "total_steps": 1,
+            "active_step": "measure",
+            "active_branch": 0
+          }
+        },
+        {
+          "execution_status": "RUNNING",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        },
+        {
+          "execution_status": "SUCCEEDED",
+          "progress": {
+            "completed_steps": 1,
+            "total_steps": 1,
+            "active_step": null,
+            "active_branch": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "W04",
+      "status": "passed",
+      "checks": {
+        "revision_reload_unchanged": true,
+        "result_reload_unchanged": true,
+        "history_reload_unchanged": true,
+        "authenticated_downloads_match_manifests": true,
+        "foreign_experiment_history_hidden": true
+      },
+      "reference_method": "Reopened durable store and every authenticated artifact raw-byte digest",
+      "download_count": 63,
+      "transfers": [
+        {
+          "artifact_id": "668ef089-e88c-4c39-8b84-f088ecd2a524",
+          "passed": true
+        },
+        {
+          "artifact_id": "1d4617d2-a020-43ef-adbb-96cc347a330b",
+          "passed": true
+        },
+        {
+          "artifact_id": "18846e61-1161-4c49-b98e-a16279ac739d",
+          "passed": true
+        },
+        {
+          "artifact_id": "c8e11907-257e-4053-a254-6c18bd1bd1c2",
+          "passed": true
+        },
+        {
+          "artifact_id": "c216a947-e4b9-44bc-97ca-7e8cdb01cb98",
+          "passed": true
+        },
+        {
+          "artifact_id": "f2c2449c-7da1-47ad-88b8-099ef387f746",
+          "passed": true
+        },
+        {
+          "artifact_id": "539145b9-e609-4109-a841-c8c4ee4a4fa4",
+          "passed": true
+        },
+        {
+          "artifact_id": "91bc0a55-602e-48fe-a852-f63363dbcda1",
+          "passed": true
+        },
+        {
+          "artifact_id": "ab545793-b2c5-40d9-be16-9e56168f5e55",
+          "passed": true
+        },
+        {
+          "artifact_id": "fb1b219d-86a5-43d7-acb4-1a70bd8c4ea3",
+          "passed": true
+        },
+        {
+          "artifact_id": "cc3534c1-cca3-463a-abcd-2d595bd658d8",
+          "passed": true
+        },
+        {
+          "artifact_id": "967e75b5-36c7-41bf-a9e4-bccd29345513",
+          "passed": true
+        },
+        {
+          "artifact_id": "427e7443-35f5-4838-b7f6-fe6210e7dcd3",
+          "passed": true
+        },
+        {
+          "artifact_id": "d6241fc8-6638-412e-b1a1-fa2c23ec8af7",
+          "passed": true
+        },
+        {
+          "artifact_id": "836d65e7-0c11-474d-9ea9-31c4f52184f6",
+          "passed": true
+        },
+        {
+          "artifact_id": "1c3a7e06-59b7-474d-a0a5-c9213f6272c7",
+          "passed": true
+        },
+        {
+          "artifact_id": "3625636e-b4f9-4cc7-8fd5-db067fb6bd02",
+          "passed": true
+        },
+        {
+          "artifact_id": "ed0ecf52-2730-48a9-9c54-4fdc52dd6dea",
+          "passed": true
+        },
+        {
+          "artifact_id": "85d4e376-a466-4b5f-8617-c8630f027ae4",
+          "passed": true
+        },
+        {
+          "artifact_id": "1566f312-6809-4c25-bd0a-f24e325833a4",
+          "passed": true
+        },
+        {
+          "artifact_id": "176065cc-7e3f-4f5e-a9cb-5c8c4167db2b",
+          "passed": true
+        },
+        {
+          "artifact_id": "bb467382-302c-4ec9-9e77-e555f8890342",
+          "passed": true
+        },
+        {
+          "artifact_id": "cff557bf-fdca-4240-a9f6-557e6ee8a71b",
+          "passed": true
+        },
+        {
+          "artifact_id": "d7937b45-8a52-44cb-ac5f-ba83b4633408",
+          "passed": true
+        },
+        {
+          "artifact_id": "9f83f77e-68b0-43d6-9201-704e06003f06",
+          "passed": true
+        },
+        {
+          "artifact_id": "a4a363ef-b25c-4ce4-96fd-c8ba85d1867f",
+          "passed": true
+        },
+        {
+          "artifact_id": "f5aa8741-d0f1-45aa-8638-872f1031ffdb",
+          "passed": true
+        },
+        {
+          "artifact_id": "4852527a-c601-4f61-a8ed-4dfb1b1358ff",
+          "passed": true
+        },
+        {
+          "artifact_id": "deb2a3b6-05fa-4040-8d8d-07220acb975d",
+          "passed": true
+        },
+        {
+          "artifact_id": "5a256fa2-a729-4f13-ad55-f2c2d777e6fa",
+          "passed": true
+        },
+        {
+          "artifact_id": "45558327-a33d-449a-abf0-ea008dc147d1",
+          "passed": true
+        },
+        {
+          "artifact_id": "50dc983b-2a26-46fb-9d79-77f49a7d2454",
+          "passed": true
+        },
+        {
+          "artifact_id": "74641ee7-038d-43e1-a568-9b48b6a2a39c",
+          "passed": true
+        },
+        {
+          "artifact_id": "7ab23c47-8fa7-498a-a3b0-adfc0d9dd320",
+          "passed": true
+        },
+        {
+          "artifact_id": "ea67c0b7-84bd-4b5c-a63c-a280f568f23d",
+          "passed": true
+        },
+        {
+          "artifact_id": "7463f9c9-6074-4df1-b00c-393de4bd0492",
+          "passed": true
+        },
+        {
+          "artifact_id": "76200219-1bce-42e2-a775-e1f18320df67",
+          "passed": true
+        },
+        {
+          "artifact_id": "35c065d1-5174-40af-8f0d-876fe3100dc0",
+          "passed": true
+        },
+        {
+          "artifact_id": "9dc54e8a-e23d-44c4-937f-4ee6ac95556a",
+          "passed": true
+        },
+        {
+          "artifact_id": "3442c509-b6fb-4dcf-a96b-c575d139dea3",
+          "passed": true
+        },
+        {
+          "artifact_id": "1639de51-d233-40c7-b895-8be4081ddabb",
+          "passed": true
+        },
+        {
+          "artifact_id": "b3f9c8b6-a1dd-4cd6-9fac-ca1dffcb2cd8",
+          "passed": true
+        },
+        {
+          "artifact_id": "473e2fd4-d669-4577-8c15-d54273ddc3c3",
+          "passed": true
+        },
+        {
+          "artifact_id": "dbc133f2-0d71-419a-8202-6bcbbc6ce55d",
+          "passed": true
+        },
+        {
+          "artifact_id": "d666fd61-754d-4ca6-ae24-9605070cc02f",
+          "passed": true
+        },
+        {
+          "artifact_id": "509433b3-23f3-4a9e-bf86-612a8c768e82",
+          "passed": true
+        },
+        {
+          "artifact_id": "5b9a152c-7ec1-428e-8a5e-e4618fa0192b",
+          "passed": true
+        },
+        {
+          "artifact_id": "676c573b-2832-474d-bd2d-c1fdcd6cee63",
+          "passed": true
+        },
+        {
+          "artifact_id": "a87aa343-dca8-45a0-83e2-e3a82ad3206c",
+          "passed": true
+        },
+        {
+          "artifact_id": "52b4e4fa-eb2f-4e7c-b52f-62e9aeecaccd",
+          "passed": true
+        },
+        {
+          "artifact_id": "fa20b7cd-9552-48e6-872a-3c6b236573b4",
+          "passed": true
+        },
+        {
+          "artifact_id": "1d1ec0b4-631f-48ae-b480-37ff89de625b",
+          "passed": true
+        },
+        {
+          "artifact_id": "65fbc78b-85fe-42d5-bb75-7721f8603571",
+          "passed": true
+        },
+        {
+          "artifact_id": "7cc15014-9a9c-4a86-a9e7-550c6941afe4",
+          "passed": true
+        },
+        {
+          "artifact_id": "9eb63cde-3e08-436a-8669-ee978e2e55f4",
+          "passed": true
+        },
+        {
+          "artifact_id": "e4b648b8-f729-4fad-9fe3-a427c7547b4e",
+          "passed": true
+        },
+        {
+          "artifact_id": "825eec1a-509a-4684-82b1-482127f9b837",
+          "passed": true
+        },
+        {
+          "artifact_id": "069a3b0c-4a6e-4106-9bd8-5eb9616374a4",
+          "passed": true
+        },
+        {
+          "artifact_id": "151eb2fb-1847-43e1-9690-96b299cf5e6e",
+          "passed": true
+        },
+        {
+          "artifact_id": "cdae1c24-bc0c-4399-a3e3-ce0c0949701c",
+          "passed": true
+        },
+        {
+          "artifact_id": "fd8e933f-48cc-496f-9ea5-53cb778f9c6a",
+          "passed": true
+        },
+        {
+          "artifact_id": "a71c5fa5-a754-4453-b7b5-8a7a20580817",
+          "passed": true
+        },
+        {
+          "artifact_id": "07817666-ee57-4505-b738-305223244803",
+          "passed": true
+        }
+      ],
+      "foreign_history_status": 404
+    },
+    {
+      "id": "W05",
+      "status": "passed",
+      "checks": {
+        "queued_cancel_is_terminal": true,
+        "no_cancelled_payload_invented": true,
+        "history_cursor_visits_each_saved_run_once": true
+      },
+      "reference_method": "Queued cancellation and two actual durable records across one-item cursor pages",
+      "cancelled_run_id": "a6194f90-5668-4fe8-b40c-720854b69cc1",
+      "result_http_status": 409,
+      "history_run_ids": [
+        "a6194f90-5668-4fe8-b40c-720854b69cc1",
+        "0e199178-22c6-4c54-94b3-9e62976b6cea"
+      ]
+    }
+  ],
+  "environment": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "x86_64"
+    },
+    "python_executable": "/workspace/scratch/9d1751731bf6/quanta/.venv/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-fdde5778.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/workspace/scratch/9d1751731bf6/quanta/.venv/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-aw1mwcap/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "SSE",
+          "SSE2",
+          "SSE3"
+        ],
+        "found": [
+          "SSSE3",
+          "SSE41",
+          "POPCNT",
+          "SSE42",
+          "AVX",
+          "F16C",
+          "FMA3",
+          "AVX2",
+          "AVX512F",
+          "AVX512CD",
+          "AVX512_SKX",
+          "AVX512_CLX",
+          "AVX512_CNL",
+          "AVX512_ICL"
+        ],
+        "not found": [
+          "AVX512_KNL",
+          "AVX512_KNM",
+          "AVX512_SPR"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false,
+    "locked_distributions": {
+      "attrs": "26.1.0",
+      "iniconfig": "2.3.1",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "numpy": "2.3.5",
+      "packaging": "26.3",
+      "pip": "25.3",
+      "pluggy": "1.7.0",
+      "pygments": "2.21.0",
+      "pytest": "9.0.2",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc8785": "0.1.4",
+      "rpds-py": "2026.9.1",
+      "scipy": "1.17.0",
+      "setuptools": "80.9.0",
+      "six": "1.17.0",
+      "threadpoolctl": "3.6.0",
+      "typing-extensions": "4.16.0",
+      "wheel": "0.45.1"
+    },
+    "requirements_lock_sha256": "f707157f7ee8ed0d3e6dac568e2b8a5db4241d7af63907f8350ed0567e759583"
+  },
+  "code_source": {
+    "files_sha256": {
+      "scripts/verify_web.py": "68d2a2132c9a92ba559981c99022d57a02e47803f47fac173db20f486dcc5aab",
+      "src/quanta/__init__.py": "3af24af1bf852da237643614ad7b0cd683b1a0a42b2292a89a6de88c6bcb6f82",
+      "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+      "src/quanta/cli.py": "d0907c28f54ebb817a1b272e629050dc0555d351582e4dea416c07ee81f68a1c",
+      "src/quanta/environment.py": "bee4fd51eae989f37475027a5ef695aeac34642e5ddba39ebd05b9ae3dae820f",
+      "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+      "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+      "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+      "src/quanta/planning.py": "8a97b6ee2f1687f09df26e822541edfe2f35c3c0a89621a1cac3e52c82a8c357",
+      "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+      "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+      "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+      "src/quanta/run_store.py": "8f0ea4e8e518f4b940fcfb7db4f849064c619e521f34a652c7ce79f8b347635f",
+      "src/quanta/server.py": "d08bbfffd99556cc0f06cfbc847ca56a44d7e2dedefcd34e3d408a48157af550",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+      "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+      "src/quanta/web/app.css": "a582df7c9ac7cbbb2485d5dea8526e8bb7e6276f0dadf24eaefed1a5e7137da0",
+      "src/quanta/web/app.js": "15e0f1d8e646a67d80fb9f58e0103c39bae80b4abc17af7d5d28a561b3409227",
+      "src/quanta/web/examples.json": "b80e2ea197db4dbfd7ac558e653020c8dc8f5de5a2195feecfcfb88faad93af1",
+      "src/quanta/web/index.html": "1701c0da5f5d9a6650d5a19833dafb582400f577db083ed25333daa31cecfb47",
+      "src/quanta/web/view-model.mjs": "1ce37021183f6077731558594f19c3ebea12774ff4e0b2837249e03de78febb3",
+      "src/quanta/worker.py": "6c6c3196a3d1a45a1bfbc151f8f8876a26b8365e0bd95e7e0a01eeb73d021f3c",
+      "src/quanta/workflow.py": "03789f4ba591e9fc6f16f99aacff94c8e6be8aca69af9b7a17e95134188aa022"
+    },
+    "source_set_sha256": "2dba6c8d0bee6f76d41c0b0ba6b09e73ae878bbae36121b227354f9c134dbc9e",
+    "source_set_hash_rule": "RFC 8785 of relative alias to actual imported source/asset raw SHA256; report excluded",
+    "git_head": "d6debad0c6e263b315af65609466479e07fc5555",
+    "git_worktree_dirty": true
+  },
+  "physical_validation_status": "unvalidated",
+  "limitations": [
+    "This measurement exercises the HTTP protocol used by the UI, not rendered DOM interactions; browser QA is separate.",
+    "Pure JavaScript number transport, formatting and chart mapping have independent Node regression tests.",
+    "No public deployment, external account, distributed execution or new physical model is certified."
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "report_version": "1.0.0",
+  "verified_at": "2026-11-04T12:22:56.503573+00:00",
+  "package_version": "0.7.0",
+  "status": "passed_for_declared_scope",
+  "scope": "Desktop static packaged frontend in cloud browser; live authenticated calculation tested separately over HTTP",
+  "viewport": {
+    "width": 1363,
+    "height": 936,
+    "document_width": 1348
+  },
+  "checks": {
+    "layout_and_no_horizontal_overflow": true,
+    "pair_and_quantum_sample_switching": true,
+    "workflow_summary_two_branches_six_steps": true,
+    "json_format_preserves_negative_zero_and_exponent_lexemes": true,
+    "malformed_json_shows_error": true,
+    "result_before_calculation_is_empty": true,
+    "save_and_run_disabled_until_authenticated": true
+  },
+  "web_asset_sha256": {
+    "src/quanta/web/index.html": "1701c0da5f5d9a6650d5a19833dafb582400f577db083ed25333daa31cecfb47",
+    "src/quanta/web/app.css": "a582df7c9ac7cbbb2485d5dea8526e8bb7e6276f0dadf24eaefed1a5e7137da0",
+    "src/quanta/web/app.js": "15e0f1d8e646a67d80fb9f58e0103c39bae80b4abc17af7d5d28a561b3409227",
+    "src/quanta/web/view-model.mjs": "1ce37021183f6077731558594f19c3ebea12774ff4e0b2837249e03de78febb3",
+    "src/quanta/web/examples.json": "b80e2ea197db4dbfd7ac558e653020c8dc8f5de5a2195feecfcfb88faad93af1"
+  },
+  "authenticated_browser_flow": {
+    "status": "not_run",
+    "reason": "Supported managed preview serves static resources; loopback API retains Host/Origin restrictions. Real authenticated calculations, history and downloads were measured through actual HTTP and worker processes, not claimed as rendered browser interaction."
+  },
+  "screenshot_observed": true,
+  "mobile_viewport": "not_tested"
+}

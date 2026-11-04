@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Quanta 연구 실험 작업 공간 — 실험 정의, 검증, 실행과 결과 탐색">
+  <title>Quanta · 연구 작업 공간</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script type="module" src="/assets/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 이동</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="실험 탐색">
+      <a class="brand" href="/" aria-label="Quanta 작업 공간">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="11"/><ellipse cx="20" cy="20" rx="18" ry="7" transform="rotate(-45 20 20)"/><circle class="brand-dot" cx="31" cy="9" r="3"/></svg>
+        <span>Quanta<span class="brand-caption">RESEARCH WORKSPACE</span></span>
+      </a>
+      <div class="sidebar-section-title">작업 공간</div>
+      <nav class="side-nav" aria-label="주요 메뉴">
+        <button class="side-nav-item active" data-tab="editor"><span aria-hidden="true">◈</span> 실험 구성</button>
+        <button class="side-nav-item" data-tab="runs"><span aria-hidden="true">◷</span> 실행 기록 <span id="run-count" class="nav-count">0</span></button>
+        <button class="side-nav-item" data-tab="results"><span aria-hidden="true">⌁</span> 결과 탐색</button>
+      </nav>
+      <div class="sidebar-section-row"><span class="sidebar-section-title">내 실험</span><button id="new-experiment" class="icon-button" title="새 실험" aria-label="새 실험 만들기">+</button></div>
+      <div id="experiment-list" class="experiment-list"><p class="sidebar-empty">서버에 연결하면 저장한<br>실험을 불러올 수 있어요.</p></div>
+      <button id="more-experiments" class="sidebar-more" hidden>실험 더 보기</button>
+      <div class="sidebar-footer"><div class="environment-dot" id="environment-dot"></div><div><strong id="connection-state">연결 대기</strong><span>LOCAL RESEARCH ENVIRONMENT</span></div><button id="disconnect" class="icon-button" title="연결 해제" aria-label="서버 연결 해제" hidden>↗</button></div>
+    </aside>
+
+    <main id="main" class="main-content">
+      <header class="topbar"><div class="breadcrumb">WORKSPACE <span>/</span> <strong id="breadcrumb-title">새 실험</strong></div><div class="topbar-meta"><span id="package-version" class="version-badge">QUANTA</span><span class="local-label"><span class="tiny-dot"></span> 로컬 작업 공간</span></div></header>
+
+      <section id="connection-panel" class="connection-panel" aria-labelledby="connection-heading">
+        <div><span class="eyebrow">CONNECT YOUR ENVIRONMENT</span><h2 id="connection-heading">계산 환경에 연결하세요.</h2><p>서버 실행 시 설정한 API 토큰을 입력하세요. 토큰은 이 페이지가 열려 있는 동안만 메모리에 보관합니다.</p></div>
+        <form id="connection-form" class="connection-form"><label for="api-token">API 토큰</label><div class="connection-input-row"><input id="api-token" type="password" autocomplete="off" spellcheck="false" placeholder="서버의 QUANTA_API_TOKEN" required minlength="32"><button class="button primary" id="connect-button" type="submit">연결하기 <span aria-hidden="true">→</span></button></div><span id="connection-origin" class="microcopy"></span></form>
+      </section>
+
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+      <section id="error-panel" class="error-panel" role="alert" hidden><div class="section-row"><h2>요청을 확인해주세요</h2><button id="dismiss-error" class="text-button" aria-label="오류 메시지 닫기">닫기</button></div><ol id="error-list"></ol></section>
+
+      <section id="editor-view" class="view" aria-labelledby="editor-heading">
+        <div class="page-heading"><div><span class="eyebrow">EXPERIMENT BUILDER</span><h1 id="editor-heading">아이디어를, 계산으로.</h1><p>모형과 실험 절차를 정의하고, 같은 조건에서 다시 확인하세요.</p></div><div class="heading-number" aria-hidden="true">01<span>DEFINE · VALIDATE · RUN</span></div></div>
+        <div class="editor-layout">
+          <section class="card definition-card" aria-labelledby="definition-heading">
+            <div class="card-heading"><div><span class="card-index">01</span><h2 id="definition-heading">실험 정의</h2></div><span id="draft-state" class="badge neutral">새 입력</span></div>
+            <div class="title-field"><label for="experiment-title">실험 이름</label><input id="experiment-title" maxlength="200" placeholder="예: 입자 배치와 에너지 분석"></div>
+            <div class="editor-toolbar"><label class="sample-field" for="sample-select"><span>시작할 예제</span><select id="sample-select" aria-label="시작할 예제 선택"><option value="">예제를 불러오는 중…</option></select></label><button id="load-sample" class="button secondary small">불러오기</button><label class="button secondary small file-label" for="import-file">JSON 가져오기</label><input id="import-file" type="file" accept=".json,application/json" hidden></div>
+            <div class="code-header"><span><span class="code-dot"></span> definition.json</span><div><button id="format-json" class="code-action">정렬</button><button id="export-draft" class="code-action">내보내기</button></div></div>
+            <label class="visually-hidden" for="definition-editor">실험 정의 JSON 편집기</label><textarea id="definition-editor" class="code-editor" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="editor-help"></textarea>
+            <div class="editor-footer"><span id="editor-help">등록된 모형의 JSON 정의를 자유롭게 편집할 수 있어요.</span><span id="line-count">0 lines</span></div>
+            <div class="editor-actions"><button id="validate-definition" class="button secondary" disabled>입력 검증</button><button id="save-revision" class="button secondary" disabled>새 입력 저장</button><button id="run-revision" class="button primary run-button" disabled><span aria-hidden="true">▶</span> 실험 실행</button></div>
+          </section>
+          <aside class="context-column">
+            <section class="card overview-card" aria-labelledby="overview-heading"><div class="card-heading"><div><span class="card-index">02</span><h2 id="overview-heading">실험 개요</h2></div></div><div id="definition-summary" class="definition-summary"><p class="muted">입력을 불러오면 실험 구성을 표시합니다.</p></div><div class="protocol-heading">실행 절차</div><ol id="protocol-list" class="protocol-list"></ol><div class="science-note"><span class="note-icon" aria-hidden="true">i</span><p>계산 성공, 수치 수렴, 해상도 수렴과 물리적 검증은 각각 따로 확인합니다.</p></div></section>
+            <section class="card validation-card" aria-labelledby="validation-heading"><div class="section-row"><h2 id="validation-heading">입력 검증</h2><span id="validation-state" class="badge neutral">검증 전</span></div><p id="validation-description" class="muted">실행 전에 형식·단위·지원 범위와 자원 한도를 확인하세요.</p><div id="validation-details"></div></section>
+            <section class="revision-note"><span class="eyebrow">REPRODUCIBLE BY DESIGN</span><h3>저장한 입력은 그대로.</h3><p>수정한 내용은 새 입력 버전으로 저장됩니다. 각 실행은 저장한 조건과 계산 근거를 함께 남깁니다.</p><dl id="saved-revision-info" class="small-meta"></dl></section>
+          </aside>
+        </div>
+      </section>
+
+      <section id="runs-view" class="view" aria-labelledby="runs-heading" hidden><div class="page-heading"><div><span class="eyebrow">EXECUTION HISTORY</span><h1 id="runs-heading">모든 실행, 하나의 기록.</h1><p>저장한 입력에서 시작한 실행과 종료 사유를 확인하세요.</p></div><button id="refresh-runs" class="button secondary" disabled>기록 새로고침</button></div><div id="run-list" class="run-list"><div class="empty-state card"><span class="empty-symbol" aria-hidden="true">◷</span><h2>아직 실행 기록이 없어요.</h2><p>실험을 저장하고 실행하면 이곳에 표시됩니다.</p></div></div><button id="more-runs" class="button secondary" hidden>기록 더 보기</button></section>
+
+      <section id="results-view" class="view" aria-labelledby="results-heading" hidden><div class="page-heading"><div><span class="eyebrow">RESULT EXPLORER</span><h1 id="results-heading">계산의 다음은, 이해.</h1><p>실제 계산 결과와 수렴 기준, 저장한 근거를 함께 살펴보세요.</p></div><button id="refresh-result" class="button secondary" disabled>결과 새로고침</button></div><div id="result-empty" class="empty-state card"><span class="empty-symbol" aria-hidden="true">⌁</span><h2>확인할 실행을 선택하세요.</h2><p>실험을 실행하거나 실행 기록에서 결과를 열 수 있어요.</p><button class="button secondary" data-tab="runs">실행 기록 열기</button></div>
+        <div id="result-content" hidden>
+          <section class="card execution-card"><div class="section-row"><div><span class="eyebrow">EXECUTION</span><h2 id="active-run-title">실행 상태</h2></div><div class="run-actions"><button id="cancel-run" class="button danger small" disabled>실행 취소</button><button id="replay-run" class="button secondary small" disabled>같은 입력으로 재실행</button></div></div><div id="run-identity" class="run-identity"></div><div id="result-axes" class="result-axes"></div><div class="progress-header"><span id="progress-label">단계 확인 중</span><span id="active-step-label"></span></div><progress id="run-progress" value="0" max="1" aria-label="처리한 실험 단계"></progress><div id="run-diagnostics" class="run-diagnostics"></div></section>
+          <section id="numerical-content" hidden><div class="result-step-toolbar"><label for="step-select">계산 단계 <select id="step-select"></select></label><span id="step-outcome" class="badge neutral"></span></div><div id="result-metrics" class="metric-grid"></div><div id="result-visualization" class="card visualization-card"></div><div id="result-tables" class="card data-card"></div></section>
+          <div id="result-unavailable" class="empty-state card" hidden><h2>아직 계산 결과가 없습니다.</h2><p id="result-unavailable-text">실행이 끝나면 검증된 결과를 이곳에서 확인할 수 있어요.</p></div>
+          <section class="card artifact-card"><div class="section-row"><div><h2>결과와 근거 다운로드</h2><p class="muted">원본 bytes와 SHA-256이 기록된 산출물입니다.</p></div><button id="download-result" class="button secondary small" disabled>전체 결과 JSON</button></div><div id="artifact-list" class="artifact-list"></div></section>
+        </div>
+      </section>
+      <footer class="workspace-footer"><span>QUANTA</span><p>검증 가능한 계산. 다시 확인할 수 있는 실험.</p><span id="footer-contract">CONTRACT 0.2.0</span></footer>
+    </main>
+  </div>
+</body>
+</html>

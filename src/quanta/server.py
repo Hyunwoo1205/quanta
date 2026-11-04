@@ -4,12 +4,25 @@ from __future__ import annotations
 import hashlib
 import hmac
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from importlib import resources
 import json
 import socket
 import threading
 
 from .job_store import ServiceError
 from .parsing import parse_json
+
+_WEB_RESOURCES = {
+    "/": ("index.html", "text/html; charset=utf-8"),
+    "/index.html": ("index.html", "text/html; charset=utf-8"),
+    "/assets/app.css": ("app.css", "text/css; charset=utf-8"),
+    "/assets/app.js": ("app.js", "text/javascript; charset=utf-8"),
+    "/assets/view-model.mjs": ("view-model.mjs", "text/javascript; charset=utf-8"),
+    "/ui/examples": ("examples.json", "application/json; charset=utf-8"),
+}
+_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
+        "img-src 'self' data: blob:; font-src 'self'; base-uri 'none'; form-action 'none'; "
+        "frame-ancestors 'none'; object-src 'none'")
 
 
 def error_document(error: ServiceError) -> dict:
@@ -75,13 +88,18 @@ def create_server(service, *, token: str, owner: str = "local", host: str = "127
             # Never log bearer tokens, paths, input definitions or calculations.
             pass
 
-        def _send(self, status, value):
+        def _send(self, status, value, *, content_type=None):
             raw = value if isinstance(value, bytes) else json.dumps(value, ensure_ascii=False, allow_nan=False).encode("utf-8")
             self.send_response(status)
-            self.send_header("Content-Type", "application/octet-stream" if isinstance(value, bytes) else "application/json; charset=utf-8")
+            self.send_header("Content-Type", content_type or ("application/octet-stream" if isinstance(value, bytes) else "application/json; charset=utf-8"))
             self.send_header("Content-Length", str(len(raw)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Security-Policy", _CSP)
+            self.send_header("X-Frame-Options", "DENY")
+            self.send_header("Referrer-Policy", "no-referrer")
+            self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+            self.send_header("Cross-Origin-Opener-Policy", "same-origin")
             self.send_header("Connection", "close")
             if isinstance(value, bytes):
                 self.send_header("ETag", '"' + hashlib.sha256(value).hexdigest() + '"')
@@ -97,9 +115,30 @@ def create_server(service, *, token: str, owner: str = "local", host: str = "127
 
         def _request(self):
             try:
+                hosts = self.headers.get_all("Host", [])
+                allowed_hosts = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
+                if len(hosts) != 1 or hosts[0].lower() not in allowed_hosts:
+                    raise ServiceError(400, "HTTP_HOST", "The request must target this loopback server")
+                # A public application shell contains no private state or token.
+                # Every scientific-data endpoint still requires bearer auth.
+                if self.command in {"GET", "HEAD"} and self.path in _WEB_RESOURCES:
+                    if (self.headers.get_all("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) > 1
+                            or self.headers.get("Content-Length", "0") != "0"):
+                        raise ServiceError(400, "HTTP_REQUEST", "Static resource requests do not accept bodies")
+                    name, media = _WEB_RESOURCES[self.path]
+                    try:
+                        raw = resources.files("quanta").joinpath("web", name).read_bytes()
+                    except (FileNotFoundError, IsADirectoryError, ModuleNotFoundError):
+                        raise ServiceError(404, "NOT_FOUND", "Resource not found") from None
+                    self._send(200, raw, content_type=media)
+                    return
                 auth = self.headers.get_all("Authorization", [])
                 if len(auth) != 1 or not hmac.compare_digest(auth[0].encode("utf-8"), ("Bearer " + token).encode("utf-8")):
                     raise ServiceError(401, "UNAUTHORIZED", "A valid bearer token is required")
+                if self.path.startswith("/v1"):
+                    origins = self.headers.get_all("Origin", [])
+                    if len(origins) > 1 or (origins and origins[0] != "http://" + hosts[0].lower()):
+                        raise ServiceError(403, "HTTP_ORIGIN", "Browser API requests must use the same origin")
                 if len(self.path) > 4096:
                     raise ServiceError(414, "RESOURCE_LIMIT", "Request target exceeds the byte limit")
                 lengths = self.headers.get_all("Content-Length", [])

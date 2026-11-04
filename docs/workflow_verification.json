@@ -1,8 +1,8 @@
 {
   "report_version": "1.0.0",
-  "measured_at": "2026-11-04T11:19:21.375763+00:00",
+  "measured_at": "2026-11-04T12:13:55.227542+00:00",
   "status": "passed",
-  "package_version": "0.6.0",
+  "package_version": "0.7.0",
   "scope": "Declared synchronous workflow, hash, source and persisted-replay checks only",
   "acceptance_plan": {
     "path": "contracts/v0.2.0/validation_manifest.json",
@@ -423,10 +423,10 @@
         }
       ],
       "run": {
-        "run_id": "2100da4c-a281-4eba-b024-c6d701ce87d3",
+        "run_id": "c3b2a031-10a5-48e7-a2e7-d753766a7cf3",
         "input_sha256": "91b85a8ab56b581158a23865fcf7cec582e3316fc48fd160e6f202d0d57b5bd8",
-        "resolved_input_sha256": "f3545d80e6b8b49457667747ea0d7f4aa3c4d744bcf499f04bb960a380936d5f",
-        "execution_fingerprint": "3dded9d6eea990721e75c61de0ab9ebdad518e51f1c1bb05d7c4cb1c03770ae6",
+        "resolved_input_sha256": "4f87284e62458f42ceed077c4f64effe4a00142b4a065ec980d422fa0297c625",
+        "execution_fingerprint": "1706da223bd385da5535018304172a8f60f8117a6c72fe81a1893ed86b348484",
         "execution_status": "SUCCEEDED",
         "numerical_status": "pass",
         "resolution_status": "not_applicable",
@@ -438,8 +438,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "f03f63915e8d51ec20b471e082bcbea863fd30edbdc4628aa8ca591563941f2b",
-            "state_ref": "15f9b12f-41e3-46bf-a18d-114ead450d82",
+            "resolved_input_sha256": "4786b69249b05cc4be98a4f2021a9c8347065319ce3544fbd830177e31ef0978",
+            "state_ref": "8bcb0017-1476-419d-97e7-3263d35c8208",
             "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
           },
           {
@@ -447,8 +447,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "12600f7eb668018f0c210515955489629de1d8a1f71816cbfa1a3d9f1221ecfe",
-            "state_ref": "64cbbc2b-fd0a-4811-9691-606739db946b",
+            "resolved_input_sha256": "fb804d094ac7ff001ec4d6fbd7ba3fdb406694829bc9aec91fae2c5c031fb103",
+            "state_ref": "bedfcab7-9f47-4671-b8e7-d65037aa109e",
             "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
           },
           {
@@ -456,8 +456,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c0ba1eabf287b05ab604f4f284178cdce682885d170fb31a155ed301d82ce4e3",
-            "state_ref": "895e7f37-927a-43d5-a227-786b97b68b26",
+            "resolved_input_sha256": "066fb69da7584d669f761b252cf40813cbd39d83e0c8cb5fd976df9938740288",
+            "state_ref": "577a7c62-cb93-407e-ad87-783258e5a1d3",
             "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
           },
           {
@@ -465,8 +465,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "f7d22f9d28a1ff56d01c559f6e1513e04edebb3b60768fb3960819012ce49510",
-            "state_ref": "e9d0fc9f-7cff-452b-90ac-cfb84b18cdd7",
+            "resolved_input_sha256": "bdbd477dd5c5a18c2558c2f7fc129bea31cb2121b69bfb065ea451add47be985",
+            "state_ref": "9714d6da-2932-4949-a3ed-0f068e705bd1",
             "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
           },
           {
@@ -474,8 +474,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c9acbabb978ea8bdb3bbb663092877b6d01378210b5ab64a4c7dd59090653e8b",
-            "state_ref": "7d01f572-9b79-4852-a765-867c3f98f40c",
+            "resolved_input_sha256": "7c0f5966ac93d71bc5e07f5898c6ef4193ff184a80745a161ce80459998dd4df",
+            "state_ref": "86cb4c6f-34a3-4221-9412-1a754fa5dd93",
             "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
           },
           {
@@ -483,8 +483,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "568e04afc12d3be2154f5ff308a4c083eeac3c4d614c6f2b5fc1d1592b24baac",
-            "state_ref": "7632850d-c707-4554-a251-fe0a88d4166c",
+            "resolved_input_sha256": "75f267699fd0f378d9b7a471ceecc7755f884d9782086fa42b76a4ba10129f78",
+            "state_ref": "6308e5e0-5888-4c38-a87b-132adb71e36d",
             "payload_sha256": "44940ee87504293607e5eeb8b37f439d888bbfdfe39eb87c24661c8d26e1823c"
           },
           {
@@ -492,8 +492,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "169d05c74095f7c33e4242a10c0984982f38a5fc596cea8ec8cfa020c674c611",
-            "state_ref": "860b6cb9-ca07-4f8a-995a-25e0a42eb434",
+            "resolved_input_sha256": "1f4486097b8ffa685a6e6bd119f1cbf241e898b3f9eabb466cecceaee6a4628e",
+            "state_ref": "bf324fcc-a330-45ff-b751-1c1d74f5753b",
             "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
           },
           {
@@ -501,8 +501,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "12600f7eb668018f0c210515955489629de1d8a1f71816cbfa1a3d9f1221ecfe",
-            "state_ref": "cd866245-e7a9-401f-80f4-e4b82b0dfae3",
+            "resolved_input_sha256": "fb804d094ac7ff001ec4d6fbd7ba3fdb406694829bc9aec91fae2c5c031fb103",
+            "state_ref": "c6ab5229-9f67-469f-aaac-e3b9e8f2552b",
             "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
           },
           {
@@ -510,8 +510,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "e07e2fc5c712e8c18e425be64a83b29cb1369518b172d0b39a3fee621d92b19d",
-            "state_ref": "b2f23139-1d83-40aa-8a39-5abdf72c4ae6",
+            "resolved_input_sha256": "bc01a3a90d79d4c2539971ecaf2ed358891c154100cceb40d351837c47b3dc92",
+            "state_ref": "404461e4-227a-4f82-b778-56569b14012e",
             "payload_sha256": "f611a92e272c188f7192896f0600adf52cb9e66fa387c037bb7d712f9daf03e6"
           },
           {
@@ -519,8 +519,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "6c4ce9905eb49b2a164d26cd19b883be448e0199fb1ae0f337e0156ad9f2234a",
-            "state_ref": "b0892b90-ca8a-4683-bc80-0a1ef50df43b",
+            "resolved_input_sha256": "4227b16cb7dc8baa564eeee9c974b38a42e985c2ace4028fdbb34c6264df84fb",
+            "state_ref": "bed64de7-9b66-4c21-9c57-28ca196c3d1f",
             "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
           },
           {
@@ -528,8 +528,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c9acbabb978ea8bdb3bbb663092877b6d01378210b5ab64a4c7dd59090653e8b",
-            "state_ref": "99083d81-4ba0-45eb-ba3a-813b40ebc25a",
+            "resolved_input_sha256": "7c0f5966ac93d71bc5e07f5898c6ef4193ff184a80745a161ce80459998dd4df",
+            "state_ref": "fcd3095e-044f-4038-9e5f-39424797768c",
             "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
           },
           {
@@ -537,8 +537,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "0744b00b9074c19ed5c0a38d228db088edcdfbe0113aeeb120d8487e98e168b6",
-            "state_ref": "7d5aa438-8068-4387-ba55-877ccb49cd20",
+            "resolved_input_sha256": "32a1739c32e54d738cc66cad69ce02ba6720f52278c6b61f0ac8592dfbe2b35a",
+            "state_ref": "b09531b2-7ac1-4c46-9a2b-3648943d1250",
             "payload_sha256": "b735bdfd09e2632a34a84cba3008de744164aabdc27f306c1f8150ed3bbbb057"
           }
         ]
@@ -688,10 +688,10 @@
         }
       },
       "run": {
-        "run_id": "a68d3851-8d32-43ae-9b09-690169a26c69",
+        "run_id": "d1cef09b-b9e9-4e8a-90ce-977e16a33ee6",
         "input_sha256": "557f7405ef472c8a359e0cfba85ced98a069ae470eb8b3e1c07e8c021eab24e9",
-        "resolved_input_sha256": "ea492801ed9eac4d8861e28d797c75e20b3df9a69a0377afaf583e67239b0022",
-        "execution_fingerprint": "b99115a0b26e1b8a1484cc59bec9a651c5ef2a8a558da6825ce33103c9ec508f",
+        "resolved_input_sha256": "c241c84b18b76e95bf960c50c49d91e599a64d32076ed16d17a0481bd0372d4d",
+        "execution_fingerprint": "abfae3c45f51a245d88ce80bd1df33f6e694b05a1f202e7762157038786ba773",
         "execution_status": "SUCCEEDED",
         "numerical_status": "pass",
         "resolution_status": "not_applicable",
@@ -703,8 +703,8 @@
             "step_id": "first",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "115b41f3277d98750bcee417717c504236bd92783ebe3f886e9387ca5c529a45",
-            "state_ref": "7f27f400-e873-4923-aa48-59cd4e7ad594",
+            "resolved_input_sha256": "013760875c3b1ca5a9be32c11cba6f94f4f64a3a97f434c7f2cc9e3c5de12f21",
+            "state_ref": "bf4f54f8-3283-487d-9dab-6d7989fa8702",
             "payload_sha256": "0caf9cd9881aec9a2eab6b93c6f75a328ddb2f62c5c4e9fcdbbaed4b85fe74db"
           },
           {
@@ -712,8 +712,8 @@
             "step_id": "second",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "6656651b2d1c5cbd4a1a354aaa87f34c8a4ed9d95264af26966edb6a205ed31c",
-            "state_ref": "f9663eec-f5b0-444c-b11b-869e800530ad",
+            "resolved_input_sha256": "47632cc583ceb973c730bf338f735e1e3e18554bee47c85853b2fcf766819dd5",
+            "state_ref": "5e8a36a5-c0ad-4abe-ba89-2941434b6b8d",
             "payload_sha256": "ebefb949b5155d4cf2b2cb381c9193adb01f4a8c3c77632bd3345665655f2421"
           }
         ]
@@ -875,10 +875,10 @@
         }
       },
       "run": {
-        "run_id": "50d51df5-b36b-4648-9e28-d481566afc61",
+        "run_id": "32a0e9d5-903c-48a2-850c-b7a70712f026",
         "input_sha256": "a6cb0b4359287048b9ef1e17c153f3ebb3b6a630cc74a2ad8dd8b20fca111dad",
-        "resolved_input_sha256": "baeed67e4d0740ffc17bb60113f9639b7801deaaf514cc844bd31992bc93b04c",
-        "execution_fingerprint": "6aad58e4d287975cf293025d9e7299702bcec613fb97ef4cc87578a533c9bc96",
+        "resolved_input_sha256": "2c6dcd7bf6ff6c06c8a7efe8a44e0873f9d3beec36fc8cc4fef0dc19f3791304",
+        "execution_fingerprint": "9729805bb1c85273afaf4a42cd919d24114bb7ca12c9dddd2b889bc8cf253aa7",
         "execution_status": "FAILED",
         "numerical_status": "not_converged",
         "resolution_status": "not_applicable",
@@ -890,7 +890,7 @@
             "step_id": "limited",
             "outcome": "FAILED",
             "partial": true,
-            "resolved_input_sha256": "e1140037a2a8fc2820ab1eaed05ad20e7d691a4a985172f82859771b0f1486af",
+            "resolved_input_sha256": "f80c29e2644913056b02fc36d1e964a288f8fc0ce471b863c5b93d8b2dc438fe",
             "state_ref": null,
             "payload_sha256": "4a3c76769c638c9bd90656e8e6a11da3998312dfc336ed0b6961505be5111a0f"
           },
@@ -908,8 +908,8 @@
             "step_id": "independent",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "50ddccf770b1c173404a2c51088a5783f02742c2f21794a7aabbe7a5c23eead8",
-            "state_ref": "ceec477c-3a96-4a62-9f8a-bf5590e50832",
+            "resolved_input_sha256": "3221ce26f7611ea2b75631f289edcc9680763986ddf2ebf35d252dfeae1c0dee",
+            "state_ref": "3c155183-eae8-429d-9627-ee47788e4d9f",
             "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
           }
         ]
@@ -1050,10 +1050,10 @@
         }
       ],
       "run": {
-        "run_id": "15b28409-93b2-4731-a1f5-8a49d51d088e",
+        "run_id": "5bcdc0c8-ea09-4933-917a-273806cb6044",
         "input_sha256": "1d472cfd61eda3d2b8e59734514533e10200edcb9fdd7a03657b6659b55e7a31",
-        "resolved_input_sha256": "fb10691644e48e385a7e23db10eb514b7d04ee61e7296c6d16e4f9e1fe155fb0",
-        "execution_fingerprint": "399208ef2eefa646c522e5c37d744fa1cfbcbe41a9c33ac7159281d1125ac91b",
+        "resolved_input_sha256": "9aae71d987c90434154643727c83c083dd0e3e5bf381fdeaf87620989652d32a",
+        "execution_fingerprint": "3114ff704de921624c8c6282db721d1e89f028e0dd27363b1c4cc2e87a229812",
         "execution_status": "SUCCEEDED",
         "numerical_status": "pass",
         "resolution_status": "not_checked",
@@ -1065,8 +1065,8 @@
             "step_id": "first",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "851cc708e69342cf9f9e28e38ac02dba67eff7b71a9dcdabff7da693f36bf865",
-            "state_ref": "893d704b-a62f-46c3-b020-36bc6bf4cfdb",
+            "resolved_input_sha256": "d55b4116df55dd039c5502e16110b62ee64287fdcf1908b6652f755a556cdd14",
+            "state_ref": "6a767ee8-7740-4803-bdf8-aea9c8cf0817",
             "payload_sha256": "899b21304eeb33197eb06769767fb0522c0e262730e315cc3cd230e4f0fbb198"
           },
           {
@@ -1074,8 +1074,8 @@
             "step_id": "second",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "fa1c6be8cc43280dffb12813bba259b9431128c95819303f7c059e9c9de0554e",
-            "state_ref": "3be854dc-0ce1-4ac3-b28f-c087d3f92947",
+            "resolved_input_sha256": "0ecc62fca94b93870d83d50aca00e886e81ec8421104f420c3fb3ffe751b3ec0",
+            "state_ref": "69691002-4e3a-4837-a413-d32fe5313fbf",
             "payload_sha256": "e39536c8139d1dbc74db371a5fe54dd1b6e1c9098bb264faff5176d9fba819fd"
           }
         ]
@@ -1115,10 +1115,10 @@
       },
       "reference_method": "Persisted exact-byte round trip and actual replay with new IDs but stable scientific identities",
       "original_run": {
-        "run_id": "2100da4c-a281-4eba-b024-c6d701ce87d3",
+        "run_id": "c3b2a031-10a5-48e7-a2e7-d753766a7cf3",
         "input_sha256": "91b85a8ab56b581158a23865fcf7cec582e3316fc48fd160e6f202d0d57b5bd8",
-        "resolved_input_sha256": "f3545d80e6b8b49457667747ea0d7f4aa3c4d744bcf499f04bb960a380936d5f",
-        "execution_fingerprint": "3dded9d6eea990721e75c61de0ab9ebdad518e51f1c1bb05d7c4cb1c03770ae6",
+        "resolved_input_sha256": "4f87284e62458f42ceed077c4f64effe4a00142b4a065ec980d422fa0297c625",
+        "execution_fingerprint": "1706da223bd385da5535018304172a8f60f8117a6c72fe81a1893ed86b348484",
         "execution_status": "SUCCEEDED",
         "numerical_status": "pass",
         "resolution_status": "not_applicable",
@@ -1130,8 +1130,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "f03f63915e8d51ec20b471e082bcbea863fd30edbdc4628aa8ca591563941f2b",
-            "state_ref": "15f9b12f-41e3-46bf-a18d-114ead450d82",
+            "resolved_input_sha256": "4786b69249b05cc4be98a4f2021a9c8347065319ce3544fbd830177e31ef0978",
+            "state_ref": "8bcb0017-1476-419d-97e7-3263d35c8208",
             "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
           },
           {
@@ -1139,8 +1139,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "12600f7eb668018f0c210515955489629de1d8a1f71816cbfa1a3d9f1221ecfe",
-            "state_ref": "64cbbc2b-fd0a-4811-9691-606739db946b",
+            "resolved_input_sha256": "fb804d094ac7ff001ec4d6fbd7ba3fdb406694829bc9aec91fae2c5c031fb103",
+            "state_ref": "bedfcab7-9f47-4671-b8e7-d65037aa109e",
             "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
           },
           {
@@ -1148,8 +1148,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c0ba1eabf287b05ab604f4f284178cdce682885d170fb31a155ed301d82ce4e3",
-            "state_ref": "895e7f37-927a-43d5-a227-786b97b68b26",
+            "resolved_input_sha256": "066fb69da7584d669f761b252cf40813cbd39d83e0c8cb5fd976df9938740288",
+            "state_ref": "577a7c62-cb93-407e-ad87-783258e5a1d3",
             "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
           },
           {
@@ -1157,8 +1157,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "f7d22f9d28a1ff56d01c559f6e1513e04edebb3b60768fb3960819012ce49510",
-            "state_ref": "e9d0fc9f-7cff-452b-90ac-cfb84b18cdd7",
+            "resolved_input_sha256": "bdbd477dd5c5a18c2558c2f7fc129bea31cb2121b69bfb065ea451add47be985",
+            "state_ref": "9714d6da-2932-4949-a3ed-0f068e705bd1",
             "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
           },
           {
@@ -1166,8 +1166,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c9acbabb978ea8bdb3bbb663092877b6d01378210b5ab64a4c7dd59090653e8b",
-            "state_ref": "7d01f572-9b79-4852-a765-867c3f98f40c",
+            "resolved_input_sha256": "7c0f5966ac93d71bc5e07f5898c6ef4193ff184a80745a161ce80459998dd4df",
+            "state_ref": "86cb4c6f-34a3-4221-9412-1a754fa5dd93",
             "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
           },
           {
@@ -1175,8 +1175,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "568e04afc12d3be2154f5ff308a4c083eeac3c4d614c6f2b5fc1d1592b24baac",
-            "state_ref": "7632850d-c707-4554-a251-fe0a88d4166c",
+            "resolved_input_sha256": "75f267699fd0f378d9b7a471ceecc7755f884d9782086fa42b76a4ba10129f78",
+            "state_ref": "6308e5e0-5888-4c38-a87b-132adb71e36d",
             "payload_sha256": "44940ee87504293607e5eeb8b37f439d888bbfdfe39eb87c24661c8d26e1823c"
           },
           {
@@ -1184,8 +1184,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "169d05c74095f7c33e4242a10c0984982f38a5fc596cea8ec8cfa020c674c611",
-            "state_ref": "860b6cb9-ca07-4f8a-995a-25e0a42eb434",
+            "resolved_input_sha256": "1f4486097b8ffa685a6e6bd119f1cbf241e898b3f9eabb466cecceaee6a4628e",
+            "state_ref": "bf324fcc-a330-45ff-b751-1c1d74f5753b",
             "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
           },
           {
@@ -1193,8 +1193,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "12600f7eb668018f0c210515955489629de1d8a1f71816cbfa1a3d9f1221ecfe",
-            "state_ref": "cd866245-e7a9-401f-80f4-e4b82b0dfae3",
+            "resolved_input_sha256": "fb804d094ac7ff001ec4d6fbd7ba3fdb406694829bc9aec91fae2c5c031fb103",
+            "state_ref": "c6ab5229-9f67-469f-aaac-e3b9e8f2552b",
             "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
           },
           {
@@ -1202,8 +1202,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "e07e2fc5c712e8c18e425be64a83b29cb1369518b172d0b39a3fee621d92b19d",
-            "state_ref": "b2f23139-1d83-40aa-8a39-5abdf72c4ae6",
+            "resolved_input_sha256": "bc01a3a90d79d4c2539971ecaf2ed358891c154100cceb40d351837c47b3dc92",
+            "state_ref": "404461e4-227a-4f82-b778-56569b14012e",
             "payload_sha256": "f611a92e272c188f7192896f0600adf52cb9e66fa387c037bb7d712f9daf03e6"
           },
           {
@@ -1211,8 +1211,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "6c4ce9905eb49b2a164d26cd19b883be448e0199fb1ae0f337e0156ad9f2234a",
-            "state_ref": "b0892b90-ca8a-4683-bc80-0a1ef50df43b",
+            "resolved_input_sha256": "4227b16cb7dc8baa564eeee9c974b38a42e985c2ace4028fdbb34c6264df84fb",
+            "state_ref": "bed64de7-9b66-4c21-9c57-28ca196c3d1f",
             "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
           },
           {
@@ -1220,8 +1220,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c9acbabb978ea8bdb3bbb663092877b6d01378210b5ab64a4c7dd59090653e8b",
-            "state_ref": "99083d81-4ba0-45eb-ba3a-813b40ebc25a",
+            "resolved_input_sha256": "7c0f5966ac93d71bc5e07f5898c6ef4193ff184a80745a161ce80459998dd4df",
+            "state_ref": "fcd3095e-044f-4038-9e5f-39424797768c",
             "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
           },
           {
@@ -1229,17 +1229,17 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "0744b00b9074c19ed5c0a38d228db088edcdfbe0113aeeb120d8487e98e168b6",
-            "state_ref": "7d5aa438-8068-4387-ba55-877ccb49cd20",
+            "resolved_input_sha256": "32a1739c32e54d738cc66cad69ce02ba6720f52278c6b61f0ac8592dfbe2b35a",
+            "state_ref": "b09531b2-7ac1-4c46-9a2b-3648943d1250",
             "payload_sha256": "b735bdfd09e2632a34a84cba3008de744164aabdc27f306c1f8150ed3bbbb057"
           }
         ]
       },
       "replayed_run": {
-        "run_id": "5306018f-63dd-422f-8018-ffc3359009b3",
+        "run_id": "d45d014a-7b8d-4397-a733-57842417db4e",
         "input_sha256": "91b85a8ab56b581158a23865fcf7cec582e3316fc48fd160e6f202d0d57b5bd8",
-        "resolved_input_sha256": "f3545d80e6b8b49457667747ea0d7f4aa3c4d744bcf499f04bb960a380936d5f",
-        "execution_fingerprint": "3dded9d6eea990721e75c61de0ab9ebdad518e51f1c1bb05d7c4cb1c03770ae6",
+        "resolved_input_sha256": "4f87284e62458f42ceed077c4f64effe4a00142b4a065ec980d422fa0297c625",
+        "execution_fingerprint": "1706da223bd385da5535018304172a8f60f8117a6c72fe81a1893ed86b348484",
         "execution_status": "SUCCEEDED",
         "numerical_status": "pass",
         "resolution_status": "not_applicable",
@@ -1251,8 +1251,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "f03f63915e8d51ec20b471e082bcbea863fd30edbdc4628aa8ca591563941f2b",
-            "state_ref": "e31828d1-39a2-491e-98bd-6f58f6064209",
+            "resolved_input_sha256": "4786b69249b05cc4be98a4f2021a9c8347065319ce3544fbd830177e31ef0978",
+            "state_ref": "40336e4b-0e34-44d7-affb-a078f49988e4",
             "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
           },
           {
@@ -1260,8 +1260,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "12600f7eb668018f0c210515955489629de1d8a1f71816cbfa1a3d9f1221ecfe",
-            "state_ref": "97b04d2f-12e1-4fcf-a29a-73c244bce7b2",
+            "resolved_input_sha256": "fb804d094ac7ff001ec4d6fbd7ba3fdb406694829bc9aec91fae2c5c031fb103",
+            "state_ref": "52009ba8-55a2-4627-9ca2-0cedcaf260a4",
             "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
           },
           {
@@ -1269,8 +1269,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c0ba1eabf287b05ab604f4f284178cdce682885d170fb31a155ed301d82ce4e3",
-            "state_ref": "033253f7-396b-43a6-9312-80133f8ae201",
+            "resolved_input_sha256": "066fb69da7584d669f761b252cf40813cbd39d83e0c8cb5fd976df9938740288",
+            "state_ref": "8b74551a-42c6-47f3-afd9-465465d5172c",
             "payload_sha256": "e2461fbb8d52ffde69bc57376b6793ed0adb32149559f79fec5fa91df648e8a6"
           },
           {
@@ -1278,8 +1278,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "f7d22f9d28a1ff56d01c559f6e1513e04edebb3b60768fb3960819012ce49510",
-            "state_ref": "c837fa56-4d91-41e6-a0f2-1c9e0430d2f1",
+            "resolved_input_sha256": "bdbd477dd5c5a18c2558c2f7fc129bea31cb2121b69bfb065ea451add47be985",
+            "state_ref": "0e64aa7a-873f-437c-96b7-65ccb6604582",
             "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
           },
           {
@@ -1287,8 +1287,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c9acbabb978ea8bdb3bbb663092877b6d01378210b5ab64a4c7dd59090653e8b",
-            "state_ref": "c29ed3e3-9dcd-406e-b301-5736c3fb804a",
+            "resolved_input_sha256": "7c0f5966ac93d71bc5e07f5898c6ef4193ff184a80745a161ce80459998dd4df",
+            "state_ref": "ad06fa59-aeb1-4529-b7f8-6f9de5d9b3be",
             "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
           },
           {
@@ -1296,8 +1296,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "568e04afc12d3be2154f5ff308a4c083eeac3c4d614c6f2b5fc1d1592b24baac",
-            "state_ref": "21e00b0b-3337-44ae-b9b7-3d75563af122",
+            "resolved_input_sha256": "75f267699fd0f378d9b7a471ceecc7755f884d9782086fa42b76a4ba10129f78",
+            "state_ref": "c3361b8c-784c-4f95-bc06-5e9211d93730",
             "payload_sha256": "44940ee87504293607e5eeb8b37f439d888bbfdfe39eb87c24661c8d26e1823c"
           },
           {
@@ -1305,8 +1305,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "169d05c74095f7c33e4242a10c0984982f38a5fc596cea8ec8cfa020c674c611",
-            "state_ref": "dc00b637-c21b-4bdc-a60e-275d13ca75cc",
+            "resolved_input_sha256": "1f4486097b8ffa685a6e6bd119f1cbf241e898b3f9eabb466cecceaee6a4628e",
+            "state_ref": "e4c74f7b-66be-4d39-a170-a2114ff6695e",
             "payload_sha256": "bfef4e2dda3cbaf6545798351c83c256d8d0dfd2a5547896334c66c8c021fe53"
           },
           {
@@ -1314,8 +1314,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "12600f7eb668018f0c210515955489629de1d8a1f71816cbfa1a3d9f1221ecfe",
-            "state_ref": "f6359b5b-854a-4eba-aede-a9a3cd3a8f0e",
+            "resolved_input_sha256": "fb804d094ac7ff001ec4d6fbd7ba3fdb406694829bc9aec91fae2c5c031fb103",
+            "state_ref": "c8db5d33-e3d5-4cdd-ad4f-cd562b6fb5e7",
             "payload_sha256": "807054fa8a9447a02d21e9dabef9675bcc15174f59a7f54246f47cdeb04b6fe0"
           },
           {
@@ -1323,8 +1323,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "e07e2fc5c712e8c18e425be64a83b29cb1369518b172d0b39a3fee621d92b19d",
-            "state_ref": "76972543-4443-4992-b716-6a1be9b7f549",
+            "resolved_input_sha256": "bc01a3a90d79d4c2539971ecaf2ed358891c154100cceb40d351837c47b3dc92",
+            "state_ref": "7311381b-a38a-42e0-bd37-5bf1141906b7",
             "payload_sha256": "f611a92e272c188f7192896f0600adf52cb9e66fa387c037bb7d712f9daf03e6"
           },
           {
@@ -1332,8 +1332,8 @@
             "step_id": "equilibrate",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "6c4ce9905eb49b2a164d26cd19b883be448e0199fb1ae0f337e0156ad9f2234a",
-            "state_ref": "f1f8567b-73d3-4d1e-b453-7cdf736b5b10",
+            "resolved_input_sha256": "4227b16cb7dc8baa564eeee9c974b38a42e985c2ace4028fdbb34c6264df84fb",
+            "state_ref": "216ee4c0-d2b9-456f-9ab1-e1756b56057b",
             "payload_sha256": "aa05656ffc0624ff0a90b2667a93b14f1d548f0056fea97010a7c13e3b56da9b"
           },
           {
@@ -1341,8 +1341,8 @@
             "step_id": "inherit",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "c9acbabb978ea8bdb3bbb663092877b6d01378210b5ab64a4c7dd59090653e8b",
-            "state_ref": "8aa8941f-45f3-4f3e-8d93-a463cd951001",
+            "resolved_input_sha256": "7c0f5966ac93d71bc5e07f5898c6ef4193ff184a80745a161ce80459998dd4df",
+            "state_ref": "6d8a743e-da99-4f92-bd36-f638fa3db152",
             "payload_sha256": "b4c3c55ef59d567332f12c3e6e966135de5c8e92056db7086c4cff643439565f"
           },
           {
@@ -1350,8 +1350,8 @@
             "step_id": "reset",
             "outcome": "SUCCEEDED",
             "partial": false,
-            "resolved_input_sha256": "0744b00b9074c19ed5c0a38d228db088edcdfbe0113aeeb120d8487e98e168b6",
-            "state_ref": "9cc268e4-be2e-4e3c-8611-47e80d87178f",
+            "resolved_input_sha256": "32a1739c32e54d738cc66cad69ce02ba6720f52278c6b61f0ac8592dfbe2b35a",
+            "state_ref": "46951969-9e22-4b9f-aa6f-5965319d7454",
             "payload_sha256": "b735bdfd09e2632a34a84cba3008de744164aabdc27f306c1f8150ed3bbbb057"
           }
         ]
@@ -2048,59 +2048,56 @@
   },
   "code_source": {
     "files_sha256": {
-      "src/quanta/__init__.py": "d4ed2f67545e6344f553a395252198f9c7c75b81c29e456115767146011e6bc3",
+      "src/quanta/__init__.py": "3af24af1bf852da237643614ad7b0cd683b1a0a42b2292a89a6de88c6bcb6f82",
       "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
       "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
-      "src/quanta/cli.py": "0f8e74aa06e93c0ecdfa1633941494bede00eb8768c99e34208604692ec1c130",
+      "src/quanta/cli.py": "d0907c28f54ebb817a1b272e629050dc0555d351582e4dea416c07ee81f68a1c",
       "src/quanta/environment.py": "bee4fd51eae989f37475027a5ef695aeac34642e5ddba39ebd05b9ae3dae820f",
       "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
       "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
-      "src/quanta/job_store.py": "844e090b34fa988b2516f04d0763bc803b83e756a26da88c0db7c3bfe0637fea",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
       "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
-      "src/quanta/parsing.py": "0c6f666afe9570f772d3a77b1a58c7c0502f4ed220038b258119cd4fe27e8830",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
       "src/quanta/planning.py": "8a97b6ee2f1687f09df26e822541edfe2f35c3c0a89621a1cac3e52c82a8c357",
       "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
       "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
       "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
       "src/quanta/run_store.py": "8f0ea4e8e518f4b940fcfb7db4f849064c619e521f34a652c7ce79f8b347635f",
-      "src/quanta/server.py": "18b1e83680955a1322279976d8dc5ee8bd15eb558136a4ef0dc19f2b31188fba",
-      "src/quanta/service.py": "b1688e3b1fb42f991382d0477b561b47745fba0095c1c443db50cbcc791a823a",
+      "src/quanta/server.py": "d08bbfffd99556cc0f06cfbc847ca56a44d7e2dedefcd34e3d408a48157af550",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
       "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
       "src/quanta/worker.py": "6c6c3196a3d1a45a1bfbc151f8f8876a26b8365e0bd95e7e0a01eeb73d021f3c",
       "src/quanta/workflow.py": "03789f4ba591e9fc6f16f99aacff94c8e6be8aca69af9b7a17e95134188aa022",
       "scripts/verify_numerics.py": "5c3d080dc615271c523047e81cd2a5179433fc507ab3dd84d48aa9e17af688f7",
       "scripts/verify_workflow.py": "e27eb4e363132486e20296fd24cf4d326e175748ea1df86cbd8a88ea5ca5ce66"
     },
-    "source_set_sha256": "04047ef717b6bf483b45331d1cc71dbebe2fca84bdbc502080bc95eb16fc7bf0",
+    "source_set_sha256": "eef73973f46cc26d927a78be669148e14256eb00c4fe034a6bb0e1773bd5db92",
     "source_set_hash_rule": "RFC 8785 of the relative-path to raw-file-SHA256 map; report excluded",
-    "git_head": "8cb74d8090f537efd7ef0002064a4a9606009941",
+    "git_head": "d6debad0c6e263b315af65609466479e07fc5555",
     "git_worktree_dirty": true,
     "git_worktree_status": [
       " M .github/workflows/ci.yml",
       " M README.md",
       " M docs/development.md",
+      " M docs/execution-service.md",
       " M docs/numerical_verification.json",
       " M docs/quantum_verification.json",
       " M docs/relaxation_verification.json",
-      " M docs/workflow_verification.json",
+      " M docs/service_verification.json",
       " M pyproject.toml",
       " M src/quanta/__init__.py",
       " M src/quanta/cli.py",
-      " M src/quanta/run_store.py",
-      " M src/quanta/workflow.py",
-      "?? docs/execution-service.md",
-      "?? docs/service-plan.md",
-      "?? docs/service_verification.json",
-      "?? scripts/service_example.py",
-      "?? scripts/verify_service.py",
-      "?? src/quanta/job_store.py",
-      "?? src/quanta/server.py",
-      "?? src/quanta/service.py",
-      "?? src/quanta/worker.py",
-      "?? tests/test_job_store.py",
-      "?? tests/test_service_adversarial.py",
-      "?? tests/test_service_worker.py",
-      "?? tests/test_workflow_control.py"
+      " M src/quanta/job_store.py",
+      " M src/quanta/parsing.py",
+      " M src/quanta/server.py",
+      " M src/quanta/service.py",
+      "?? docs/web-plan.md",
+      "?? docs/web-workspace.md",
+      "?? scripts/verify_web.py",
+      "?? src/quanta/web/",
+      "?? tests/test_parsing_zero.py",
+      "?? tests/test_web_backend.py",
+      "?? tests/web/"
     ]
   },
   "physical_validation_status": "unvalidated",

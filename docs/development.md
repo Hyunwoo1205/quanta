@@ -32,3 +32,5 @@ GitHub Actions는 동일 설치·환경 확인·계약 검사·시험·예제 �
 `python scripts/verify_service.py --output docs/service_verification.json`은 실제 HTTP·SQLite·별도 계산 프로세스의 제출·조회·멱등성·산출물·재실행을 측정합니다. 서비스와 작업자 시험은 소유권·취소 경쟁·프로세스 한도·재시작 경계도 검사합니다. CI artifact에는 다섯 측정 JSON을 포함하며 컨테이너의 설치 패키지에서도 HTTP와 작업자를 실행합니다. 운영 방법과 현재 범위는 [실행 서비스](execution-service.md)를 참고합니다.
 
 설치 wheel에는 계약 24개와 `requirements.in`, `requirements.lock.txt`, `requirements.lock.json`의 정확한 바이트를 포함합니다. 실행 계획의 구현·의존성 바인딩은 이 파일과 실제 설치 코드를 함께 캡처하며, 개발 폴더의 파일을 찾을 수 없는 환경에서 다른 잠금 내용으로 조용히 대체하지 않습니다. 번들 검증과 서비스 검증의 근거를 별도로 기록합니다.
+
+0.7.0 wheel은 `quanta/web/`의 HTML·CSS·JavaScript·뷰 모형·예제 JSON 다섯 자원도 포함합니다. 브라우저 기능에는 별도 설치가 없습니다. 개발 시험에서만 Node `24.22.1`로 `node --test tests/web/*.test.mjs`를 실행하며 외부 npm 패키지를 설치하지 않습니다. `scripts/verify_web.py`는 실제 HTTP·작업자 흐름을 측정하고 수치 소스와 웹 자원 bytes를 함께 해시로 기록합니다. CI는 여섯 측정 JSON을 보존하고 설치된 컨테이너에서도 웹 자원·저장·실제 계산 흐름을 확인합니다.

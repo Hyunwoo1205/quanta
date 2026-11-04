@@ -114,7 +114,7 @@ class ExecutionService:
             query = parse_qs(split.query, keep_blank_values=True, max_num_fields=8)
         except ValueError as exc:
             raise ServiceError(422, "INPUT_SCHEMA", "Too many query parameters") from exc
-        if split.query and not (method == "GET" and route == "/v1/experiments"):
+        if split.query and not (method == "GET" and route in {"/v1/experiments", "/v1/runs"}):
             raise ServiceError(422, "INPUT_SCHEMA", "This endpoint does not accept query parameters")
         if method == "GET" and body is not None:
             raise ServiceError(422, "INPUT_SCHEMA", "GET requests do not accept a body")
@@ -157,6 +157,17 @@ class ExecutionService:
             if not isinstance(value["revision_id"], str) or not re.fullmatch(_UUID, value["revision_id"]):
                 raise ServiceError(404, "NOT_FOUND", "Resource not found")
             return 202, self._submit(owner, value, idempotency_key)
+        if method == "GET" and route == "/v1/runs":
+            if query.keys() - {"limit", "cursor", "experiment_id"} or any(len(v) != 1 for v in query.values()):
+                raise ServiceError(422, "INPUT_SCHEMA", "Invalid run-history parameters")
+            try:
+                limit = int(query.get("limit", ["50"])[0])
+                if not 1 <= limit <= 100:
+                    raise ValueError
+            except ValueError as exc:
+                raise ServiceError(422, "INPUT_SCHEMA", "Limit must be an integer from 1 to 100") from exc
+            return 200, self.store.list_runs(owner, experiment_id=query.get("experiment_id", [None])[0],
+                limit=limit, cursor=query.get("cursor", [None])[0])
         match = re.fullmatch(f"/v1/runs/({_UUID})(?:/(cancel|replay|artifacts|result))?", route)
         if match:
             run_id, action = match.groups()

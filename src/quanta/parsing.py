@@ -111,7 +111,10 @@ def parse_json(data: bytes | str | dict, *, max_bytes: int = DEFAULT_MAX_BYTES) 
         raise StrictJSONError("Non-finite JSON literal is not permitted: " + token)
 
     try:
-        value = json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
+        # JSON's integer spelling -0 still carries an explicitly authored sign.
+        # A float carrier retains it through revisions and fixed-coordinate records.
+        value = json.loads(text, object_pairs_hook=pairs, parse_constant=constant,
+                           parse_int=lambda token: -0.0 if token == "-0" else int(token))
     except StrictJSONError:
         raise
     except (json.JSONDecodeError, RecursionError, ValueError) as exc:

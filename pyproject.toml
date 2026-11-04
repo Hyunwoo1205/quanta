@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quanta-research-contracts"
-version = "0.6.0"
+version = "0.7.0"
 description = "Validated scientific workflows and a durable asynchronous execution service for Quanta"
 readme = "README.md"
 requires-python = "==3.12.14"
@@ -25,6 +25,9 @@ quanta = "quanta.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+quanta = ["web/*.html", "web/*.css", "web/*.js", "web/*.mjs", "web/*.json"]
 
 [tool.setuptools.data-files]
 "share/quanta" = ["requirements.in", "requirements.lock.txt", "requirements.lock.json"]

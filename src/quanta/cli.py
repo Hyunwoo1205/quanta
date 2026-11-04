@@ -107,6 +107,7 @@ def main(argv: list[str] | None = None) -> int:
                     for signum in (signal.SIGINT, signal.SIGTERM):
                         previous_signals[signum] = signal.signal(signum, signal.default_int_handler)
                     print(f"Quanta API: http://127.0.0.1:{server.server_port}/v1", flush=True)
+                    print(f"Quanta workspace: http://127.0.0.1:{server.server_port}/", flush=True)
                     try:
                         server.serve_forever(poll_interval=0.2)
                     except KeyboardInterrupt:

@@ -271,6 +271,39 @@ class JobStore:
     def get_report(self, owner: str, run_id: str) -> dict | None:
         return self.get_run(owner, run_id, include_report=True)["report"]
 
+    def list_runs(self, owner: str, *, experiment_id: str | None = None,
+                  limit: int = 50, cursor: str | None = None) -> dict:
+        """Newest-first durable history, with owner-scoped opaque run cursors."""
+        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 100:
+            raise ServiceError(422, "INPUT_SCHEMA", "limit must be an integer between 1 and 100")
+        with self._connection() as db:
+            if experiment_id is not None:
+                self._owned(db, "experiments", "experiment_id", owner, experiment_id)
+            clauses, parameters = ["r.owner=?"], [owner]
+            if experiment_id is not None:
+                clauses.append("v.experiment_id=?")
+                parameters.append(experiment_id)
+            if cursor is not None:
+                previous = self._owned(db, "runs", "run_id", owner, cursor)
+                if experiment_id is not None:
+                    revision = self._owned(db, "revisions", "revision_id", owner, previous["revision_id"])
+                    if revision["experiment_id"] != experiment_id:
+                        raise ServiceError(404, "NOT_FOUND", "The requested record does not exist")
+                clauses.append("r.seq<?")
+                parameters.append(previous["seq"])
+            rows = db.execute("SELECT r.*,v.experiment_id FROM runs r JOIN revisions v "
+                              "ON v.revision_id=r.revision_id WHERE " + " AND ".join(clauses)
+                              + " ORDER BY r.seq DESC LIMIT ?", (*parameters, limit + 1))
+            # A report can be large. Keep only one source row at a time while
+            # materializing bounded metadata, rather than buffering reports.
+            items, more = [], False
+            for index, row in enumerate(rows):
+                if index == limit:
+                    more = True
+                    break
+                items.append({**self._run(db, row), "experiment_id": row["experiment_id"]})
+        return {"items": items, "next_cursor": items[-1]["run_id"] if more else None}
+
     def claim_next(self) -> dict | None:
         now = self.clock()
         with self._transaction() as db:
