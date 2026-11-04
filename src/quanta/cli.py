@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import signal
 import sys
 from pathlib import Path
 
@@ -85,9 +87,38 @@ def main(argv: list[str] | None = None) -> int:
     replay.add_argument("directory", help="Existing execution bundle directory.")
     replay.add_argument("--output-dir", help="Create a new replay bundle directory.")
     replay.add_argument("--format", choices=("json", "text"), default="json")
+    serve = sub.add_parser("serve", help="Start the authenticated loopback API and one durable numerical worker.")
+    serve.add_argument("--store", required=True, help="Private local directory for SQLite service records.")
+    serve.add_argument("--port", type=int, default=8765)
     sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
+
+    if args.command == "serve":
+        from .service import ExecutionService
+        from .server import create_server
+        from .worker import JobWorker
+        try:
+            service = ExecutionService(args.store)
+            server = create_server(service, token=os.environ.get("QUANTA_API_TOKEN", ""), port=args.port)
+            previous_signals = {}
+            try:
+                with JobWorker(service.directory):
+                    for signum in (signal.SIGINT, signal.SIGTERM):
+                        previous_signals[signum] = signal.signal(signum, signal.default_int_handler)
+                    print(f"Quanta API: http://127.0.0.1:{server.server_port}/v1", flush=True)
+                    try:
+                        server.serve_forever(poll_interval=0.2)
+                    except KeyboardInterrupt:
+                        pass
+            finally:
+                server.server_close()
+                for signum, previous in previous_signals.items():
+                    signal.signal(signum, previous)
+            return 0
+        except (OSError, ValueError, RuntimeError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
 
     if args.command == "environment":
         from .environment import environment_report

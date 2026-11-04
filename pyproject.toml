@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quanta-research-contracts"
-version = "0.5.0"
-description = "Validated scientific calculations and reproducible multi-step workflows for Quanta"
+version = "0.6.0"
+description = "Validated scientific workflows and a durable asynchronous execution service for Quanta"
 readme = "README.md"
 requires-python = "==3.12.14"
 dependencies = [

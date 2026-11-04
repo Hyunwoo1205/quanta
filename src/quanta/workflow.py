@@ -12,6 +12,7 @@ import hashlib
 from importlib import metadata
 import time
 import uuid
+from typing import Callable
 
 from . import __version__
 from .autodiff import CalculationError
@@ -30,6 +31,14 @@ class _WorkflowLimit(CalculationError):
     def __init__(self, message: str, *, global_limit: bool, details: dict):
         super().__init__(message, code="RESOURCE_LIMIT", path=None, details=details)
         self.global_limit = global_limit
+
+
+class WorkflowCancelled(CalculationError):
+    """The host requested cancellation at a cooperative execution boundary."""
+
+    def __init__(self, message: str = "Cancellation was requested"):
+        super().__init__(message, code="CANCELLED", path=None,
+                         details={"stop_reason": "cancellation_requested"})
 
 
 def _now() -> str:
@@ -59,7 +68,7 @@ def _issue(code: str, message: str, *, path: str | None = None, step_id: str | N
     category = ("resource" if code == "RESOURCE_LIMIT" else "numerical" if code in
                 {"NUM_NOT_CONVERGED", "NUM_GRID_NOT_CONVERGED", "EXPRESSION_DOMAIN"} else "support" if code in
                 {"MODEL_UNSUPPORTED", "PORT_INCOMPATIBLE", "REGISTRY_SNAPSHOT_UNAVAILABLE", "REPRESENTATION_UNSUPPORTED"}
-                else "runtime" if code == "ENGINE_FAILURE" else "input")
+                else "runtime" if code in {"ENGINE_FAILURE", "CANCELLED"} else "input")
     text = str(message).encode("utf-8", errors="backslashreplace")[:300].decode("utf-8", errors="ignore")
     return {"code": code, "category": category, "message": text, "path": path,
             "step_id": step_id, "branch_index": branch_index, "retryable": code == "ENGINE_FAILURE",
@@ -210,12 +219,19 @@ def _validate_payload(payload: dict, definition: dict, operation: str, module: d
 
 
 def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | None = None,
-                   replay_of: str | None = None) -> dict:
+                   replay_of: str | None = None, run_id: str | None = None,
+                   control_check: Callable[[], None] | None = None,
+                   progress_callback: Callable[[dict], None] | None = None) -> dict:
     """Freeze and execute a finite synchronous workflow, retaining inspectable evidence.
 
     ``valid`` describes input and symbolic-plan validity. The nested ``result``
     carries the registered execution envelope. Resource rejection before run
     acceptance has ``result=None`` and a structured wrapper error.
+    ``run_id`` lets a host bind a preassigned canonical UUIDv4 to all evidence.
+    Trusted host hooks can request cancellation by raising ``WorkflowCancelled``
+    at solver/checkpoint boundaries; progress counts finished protocol entries,
+    including failures and skips but excluding cancelled entries, rather than
+    estimated solver completion.
     """
     plan = plan_experiment(data, registry=registry)
     report = {"report_version": "0.1.0", "scope": "synchronous_workflow", "valid": plan["valid"],
@@ -224,13 +240,15 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
               "captured_artifacts": copy.deepcopy(plan["captured_artifacts"]), "artifact_contents": {}}
     if not plan["valid"]:
         return report
-    if replay_of is not None:
+    for name, identifier in (("replay_of", replay_of), ("run_id", run_id)):
+        if identifier is None:
+            continue
         try:
-            reference = uuid.UUID(replay_of)
-            if reference.version != 4 or str(reference) != replay_of:
+            reference = uuid.UUID(identifier)
+            if reference.version != 4 or str(reference) != identifier:
                 raise ValueError
         except (ValueError, AttributeError, TypeError):
-            report["errors"].append(_issue("INPUT_SEMANTIC", "Replay provenance must reference a canonical version-4 run UUID"))
+            report["errors"].append(_issue("INPUT_SEMANTIC", f"{name} must reference a canonical version-4 run UUID"))
             return report
     registry = registry or ContractRegistry()
     frozen = plan["frozen_plan"]
@@ -272,7 +290,7 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
             path=getattr(exc, "path", None), details=getattr(exc, "details", {})))
         return report
 
-    run_id = _id()
+    run_id = run_id or _id()
     result = {"schema_version": "0.2.0", "run_id": run_id, "revision_id": plan["experiment"]["revision_id"],
               "input_sha256": plan["input_sha256"], "resolved_input_sha256": plan["resolved_input_sha256"],
               "execution_fingerprint": fingerprint, "execution_status": "FAILED", "numerical_status": "not_checked",
@@ -377,19 +395,37 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
     initial_states: dict[int, dict] = {}
     completed: dict[tuple[int, str], tuple[dict, dict]] = {}
     global_stop: str | None = None
+    cancelled = False
+
+    def progress(count: int, active: dict | None = None) -> None:
+        if progress_callback is not None:
+            progress_callback({"completed_steps": count, "total_steps": len(frozen["expanded_steps"]),
+                               "active_step": active["step_id"] if active is not None else None,
+                               "active_branch": active["branch_index"] if active is not None else None})
 
     def run_deadline() -> None:
+        if cancelled:
+            return
+        if control_check is not None:
+            control_check()
         elapsed = time.monotonic() - started
         if elapsed >= run_limit:
             raise _WorkflowLimit("The workflow exceeded its run wall-time limit", global_limit=True,
                                  details={"scope": "run", "elapsed_seconds": elapsed, "limit_seconds": run_limit,
                                           "stop_reason": "run_wall_time_limit"})
 
+    completed_count = 0
     for expanded, step in zip(frozen["expanded_steps"], result["steps"]):
         branch, step_id, operation = expanded["branch_index"], expanded["step_id"], expanded["operation"]
         if global_stop or (expanded["source_alias"] != "initial" and (branch, expanded["source_alias"]) not in completed):
             step["diagnostics"] = {"reason": global_stop or "source_not_successful", "source_alias": expanded["source_alias"]}
+            if cancelled:
+                step["outcome"] = "CANCELLED"
+            else:
+                completed_count += 1
+            progress(completed_count)
             continue
+        progress(completed_count, expanded)
         step_started = time.monotonic()
 
         def deadline() -> None:
@@ -490,7 +526,11 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
                 step.update(payload=None, artifacts=[], state_ref=None, outcome="FAILED", partial=True)
                 raise
         except Exception as exc:
-            step.update(outcome="FAILED", partial=True, state_ref=None)
+            is_cancelled = getattr(exc, "code", None) == "CANCELLED"
+            if is_cancelled:
+                cancelled = True
+                global_stop = "cancellation_requested"
+            step.update(outcome="CANCELLED" if is_cancelled else "FAILED", partial=True, state_ref=None)
             error = _issue(getattr(exc, "code", "ENGINE_FAILURE"), str(exc)[:300], path=getattr(exc, "path", None),
                 step_id=step_id, branch_index=branch, details=getattr(exc, "details", {}))
             result["errors"].append(error)
@@ -522,8 +562,12 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
                 reason = exc.details.get("stop_reason")
                 global_stop = (reason if isinstance(reason, str) and reason in {"run_wall_time_limit", "artifact_byte_limit"}
                                else "run_resource_limit")
+        if step["outcome"] != "CANCELLED":
+            completed_count += 1
+        progress(completed_count)
 
-    result["execution_status"] = "SUCCEEDED" if all(step["outcome"] == "SUCCEEDED" for step in result["steps"]) else "FAILED"
+    result["execution_status"] = ("CANCELLED" if cancelled else "SUCCEEDED"
+                                  if all(step["outcome"] == "SUCCEEDED" for step in result["steps"]) else "FAILED")
     result["partial"] = result["execution_status"] != "SUCCEEDED"
     result["numerical_status"] = _aggregate([step["numerical_status"] for step in result["steps"]])
     result["resolution_status"] = _aggregate([step["resolution_status"] for step in result["steps"]])
@@ -533,7 +577,9 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
         registry.validator("result.schema.json").validate(result)
         budget(final=True)
     except Exception as exc:
-        result.update(execution_status="FAILED", partial=True)
+        if getattr(exc, "code", None) == "CANCELLED":
+            cancelled = True
+        result.update(execution_status="CANCELLED" if cancelled else "FAILED", partial=True)
         result["errors"].append(_issue(getattr(exc, "code", "ENGINE_FAILURE"), str(exc)[:300],
             path=getattr(exc, "path", None), details=getattr(exc, "details", {})))
     from .run_store import validate_run_report
@@ -546,7 +592,9 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
         run_deadline()
         budget(final=True)
     except CalculationError as exc:
-        result.update(execution_status="FAILED", partial=True)
+        if exc.code == "CANCELLED":
+            cancelled = True
+        result.update(execution_status="CANCELLED" if cancelled else "FAILED", partial=True)
         if not any(error["code"] == exc.code and error["details"].get("stop_reason") == exc.details.get("stop_reason")
                    for error in result["errors"]):
             result["errors"].append(_issue(exc.code, str(exc), path=exc.path, details=exc.details))

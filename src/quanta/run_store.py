@@ -349,6 +349,13 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             return {"valid": True, "errors": []}
 
         registry.validator("result.schema.json").validate(result)
+        require(result["execution_status"] in {"SUCCEEDED", "FAILED", "CANCELLED"},
+                "Saved execution evidence must have a terminal status")
+        require(not any(step["outcome"] == "CANCELLED" for step in result["steps"])
+                or result["execution_status"] == "CANCELLED", "Cancelled steps contradict the terminal status")
+        if result["execution_status"] == "CANCELLED":
+            require(any(error["code"] == "CANCELLED" for error in result["errors"]),
+                    "Cancelled execution has no cancellation diagnostic")
         require(result["input_sha256"] == plan["input_sha256"] and result["resolved_input_sha256"] == plan["resolved_input_sha256"]
                 and result["revision_id"] == experiment["revision_id"], "Result input links differ")
         require(result["physical_validation_status"] == "unvalidated" and result["physical_validation_evidence_refs"] == [],
@@ -443,6 +450,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         else:
             require(len(steps) == len(expanded), "Expanded step results are incomplete")
         completed, consumed_inputs, observed_bindings = {}, set(), []
+        cancellation_seen = False
         for step, planned in zip(steps, expanded):
             branch, step_id = planned["branch_index"], planned["step_id"]
             key = (branch, step_id)
@@ -450,6 +458,10 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                     and step["module_version"] == module["module_version"]
                     and step["payload_schema_ref"] == module["payload_schema_ref"], "Step identity or schema differs")
             binding = step["source_binding"]
+            if cancellation_seen:
+                require(step["outcome"] in {"CANCELLED", "SKIPPED"} and binding is None,
+                        "Execution continued after cancellation")
+            cancellation_seen = cancellation_seen or step["outcome"] == "CANCELLED"
             if binding is None:
                 require(step["outcome"] != "SUCCEEDED" and step["resolved_input_sha256"] is None and key not in input_map
                         and step["payload"] is None and step["diagnostics"], "Unprepared step has invented scientific evidence")

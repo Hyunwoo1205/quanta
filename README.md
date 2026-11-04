@@ -2,7 +2,7 @@
 
 검증 가능한 물리·화학 모형을 연결하고, 연구자가 실험을 직접 구성하는 연구 시뮬레이션 플랫폼을 개발합니다. 특정 활용 분야로 목표를 한정하지 않으며 모형의 적용 범위·근사·수치 오차·검증 근거를 함께 관리합니다.
 
-현재 개발 버전 `0.5.0`은 **실험 정의 검증기, 에너지·힘 계산·정적 탐색·유한 1차원 양자 상태와 다단계 실험 실행 엔진**을 제공합니다. 조건별 반복·허용된 결과 전달·재현 기록을 로컬에서 실행하며, 입력 검증·수치 및 해상도 기준 시험·실제 현상에 대한 물리적 검증을 구분합니다. 실행 서버와 웹 화면은 후속 단계입니다.
+현재 개발 버전 `0.6.0`은 **실험 정의 검증기, 에너지·힘 계산·정적 탐색·유한 1차원 양자 상태, 다단계 실험 실행과 비동기 실행 API**를 제공합니다. 조건별 반복·결과 전달·재현 기록을 로컬에서 실행하거나 인증된 루프백 API로 제출하고 SQLite에서 입력·실행·산출물을 보존합니다. 입력 검증·수치 및 해상도 기준 시험·실제 현상에 대한 물리적 검증을 구분합니다. 웹 화면은 후속 단계입니다.
 
 ## 시작하기
 
@@ -29,6 +29,7 @@ python scripts/verify_numerics.py --output .cache/numerical-verification.json
 python scripts/verify_relaxation.py --output .cache/relaxation-verification.json
 python scripts/verify_quantum.py --output .cache/quantum-verification.json
 python scripts/verify_workflow.py --output .cache/workflow-verification.json
+python scripts/verify_service.py --output .cache/service-verification.json
 ```
 
 `python -m quanta`로도 같은 명령을 실행할 수 있습니다. 성공의 종료 코드는 `0`, 입력·환경·계약·계산 오류와 미수렴은 `2`입니다. 표준 입력은 파일명 대신 `-`를 사용합니다. 보고서에는 오류 코드·JSON Pointer와 지원 범위를 포함합니다.
@@ -43,6 +44,7 @@ python scripts/verify_workflow.py --output .cache/workflow-verification.json
 - 같은 계산 커널로 `relax`를 구현했습니다. 자유 좌표만 L-BFGS-B로 탐색하고 실제 기울기로 수렴을 판정하며, 실패 시 마지막 수락 배치를 부분 결과로 보존합니다. 전역 최솟값이나 최소점임을 보증하지 않습니다.
 - `quanta.quantum_stationary@0.1.0`의 `eigenstates`로 유한 1차원 구간·실수 퍼텐셜·양 끝 파동함수 0의 조건에서 낮은 상태를 구합니다. SI 에너지·파동함수·선택 관측량을 반환하고 수치 잔차와 격자 수렴을 별도 판정합니다.
 - `plan`·`run`·`replay`로 분기·다단계 절차, 현재 변경값, 허용된 상태 전달, 오류와 부분 결과를 처리합니다. 실제 식별자와 분리된 과학 해시를 보존하고 새 번들을 저장·검증·재실행합니다.
+- `quanta serve --store .cache/local-service`로 인증된 루프백 HTTP API를 실행합니다. 불변 revision·24시간 멱등성·진행 상태·취소·재시작 복구·산출물 다운로드를 SQLite와 단일 계산 자식 프로세스에 연결합니다. 토큰 설정과 실제 제출 예시는 [실행 서비스](docs/execution-service.md)에 있습니다.
 - 수치 기준 A01~A04·SI 동등성과 B01~B06, 다단계 실행의 독립 기준을 측정하고 [에너지·힘](docs/numerical_verification.json), [정적 탐색](docs/relaxation_verification.json), [양자 상태](docs/quantum_verification.json), [다단계 실행](docs/workflow_verification.json)의 실제값·기준·오차·코드·환경을 기록합니다. 물리 검증 상태는 `unvalidated`입니다.
 
 `evaluate`, `relax`, `eigenstates`는 각각 해당 연산 한 단계, 초기 조건, 변경값·반복 축 없는 입력만 받습니다. 여러 단계가 들어 있는 기존 계약 예제를 부분 실행하지 않습니다. 사용 API와 결과 의미는 [단일 배치 평가](docs/pair-evaluation.md), [정적 상태 탐색](docs/relaxation.md), [양자 정적 상태](docs/quantum-stationary.md)를 참고합니다.
@@ -57,7 +59,7 @@ python scripts/verify_workflow.py --output .cache/workflow-verification.json
 
 | 위치 | 내용 |
 |---|---|
-| `src/quanta/` | 입력 검증·해시·계산 모듈·실행 계획·다단계 엔진·번들, CLI |
+| `src/quanta/` | 입력 검증·계산·실행 계획·번들·SQLite 서비스·HTTP·작업자·CLI |
 | `contracts/v0.2.0/` | 버전 관리되는 스키마·정책·예제·계획 |
 | `tests/` | 입력·등록부·정규화, 계산 모듈·수렴·수치 기준 및 실패 경로 시험 |
 | `scripts/` | 환경 구축·확인·의존성 관리 |
