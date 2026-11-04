@@ -1,6 +1,6 @@
 {
   "lock_version": "1.0.0",
-  "generated_at": "2026-11-04T14:25:22.554838+00:00",
+  "generated_at": "2026-11-04T15:23:14.563169+00:00",
   "target": {
     "implementation": "CPython",
     "python": "3.12.14",
@@ -9,8 +9,8 @@
     "compute": "CPU"
   },
   "index_url": "https://pypi.org/simple",
-  "direct_requirements_sha256": "4a76404a7a824b8f25f40d6cf9b7410a68c2bc90bbddd2688ef325081022a2d9",
-  "requirements_lock_sha256": "f21165a4ec9cc278e1a47798d24dcade107f83326f2d683ba6a287d29bd30d45",
+  "direct_requirements_sha256": "0e4a1c85b00e3d723eed5b8b74906b96112b64c8c7f3dcbd58fbd5432fa26dac",
+  "requirements_lock_sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f",
   "packages": [
     {
       "name": "attrs",
@@ -20,6 +20,52 @@
       "metadata_url": "https://pypi.org/pypi/attrs/26.1.0/json",
       "download_url": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl",
       "requires_python": ">=3.9",
+      "requires_dist": []
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "filename": "cffi-2.1.1-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+      "sha256": "68e62fe11f30d5ca8289242866f0a5291402d8529ca2178ab8afc5c9694ae890",
+      "metadata_url": "https://pypi.org/pypi/cffi/2.1.1/json",
+      "download_url": "https://files.pythonhosted.org/packages/44/de/f98430906df1545ffde0d543dd124a7a439bc2cd32b36b9c53f805df7333/cffi-2.1.1-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "pycparser; implementation_name != \"PyPy\""
+      ]
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "filename": "click-8.5.0-py3-none-any.whl",
+      "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+      "metadata_url": "https://pypi.org/pypi/click/8.5.0/json",
+      "download_url": "https://files.pythonhosted.org/packages/58/50/6c0d534c5f134586a8e1ba4e330569e32f057e33372ae556463212fb4cd3/click-8.5.0-py3-none-any.whl",
+      "requires_python": ">=3.10",
+      "requires_dist": []
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "filename": "cryptography-50.0.2-cp311-abi3-manylinux_2_34_aarch64.whl",
+      "sha256": "87e9ce85beb6b328ba370cc6e6aea483c92617b4c95b1d33a49297eb662bfb04",
+      "metadata_url": "https://pypi.org/pypi/cryptography/50.0.2/json",
+      "download_url": "https://files.pythonhosted.org/packages/71/37/6202e488cc1eb625ea110c292c6bda92823176e023f427d8d5660ce8d632/cryptography-50.0.2-cp311-abi3-manylinux_2_34_aarch64.whl",
+      "requires_python": ">=3.9, !=3.9.0, !=3.9.1",
+      "requires_dist": [
+        "cffi>=2.0.0 ; platform_python_implementation != 'PyPy'",
+        "typing-extensions>=4.13.2 ; python_full_version < '3.11'",
+        "bcrypt>=3.1.5 ; extra == 'ssh'"
+      ]
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "filename": "h11-0.16.0-py3-none-any.whl",
+      "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+      "metadata_url": "https://pypi.org/pypi/h11/0.16.0/json",
+      "download_url": "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl",
+      "requires_python": ">=3.8",
       "requires_dist": []
     },
     {
@@ -117,6 +163,16 @@
       "requires_dist": []
     },
     {
+      "name": "pycparser",
+      "version": "3.12",
+      "filename": "pycparser-3.12-py3-none-any.whl",
+      "sha256": "a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e",
+      "metadata_url": "https://pypi.org/pypi/pycparser/3.12/json",
+      "download_url": "https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl",
+      "requires_python": ">=3.11",
+      "requires_dist": []
+    },
+    {
       "name": "pygments",
       "version": "2.21.0",
       "filename": "pygments-2.21.0-py3-none-any.whl",
@@ -126,6 +182,19 @@
       "requires_python": ">=3.9",
       "requires_dist": [
         "colorama>=0.4.6; extra == 'windows-terminal'"
+      ]
+    },
+    {
+      "name": "pyjwt",
+      "version": "2.15.1",
+      "filename": "pyjwt-2.15.1-py3-none-any.whl",
+      "sha256": "42d59d631f7768a1028a64c7ff581a9bf7519804daf91fc5b6c56e30eec5e193",
+      "metadata_url": "https://pypi.org/pypi/pyjwt/2.15.1/json",
+      "download_url": "https://files.pythonhosted.org/packages/50/ca/44de4e75f8aadc457f0634be3b542815078ded46dca30efb960edeecad6e/pyjwt-2.15.1-py3-none-any.whl",
+      "requires_python": ">=3.9",
+      "requires_dist": [
+        "typing_extensions>=4.0; python_version < \"3.11\"",
+        "cryptography>=3.4.0; extra == \"crypto\""
       ]
     },
     {
@@ -351,6 +420,26 @@
       "requires_dist": []
     },
     {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "filename": "uvicorn-0.54.0-py3-none-any.whl",
+      "sha256": "505bdb0f318731d45f1f712071fc781a8981f6847a31c902c9f5e652d4f67faf",
+      "metadata_url": "https://pypi.org/pypi/uvicorn/0.54.0/json",
+      "download_url": "https://files.pythonhosted.org/packages/38/0c/b54a4fdd7f90a3af8b02ebc9ce6712c2c208b7926a2f7bad95c33ebbe943/uvicorn-0.54.0-py3-none-any.whl",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "click>=7.0",
+        "h11>=0.8",
+        "typing-extensions>=4.0; python_version < '3.11'",
+        "httptools>=0.8.0; extra == 'standard'",
+        "python-dotenv>=0.13; extra == 'standard'",
+        "pyyaml>=5.1; extra == 'standard'",
+        "uvloop>=0.15.1; (sys_platform != 'win32' and (sys_platform != 'cygwin' and platform_python_implementation != 'PyPy')) and extra == 'standard'",
+        "watchfiles>=0.20; extra == 'standard'",
+        "websockets>=13.0; extra == 'standard'"
+      ]
+    },
+    {
       "name": "wheel",
       "version": "0.45.1",
       "filename": "wheel-0.45.1-py3-none-any.whl",
@@ -367,8 +456,8 @@
   "preparation": {
     "method": "cross-download-exact-pins",
     "native_arm_validation": "not_performed",
-    "source_lock_manifest_sha256": "38d9049d00a429aedc076530bc3c5ee854895d31f6805c11341f69da627b0063",
-    "source_lock_sha256": "f707157f7ee8ed0d3e6dac568e2b8a5db4241d7af63907f8350ed0567e759583",
+    "source_lock_manifest_sha256": "8ee8490d4eb00ab9e6e790e022153ec7081ceff99c33724476ba6bfc45768a29",
+    "source_lock_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5",
     "source_architecture": "x86_64",
     "version_policy": "exact-source-lock-parity",
     "host": {

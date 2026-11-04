@@ -84,6 +84,8 @@ jobs:
         run: python scripts/verify_service.py --output .cache/service_verification.json
       - name: Measure packaged web workspace and actual execution flow
         run: python scripts/verify_web.py --output .cache/web_verification.json
+      - name: Measure Access origin and authenticated ASGI execution
+        run: python scripts/verify_production.py --output .cache/production_verification.json
       - name: Preserve actual numerical measurements
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4, verified 2026-11-04 (UTC+09:00)
@@ -98,6 +100,7 @@ jobs:
             .cache/workflow_verification.json
             .cache/service_verification.json
             .cache/web_verification.json
+            .cache/production_verification.json
           include-hidden-files: true
           if-no-files-found: ignore
       - name: Validate example input
@@ -126,3 +129,4 @@ jobs:
           docker run --rm --workdir /tmp quanta-contracts-ci sh -c 'python -m quanta plan /app/examples/pair_workflow.json --format text && python -m quanta run /app/examples/pair_workflow.json --output-dir /tmp/quanta-run --format text && python -m quanta replay /tmp/quanta-run --output-dir /tmp/quanta-replay --format text && python -m quanta run /app/examples/quantum_workflow.json --output-dir /tmp/quanta-quantum-run --format text'
           docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_service.py --output /tmp/service-verification.json
           docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_web.py --output /tmp/web-verification.json
+          docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_production.py --output /tmp/production-verification.json

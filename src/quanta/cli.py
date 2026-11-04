@@ -90,9 +90,35 @@ def main(argv: list[str] | None = None) -> int:
     serve = sub.add_parser("serve", help="Start the authenticated loopback API and one durable numerical worker.")
     serve.add_argument("--store", required=True, help="Private local directory for SQLite service records.")
     serve.add_argument("--port", type=int, default=8765)
+    production = sub.add_parser("serve-production", help="Run one loopback ASGI process behind configured Access and Tunnel.")
+    production.add_argument("--store", required=True, help="Private persistent directory for SQLite service records.")
+    production.add_argument("--port", type=int, default=8765)
     sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
+
+    if args.command == "serve-production":
+        from .access_auth import AccessConfig
+        from .production import create_app
+        from .service import ExecutionService
+        import uvicorn
+        try:
+            config = AccessConfig(public_origin=os.environ.get("QUANTA_PUBLIC_ORIGIN", ""),
+                team_domain=os.environ.get("QUANTA_ACCESS_TEAM_DOMAIN", ""),
+                audience=os.environ.get("QUANTA_ACCESS_AUDIENCE", ""),
+                allowed_email=os.environ.get("QUANTA_ALLOWED_EMAIL", ""))
+            if not 0 <= args.port <= 65535:
+                raise ValueError("The port must be between 0 and 65535")
+            app = create_app(ExecutionService(args.store), config)
+            uvicorn.run(app, host="127.0.0.1", port=args.port, workers=1, reload=False,
+                        proxy_headers=False, forwarded_allow_ips="", access_log=False,
+                        server_header=False, log_level="warning", http="h11", ws="none",
+                        lifespan="on", limit_concurrency=32, backlog=32,
+                        timeout_keep_alive=5, timeout_graceful_shutdown=20)
+            return 0
+        except (OSError, ValueError, RuntimeError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
 
     if args.command == "serve":
         from .service import ExecutionService

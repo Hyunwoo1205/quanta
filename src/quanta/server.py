@@ -119,6 +119,12 @@ def create_server(service, *, token: str, owner: str = "local", host: str = "127
                 allowed_hosts = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
                 if len(hosts) != 1 or hosts[0].lower() not in allowed_hosts:
                     raise ServiceError(400, "HTTP_HOST", "The request must target this loopback server")
+                if self.command in {"GET", "HEAD"} and self.path == "/ui/auth":
+                    if (self.headers.get_all("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) > 1
+                            or self.headers.get("Content-Length", "0") != "0"):
+                        raise ServiceError(400, "HTTP_REQUEST", "Session discovery does not accept bodies")
+                    self._send(200, {"mode": "bearer", "authenticated": False})
+                    return
                 # A public application shell contains no private state or token.
                 # Every scientific-data endpoint still requires bearer auth.
                 if self.command in {"GET", "HEAD"} and self.path in _WEB_RESOURCES:

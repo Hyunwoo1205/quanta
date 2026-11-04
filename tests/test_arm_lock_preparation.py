@@ -112,7 +112,8 @@ def make_wheel(tmp_path: Path, *, tag="cp312-cp312-manylinux_2_17_aarch64.manyli
 
 
 def test_official_hash_bound_arm_and_universal_wheels_are_accepted(tmp_path):
-    for tag in ("cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64", "py3-none-any"):
+    for tag in ("cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64", "py3-none-any",
+                "cp39-abi3-manylinux_2_34_aarch64", "cp312-abi3-manylinux_2_17_aarch64"):
         path, expected, releases = make_wheel(tmp_path, tag=tag)
         result = prepare.arm_wheel_record(path, expected, releases)
         assert result["name"] == "demo-pkg"
@@ -125,7 +126,8 @@ def test_official_hash_bound_arm_and_universal_wheels_are_accepted(tmp_path):
 
 @pytest.mark.parametrize("tag", [
     "cp312-cp312-manylinux_2_17_x86_64", "cp311-cp311-manylinux_2_17_aarch64",
-    "cp312-abi3-manylinux_2_17_aarch64", "cp312-cp312-linux_aarch64",
+    "cp313-abi3-manylinux_2_34_aarch64", "cp39-abi3-manylinux_2_34_x86_64",
+    "cp312-cp312-manylinux_2_37_aarch64", "cp312-cp312-linux_aarch64",
     "cp312-cp312-manylinux_2_17_aarch64.manylinux_2_17_x86_64", "py2-none-any",
 ])
 def test_incompatible_wheel_is_rejected_even_with_matching_official_hash(tmp_path, tag):

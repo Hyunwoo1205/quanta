@@ -2,6 +2,44 @@
 
 export const terminalStatuses = new Set(["SUCCEEDED", "FAILED", "CANCELLED"]);
 
+/** Only the fixed same-origin Access navigation routes are accepted. */
+export function authConfiguration(value) {
+  if (value?.mode === "bearer") return { mode: "bearer", authenticated: false };
+  if (value?.mode !== "access" || typeof value.authenticated !== "boolean"
+      || value.login_url !== "/" || value.logout_url !== "/cdn-cgi/access/logout") {
+    throw new TypeError("연결 방식을 확인할 수 없습니다.");
+  }
+  if (value.authenticated && (typeof value.principal?.email !== "string" || !value.principal.email
+      || typeof value.principal?.owner !== "string" || !value.principal.owner)) {
+    throw new TypeError("로그인 정보를 확인할 수 없습니다.");
+  }
+  return { mode: "access", authenticated: value.authenticated,
+    principal: value.authenticated ? { email: value.principal.email, owner: value.principal.owner } : null,
+    login_url: "/", logout_url: "/cdn-cgi/access/logout" };
+}
+
+/** Session cookies are sent only to this origin; bearer tokens stay in memory. */
+export function authRequestOptions(mode, token, { json = true } = {}) {
+  if (mode !== "bearer" && mode !== "access") throw new TypeError("연결 방식을 먼저 확인하세요.");
+  const headers = json ? { "Content-Type": "application/json" } : {};
+  if (mode === "bearer") headers.Authorization = "Bearer " + token;
+  return { headers, credentials: mode === "access" ? "same-origin" : "omit",
+    redirect: "error", cache: "no-store", referrerPolicy: "no-referrer" };
+}
+
+export function isJSONResponse(contentType) {
+  return typeof contentType === "string"
+    && /^application\/(?:[a-z0-9!#$&^_.+-]+\+)?json(?:\s*;|\s*$)/i.test(contentType.trim());
+}
+
+/** A failed fetch alone cannot distinguish a redirect rejection from offline. */
+export function accessResponseNeedsLogin(mode, response) {
+  if (mode !== "access") return false;
+  return response?.status === 401 || response?.status === 403 || response?.redirected === true
+    || response?.type === "opaqueredirect"
+    || /^text\/html(?:\s*;|\s*$)/i.test(response?.contentType?.trim() ?? "");
+}
+
 const statusLabels = Object.freeze({
   QUEUED: "대기 중",
   RUNNING: "실행 중",

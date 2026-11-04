@@ -1,10 +1,12 @@
-# Direct dependencies for the CPython 3.12.14 Linux x86_64 CPU profile.
+# Direct dependencies for the CPython 3.12.14 Linux x86_64 and aarch64 CPU profiles.
 numpy==2.3.5
 scipy==1.17.0
 jsonschema==4.26.0
 rfc8785==0.1.4
 rfc3339-validator==0.1.4
 threadpoolctl==3.6.0
+uvicorn==0.54.0
+PyJWT[crypto]==2.15.1
 pytest==9.0.2
 setuptools==80.9.0
 wheel==0.45.1

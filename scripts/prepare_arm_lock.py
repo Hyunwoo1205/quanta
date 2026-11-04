@@ -24,12 +24,15 @@ import tempfile
 from urllib.request import urlopen
 import zipfile
 
+from packaging.tags import compatible_tags, cpython_tags
+from packaging.utils import parse_wheel_filename
+
 
 ROOT = Path(__file__).resolve().parents[1]
-PLATFORMS = (
-    "manylinux_2_28_aarch64", "manylinux_2_27_aarch64",
-    "manylinux_2_17_aarch64", "manylinux2014_aarch64",
-)
+# Debian bookworm's glibc is 2.36; never select a wheel requiring a newer ABI.
+PLATFORMS = tuple(f"manylinux_2_{minor}_aarch64" for minor in range(36, 16, -1)) + ("manylinux2014_aarch64",)
+TARGET_TAGS = frozenset(cpython_tags((3, 12), abis=["cp312"], platforms=PLATFORMS)) | frozenset(
+    compatible_tags((3, 12), interpreter="cp312", platforms=PLATFORMS))
 TARGET = {"implementation": "CPython", "python": "3.12.14", "os": "Linux",
           "architecture": "aarch64", "compute": "CPU"}
 
@@ -108,15 +111,9 @@ def release_record(item: dict) -> tuple[str, dict]:
 
 
 def arm_wheel_record(wheel: Path, expected: dict[str, str], releases: dict[str, dict]) -> dict:
-    parts = wheel.name[:-4].rsplit("-", 3)
-    if len(parts) != 4 or not wheel.name.endswith(".whl"):
-        raise ValueError("Invalid wheel filename")
-    py_tag, abi_tag, platform_tag = parts[-3:]
-    if platform_tag == "any":
-        compatible = abi_tag == "none" and bool(set(py_tag.split(".")) & {"py3", "py312", "cp312"})
-    else:
-        compatible = py_tag == "cp312" and abi_tag == "cp312" and set(platform_tag.split(".")) <= set(PLATFORMS)
-    if not compatible:
+    _, _, _, tags = parse_wheel_filename(wheel.name)
+    if (not tags.intersection(TARGET_TAGS)
+            or any(tag.platform != "any" and tag.platform not in PLATFORMS for tag in tags)):
         raise ValueError(f"Not a selected CPython 3.12 ARM wheel: {wheel.name}")
     with zipfile.ZipFile(wheel) as archive:
         metadata_names = [name for name in archive.namelist()

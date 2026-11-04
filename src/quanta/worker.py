@@ -83,6 +83,11 @@ class JobWorker:
         self._child = None
         self.error = None
 
+    @property
+    def healthy(self):
+        return (self._thread is not None and self._thread.is_alive() and self.error is None
+                and not self._stop.is_set() and self._lock is not None)
+
     def start(self):
         if self._thread is not None:
             raise RuntimeError("This worker has already been started")

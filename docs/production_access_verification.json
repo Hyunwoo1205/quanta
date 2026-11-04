@@ -1,0 +1,103 @@
+{
+  "record_version": "1.0.0",
+  "recorded_at": "2026-11-04T15:33:09.810441+00:00",
+  "verification_timezone": "Asia/Seoul",
+  "package_version": "0.9.0",
+  "contract_version": "0.2.0",
+  "scope": "Access verification, session UI and single-worker ASGI with synthetic signing keys and actual local HTTP/numerical child",
+  "starting_commit": "a06615811c841007773bdb1d3af0703ff3d2a793",
+  "physical_validation_status": "unvalidated",
+  "local_tests": {
+    "initial_targeted": {
+      "tests": 166,
+      "seconds": 30.85,
+      "status": "passed"
+    },
+    "final_auth": {
+      "tests": 69,
+      "seconds": 0.29,
+      "status": "passed"
+    },
+    "final_http_and_cli": {
+      "tests": 36,
+      "seconds": 17.77,
+      "status": "passed"
+    },
+    "node": {
+      "tests": 33,
+      "status": "passed"
+    }
+  },
+  "local_production_measurement": {
+    "status": "passed",
+    "path": "docs/verification/v0.9.0/local_x86_64/production_verification.json",
+    "sha256": "48f6001960e6b16d07b433cc2ce35915f67c99c5093fd084f8c3faf83050e6cf",
+    "scope": "P01-P06 in-memory RSA/JWKS; actual Uvicorn, SQLite, numerical child"
+  },
+  "dependencies": {
+    "count": 27,
+    "existing_20_versions_and_wheels_preserved": true,
+    "added": {
+      "uvicorn": "0.54.0",
+      "PyJWT": "2.15.1",
+      "cryptography": "50.0.2",
+      "cffi": "2.1.1",
+      "click": "8.5.0",
+      "h11": "0.16.0",
+      "pycparser": "3.12"
+    }
+  },
+  "native_ci": {
+    "status": "pending",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "measurement_count_per_architecture": 7
+  },
+  "installed_wheel": {
+    "status": "pending"
+  },
+  "external_validation": {
+    "oci_connection": "not_performed",
+    "oci_deployment": "not_performed",
+    "cloudflare_account_login": "not_performed",
+    "public_tls_and_tunnel": "not_performed",
+    "authenticated_browser_and_mobile": "not_performed"
+  },
+  "limitations": [
+    "OCI instance, public origin, Access audience, login email and external credentials have not been supplied",
+    "Persistent mount guard, non-root deployment service and backup/restore tooling remain the next deployment step",
+    "Upgrade requires admission stop, drain and prior image/data preservation"
+  ],
+  "lock_profiles": {
+    "x86_64": {
+      "packages": 27,
+      "text": "requirements.lock.txt",
+      "text_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5",
+      "manifest": "requirements.lock.json",
+      "manifest_sha256": "8ee8490d4eb00ab9e6e790e022153ec7081ceff99c33724476ba6bfc45768a29",
+      "target": {
+        "implementation": "CPython",
+        "python": "3.12.14",
+        "os": "Linux",
+        "architecture": "x86_64",
+        "compute": "CPU"
+      }
+    },
+    "aarch64": {
+      "packages": 27,
+      "text": "requirements.aarch64.lock.txt",
+      "text_sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f",
+      "manifest": "requirements.aarch64.lock.json",
+      "manifest_sha256": "8debe43f5cffa3dca31664d17598f484ba7ffa0f568ef9826ff2e8bf777487f2",
+      "target": {
+        "implementation": "CPython",
+        "python": "3.12.14",
+        "os": "Linux",
+        "architecture": "aarch64",
+        "compute": "CPU"
+      }
+    }
+  }
+}
