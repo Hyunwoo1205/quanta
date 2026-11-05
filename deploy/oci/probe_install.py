@@ -14,7 +14,8 @@ _spec = importlib.util.spec_from_file_location('quanta_install_transport', Path(
 transport = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(transport)
 
-INSTALLERS = {'install-app': 'install_app', 'install-https': 'install_https'}
+INSTALLERS = {'install-app': 'install_app', 'install-https': 'install_https',
+              'configure-web-firewall': 'configure_web_firewall', 'verify-backup': 'verify_backup'}
 SOURCE_SHA = '1738107301ef873bfe5e01f930866c2a74e4ec3f'
 
 

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "install-https",
+  "operation": "configure-web-firewall",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "fa037589-e898-437d-9f18-4e124fd944bf"
+  "request_id": "d724f50b-78e8-44e3-bba0-6e3b2b4d74a5"
 }
