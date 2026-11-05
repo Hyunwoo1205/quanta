@@ -1,0 +1,55 @@
+{
+  "verification_kind": "oci_live_backup_and_isolated_restore",
+  "source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "workflow_run": {
+    "id": 42073118865,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42073118865",
+    "head_sha": "2ba9e2c94f7e7bdccbce6e520d63560904ed9258",
+    "created_at_utc": "2026-11-05T17:17:13Z",
+    "completed_at_utc": "2026-11-05T17:18:01Z",
+    "job_id": 127406072489,
+    "conclusion": "success"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "verify-backup",
+    "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "request_id": "0ec07fcb-c56b-4da8-a75f-69e315dc36b1"
+  },
+  "result": {
+    "authentication_attempted": true,
+    "requested_operation": "verify-backup",
+    "result": {
+      "app_enabled": true,
+      "backup_created": true,
+      "backup_timer_active": true,
+      "backup_timer_enabled": true,
+      "backup_verified": true,
+      "production_preserved": true,
+      "restore_verified": true,
+      "scope": "backup_verification",
+      "source_verified": true,
+      "stage": "complete",
+      "status": "success"
+    },
+    "scope": "ssh_fixed_installation",
+    "status": "success"
+  },
+  "scope": {
+    "live_sqlite_backup_created": true,
+    "backup_integrity_and_schema_verified": true,
+    "isolated_restored_database_bytes_equal": true,
+    "production_container_and_database_identity_preserved": true,
+    "application_autostart_enabled": true,
+    "daily_backup_timer_enabled_and_active": true,
+    "same_boot_filesystem_storage": true,
+    "off_host_backup_configured": false,
+    "oci_managed_volume_backup_configured": false,
+    "secret_values_recorded": false
+  },
+  "notes": [
+    "The production database was never mounted into the isolated restore container.",
+    "The restore target was fresh and separate from production data.",
+    "Managed OCI volume snapshots and off-host disaster recovery were not configured by this operation."
+  ]
+}

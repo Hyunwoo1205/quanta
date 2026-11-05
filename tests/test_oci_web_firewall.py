@@ -29,7 +29,7 @@ def config():
 
 def success(*, ufw=False, tls=False):
     result = firewall._report()
-    result.update(status="success", failure_stage="none", scope_verified=True,
+    result.update(status="success", failure_stage="none", failure_reason="none", scope_verified=True,
                   rules_inspected=True, ufw_active=ufw, rule_mutation_attempted=True,
                   rules_applied=True, persistence_configured=True,
                   persistence_service_active=not ufw, https_service_active=True, tls_issued=tls)
@@ -92,6 +92,39 @@ class ConfigurationAndReportTests(unittest.TestCase):
                      {**firewall._report(), "rule_mutation_attempted": True},
                      {**firewall._report(), "rules_inspected": True}]:
             self.assertIsNone(firewall.sanitize_report(json.dumps(data).encode()))
+
+    def test_failure_reason_is_required_fixed_and_consistent_with_status(self):
+        self.assertEqual(firewall._report()["failure_reason"], "invalid_config")
+        self.assertIn("none", firewall.REASONS)
+        for reason in (PRIVATE, None, True, 1, [], {}, "", "none\n"):
+            with self.subTest(reason=repr(reason)):
+                self.assertIsNone(firewall.sanitize_report(json.dumps({**firewall._report(), "failure_reason": reason}).encode()))
+        for value in [{**firewall._report(), "failure_reason": "none"},
+                      {**success(), "failure_reason": "invalid_config"},
+                      {key: value for key, value in firewall._report().items() if key != "failure_reason"}]:
+            self.assertIsNone(firewall.sanitize_report(json.dumps(value).encode()))
+
+    def test_failure_classifier_uses_fixed_literals_without_formatting_unknown_errors(self):
+        class Unprintable:
+            def __str__(self):
+                raise AssertionError("private error must not be formatted")
+        class ForeignFirewallError(firewall.FirewallError):
+            pass
+        for message, expected in [("another firewall manager is active", "other_firewall_active"),
+                                  ("unsafe fixed path", "unsafe_path"),
+                                  ("untrusted system directory alias", "untrusted_system_alias"),
+                                  ("application receipt differs", "receipt_mismatch"),
+                                  ("effective fixed service differs", "effective_service_mismatch")]:
+            self.assertEqual(firewall._failure_reason(firewall.FirewallError(message)), expected)
+        for error in [firewall.FirewallError(PRIVATE), firewall.FirewallError(),
+                      firewall.FirewallError("unsafe fixed path", PRIVATE),
+                      firewall.FirewallError(Unprintable()), RuntimeError(Unprintable()),
+                      ForeignFirewallError("unsafe fixed path"), RuntimeError("unsafe fixed path")]:
+            self.assertEqual(firewall._failure_reason(error), "operation_failed")
+        for error, expected in [(FileNotFoundError(PRIVATE), "system_path_missing"),
+                                (PermissionError(PRIVATE), "permission_denied"),
+                                (firewall.subprocess.TimeoutExpired(PRIVATE, 2), "command_timeout")]:
+            self.assertEqual(firewall._failure_reason(error), expected)
 
 
 class IPv4RuleTests(unittest.TestCase):
@@ -185,6 +218,63 @@ class IPv4RuleTests(unittest.TestCase):
                 mock.patch.object(firewall, "_trusted_command"), mock.patch.object(firewall, "_command", return_value=(0, PRIVATE.encode())), \
                 self.assertRaises(ValueError):
             firewall._ufw_active()
+
+
+class FixedParentSafetyTests(unittest.TestCase):
+    @contextlib.contextmanager
+    def metadata(self, entries=None, *, link="bin"):
+        entries = entries or {}
+        directory = types.SimpleNamespace(st_mode=stat.S_IFDIR | 0o755, st_uid=0)
+        with mock.patch.object(Path, "lstat", autospec=True,
+                               side_effect=lambda path: entries.get(path, directory)) as lstat, \
+                mock.patch.object(firewall.os, "readlink", return_value=link) as readlink:
+            yield lstat, readlink
+
+    def test_exact_root_owned_usr_sbin_alias_targets_are_permitted(self):
+        alias = types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0)
+        for target in ("bin", "/usr/bin"):
+            with self.subTest(target=target), self.metadata({Path("/usr/sbin"): alias}, link=target) as (lstat, readlink):
+                firewall._parents(Path("/usr/sbin/iptables"))
+            readlink.assert_called_once_with(Path("/usr/sbin"))
+            self.assertIn(mock.call(Path("/usr/bin")), lstat.call_args_list)
+
+    def test_known_root_owned_lib_alias_remains_permitted(self):
+        alias = types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0)
+        for target in ("usr/lib", "/usr/lib"):
+            with self.subTest(target=target), self.metadata({Path("/lib"): alias}, link=target) as (_, readlink):
+                firewall._parents(Path("/lib/systemd/system/quanta-https.service"))
+            readlink.assert_called_once_with(Path("/lib"))
+
+    def test_noncanonical_or_unrelated_alias_targets_are_rejected(self):
+        alias = types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0)
+        for target in ("../bin", "../usr/bin", "bin/", "/usr/bin/", "/bin", "/tmp/bin", "usr/bin", "./bin"):
+            with self.subTest(target=target), self.metadata({Path("/usr/sbin"): alias}, link=target), self.assertRaises(ValueError):
+                firewall._parents(Path("/usr/sbin/iptables"))
+
+    def test_usr_sbin_alias_owner_and_real_target_are_both_trusted(self):
+        root_alias = types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0)
+        untrusted_alias = types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=1000)
+        targets = [types.SimpleNamespace(st_mode=stat.S_IFDIR | 0o755, st_uid=1000),
+                   types.SimpleNamespace(st_mode=stat.S_IFDIR | 0o777, st_uid=0),
+                   types.SimpleNamespace(st_mode=stat.S_IFDIR | 0o775, st_uid=0),
+                   types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0),
+                   types.SimpleNamespace(st_mode=stat.S_IFREG | 0o755, st_uid=0)]
+        with self.metadata({Path("/usr/sbin"): untrusted_alias}), self.assertRaises(ValueError):
+            firewall._parents(Path("/usr/sbin/iptables"))
+        for target in targets:
+            with self.subTest(mode=target.st_mode, owner=target.st_uid), \
+                    self.metadata({Path("/usr/sbin"): root_alias, Path("/usr/bin"): target}), self.assertRaises(ValueError):
+                firewall._parents(Path("/usr/sbin/iptables"))
+
+    def test_project_and_other_system_symlinks_are_still_rejected(self):
+        alias = types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0)
+        for path, parent in [(firewall.MARKER, Path("/etc/quanta")),
+                             (firewall.CADDY, Path("/usr/local/lib/quanta")),
+                             (firewall.TEMPLATE, Path("/srv/quanta/source")),
+                             (Path("/usr/local/sbin/tool"), Path("/usr/local/sbin")),
+                             (Path("/usr/bin/systemctl"), Path("/usr/bin"))]:
+            with self.subTest(parent=str(parent)), self.metadata({parent: alias}), self.assertRaises(ValueError):
+                firewall._parents(path)
 
 
 class FixedScopeAndLifecycleTests(unittest.TestCase):
@@ -297,6 +387,39 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
                 calls["_apply_ufw"].assert_not_called()
                 calls["_command"].assert_not_called()
                 self.assertNotIn(PRIVATE, json.dumps(result))
+
+    def test_preflight_and_manager_failures_have_fixed_reasons_before_any_write(self):
+        for failing, message, expected in [("_scope", "unsafe fixed path", "unsafe_path"),
+                                           ("_scope", "untrusted system directory alias", "untrusted_system_alias"),
+                                           ("_ufw_active", "another firewall manager is active", "other_firewall_active")]:
+            with self.subTest(failing=failing, reason=expected), self.configured() as calls:
+                calls[failing].side_effect = firewall.FirewallError(message)
+                result = firewall.configure(config())
+                self.assertEqual(result["failure_reason"], expected)
+                self.assertEqual(result["status"], "failed")
+                self.assertFalse(result["rule_mutation_attempted"])
+                calls["_write_new"].assert_not_called()
+                calls["_command"].assert_not_called()
+                calls["_apply_iptables"].assert_not_called()
+                calls["_apply_ufw"].assert_not_called()
+
+    def test_unknown_private_failure_is_generic_and_main_never_prints_it(self):
+        class PrivateFailure(Exception):
+            def __str__(self):
+                raise AssertionError("private error must not be formatted")
+        for error in [firewall.FirewallError(PRIVATE), PrivateFailure(PRIVATE)]:
+            with self.configured() as calls:
+                calls["_scope"].side_effect = error
+                result = firewall.configure(config())
+                self.assertEqual(result["failure_reason"], "operation_failed")
+                calls["_write_new"].assert_not_called()
+                self.assertNotIn(PRIVATE, json.dumps(result))
+            out = io.StringIO()
+            with mock.patch.object(firewall, "configure", side_effect=error), \
+                    contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+                self.assertEqual(firewall.main([base64.b64encode(json.dumps(config()).encode()).decode()]), 2)
+            self.assertEqual(json.loads(out.getvalue()), {**firewall._report(), "failure_reason": "operation_failed"})
+            self.assertNotIn(PRIVATE, out.getvalue())
 
     def test_invalid_config_does_not_inspect_host_and_inactive_https_never_claims_success(self):
         with self.configured() as calls:
@@ -456,6 +579,39 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
                 mock.patch.object(firewall.os, "read", return_value=PRIVATE.encode()), self.assertRaises(ValueError):
             firewall._command(["/fixed/command"], limit=2)
         process.kill.assert_called_once_with()
+
+
+class CommandSymlinkChainTests(unittest.TestCase):
+    @contextlib.contextmanager
+    def chain(self, *, unsafe_intermediate=False):
+        directory = types.SimpleNamespace(st_mode=stat.S_IFDIR | 0o755, st_uid=0)
+        link = types.SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0)
+        executable = types.SimpleNamespace(st_mode=stat.S_IFREG | 0o755, st_uid=0)
+        targets = {Path("/usr/sbin"): "bin",
+                   Path("/usr/sbin/iptables"): "/etc/alternatives/iptables",
+                   Path("/etc/alternatives/iptables"): "/usr/sbin/iptables-nft",
+                   Path("/usr/sbin/iptables-nft"): "xtables-nft-multi"}
+        entries = {path: link for path in targets}
+        entries[Path("/usr/sbin/xtables-nft-multi")] = executable
+        if unsafe_intermediate:
+            entries[Path("/etc/alternatives")] = types.SimpleNamespace(st_mode=stat.S_IFDIR | 0o777, st_uid=0)
+        with mock.patch.object(Path, "lstat", autospec=True,
+                               side_effect=lambda path: entries.get(path, directory)) as lstat, \
+                mock.patch.object(firewall.os, "readlink", side_effect=lambda path: targets[path]) as readlink:
+            yield lstat, readlink
+
+    def test_standard_root_owned_iptables_alternatives_chain_is_supported(self):
+        with self.chain() as (lstat, readlink):
+            firewall._trusted_command("/usr/sbin/iptables")
+        self.assertIn(mock.call(Path("/etc/alternatives")), lstat.call_args_list)
+        self.assertIn(mock.call(Path("/usr/sbin/xtables-nft-multi")), lstat.call_args_list)
+        self.assertIn(mock.call(Path("/etc/alternatives/iptables")), readlink.call_args_list)
+
+    def test_untrusted_intermediate_directory_cannot_hide_behind_root_final_executable(self):
+        with self.chain(unsafe_intermediate=True) as (lstat, readlink), self.assertRaises(ValueError):
+            firewall._trusted_command("/usr/sbin/iptables")
+        self.assertIn(mock.call(Path("/etc/alternatives")), lstat.call_args_list)
+        self.assertNotIn(mock.call(Path("/etc/alternatives/iptables")), readlink.call_args_list)
 
 
 if __name__ == "__main__":

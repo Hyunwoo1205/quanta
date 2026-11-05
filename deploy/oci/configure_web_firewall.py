@@ -59,8 +59,55 @@ BOOLEAN_FIELDS = (
     "rules_applied", "persistence_configured", "persistence_service_active",
     "https_service_active", "tls_issued", "ipv6_changed", "cloud_ingress_changed",
 )
-FIELDS = frozenset(("scope", "status", "failure_stage", *BOOLEAN_FIELDS))
+FIELDS = frozenset(("scope", "status", "failure_stage", "failure_reason", *BOOLEAN_FIELDS))
 STAGES = frozenset(("none", "config", "preflight", "inspection", "persistence", "rules", "https"))
+_ERROR_REASONS = {
+    "invalid structured input": "invalid_config",
+    "invalid configuration": "invalid_config",
+    "one configuration argument is required": "invalid_config",
+    "unsafe fixed path": "unsafe_path",
+    "untrusted system directory alias": "untrusted_system_alias",
+    "unsafe fixed file": "unsafe_file",
+    "fixed file changed": "file_changed",
+    "fixed file exceeds limit": "file_limit",
+    "fixed path already exists": "existing_path",
+    "untrusted fixed command": "untrusted_command",
+    "fixed command timed out": "command_timeout",
+    "fixed command failed": "command_failed",
+    "fixed command output exceeded limit": "command_output_limit",
+    "effective fixed service differs": "effective_service_mismatch",
+    "root is required": "root_required",
+    "application receipt differs": "receipt_mismatch",
+    "HTTPS service differs": "https_service_mismatch",
+    "source template differs": "source_mismatch",
+    "HTTPS configuration differs": "https_config_mismatch",
+    "HTTPS environment differs": "https_env_mismatch",
+    "HTTPS executable differs": "https_binary_mismatch",
+    "HTTPS is not active": "https_inactive",
+    "another firewall manager is active": "other_firewall_active",
+    "unknown firewall status": "ufw_status_unknown",
+    "unsupported port": "unsupported_operation",
+    "unsupported firewall operation": "unsupported_operation",
+    "unknown INPUT rules": "input_rules_unknown",
+    "unknown INPUT policy": "input_policy_unknown",
+    "web rules are not ahead of existing rules": "rule_order_unverified",
+    "UFW stopped during configuration": "ufw_inactive",
+    "missing carried source": "carried_source_missing",
+    "invalid carried source": "carried_source_invalid",
+    "fixed operation timed out": "operation_timeout",
+    "web rule service is not active": "persistence_inactive",
+    "HTTPS restart did not complete": "https_restart_failed",
+    "web rule service differs": "persistence_mismatch",
+    "UFW now owns the firewall": "ufw_active_during_restore",
+    "invalid web firewall report": "report_invalid",
+}
+REASONS = frozenset(("none", "operation_failed", "system_path_missing", "permission_denied",
+                     *_ERROR_REASONS.values()))
+# Only these fixed system-directory aliases may bypass the normal no-symlink rule.
+SYSTEM_DIRECTORY_ALIASES = {
+    Path("/lib"): ({"usr/lib", "/usr/lib"}, Path("/usr/lib")),
+    Path("/usr/sbin"): ({"bin", "/usr/bin"}, Path("/usr/bin")),
+}
 _LABEL = r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?"
 _HOST = re.compile(rf"{_LABEL}(?:\.{_LABEL})+\Z")
 
@@ -95,6 +142,18 @@ WantedBy=multi-user.target
 
 class FirewallError(ValueError):
     pass
+
+
+def _failure_reason(error):
+    if type(error) is FirewallError and len(error.args) == 1 and type(error.args[0]) is str:
+        return _ERROR_REASONS.get(error.args[0], "operation_failed")
+    if isinstance(error, FileNotFoundError):
+        return "system_path_missing"
+    if isinstance(error, PermissionError):
+        return "permission_denied"
+    if isinstance(error, subprocess.TimeoutExpired):
+        return "command_timeout"
+    return "operation_failed"
 
 
 def _unique(pairs):
@@ -146,10 +205,14 @@ def _parents(path, *, missing=False):
             if missing:
                 return
             raise
-        if parent == Path("/lib") and stat.S_ISLNK(info.st_mode):
-            if info.st_uid != 0 or os.readlink(parent) not in {"usr/lib", "/usr/lib"}:
-                raise FirewallError("unsafe fixed path")
-            info = Path("/usr/lib").lstat()
+        if parent in SYSTEM_DIRECTORY_ALIASES and stat.S_ISLNK(info.st_mode):
+            allowed, target = SYSTEM_DIRECTORY_ALIASES[parent]
+            if info.st_uid != 0 or os.readlink(parent) not in allowed:
+                raise FirewallError("untrusted system directory alias")
+            _parents(target)
+            info = target.lstat()
+            if not stat.S_ISDIR(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
+                raise FirewallError("untrusted system directory alias")
         if not stat.S_ISDIR(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
             raise FirewallError("unsafe fixed path")
 
@@ -183,13 +246,24 @@ def _absent(path):
 
 def _trusted_command(path):
     candidate = Path(path)
-    _parents(candidate)
-    resolved = candidate.resolve(strict=True)
-    _parents(resolved)
-    info = resolved.lstat()
-    if (not stat.S_ISREG(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022
-            or not info.st_mode & 0o111):
-        raise FirewallError("untrusted fixed command")
+    visited = set()
+    for _ in range(16):
+        _parents(candidate)
+        if candidate in visited:
+            raise FirewallError("untrusted fixed command")
+        visited.add(candidate)
+        info = candidate.lstat()
+        if stat.S_ISLNK(info.st_mode):
+            target = Path(os.readlink(candidate))
+            if info.st_uid != 0 or ".." in target.parts:
+                raise FirewallError("untrusted fixed command")
+            candidate = target if target.is_absolute() else candidate.parent / target
+            continue
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022
+                or not info.st_mode & 0o111):
+            raise FirewallError("untrusted fixed command")
+        return
+    raise FirewallError("untrusted fixed command")
 
 
 def _command(command, *, allowed=(0,), timeout=10, limit=MAX_COMMAND_BYTES):
@@ -440,6 +514,7 @@ def _wait_tls(host):
 
 def _report():
     return {"scope": "web_firewall", "status": "failed", "failure_stage": "config",
+            "failure_reason": "invalid_config",
             **dict.fromkeys(BOOLEAN_FIELDS, False)}
 
 
@@ -487,9 +562,9 @@ def configure(config):
         if not result["https_service_active"]:
             raise FirewallError("HTTPS restart did not complete")
         result["tls_issued"] = _wait_tls(urlsplit(config["public_origin"]).hostname)
-        result.update(status="success", failure_stage="none")
-    except Exception:
-        pass
+        result.update(status="success", failure_stage="none", failure_reason="none")
+    except Exception as error:
+        result["failure_reason"] = _failure_reason(error)
     return validate_report(result)
 
 
@@ -509,16 +584,18 @@ def restore():
 def validate_report(value):
     if (not isinstance(value, dict) or set(value) != FIELDS or value["scope"] != "web_firewall"
             or value["status"] not in {"success", "failed"} or value["failure_stage"] not in STAGES
+            or value["failure_reason"] not in REASONS
             or any(type(value[field]) is not bool for field in BOOLEAN_FIELDS)
             or value["ipv6_changed"] or value["cloud_ingress_changed"]):
         raise FirewallError("invalid web firewall report")
     if value["status"] == "success":
         required = ("scope_verified", "rules_inspected", "rule_mutation_attempted", "rules_applied",
                     "persistence_configured", "https_service_active")
-        if (value["failure_stage"] != "none" or not all(value[key] for key in required)
+        if (value["failure_stage"] != "none" or value["failure_reason"] != "none"
+                or not all(value[key] for key in required)
                 or not value["ufw_active"] and not value["persistence_service_active"]):
             raise FirewallError("invalid web firewall report")
-    elif value["failure_stage"] == "none":
+    elif value["failure_stage"] == "none" or value["failure_reason"] == "none":
         raise FirewallError("invalid web firewall report")
     if (value["tls_issued"] and not value["https_service_active"]
             or value["rules_applied"] and not value["rule_mutation_attempted"]
@@ -550,8 +627,9 @@ def main(argv=None):
         if len(arguments) != 1:
             raise FirewallError("one configuration argument is required")
         result = configure(_decode(arguments[0]))
-    except Exception:
+    except Exception as error:
         result = _report()
+        result["failure_reason"] = _failure_reason(error)
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0 if result["status"] == "success" else 2
 
