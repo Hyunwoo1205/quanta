@@ -1,0 +1,113 @@
+{
+  "verification_kind": "guarded_acme_configuration_resume",
+  "checked_at_date": "2026-11-06",
+  "workflow_run": {
+    "id": 42124604986,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42124604986",
+    "head_sha": "b07ae166c930d3ff1fd741a5540e5bf7e1f93439",
+    "created_at_utc": "2026-11-05T22:48:39Z",
+    "completed_at_utc": "2026-11-05T22:49:27Z",
+    "conclusion": "failure",
+    "configuration_job_id": 127585448847,
+    "public_job_id": 127585747631
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "configure-acme",
+    "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "request_id": "89c9480f-2557-451f-bed7-c499662add4d"
+  },
+  "configuration_result": {
+    "authentication_attempted": false,
+    "requested_operation": "configure-acme",
+    "scope": "ssh_fixed_installation",
+    "status": "configuration_invalid"
+  },
+  "public_result": {
+    "anonymous_api_denied": null,
+    "anonymous_api_status": null,
+    "auth_discovery_status": null,
+    "browser_verified": false,
+    "compute_verified": false,
+    "dns_a_matches_expected": true,
+    "dns_aaaa_present": false,
+    "dns_addresses_public": true,
+    "http_redirect_matches_origin": true,
+    "http_redirect_status": 308,
+    "https_shell_available": null,
+    "https_shell_status": null,
+    "owner_authentication_verified": false,
+    "owner_token_mode": null,
+    "phase": "https_shell",
+    "scope": "public_deployment_smoke",
+    "status": "failed",
+    "valid_owner_credential_used": false,
+    "wrong_token_api_denied": null,
+    "wrong_token_api_status": null
+  },
+  "scope": {
+    "ssh_authentication_attempted": false,
+    "configuration_changed": false,
+    "contact_email_transmitted": false,
+    "public_tls_verified": false,
+    "operational_origin_or_email_recorded": false
+  },
+  "notes": [
+    "The configuration attempt stopped in the runner before private-key file creation or SSH authentication.",
+    "The initial configuration_invalid report does not distinguish missing email, invalid email, or an invalid base origin/auth configuration.",
+    "Public DNS and HTTP 308 still pass; public HTTPS has not been verified.",
+    "The diagnostic retry passed base origin/auth validation and identified an empty or unavailable QUANTA_ACME_EMAIL input in the oci-preflight environment.",
+    "Both attempts stopped before SSH authentication, server changes, or contact-email transmission.",
+    "The user must provide the intended certificate contact email as QUANTA_ACME_EMAIL in the oci-preflight environment; no value is invented or recorded here."
+  ],
+  "diagnostic_retry": {
+    "workflow_run": {
+      "id": 42125098933,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42125098933",
+      "head_sha": "3e45e6895e635c5035655f37fb0f58df82c9d3de",
+      "diagnostic_code_commit": "02620da9da547bd738daf5f8832815f6d345a8d4",
+      "created_at_utc": "2026-11-05T22:52:18Z",
+      "completed_at_utc": "2026-11-05T22:52:44Z",
+      "conclusion": "failure",
+      "configuration_job_id": 127587132132,
+      "public_job_id": 127587252057
+    },
+    "request": {
+      "schema_version": 1,
+      "operation": "configure-acme",
+      "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "request_id": "860ef90c-f85f-4967-bdc8-64a547407604"
+    },
+    "configuration_result": {
+      "authentication_attempted": false,
+      "failure_reason": "acme_email_missing",
+      "requested_operation": "configure-acme",
+      "scope": "ssh_fixed_installation",
+      "status": "configuration_invalid"
+    },
+    "public_result": {
+      "anonymous_api_denied": null,
+      "anonymous_api_status": null,
+      "auth_discovery_status": null,
+      "browser_verified": false,
+      "compute_verified": false,
+      "dns_a_matches_expected": true,
+      "dns_aaaa_present": false,
+      "dns_addresses_public": true,
+      "http_redirect_matches_origin": true,
+      "http_redirect_status": 308,
+      "https_shell_available": null,
+      "https_shell_status": null,
+      "owner_authentication_verified": false,
+      "owner_token_mode": null,
+      "phase": "https_shell",
+      "scope": "public_deployment_smoke",
+      "status": "failed",
+      "valid_owner_credential_used": false,
+      "wrong_token_api_denied": null,
+      "wrong_token_api_status": null
+    }
+  },
+  "current_blocker": "acme_email_missing",
+  "diagnostic_test_count": 28
+}
