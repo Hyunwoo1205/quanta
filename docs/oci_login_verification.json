@@ -1,0 +1,100 @@
+{
+  "verification_kind": "pinned_ppk_login_preflight",
+  "state": "blocked_by_host_key_format",
+  "attempts": [
+    {
+      "run_id": 42011858942,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42011858942",
+      "head_sha": "4a474cb5e6c2782d0ddb6d52a105b2a05cf55fd7",
+      "event": "push",
+      "branch": "ops/oci",
+      "conclusion": "failure",
+      "created_at_utc": "2026-11-05T10:34:40Z",
+      "completed_at_utc": "2026-11-05T10:35:07Z",
+      "job_id": 127192598310,
+      "request": {
+        "schema_version": 1,
+        "operation": "login-check",
+        "request_id": "22734b19-ed57-48bc-a771-fc6fd0a08b48"
+      },
+      "request_gate_authorized": true,
+      "client_install_step_success": true,
+      "result": {
+        "authentication_attempted": false,
+        "scope": "ssh_login_true",
+        "status": "not_configured"
+      }
+    },
+    {
+      "run_id": 42012524861,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42012524861",
+      "head_sha": "289aefa68be4218903484b8c283ff793a9bde92e",
+      "event": "push",
+      "branch": "ops/oci",
+      "conclusion": "failure",
+      "created_at_utc": "2026-11-05T10:39:28Z",
+      "completed_at_utc": "2026-11-05T10:39:46Z",
+      "job_id": 127194852296,
+      "request": {
+        "schema_version": 1,
+        "operation": "login-check",
+        "request_id": "81d3a113-64d6-454a-bde7-5753fd119933"
+      },
+      "request_gate_authorized": true,
+      "client_install_step_success": true,
+      "result": {
+        "authentication_attempted": false,
+        "configuration_issues": [
+          "host_key_invalid"
+        ],
+        "scope": "ssh_login_true",
+        "status": "not_configured"
+      }
+    },
+    {
+      "run_id": 42013432968,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42013432968",
+      "head_sha": "f7cd1098683e3d2903dee67b96c37c7be56b7cc4",
+      "event": "push",
+      "branch": "ops/oci",
+      "conclusion": "failure",
+      "created_at_utc": "2026-11-05T10:46:05Z",
+      "completed_at_utc": "2026-11-05T10:46:25Z",
+      "job_id": 127197893044,
+      "request": {
+        "schema_version": 1,
+        "operation": "login-check",
+        "request_id": "ef66519b-213a-4a25-86ac-f0e0b989334c"
+      },
+      "request_gate_authorized": true,
+      "client_install_step_success": true,
+      "result": {
+        "authentication_attempted": false,
+        "configuration_issues": [
+          "host_key_invalid"
+        ],
+        "scope": "ssh_login_true",
+        "status": "not_configured"
+      }
+    }
+  ],
+  "last_configuration_issues": [
+    "host_key_invalid"
+  ],
+  "scope": {
+    "ssh_authentication_attempted": false,
+    "ssh_authentication_verified": false,
+    "host_identity_verified": false,
+    "private_key_cryptographic_match_verified": false,
+    "remote_commands_sent": false,
+    "oci_installation_attempted": false,
+    "credential_values_recorded": false
+  },
+  "local_validation": {
+    "request_gate_cases": 136,
+    "login_probe_cases": 136,
+    "combined_request_login_transport_cases": 331,
+    "combined_seconds": 0.41
+  },
+  "next_required_action": "Verify the existing server's public SHA256 host fingerprint and replace QUANTA_OCI_HOST_KEY with a valid representation. Do not disclose the login private key."
+}

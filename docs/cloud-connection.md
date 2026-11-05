@@ -20,6 +20,10 @@
 
 2026-11-05 18:28 KST에 사용자가 실행한 [검사 42002630779](https://github.com/Hyunwoo1205/quanta/actions/runs/42002630779)는 `completed/success`입니다. 실행 commit `4574fd2`의 실제 job 로그에서 `status=reachable`, `authentication_attempted=false`, `server_modified=false`를 확인했습니다. 설정된 주소의 22번 포트와 SSH 배너가 응답했다는 근거이며, 서버 신원·개인키 일치·로그인·서버 내부 명령·배포는 아직 확인하지 않았습니다. 주소·배너·개인키 없이 [검증 기록](oci_transport_verification.json)을 보존합니다. 이미 검사를 마친 사용자는 첫 검사를 반복할 필요가 없습니다.
 
+## 등록 후 로그인 검사 현황
+
+등록값으로 실제 실행한 첫 요청과 진단·표기 정리 후 요청은 모두 인증 전 사전 검사에서 중단되었습니다. 마지막 [실행 42013432968](https://github.com/Hyunwoo1205/quanta/actions/runs/42013432968)의 고정 결과는 `host_key_invalid`, `authentication_attempted=false`입니다. 주소·PPK 파일 구조는 통과했으나 `QUANTA_OCI_HOST_KEY`의 값이 유효한 SHA256 지문으로 인식되지 않았습니다. 신뢰한 OCI 서버의 공개 호스트 키 지문을 원본과 대조해야 하며 개인키를 다시 등록하거나 호스트 키 검사를 끄지 않습니다. [검증 기록](oci_login_verification.json)에 세 요청의 범위만 보존합니다.
+
 ## 첫 검사는 주소만 사용
 
 GitHub의 `Hyunwoo1205/quanta` 저장소에서 웹 또는 모바일 브라우저로 설정할 수 있습니다. 인스턴스·방화벽·SSH 공개키를 바꾸지 않습니다.
@@ -62,6 +66,8 @@ ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key.pub
 
 출력 중 `SHA256:…` 부분만 해당 secret에 입력합니다. 이는 공개 호스트 키의 지문이며 서버의 개인 호스트 키 파일을 읽지 않습니다. 해당 공개키 파일이 없다면 다른 알고리즘의 검증된 공개 호스트 키를 사용하며 새로운 호스트 키를 만들지 않습니다. 신뢰할 지문이 아직 없으면 인증 검사를 실행하지 않습니다. 이 명령을 GitHub 실행기의 로컬 셸에서 실행하면 OCI 서버 지문을 구한 것이 아닙니다.
 
+지문 입력은 `SHA256:…` 정규형을 권장합니다. 도구는 외곽 ASCII 공백, 접두사 없는 정규 43자 digest, 표준 `ssh-keygen` 출력 한 줄도 같은 32바이트 SHA256 지문으로 정리해 읽습니다. 최대 1024자·한 줄·한 지문만 허용하고 주석·비트 수는 클라이언트에 전달하지 않습니다. 지문을 새 값으로 교체하거나 서버에서 처음 받은 키를 신뢰하는 과정이 아닙니다.
+
 ### 실행과 결과
 
 선택과 지문 확인·secret 등록이 끝나면 **Actions → OCI login check (existing PPK) → Run workflow → main**에서 `confirm_key_use`를 선택하고 수동 실행할 수 있습니다. 선택하지 않으면 연결 전에 실패하며 개인키를 사용하지 않습니다.
@@ -73,6 +79,8 @@ ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key.pub
 도구는 공개 IPv4·32바이트 SHA256 지문·최대 32 KiB의 PPK v2/v3 형식과 `Encryption: none`을 먼저 확인합니다. Plink는 key 내용을 실제로 검증하며, 형식 검사만으로 키 일치나 인증 성공을 판정하지 않습니다. 임시 개인 디렉터리와 0600 키 파일을 만들고 원본 bytes를 그대로 사용합니다. 다른 키·인증 에이전트·포워딩·접속 공유를 끄고, 새 HOME과 최소 환경변수를 적용합니다. 서버 출력·원본 Plink 오류는 모두 버리고 고정 JSON 결과만 표시합니다. 실행 제한은 15초이고 정상·실패·timeout 종료 뒤 임시 파일을 정리합니다. 실행기 자체가 강제 종료되면 정리는 임시 실행기의 폐기 경계에 의존합니다.
 
 성공은 `status=success`로 확인합니다. `encrypted_key`면 키 잠금 해제 방식을 별도로 준비해야 하며 기존 키의 암호화를 제거하지 않습니다. 실패는 자동 재시도하지 않습니다. 원본 오류를 숨기므로 일반 실패만으로 호스트 키·사용자 키·서버 정책 중 원인을 단정하지 않습니다.
+
+`not_configured`면 인증 전에 멈춘 것입니다. 명시적으로 승인한 실행에서는 `configuration_issues`에 누락·형식 오류인 항목 이름만 표시합니다. `host_missing`/`host_invalid`는 주소, `host_key_missing`/`host_key_invalid`는 서버 지문, `private_key_missing`/`private_key_format_invalid`는 PPK secret을 확인합니다. 여러 항목이 잘못되면 함께 표시하며 값·길이·키 내용·원본 오류는 표시하지 않습니다. 이 진단은 키 일치나 서버 응답을 검사한 결과가 아닙니다.
 
 사용자가 PuTTY에서 암호 입력 없이 접속했다고 답했지만, 로컬 에이전트에 잠금 해제 상태가 있었을 가능성이 있으므로 그것만으로 무암호 키라고 확정하지 않습니다. 이 검사는 실제 PPK의 `Encryption: none`을 확인하며 암호화된 키는 연결 전에 거부합니다. 암호화된 PPK는 새 실행기에서 잠금을 푸는 추가 절차가 필요합니다. Plink의 `-pwfile`은 개인키 암호 옵션으로 사용하지 않습니다. 서버 키의 신뢰 근거·실제 연결 결과가 확인되기 전에는 로그인 성공을 보장하지 않습니다.
 
