@@ -1,0 +1,117 @@
+{
+  "verification_kind": "oci_initial_installation",
+  "source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "runs": [
+    {
+      "phase": "app_install",
+      "workflow_run": {
+        "id": 42068898998,
+        "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42068898998",
+        "event": "push",
+        "branch": "ops/oci",
+        "head_sha": "dd6924bc3e1fe06f5ed62343e168a42d693b0455",
+        "created_at_utc": "2026-11-05T16:52:18Z",
+        "completed_at_utc": "2026-11-05T16:53:44Z",
+        "job_id": 127390884460,
+        "conclusion": "success"
+      },
+      "request": {
+        "schema_version": 1,
+        "operation": "install-app",
+        "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+        "request_id": "4c8a4370-2bcf-4cc5-9f49-78fd3402d4e2"
+      },
+      "result": {
+        "authentication_attempted": true,
+        "requested_operation": "install-app",
+        "result": {
+          "scope": "app_installation",
+          "stage": "complete",
+          "status": "success"
+        },
+        "scope": "ssh_fixed_installation",
+        "status": "success"
+      }
+    },
+    {
+      "phase": "https_initial",
+      "workflow_run": {
+        "id": 42069256311,
+        "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42069256311",
+        "event": "push",
+        "branch": "ops/oci",
+        "head_sha": "2e09ce4d495ccbcfbec44476cce301a17181de2e",
+        "created_at_utc": "2026-11-05T16:54:21Z",
+        "completed_at_utc": "2026-11-05T16:55:38Z",
+        "job_id": 127392232169,
+        "conclusion": "failure"
+      },
+      "request": {
+        "schema_version": 1,
+        "operation": "install-https",
+        "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+        "request_id": "fa037589-e898-437d-9f18-4e124fd944bf"
+      },
+      "result": [
+        {
+          "authentication_attempted": true,
+          "requested_operation": "install-https",
+          "result": {
+            "app_ready": true,
+            "binary_verified": true,
+            "configured": true,
+            "failure_stage": "none",
+            "host_firewall_changed": false,
+            "scope": "https_install",
+            "service_active": true,
+            "source_verified": true,
+            "state": "awaiting_network",
+            "status": "awaiting_network",
+            "tls_issued": false
+          },
+          "scope": "ssh_fixed_installation",
+          "status": "remote_failed"
+        },
+        {
+          "anonymous_api_denied": null,
+          "anonymous_api_status": null,
+          "auth_discovery_status": null,
+          "browser_verified": false,
+          "compute_verified": false,
+          "dns_a_matches_expected": true,
+          "dns_aaaa_present": false,
+          "dns_addresses_public": true,
+          "http_redirect_matches_origin": null,
+          "http_redirect_status": null,
+          "https_shell_available": null,
+          "https_shell_status": null,
+          "owner_authentication_verified": false,
+          "owner_token_mode": null,
+          "phase": "http_redirect",
+          "scope": "public_deployment_smoke",
+          "status": "failed",
+          "valid_owner_credential_used": false,
+          "wrong_token_api_denied": null,
+          "wrong_token_api_status": null
+        }
+      ]
+    }
+  ],
+  "scope": {
+    "oci_app_installed": true,
+    "immutable_arm_image_built": true,
+    "isolated_contract_and_energy_smoke_verified": true,
+    "authenticated_local_readiness_and_validation_verified": true,
+    "web_token_generated_privately_on_oci": true,
+    "token_value_collected": false,
+    "https_service_configured_and_active": true,
+    "public_certificate_verified": false,
+    "public_http_redirect_verified": false,
+    "existing_containers_removed": false,
+    "existing_volumes_reconfigured": false,
+    "host_firewall_changed": false,
+    "oci_ingress_changed": false,
+    "backup_restore_verified": false
+  },
+  "next": "Check the host web firewall, preserve existing rules, then recheck public TLS; cloud ingress may need owner configuration."
+}

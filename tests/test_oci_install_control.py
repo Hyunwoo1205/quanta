@@ -95,7 +95,7 @@ class RequestAuthorizationTests(unittest.TestCase):
         self.assertEqual(authorize.SOURCE_SHA, probe.SOURCE_SHA)
         self.assertRegex(authorize.SOURCE_SHA, r"\A[0-9a-f]{40}\Z")
         self.assertEqual(authorize.CI_URL, "https://api.github.com/repos/Hyunwoo1205/quanta/actions/runs/" + str(authorize.CI_RUN))
-        for operation in ("install-app", "install-https"):
+        for operation in ("install-app", "install-https", "configure-web-firewall", "verify-backup"):
             with self.subTest(operation=operation):
                 self.assertEqual(self.check_raw(json.dumps(request(operation)).encode(), True), request(operation))
 
@@ -275,7 +275,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
                 mock.patch.object(Path, "read_text", autospec=True, side_effect=read_source):
             yield module, source
 
-    def test_only_explicit_confirmation_and_two_fixed_installers_are_accepted(self):
+    def test_only_explicit_confirmation_and_fixed_installers_are_accepted(self):
         with mock.patch.object(probe.transport, "_module", side_effect=AssertionError("must not load")):
             for operation in (None, [], "../install_app", "ssh", "install-app\n"):
                 with self.subTest(operation=operation):
@@ -306,7 +306,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
 
     def test_fixed_quoted_source_json_config_private_ppk_environment_and_cleanup(self):
         paths = []
-        for operation in ("install-app", "install-https"):
+        for operation in ("install-app", "install-https", "configure-web-firewall", "verify-backup"):
             clean = {"scope": "fixed_install_fixture", "status": "success"}
             with self.subTest(operation=operation), self.installer(operation=operation, sanitized=clean) as (module, source):
                 def runner(argv, environment, directory):
