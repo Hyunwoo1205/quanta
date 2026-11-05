@@ -1,0 +1,2040 @@
+{
+  "report_version": "1.0.0",
+  "measured_at": "2026-11-05T16:30:32.154028+00:00",
+  "status": "passed",
+  "package_version": "0.11.0",
+  "scope": "B01--B06 finite-interval stationary-state numerical benchmarks only",
+  "acceptance_plan": {
+    "path": "contracts/v0.2.0/validation_manifest.json",
+    "sha256": "d54b498dec6a2e670f1ba8bd9e0c7aee9166a4e62f35fe2ca8eb3e9fdbf679e7",
+    "cases_at_plan_snapshot": [
+      {
+        "id": "B01",
+        "scope": "zero potential discrete Dirichlet eigenvalues",
+        "formula": "epsilon_j=4*alpha/dxi^2*sin(j*pi/(2*(n+1)))^2",
+        "atol": 1e-10,
+        "rtol": 1e-08,
+        "status": "planned"
+      },
+      {
+        "id": "B02",
+        "scope": "weighted normalization and orthogonality",
+        "threshold": 1e-10,
+        "status": "planned"
+      },
+      {
+        "id": "B03",
+        "scope": "backward eigen residual",
+        "metric": "||Hphi-epsilon*phi||2 / ((||H||inf+abs(epsilon))*||phi||2)",
+        "threshold": 1e-12,
+        "status": "planned"
+      },
+      {
+        "id": "B04",
+        "scope": "zero potential continuum energies; first 4 states; n=1023",
+        "metric": "maximum relative energy error",
+        "threshold": 2e-05,
+        "additional": "Compared with alpha*(j*pi/B)^2 on exactly the same finite interval.",
+        "status": "planned"
+      },
+      {
+        "id": "B05",
+        "scope": "smooth benchmark second-order grid convergence 127,255,511",
+        "metric": "p=log2(abs(E127-E255)/abs(E255-E511))",
+        "range": [
+          1.8,
+          2.2
+        ],
+        "additional": "Skip p when the numerator/denominator is at <=100*eps*max(1,abs(E)); record roundoff-limited.",
+        "status": "planned"
+      },
+      {
+        "id": "B06",
+        "scope": "quadratic potential boundary and grid error separation",
+        "metric": "compare low-state energies with harmonic reference; keep dx constant when enlarging domain",
+        "threshold": 0.0001,
+        "additional": "Relative error target for first 4 states; n=1023 on [-8,8] and n=1279 on [-10,10] preserve spacing in oscillator length, alpha=0.5. Use the shifted xi center parameter.",
+        "status": "planned"
+      }
+    ]
+  },
+  "measurement_metadata": {
+    "origin": "actual_executed_benchmarks",
+    "target_source": "src/quanta/quantum.py",
+    "target_module": "quanta.quantum_stationary@0.1.0",
+    "operation": "eigenstates",
+    "solver": "symmetric_tridiagonal_lowest",
+    "constants": {
+      "planck_j_s": 6.62607015e-34,
+      "planck_exact_in_SI": true,
+      "hbar_j_s": 1.0545718176461565e-34,
+      "hbar_rule": "h/(2*pi), binary64 pi",
+      "source": "https://www.nist.gov/pml/special-publication-330/sp-330-section-2"
+    },
+    "state_storage": "Report retains input definitions, energies, diagnostics and payload hashes; full states are reproducible from inputs"
+  },
+  "cases": [
+    {
+      "id": "B01",
+      "status": "passed",
+      "runs": [
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": 0.0,
+                "b_m": 1e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "const",
+                  "value": 0.0
+                },
+                "parameters": {}
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 255,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "a1f0edc52fd229763de657e1e47e2f09ec390ca5f0d7e13c4ccd45558ace671c",
+          "payload_sha256": "1a5c4c35b96ae2bb193778e8701a7104bd77c129b5d8bfe4b7f4267b309b55b8",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.93474026981611e-20,
+            1.9738217925552049e-19,
+            4.440820361793848e-19,
+            7.89409821378291e-19
+          ],
+          "energies_reduced": [
+            4.9347402698161105,
+            19.73821792555205,
+            44.40820361793848,
+            78.94098213782911
+          ],
+          "x_m_sha256": "c30aa793b2039bd9710fd900cf16216f673cb2fb3e6dad4374a19481d25cedee",
+          "states_sha256": "5151b5b0d4499bfc4370ccc2ea5dd69c94dced36503b2db251639102244ae286",
+          "grid_results": [
+            {
+              "n_points": 255,
+              "energies_j": [
+                4.93474026981611e-20,
+                1.9738217925552049e-19,
+                4.440820361793848e-19,
+                7.89409821378291e-19
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 6.661338147750939e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 3.733133503569627e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 1.8346383248176075e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        }
+      ],
+      "reference_method": "Closed-form discrete zero-potential Dirichlet eigenvalues; no eigensolver in reference",
+      "formula": "epsilon_j=4*alpha/dxi^2*sin(j*pi/(2*(n+1)))^2",
+      "atol": 1e-10,
+      "rtol": 1e-08,
+      "actual_reduced": [
+        4.9347402698161105,
+        19.73821792555205,
+        44.40820361793848,
+        78.94098213782911
+      ],
+      "reference_reduced": [
+        4.934740269823365,
+        19.738217925560225,
+        44.4082036179271,
+        78.94098213782206
+      ],
+      "absolute_errors": [
+        7.254641332110623e-12,
+        8.174794174919953e-12,
+        1.1382894626876805e-11,
+        7.048583938740194e-12
+      ],
+      "max_error_to_tolerance": 0.00014671430522618273
+    },
+    {
+      "id": "B02",
+      "status": "passed",
+      "runs": [
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": 0.0,
+                "b_m": 1e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "const",
+                  "value": 0.0
+                },
+                "parameters": {}
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 255,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "a1f0edc52fd229763de657e1e47e2f09ec390ca5f0d7e13c4ccd45558ace671c",
+          "payload_sha256": "1a5c4c35b96ae2bb193778e8701a7104bd77c129b5d8bfe4b7f4267b309b55b8",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.93474026981611e-20,
+            1.9738217925552049e-19,
+            4.440820361793848e-19,
+            7.89409821378291e-19
+          ],
+          "energies_reduced": [
+            4.9347402698161105,
+            19.73821792555205,
+            44.40820361793848,
+            78.94098213782911
+          ],
+          "x_m_sha256": "c30aa793b2039bd9710fd900cf16216f673cb2fb3e6dad4374a19481d25cedee",
+          "states_sha256": "5151b5b0d4499bfc4370ccc2ea5dd69c94dced36503b2db251639102244ae286",
+          "grid_results": [
+            {
+              "n_points": 255,
+              "energies_j": [
+                4.93474026981611e-20,
+                1.9738217925552049e-19,
+                4.440820361793848e-19,
+                7.89409821378291e-19
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 6.661338147750939e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 3.733133503569627e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 1.8346383248176075e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        }
+      ],
+      "reference_method": "SI interior-weighted complex Gram matrix, independently integrated from returned states",
+      "threshold": 1e-10,
+      "grid_weight_m": 3.90625e-12,
+      "gram_matrix": {
+        "real": [
+          [
+            0.9999999999999996,
+            0.0,
+            -1.0058283805847168e-16,
+            -2.9802322387695314e-17
+          ],
+          [
+            0.0,
+            0.9999999999999997,
+            -2.9802322387695314e-17,
+            -7.946304018128413e-17
+          ],
+          [
+            -1.0058283805847168e-16,
+            -2.9802322387695314e-17,
+            1.0000000000000002,
+            -2.384185791015625e-16
+          ],
+          [
+            -2.9802322387695314e-17,
+            -7.946304018128413e-17,
+            -2.384185791015625e-16,
+            1.0000000000000002
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "max_normalization_error": 4.440892098500626e-16,
+      "max_off_diagonal_overlap": 2.384185791015625e-16
+    },
+    {
+      "id": "B03",
+      "status": "passed",
+      "runs": [
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": 0.0,
+                "b_m": 1e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "const",
+                  "value": 0.0
+                },
+                "parameters": {}
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 255,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "a1f0edc52fd229763de657e1e47e2f09ec390ca5f0d7e13c4ccd45558ace671c",
+          "payload_sha256": "1a5c4c35b96ae2bb193778e8701a7104bd77c129b5d8bfe4b7f4267b309b55b8",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.93474026981611e-20,
+            1.9738217925552049e-19,
+            4.440820361793848e-19,
+            7.89409821378291e-19
+          ],
+          "energies_reduced": [
+            4.9347402698161105,
+            19.73821792555205,
+            44.40820361793848,
+            78.94098213782911
+          ],
+          "x_m_sha256": "c30aa793b2039bd9710fd900cf16216f673cb2fb3e6dad4374a19481d25cedee",
+          "states_sha256": "5151b5b0d4499bfc4370ccc2ea5dd69c94dced36503b2db251639102244ae286",
+          "grid_results": [
+            {
+              "n_points": 255,
+              "energies_j": [
+                4.93474026981611e-20,
+                1.9738217925552049e-19,
+                4.440820361793848e-19,
+                7.89409821378291e-19
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 6.661338147750939e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 3.733133503569627e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 1.8346383248176075e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        }
+      ],
+      "reference_method": "Independent zero-potential second-difference action on exported states",
+      "metric": "||Hphi-epsilon*phi||2 / ((||H||inf+abs(epsilon))*||phi||2)",
+      "threshold": 1e-12,
+      "operator_infinity_norm_reduced": 131071.99999999997,
+      "backward_residuals": [
+        8.925292945964008e-17,
+        1.8779741010204297e-16,
+        1.2301000492292807e-16,
+        1.5174741775376997e-16
+      ],
+      "max_backward_residual": 1.8779741010204297e-16
+    },
+    {
+      "id": "B04",
+      "status": "passed",
+      "runs": [
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": 0.0,
+                "b_m": 1e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "const",
+                  "value": 0.0
+                },
+                "parameters": {}
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 1023,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "070a1ec6e654712033cc924f8e9d7d1f875f66cc7005f79a0fa8d6796ae9f129",
+          "payload_sha256": "16fff0415a6fc6476e32cffcd2fca4eb19af92f06205635dd2cfd7ae48a6fa92",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.9347983297589727e-20,
+            1.9739146871313188e-19,
+            4.441290628009753e-19,
+            7.895584431732385e-19
+          ],
+          "energies_reduced": [
+            4.934798329758973,
+            19.73914687131319,
+            44.41290628009753,
+            78.95584431732385
+          ],
+          "x_m_sha256": "bda04158f4c904dd497257e31863bddf9a357df16e59a1494a09a2272dedebc5",
+          "states_sha256": "a7a4cdbb3da182cd7c6f1b70fa8b8a33bde98d5798659decde5ccd36d9eaaf1a",
+          "grid_results": [
+            {
+              "n_points": 1023,
+              "energies_j": [
+                4.9347983297589727e-20,
+                1.9739146871313188e-19,
+                4.441290628009753e-19,
+                7.895584431732385e-19
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 8.881784197001252e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 4.440892098500626e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 5.49291241369434e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        }
+      ],
+      "reference_method": "Continuum zero-potential Dirichlet spectrum on exactly the same finite interval",
+      "formula": "epsilon_j=alpha*(j*pi/B)^2",
+      "threshold": 2e-05,
+      "actual_reduced": [
+        4.934798329758973,
+        19.73914687131319,
+        44.41290628009753,
+        78.95584431732385
+      ],
+      "continuum_reference_reduced": [
+        4.934802200544678,
+        19.739208802178712,
+        44.413219804902106,
+        78.95683520871485
+      ],
+      "relative_errors": [
+        7.843851785727693e-07,
+        3.1374542994361055e-06,
+        7.05926762239681e-06,
+        1.2549786074617167e-05
+      ],
+      "max_relative_error": 1.2549786074617167e-05,
+      "error_scope": "Grid discretization of the stated finite-interval continuum problem"
+    },
+    {
+      "id": "B05",
+      "status": "passed",
+      "runs": [
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": -8e-09,
+                "b_m": 8e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "op": "const",
+                      "value": 0.5
+                    },
+                    {
+                      "op": "pow",
+                      "arg": {
+                        "op": "sub",
+                        "args": [
+                          {
+                            "op": "var",
+                            "name": "xi"
+                          },
+                          {
+                            "op": "param",
+                            "name": "center"
+                          }
+                        ]
+                      },
+                      "exponent": 2
+                    }
+                  ]
+                },
+                "parameters": {
+                  "center": 8.0
+                }
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 127,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "13aabf9bd46586e487c77aad65ea227c4acca76cf35a8a7aab6e2c379b33c7e7",
+          "payload_sha256": "a857ddcbe353a8e2690a19032974f254505945a9844314e205bf936bb162208b",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.99511240509787e-21,
+            1.4975542811153163e-20,
+            2.4936355373755434e-20,
+            3.4877491733932516e-20
+          ],
+          "energies_reduced": [
+            0.49951124050978707,
+            1.4975542811153164,
+            2.4936355373755434,
+            3.4877491733932517
+          ],
+          "x_m_sha256": "143e842e257741061d7659b415f6344b60aba65cd6f47492c5f285be165d0716",
+          "states_sha256": "2ab43582d9a5ad09df2f1027304c1db9236d76d51de2abf5278185ed97c0bb19",
+          "grid_results": [
+            {
+              "n_points": 127,
+              "energies_j": [
+                4.99511240509787e-21,
+                1.4975542811153163e-20,
+                2.4936355373755434e-20,
+                3.4877491733932516e-20
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 3.3306690738754696e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 1.653304805952689e-15,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 9.722508446560085e-17,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        },
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": -8e-09,
+                "b_m": 8e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "op": "const",
+                      "value": 0.5
+                    },
+                    {
+                      "op": "pow",
+                      "arg": {
+                        "op": "sub",
+                        "args": [
+                          {
+                            "op": "var",
+                            "name": "xi"
+                          },
+                          {
+                            "op": "param",
+                            "name": "center"
+                          }
+                        ]
+                      },
+                      "exponent": 2
+                    }
+                  ]
+                },
+                "parameters": {
+                  "center": 8.0
+                }
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 255,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "bd4a4f675a0f46b1977ac7622885826e09fa1c5488ebc2e4f873f2b96a51b030",
+          "payload_sha256": "2e8e9c59b5b88196004b3848416be5567639229a5fca722f0cb4e8c25e7dfc64",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.99877899863295e-21,
+            1.4993893798885825e-20,
+            2.4984120410401196e-20,
+            3.496945523935773e-20
+          ],
+          "energies_reduced": [
+            0.49987789986329506,
+            1.4993893798885827,
+            2.49841204104012,
+            3.496945523935773
+          ],
+          "x_m_sha256": "f7bc1bc8ec68342616db03929250803f89d4459017f7fd831c625e0eba90528e",
+          "states_sha256": "27820278e7d9cf3b80d00e69c9b615b0e8194c52bebf0a2827a99cc7a9e8b126",
+          "grid_results": [
+            {
+              "n_points": 255,
+              "energies_j": [
+                4.99877899863295e-21,
+                1.4993893798885825e-20,
+                2.4984120410401196e-20,
+                3.496945523935773e-20
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 5.551115123125783e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 9.316695301099868e-15,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 1.2907876729190919e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        },
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": -8e-09,
+                "b_m": 8e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "op": "const",
+                      "value": 0.5
+                    },
+                    {
+                      "op": "pow",
+                      "arg": {
+                        "op": "sub",
+                        "args": [
+                          {
+                            "op": "var",
+                            "name": "xi"
+                          },
+                          {
+                            "op": "param",
+                            "name": "center"
+                          }
+                        ]
+                      },
+                      "exponent": 2
+                    }
+                  ]
+                },
+                "parameters": {
+                  "center": 8.0
+                }
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 511,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "f7736b01e38d03a62e49ad5745c0e4a3428457be20e169c9f6393ad1f6b75abd",
+          "payload_sha256": "dc060756bbc243c76d94926502cc9778711a866d8a4a862204b295d9d5b22df3",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.999694805590831e-21,
+            1.499847395340408e-20,
+            2.4996032062635453e-20,
+            3.499236890948776e-20
+          ],
+          "energies_reduced": [
+            0.49996948055908313,
+            1.4998473953404081,
+            2.4996032062635454,
+            3.499236890948776
+          ],
+          "x_m_sha256": "676f5c0eab63427dbc7c081535d7ac44e7fb5a62b80b489f414a5d70d783d699",
+          "states_sha256": "0599bf2eb8a2d8fb63015b7d41a87f85c4e6bf053a02aaab298f967c557f281c",
+          "grid_results": [
+            {
+              "n_points": 511,
+              "energies_j": [
+                4.999694805590831e-21,
+                1.499847395340408e-20,
+                2.4996032062635453e-20,
+                3.499236890948776e-20
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 4.440892098500626e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 4.440892098500626e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 1.2746324320912244e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        }
+      ],
+      "reference_method": "Second-order convergence of a smooth centered quadratic potential at fixed finite domain",
+      "metric": "p=log2(abs(E127-E255)/abs(E255-E511))",
+      "accepted_order_range": [
+        1.8,
+        2.2
+      ],
+      "roundoff_policy": "Skip p when the numerator/denominator is at <=100*eps*max(1,abs(E)); record roundoff-limited.",
+      "grids": [
+        127,
+        255,
+        511
+      ],
+      "energies_reduced_by_grid": [
+        [
+          0.49951124050978707,
+          1.4975542811153164,
+          2.4936355373755434,
+          3.4877491733932517
+        ],
+        [
+          0.49987789986329506,
+          1.4993893798885827,
+          2.49841204104012,
+          3.496945523935773
+        ],
+        [
+          0.49996948055908313,
+          1.4998473953404081,
+          2.4996032062635454,
+          3.499236890948776
+        ]
+      ],
+      "state_measurements": [
+        {
+          "state_index": 0,
+          "coarse_difference_reduced": 0.00036665935350799206,
+          "fine_difference_reduced": 9.158069578807382e-05,
+          "roundoff_floor_reduced": 2.220446049250313e-14,
+          "order_status": "measured",
+          "observed_order": 2.001324912007851,
+          "passed": true
+        },
+        {
+          "state_index": 1,
+          "coarse_difference_reduced": 0.0018350987732662638,
+          "fine_difference_reduced": 0.00045801545182544423,
+          "roundoff_floor_reduced": 3.3303302234619817e-14,
+          "order_status": "measured",
+          "observed_order": 2.0023895417949102,
+          "passed": true
+        },
+        {
+          "state_index": 2,
+          "coarse_difference_reduced": 0.004776503664576381,
+          "fine_difference_reduced": 0.0011911652234255499,
+          "roundoff_floor_reduced": 5.5502340640413046e-14,
+          "order_status": "measured",
+          "observed_order": 2.0035814319060266,
+          "passed": true
+        },
+        {
+          "state_index": 3,
+          "coarse_difference_reduced": 0.009196350542521436,
+          "fine_difference_reduced": 0.0022913670130026986,
+          "roundoff_floor_reduced": 7.769866729898158e-14,
+          "order_status": "measured",
+          "observed_order": 2.004852902526108,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "B06",
+      "status": "passed",
+      "runs": [
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": -8e-09,
+                "b_m": 8e-09
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "op": "const",
+                      "value": 0.5
+                    },
+                    {
+                      "op": "pow",
+                      "arg": {
+                        "op": "sub",
+                        "args": [
+                          {
+                            "op": "var",
+                            "name": "xi"
+                          },
+                          {
+                            "op": "param",
+                            "name": "center"
+                          }
+                        ]
+                      },
+                      "exponent": 2
+                    }
+                  ]
+                },
+                "parameters": {
+                  "center": 8
+                }
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 1023,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "7cdd9952b730b5c54482aba69cb8e9d6edb06b40d732be31f9f831c03a3a5c72",
+          "payload_sha256": "0aa6573bb1eca3e834c22cb7fb83899da90d2c0c1d4284a2e455d9c66b6ab917",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.999923704884482e-21,
+            1.49996185197942e-20,
+            2.4999008137965218e-20,
+            3.499809254541465e-20
+          ],
+          "energies_reduced": [
+            0.4999923704884482,
+            1.4999618519794202,
+            2.499900813796522,
+            3.499809254541465
+          ],
+          "x_m_sha256": "3ffc85259f29e869ec8fad8104b8b03870fe277160eba888fdfa25e41a874971",
+          "states_sha256": "84ffbb204d0c778a54b7793653012ce6506ff0ade394c24362da8b8fdaf3068b",
+          "grid_results": [
+            {
+              "n_points": 1023,
+              "energies_j": [
+                4.999923704884482e-21,
+                1.49996185197942e-20,
+                2.4999008137965218e-20,
+                3.499809254541465e-20
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 8.881784197001252e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 2.8536201179818477e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 2.1471523616405238e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        },
+        {
+          "definition": {
+            "unit_system": "SI",
+            "scales": {
+              "length_m": 1e-09,
+              "energy_j": 1e-20
+            },
+            "system": {
+              "representation": "quantum_grid_1d",
+              "module_id": "quanta.quantum_stationary",
+              "module_version": "0.1.0",
+              "domain": {
+                "a_m": -1e-08,
+                "b_m": 1e-08
+              },
+              "mass_kg": 1.1121217185735184e-30,
+              "boundary": "dirichlet_zero",
+              "potential": {
+                "expression": {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "op": "const",
+                      "value": 0.5
+                    },
+                    {
+                      "op": "pow",
+                      "arg": {
+                        "op": "sub",
+                        "args": [
+                          {
+                            "op": "var",
+                            "name": "xi"
+                          },
+                          {
+                            "op": "param",
+                            "name": "center"
+                          }
+                        ]
+                      },
+                      "exponent": 2
+                    }
+                  ]
+                },
+                "parameters": {
+                  "center": 10
+                }
+              }
+            },
+            "numerics": {
+              "solver": "symmetric_tridiagonal_lowest",
+              "n_points": 1279,
+              "states": 4,
+              "refinement_levels": 0,
+              "grid_energy_atol": 1e-10,
+              "grid_energy_rtol": 1e-08
+            },
+            "protocol": {
+              "steps": [
+                {
+                  "step_id": "spectrum",
+                  "operation": "eigenstates",
+                  "source": "initial",
+                  "overrides": []
+                }
+              ],
+              "sweep": {
+                "axes": []
+              }
+            },
+            "observables": [
+              "energies",
+              "states",
+              "density",
+              "x_mean",
+              "x2_mean",
+              "kinetic_mean",
+              "potential_mean"
+            ],
+            "extensions": {}
+          },
+          "input_sha256": "bd0394ff17bd57b59fa97da21ae128d8f23827ff66ca59f5b070ff1392005701",
+          "payload_sha256": "b3298e2e632c21e7fd1e3b92be8842267522baf572eb202cc552b88f41f19075",
+          "registered_payload_schema": {
+            "path": "contracts/v0.2.0/module_results/quantum_stationary.schema.json",
+            "sha256": "6fc41343d72d5cb224ed6d3a965d2be7d9677142f651f373e0e297e8f4d48cf4",
+            "errors": []
+          },
+          "common_checks": {
+            "registered_payload_schema": true,
+            "operation_eigenstates": true,
+            "definition_unchanged": true,
+            "ascending_energies": true,
+            "monotone_uniform_grid": true,
+            "domain_endpoints": true,
+            "zero_boundary_states": true,
+            "real_carrier": true,
+            "finite_optional_values": true,
+            "density_agreement": true,
+            "position_mean_agreement": true,
+            "position_squared_mean_agreement": true,
+            "energy_decomposition": true,
+            "one_grid_result": true
+          },
+          "energies_j": [
+            4.999923704892605e-21,
+            1.4999618519792877e-20,
+            2.4999008137958194e-20,
+            3.4998092545411755e-20
+          ],
+          "energies_reduced": [
+            0.49999237048926054,
+            1.4999618519792877,
+            2.4999008137958194,
+            3.4998092545411756
+          ],
+          "x_m_sha256": "6f60ea07e9b4502cd7c6800fa7bb2c9bf022d86c7a91bf0d76316132ba7a1394",
+          "states_sha256": "93dae2246bef3899fc3a1bca39bd04d824d26399907dbbe2c17025eb43bc9e4e",
+          "grid_results": [
+            {
+              "n_points": 1279,
+              "energies_j": [
+                4.999923704892605e-21,
+                1.4999618519792877e-20,
+                2.4999008137958194e-20,
+                3.4998092545411755e-20
+              ],
+              "atol": 1e-10,
+              "rtol": 1e-08
+            }
+          ],
+          "diagnostics": {
+            "method": "second_order_dirichlet_eigh_tridiagonal_stebz",
+            "checks": [
+              {
+                "id": "weighted_normalization",
+                "status": "pass",
+                "value": 6.661338147750939e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "weighted_orthogonality",
+                "status": "pass",
+                "value": 1.5774350828931434e-16,
+                "tolerance": 1e-10
+              },
+              {
+                "id": "eigen_residual",
+                "status": "pass",
+                "value": 2.077547876793144e-16,
+                "tolerance": 1e-12
+              },
+              {
+                "id": "grid_energy_convergence",
+                "status": "not_checked",
+                "value": null,
+                "tolerance": 1.0
+              },
+              {
+                "id": "boundary_zero",
+                "status": "pass",
+                "value": 0.0,
+                "tolerance": 0.0
+              },
+              {
+                "id": "finite_binary64_output",
+                "status": "pass",
+                "value": null,
+                "tolerance": null
+              }
+            ]
+          }
+        }
+      ],
+      "reference_method": "Harmonic continuum reference with finite-domain enlargement at constant spacing",
+      "formula": "epsilon_s=sqrt(2*alpha)*(s+1/2) for V=1/2*(xi-center)^2",
+      "threshold": 0.0001,
+      "continuum_reference_reduced": [
+        0.49999999999999994,
+        1.4999999999999998,
+        2.4999999999999996,
+        3.4999999999999996
+      ],
+      "energies_reduced_by_domain": [
+        [
+          0.4999923704884482,
+          1.4999618519794202,
+          2.499900813796522,
+          3.499809254541465
+        ],
+        [
+          0.49999237048926054,
+          1.4999618519792877,
+          2.4999008137958194,
+          3.4998092545411756
+        ]
+      ],
+      "relative_errors_by_domain": [
+        [
+          1.52590231035088e-05,
+          2.543201371970246e-05,
+          3.96744813910388e-05,
+          5.449870243839124e-05
+        ],
+        [
+          1.5259021478808424e-05,
+          2.5432013808076213e-05,
+          3.9674481672058454e-05,
+          5.449870252111871e-05
+        ]
+      ],
+      "max_relative_error": 5.449870252111871e-05,
+      "grid_spacings_reduced": [
+        0.015625,
+        0.015625
+      ],
+      "same_grid_spacing": true,
+      "center_parameters": [
+        8,
+        10
+      ],
+      "fixed_spacing_domain_energy_difference_reduced": [
+        8.12350187118227e-13,
+        1.325606291402437e-13,
+        7.025491299827991e-13,
+        2.8954616482224083e-13
+      ],
+      "error_separation": {
+        "total_error": "Each finite-grid result compared with the infinite-domain harmonic reference",
+        "domain_sensitivity": "Difference between domains at the same grid spacing and physical centered potential",
+        "grid_error": "Fixed-domain grid dependence measured separately by B05",
+        "limitation": "Domain sensitivity is a measurement, not a rigorous bound on finite-domain truncation error"
+      }
+    }
+  ],
+  "environment": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "runtime_profile": "cpython-3.12.14-linux-x86_64-cpu-v1",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "x86_64"
+    },
+    "python_executable": "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-fdde5778.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-aw1mwcap/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "SSE",
+          "SSE2",
+          "SSE3"
+        ],
+        "found": [
+          "SSSE3",
+          "SSE41",
+          "POPCNT",
+          "SSE42",
+          "AVX",
+          "F16C",
+          "FMA3",
+          "AVX2",
+          "AVX512F",
+          "AVX512CD",
+          "AVX512_SKX",
+          "AVX512_CLX",
+          "AVX512_CNL",
+          "AVX512_ICL"
+        ],
+        "not found": [
+          "AVX512_KNL",
+          "AVX512_KNM",
+          "AVX512_SPR"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false,
+    "locked_distributions": {
+      "attrs": "26.1.0",
+      "cffi": "2.1.1",
+      "click": "8.5.0",
+      "cryptography": "50.0.2",
+      "h11": "0.16.0",
+      "iniconfig": "2.3.1",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "numpy": "2.3.5",
+      "packaging": "26.3",
+      "pip": "25.3",
+      "pluggy": "1.7.0",
+      "pycparser": "3.12",
+      "pygments": "2.21.0",
+      "pyjwt": "2.15.1",
+      "pytest": "9.0.2",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc8785": "0.1.4",
+      "rpds-py": "2026.9.1",
+      "scipy": "1.17.0",
+      "setuptools": "80.9.0",
+      "six": "1.17.0",
+      "threadpoolctl": "3.6.0",
+      "typing-extensions": "4.16.0",
+      "uvicorn": "0.54.0",
+      "wheel": "0.45.1"
+    },
+    "requirements_lock_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5"
+  },
+  "code_source": {
+    "files_sha256": {
+      "src/quanta/__init__.py": "c58b3d06757c5eacc95f23ba99e980bda7c3149db837b912cf7cf85b751aaac0",
+      "src/quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "src/quanta/access_auth.py": "f096678d5e9d89badcb3b92600836e2f91ab2f2dd794a0f43752ca8fe4d85d27",
+      "src/quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+      "src/quanta/backup.py": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+      "src/quanta/cli.py": "0d2e23a9fc05f714f08dd4834182e49765bbf8e7ba74209f32826754a461939d",
+      "src/quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+      "src/quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+      "src/quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+      "src/quanta/job_store.py": "bd8e5412aec0189bbd197e096ee4caaa2fb6b5a63c9868d89d3c112ea594646b",
+      "src/quanta/owner_token.py": "b1d8165f79282032f80f147d426208bb2510f8ba3a838947d05276936bc2e183",
+      "src/quanta/pair.py": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+      "src/quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+      "src/quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+      "src/quanta/production.py": "cb1e20142e513d83fc91cd4a257b35d99df3c8c943235424adc92bb248bba308",
+      "src/quanta/production_server.py": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+      "src/quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+      "src/quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+      "src/quanta/registry.py": "6f34e6dcd4d1e9772984e9fb070375bf3d89b47b2faa12728baf6f779a909161",
+      "src/quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+      "src/quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+      "src/quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+      "src/quanta/service.py": "1233f781c9042c573af5a96fe71e496c7ab022015712d71ce5028fa437292fee",
+      "src/quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+      "src/quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+      "src/quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+      "scripts/verify_numerics.py": "f2a90cc3fe6cc18f06696b2fbf7f89ae210389cc0e929170ef6da9b223d45d63",
+      "scripts/verify_quantum.py": "c68ded7ac23d6cef23671326d8626023cab3261e5c90d0f1844f8d6aef497d98"
+    },
+    "source_set_sha256": "3e5778aceddf61fd5f2027aa478567a72fd7ba4701a3926488ff737d11370bf8",
+    "source_set_hash_rule": "RFC 8785 of the relative-path to raw-file-SHA256 map; report excluded",
+    "git_head": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "git_worktree_dirty": false,
+    "git_worktree_status": []
+  },
+  "physical_validation_status": "unvalidated",
+  "limitations": [
+    "Acceptance applies only to the declared smooth, well-scaled reference inputs.",
+    "Discrete eigensolver correctness, grid convergence, and domain truncation are distinct checks.",
+    "No agreement with measured physical experiments or unsupported model is certified.",
+    "Grid-refinement control-flow cases are covered by the separate automated test suite."
+  ]
+}

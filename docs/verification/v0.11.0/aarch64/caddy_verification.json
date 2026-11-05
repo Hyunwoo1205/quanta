@@ -1,0 +1,61 @@
+{
+  "caddy": "v2.11.9 h1:bhZtcRKQOq0fuLvEgCdPYvUxXyGn9kzjG4lh2332DTE=",
+  "template_validation": "passed",
+  "local_tls": "temporary_internal_ca",
+  "public_tls_verified": false,
+  "cases": [
+    {
+      "case": "http1_known_length",
+      "status": 200,
+      "frontend_http": "1.1",
+      "passed": true
+    },
+    {
+      "case": "http1_empty_mutation",
+      "status": 200,
+      "frontend_http": "1.1",
+      "passed": true
+    },
+    {
+      "case": "http1_chunked",
+      "status": 400,
+      "frontend_http": "1.1",
+      "passed": true
+    },
+    {
+      "case": "http1_chunked_trailer",
+      "status": 400,
+      "frontend_http": "1.1",
+      "passed": true
+    },
+    {
+      "case": "http2_offer_falls_back_to_http1",
+      "status": 200,
+      "frontend_http": "1.1",
+      "passed": true
+    },
+    {
+      "case": "http1_exact_limit",
+      "status": 200,
+      "frontend_http": "1.1",
+      "passed": true
+    },
+    {
+      "case": "http1_over_limit",
+      "status": 413,
+      "frontend_http": "1.1",
+      "passed": true
+    },
+    {
+      "case": "http2_only_alpn_rejected",
+      "result": "tls_handshake_rejected",
+      "passed": true
+    },
+    {
+      "case": "http1_after_rejected_handshake",
+      "status": 200,
+      "frontend_http": "1.1",
+      "passed": true
+    }
+  ]
+}
