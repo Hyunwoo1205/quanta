@@ -54,7 +54,7 @@ jobs:
         run: python3 -I deploy/oci/probe_install.py
   public:
     needs: install
-    if: ${{ !cancelled() && (needs.install.outputs.operation == 'install-https' || needs.install.outputs.operation == 'configure-web-firewall') }}
+    if: ${{ !cancelled() && (needs.install.outputs.operation == 'install-https' || needs.install.outputs.operation == 'configure-web-firewall' || needs.install.outputs.operation == 'diagnose-https') }}
     runs-on: ubuntu-24.04
     environment: oci-preflight
     timeout-minutes: 2

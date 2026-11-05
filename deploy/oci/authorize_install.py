@@ -12,7 +12,7 @@ import urllib.request
 SOURCE_SHA = '1738107301ef873bfe5e01f930866c2a74e4ec3f'
 CI_RUN = 42064056609
 CI_URL = 'https://api.github.com/repos/Hyunwoo1205/quanta/actions/runs/' + str(CI_RUN)
-OPERATIONS = frozenset({'install-app', 'install-https', 'configure-web-firewall', 'verify-backup'})
+OPERATIONS = frozenset({'install-app', 'install-https', 'configure-web-firewall', 'verify-backup', 'diagnose-https'})
 REQUEST = Path('.github/oci/install-request.json')
 
 
