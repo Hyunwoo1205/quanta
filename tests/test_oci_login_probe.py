@@ -56,7 +56,9 @@ def test_explicit_exact_opt_in_is_required_before_launch(confirmation):
     "198.51.100.1", "203.0.113.1", "224.0.0.1", "240.0.0.1", "255.255.255.255",
 ])
 def test_bad_host_never_launches_client(host):
-    assert login.probe(config(QUANTA_OCI_HOST=host), runner=forbidden) == login._report("not_configured")
+    issue = "host_missing" if host is None or host == "" else "host_invalid"
+    assert login.probe(config(QUANTA_OCI_HOST=host), runner=forbidden) == login._report(
+        "not_configured", configuration_issues=[issue])
 
 
 @pytest.mark.parametrize("pin", [
@@ -66,7 +68,9 @@ def test_bad_host_never_launches_client(host):
     PIN + "=", "sha256:" + PIN[7:], "MD5:" + "aa:" * 16,
 ])
 def test_pin_must_be_one_canonical_sha256_digest(pin):
-    assert login.probe(config(QUANTA_OCI_HOST_KEY=pin), runner=forbidden) == login._report("not_configured")
+    issue = "host_key_missing" if pin is None or pin == "" else "host_key_invalid"
+    assert login.probe(config(QUANTA_OCI_HOST_KEY=pin), runner=forbidden) == login._report(
+        "not_configured", configuration_issues=[issue])
 
 
 @pytest.mark.parametrize("ppk", [
@@ -83,7 +87,49 @@ def test_pin_must_be_one_canonical_sha256_digest(pin):
 ])
 def test_invalid_or_oversized_ppk_is_rejected_before_client(ppk):
     expected = "encrypted_key" if ppk == fake_key().replace("Encryption: none", "Encryption: none ") else "not_configured"
-    assert login.probe(config(QUANTA_OCI_PPK=ppk), runner=forbidden) == login._report(expected)
+    issues = None if expected == "encrypted_key" else [
+        "private_key_missing" if ppk is None or ppk == "" else "private_key_format_invalid"]
+    assert login.probe(config(QUANTA_OCI_PPK=ppk), runner=forbidden) == login._report(
+        expected, configuration_issues=issues)
+
+
+def test_all_invalid_fields_are_reported_together_without_input_values(capsys):
+    report = login.probe(config(QUANTA_OCI_HOST="secret.invalid",
+                               QUANTA_OCI_HOST_KEY="private pin text",
+                               QUANTA_OCI_PPK="private key text"), runner=forbidden)
+    assert report == {
+        "scope": "ssh_login_true", "status": "not_configured",
+        "authentication_attempted": False,
+        "configuration_issues": ["host_invalid", "host_key_invalid", "private_key_format_invalid"],
+    }
+    assert capsys.readouterr() == ("", "")
+    serialized = json.dumps(report)
+    assert "secret.invalid" not in serialized
+    assert "private pin text" not in serialized
+    assert "private key text" not in serialized
+
+
+def test_all_missing_fields_are_reported_together():
+    assert login.probe({"QUANTA_OCI_AUTH_CONFIRMED": "true"}, runner=forbidden) == {
+        "scope": "ssh_login_true", "status": "not_configured",
+        "authentication_attempted": False,
+        "configuration_issues": ["host_missing", "host_key_missing", "private_key_missing"],
+    }
+
+
+def test_no_secret_field_is_read_without_explicit_opt_in():
+    class GuardedEnvironment:
+        def get(self, key):
+            assert key == "QUANTA_OCI_AUTH_CONFIRMED"
+            return "false"
+
+    assert login.probe(GuardedEnvironment(), runner=forbidden) == login._report("not_configured")
+
+
+@pytest.mark.parametrize("issue", [HOST, PIN, fake_key(), "unknown_issue"])
+def test_diagnostic_report_never_accepts_arbitrary_values(issue):
+    with pytest.raises(ValueError, match="invalid configuration diagnostic"):
+        login._report("not_configured", configuration_issues=[issue])
 
 
 @pytest.mark.parametrize("version", [2, 3])

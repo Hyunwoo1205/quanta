@@ -27,13 +27,22 @@ TIMEOUT = 15
 MAX_KEY_BYTES = 32768
 _HEADER = re.compile(r"PuTTY-User-Key-File-([23]): [A-Za-z0-9@._+-]{1,128}\Z")
 _PIN = re.compile(r"SHA256:[A-Za-z0-9+/]{43}\Z")
+_CONFIGURATION_ISSUES = frozenset({
+    "host_missing", "host_invalid", "host_key_missing", "host_key_invalid",
+    "private_key_missing", "private_key_format_invalid",
+})
 
 
-def _report(status: str, attempted: bool = False) -> dict:
+def _report(status: str, attempted: bool = False, configuration_issues=None) -> dict:
     report = {"scope": "ssh_login_true", "status": status,
               "authentication_attempted": attempted}
     if attempted:
         report["requested_command"] = "true"
+    if configuration_issues is not None:
+        if (status != "not_configured" or attempted
+                or any(issue not in _CONFIGURATION_ISSUES for issue in configuration_issues)):
+            raise ValueError("invalid configuration diagnostic")
+        report["configuration_issues"] = list(configuration_issues)
     return report
 
 
@@ -117,9 +126,18 @@ def probe(environ=None, *, runner=None) -> dict:
     if environ.get("QUANTA_OCI_AUTH_CONFIRMED") != "true":
         return _report("not_configured")
     host, pin = environ.get("QUANTA_OCI_HOST"), environ.get("QUANTA_OCI_HOST_KEY")
-    if not _global_ipv4(host) or not _host_key(pin):
-        return _report("not_configured")
-    error, raw_key = _key_bytes(environ.get("QUANTA_OCI_PPK"))
+    issues = []
+    if not _global_ipv4(host):
+        issues.append("host_missing" if host is None or host == "" else "host_invalid")
+    if not _host_key(pin):
+        issues.append("host_key_missing" if pin is None or pin == "" else "host_key_invalid")
+    ppk = environ.get("QUANTA_OCI_PPK")
+    error, raw_key = _key_bytes(ppk)
+    if error == "not_configured":
+        issues.append("private_key_missing" if ppk is None or ppk == ""
+                      else "private_key_format_invalid")
+    if issues:
+        return _report("not_configured", configuration_issues=issues)
     if error:
         return _report(error)
     runner = subprocess.run if runner is None else runner
