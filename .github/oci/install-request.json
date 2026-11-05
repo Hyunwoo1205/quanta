@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "configure-web-firewall",
+  "operation": "diagnose-https",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "7ae6004c-cf02-4989-a639-fee034dbb7cc"
+  "request_id": "8f5a93d2-6714-45e1-9408-e7b4b7fe5079"
 }

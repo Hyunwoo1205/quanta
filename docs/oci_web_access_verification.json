@@ -1,0 +1,113 @@
+{
+  "verification_kind": "oci_scoped_web_firewall_and_public_entry",
+  "workflow_run": {
+    "id": 42079467579,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42079467579",
+    "head_sha": "5afb18a4726eb5493f3d6917bbc3d742426471a8",
+    "created_at_utc": "2026-11-05T17:56:28Z",
+    "completed_at_utc": "2026-11-05T17:57:44Z",
+    "conclusion": "failure"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "configure-web-firewall",
+    "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "request_id": "7ae6004c-cf02-4989-a639-fee034dbb7cc"
+  },
+  "install_job": {
+    "id": 127428396874,
+    "conclusion": "success",
+    "results": [
+      {
+        "apply_diagnostics": null,
+        "cleanup_complete": true,
+        "fixture_created": true,
+        "forward_unchanged": true,
+        "idempotence_verified": true,
+        "inet_ipv4_head_verified": true,
+        "initial_ruleset_empty": true,
+        "input_chains_selected": true,
+        "ip_ipv4_head_verified": true,
+        "ipv6_unchanged": true,
+        "namespace_guard_passed": true,
+        "only_web_ports_opened": true,
+        "original_rules_unchanged": true,
+        "phase": "complete",
+        "scope": "nft_namespace_verification",
+        "status": "success"
+      },
+      {
+        "authentication_attempted": true,
+        "requested_operation": "configure-web-firewall",
+        "result": {
+          "cloud_ingress_changed": false,
+          "failure_reason": "none",
+          "failure_stage": "none",
+          "firewalld_active": true,
+          "https_service_active": true,
+          "ipv6_changed": false,
+          "manager": "firewalld",
+          "nftables_active": false,
+          "persistence_configured": true,
+          "persistence_service_active": false,
+          "rule_mutation_attempted": true,
+          "rules_applied": true,
+          "rules_inspected": true,
+          "scope": "web_firewall",
+          "scope_verified": true,
+          "status": "success",
+          "tls_issued": false,
+          "ufw_active": false
+        },
+        "scope": "ssh_fixed_installation",
+        "status": "success"
+      }
+    ]
+  },
+  "public_job": {
+    "id": 127428968549,
+    "conclusion": "failure",
+    "results": [
+      {
+        "anonymous_api_denied": null,
+        "anonymous_api_status": null,
+        "auth_discovery_status": null,
+        "browser_verified": false,
+        "compute_verified": false,
+        "dns_a_matches_expected": true,
+        "dns_aaaa_present": false,
+        "dns_addresses_public": true,
+        "http_redirect_matches_origin": true,
+        "http_redirect_status": 308,
+        "https_shell_available": null,
+        "https_shell_status": null,
+        "owner_authentication_verified": false,
+        "owner_token_mode": null,
+        "phase": "https_shell",
+        "scope": "public_deployment_smoke",
+        "status": "failed",
+        "valid_owner_credential_used": false,
+        "wrong_token_api_denied": null,
+        "wrong_token_api_status": null
+      }
+    ]
+  },
+  "scope": {
+    "host_ipv4_tcp_80_443_allowed": true,
+    "persistent_native_firewalld_rules_verified": true,
+    "other_firewall_rules_preserved": true,
+    "ipv6_changed": false,
+    "oci_ingress_changed_by_agent": false,
+    "owner_reported_oci_tcp_80_rule_added": true,
+    "owner_reported_oci_tcp_443_rule_added": true,
+    "public_http_redirect_verified": true,
+    "public_tls_verified": false,
+    "certificate_issue_cause_verified": false,
+    "owner_secret_collected": false
+  },
+  "notes": [
+    "The nft kernel probe mutated only its own separate initially empty network namespace, then cleaned it.",
+    "The actual host manager was firewalld; IPv4-only rich rules were verified in runtime and permanent configuration without reloading the manager.",
+    "HTTP redirects from the public entry succeeded; certificate issuance and public HTTPS remain pending."
+  ]
+}

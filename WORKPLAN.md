@@ -242,6 +242,8 @@ bootstrap·환경 검사·수치 측정·설치 패키지가 해당 CPU 잠금�
 
 다음 격리 [실행 42078821700](https://github.com/Hyunwoo1205/quanta/actions/runs/42078821700)의 진단은 `inet` 웹 규칙이 정확히 생성됐으나 `ip` family 명령에서 지원되지 않는 `meta nfproto` 인자가 실패한 것을 확인했습니다. 테스트 테이블은 정리됐고 SSH 단계는 실행하지 않았습니다. 원래 IPv4 전용인 `ip` family에서 해당 인자만 생략하고 `inet`의 명시적 IPv4 조건·TCP·정확한 80/443 제한은 유지했습니다. **56개 시험**과 독립 검토를 통과했으며 같은 격리 커널 검증 뒤에만 서버에 적용합니다.
 
+실제 [웹 포트 적용 42079467579](https://github.com/Hyunwoo1205/quanta/actions/runs/42079467579)의 install job `127428396874`이 success입니다. 격리 nft 커널 검증의 모든 범위·보존·멱등성·정리 항목이 통과했고 실제 호스트 관리자는 **firewalld**로 확인됐습니다. IPv4 TCP 80/443 rich rule을 runtime·permanent에 검증하고 기존 관리자 reload·규칙 삭제 없이 유지했습니다. HTTPS 서비스는 활성 상태입니다. 공개 job `127428968549`에서는 DNS 일치와 HTTP **308**의 정확한 HTTPS origin 전환이 통과했으나 공개 TLS는 아직 완료되지 않아 전체 workflow는 failure로 기록합니다. [웹 진입점 근거](docs/oci_web_access_verification.json)에 성공한 Linux 포트 처리와 미완료 인증서 발급을 분리했습니다. 다음은 서비스 로그를 값 노출 없이 읽어 CA 오류·재시도 상태를 확인하는 것입니다.
+
 ## 다음 작업
 
 [비공개 클라우드 파일럿 계획](docs/deployment-plan.md)의 호스트를 사용자 선택에 따라 **OCI 단독**으로 확정했습니다. 화면·API·계산·SQLite를 A1 Linux ARM64 VM 한 대에서 운영합니다. 실제 준비된 2 OCPU·12 GB·부트 200 GB 한 개를 유지하며, 이전 부트 50 GB·데이터 150 GB 제안으로 재구성하지 않습니다. Access·Tunnel 기본안과 별도로 현재 제공한 도메인에서 직접 HTTPS·소유자 접속키를 명시적으로 선택할 수 있게 준비했습니다. 실제 무료 한도와 사용량은 배포 전에 확인합니다. 기존 서버의 인증 접속·Docker·sudo·기본 자원을 확인했으며 서버 생성·앱 설치·배포는 수행하지 않았습니다.
