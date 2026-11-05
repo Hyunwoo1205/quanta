@@ -384,11 +384,30 @@ class NativeNftablesTests(unittest.TestCase):
             firewall._apply_nft()
         expected = []
         for family, table, chain in (("inet", "filter", "input"), ("ip", "host", "inbound")):
+            ipv4 = ["meta", "nfproto", "ipv4"] if family == "inet" else []
             expected.append(mock.call([firewall.NFT, "insert", "rule", family, table, chain,
-                "meta", "nfproto", "ipv4", "meta", "l4proto", "tcp", "tcp", "dport", "{", "80", ",", "443", "}",
+                *ipv4, "meta", "l4proto", "tcp", "tcp", "dport", "{", "80", ",", "443", "}",
                 "accept", "comment", '"quanta-web-v1"'], timeout=10, limit=4096))
         self.assertEqual(command.call_args_list, expected)
         self.assertIn(foreign, after[("inet", "filter", "input")]["rules"])
+
+    def test_nft_family_specific_argv_omits_nfproto_only_for_intrinsic_ipv4(self):
+        for family in ("ip", "inet"):
+            before = firewall._parse_nft(self.raw(self.entries(family)))
+            owned = self.own_rule(family)
+            if family == "ip":
+                owned["expr"].pop(0)
+            after = firewall._parse_nft(self.raw(self.entries(family, rules=[owned])))
+            with mock.patch.object(firewall, "_inspect_nft", side_effect=[before, after]), \
+                    mock.patch.object(firewall, "_command", return_value=(0, b"")) as command:
+                firewall._apply_nft()
+            argv = command.call_args.args[0]
+            self.assertEqual(argv[:6], [firewall.NFT, "insert", "rule", family, "filter", "input"])
+            self.assertEqual("nfproto" in argv, family == "inet")
+            self.assertIn(["meta", "l4proto", "tcp", "tcp", "dport"],
+                          [argv[index:index + 5] for index in range(len(argv) - 4)])
+            self.assertIn(["{", "80", ",", "443", "}"],
+                          [argv[index:index + 5] for index in range(len(argv) - 4)])
 
     def test_nft_exact_owned_rule_already_first_is_idempotent(self):
         selected = firewall._parse_nft(self.raw(self.entries(rules=[self.own_rule()])))

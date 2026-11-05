@@ -534,7 +534,8 @@ def _apply_nft():
     for (family, table, chain), data in before.items():
         if data["rules"] and _nft_owned(data["rules"][0]):
             continue
-        _command([NFT, "insert", "rule", family, table, chain, "meta", "nfproto", "ipv4",
+        ipv4 = ["meta", "nfproto", "ipv4"] if family == "inet" else []
+        _command([NFT, "insert", "rule", family, table, chain, *ipv4,
                   "meta", "l4proto", "tcp", "tcp", "dport", "{", "80", ",", "443", "}",
                   "accept", "comment", '"quanta-web-v1"'], timeout=10, limit=4096)
     after = _inspect_nft()
