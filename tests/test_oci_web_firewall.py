@@ -27,12 +27,18 @@ def config():
             "public_origin": "https://quanta.example.com"}
 
 
-def success(*, ufw=False, tls=False):
+def manager_facts(manager):
+    return {"manager": manager, "ufw_active": manager == "ufw",
+            "nftables_active": manager == "nftables", "firewalld_active": manager == "firewalld"}
+
+
+def success(*, ufw=False, tls=False, manager=None):
+    manager = manager or ("ufw" if ufw else "iptables")
     result = firewall._report()
     result.update(status="success", failure_stage="none", failure_reason="none", scope_verified=True,
-                  rules_inspected=True, ufw_active=ufw, rule_mutation_attempted=True,
+                  rules_inspected=True, **manager_facts(manager), rule_mutation_attempted=True,
                   rules_applied=True, persistence_configured=True,
-                  persistence_service_active=not ufw, https_service_active=True, tls_issued=tls)
+                  persistence_service_active=manager in {"iptables", "nftables"}, https_service_active=True, tls_issued=tls)
     return result
 
 
@@ -103,6 +109,14 @@ class ConfigurationAndReportTests(unittest.TestCase):
                       {**success(), "failure_reason": "invalid_config"},
                       {key: value for key, value in firewall._report().items() if key != "failure_reason"}]:
             self.assertIsNone(firewall.sanitize_report(json.dumps(value).encode()))
+
+    def test_manager_and_active_flags_are_required_and_consistent(self):
+        for manager in ("iptables", "ufw", "nftables", "firewalld"):
+            self.assertEqual(firewall.validate_report(success(manager=manager)), success(manager=manager))
+        for changed in ({"manager": "unknown"}, {"manager": "ambiguous"}, {"manager": PRIVATE},
+                        {"manager": "nftables"}, {"nftables_active": True}, {"firewalld_active": True},
+                        {"manager": "firewalld", "firewalld_active": 1}):
+            self.assertIsNone(firewall.sanitize_report(json.dumps({**success(), **changed}).encode()))
 
     def test_failure_classifier_uses_fixed_literals_without_formatting_unknown_errors(self):
         class Unprintable:
@@ -204,12 +218,7 @@ class IPv4RuleTests(unittest.TestCase):
                 mock.patch.object(firewall, "_ufw_active", return_value=False), self.assertRaises(ValueError):
             firewall._apply_ufw()
 
-    def test_active_alternative_manager_or_unknown_ufw_status_fail_closed(self):
-        for manager in ("firewalld.service", "nftables.service"):
-            with mock.patch.object(firewall, "_active", side_effect=lambda unit: unit == manager), \
-                    mock.patch.object(firewall, "_command") as command, self.assertRaises(ValueError):
-                firewall._ufw_active()
-            command.assert_not_called()
+    def test_unknown_ufw_status_fails_closed(self):
         for raw, expected in [(b"Status: active\nprivate details", True), (b"Status: inactive\n", False)]:
             with mock.patch.object(firewall, "_active", return_value=False), mock.patch.object(Path, "lstat"), \
                     mock.patch.object(firewall, "_trusted_command"), mock.patch.object(firewall, "_command", return_value=(0, raw)):
@@ -218,6 +227,159 @@ class IPv4RuleTests(unittest.TestCase):
                 mock.patch.object(firewall, "_trusted_command"), mock.patch.object(firewall, "_command", return_value=(0, PRIVATE.encode())), \
                 self.assertRaises(ValueError):
             firewall._ufw_active()
+
+
+class NativeManagerTests(unittest.TestCase):
+    def test_manager_detection_records_all_active_facts_and_never_chooses_an_overlap(self):
+        for active in (set(), {"ufw"}, {"nftables"}, {"firewalld"},
+                       {"ufw", "nftables"}, {"nftables", "firewalld"}, {"ufw", "nftables", "firewalld"}):
+            with self.subTest(active=sorted(active)), \
+                    mock.patch.object(firewall, "_active", side_effect=lambda unit: unit.removesuffix(".service") in active), \
+                    mock.patch.object(firewall, "_ufw_active", return_value="ufw" in active):
+                facts = firewall._detect_manager()
+            expected = "ambiguous" if len(active) > 1 else next(iter(active), "iptables")
+            self.assertEqual(facts, {"manager": expected, **{name + "_active": name in active for name in ("ufw", "nftables", "firewalld")}})
+
+    def test_firewalld_default_zone_is_bounded_and_strict_before_any_mutation(self):
+        with mock.patch.object(firewall, "_native_command") as trust, \
+                mock.patch.object(firewall, "_command", return_value=(0, b"public\n")) as command:
+            self.assertEqual(firewall._firewalld_zone(), "public")
+        trust.assert_called_once_with(firewall.FIREWALL_CMD)
+        command.assert_called_once_with([firewall.FIREWALL_CMD, "--get-default-zone"], timeout=5, limit=128)
+        for raw in (b"", b"public", b"public\nother\n", b"--help\n", b"bad zone\n", b"a;private\n", b"x" * 33 + b"\n", b"\xff\n"):
+            with self.subTest(raw=raw), mock.patch.object(firewall, "_native_command"), \
+                    mock.patch.object(firewall, "_command", return_value=(0, raw)), self.assertRaises(ValueError):
+                firewall._firewalld_zone()
+        for zone in (None, "", "--help", "public\n", "public;private"):
+            with mock.patch.object(firewall, "_command") as command, self.assertRaises(ValueError):
+                firewall._apply_firewalld(zone)
+            command.assert_not_called()
+
+    def test_firewalld_adds_and_verifies_only_ipv4_rich_rules_runtime_and_permanent_without_reload(self):
+        with mock.patch.object(firewall, "_command", side_effect=[(1, b""), (0, b""), (0, b"")] * 4) as command:
+            firewall._apply_firewalld("public")
+        expected = []
+        for port in (80, 443):
+            rule = f'rule family="ipv4" priority="-100" port port="{port}" protocol="tcp" accept'
+            self.assertEqual(firewall._rich_rule(port), rule)
+            for permanent in (False, True):
+                prefix = [firewall.FIREWALL_CMD, "--zone=public", *(["--permanent"] if permanent else [])]
+                query = prefix + ["--query-rich-rule=" + rule]
+                expected.extend([mock.call(query, allowed=(0, 1), timeout=10, limit=4096),
+                                 mock.call(prefix + ["--add-rich-rule=" + rule], allowed=(0, 11), timeout=10, limit=4096),
+                                 mock.call(query, timeout=10, limit=4096)])
+        self.assertEqual(command.call_args_list, expected)
+        for port in (22, "80", None):
+            with self.assertRaises(ValueError):
+                firewall._rich_rule(port)
+
+    def test_existing_firewalld_rules_are_only_queried_and_failed_verification_stops(self):
+        with mock.patch.object(firewall, "_command", return_value=(0, b"")) as command:
+            firewall._apply_firewalld("public")
+        self.assertEqual(command.call_count, 8)
+        self.assertTrue(all(call.args[0][-1].startswith("--query-rich-rule=") for call in command.call_args_list))
+        with mock.patch.object(firewall, "_command", side_effect=[(1, b""), (0, b""), firewall.FirewallError(PRIVATE)]) as command:
+            with self.assertRaises(ValueError):
+                firewall._apply_firewalld("public")
+        self.assertEqual(command.call_count, 3)
+
+
+class NativeNftablesTests(unittest.TestCase):
+    @staticmethod
+    def own_rule(family="inet", table="filter", chain="input"):
+        return {"family": family, "table": table, "chain": chain, "handle": 100,
+                "comment": "quanta-web-v1", "expr": [
+                    {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv4"}},
+                    {"match": {"op": "==", "left": {"meta": {"key": "l4proto"}}, "right": "tcp"}},
+                    {"match": {"op": "==", "left": {"payload": {"protocol": "tcp", "field": "dport"}}, "right": {"set": [80, 443]}}},
+                    {"accept": None}]}
+
+    @staticmethod
+    def entries(family="inet", table="filter", chain="input", *, rules=None, **changed):
+        definition = {"family": family, "table": table, "name": chain, "type": "filter",
+                      "hook": "input", "prio": 0, "policy": "drop", **changed}
+        return [{"table": {"family": family, "name": table}}, {"chain": definition},
+                *({"rule": rule} for rule in (rules or []))]
+
+    @staticmethod
+    def raw(entries):
+        return json.dumps({"nftables": entries}).encode()
+
+    def test_nft_inspection_is_fixed_bounded_json_and_selects_all_ipv4_input_chains(self):
+        entries = self.entries() + self.entries("ip", "host", "inbound") + self.entries("ip6", "v6", "input6")
+        with mock.patch.object(firewall, "_native_command") as trust, \
+                mock.patch.object(firewall, "_command", return_value=(0, self.raw(entries))) as command:
+            selected = firewall._inspect_nft()
+        self.assertEqual(set(selected), {("inet", "filter", "input"), ("ip", "host", "inbound")})
+        trust.assert_called_once_with(firewall.NFT)
+        command.assert_called_once_with([firewall.NFT, "--json", "--numeric", "list", "ruleset"], timeout=10, limit=1_048_576)
+
+    def test_nft_parser_refuses_unsupported_or_ambiguous_input_scopes(self):
+        cases = [[], self.entries("ip6"), self.entries("bridge"), self.entries(type="nat"),
+                 self.entries(policy="reject"), self.entries(prio=True), self.entries(prio=2 ** 31),
+                 self.entries(table="unsafe-table"), self.entries(chain="input;private"),
+                 self.entries(table="DOCKER"), self.entries(table="nat"), self.entries(table="NAT"), self.entries(flags=["offload"]),
+                 self.entries() + [self.entries()[1]],
+                 sum((self.entries(table="filter" + str(i)) for i in range(9)), [])]
+        flagged_table = self.entries()
+        flagged_table[0]["table"]["flags"] = ["owner"]
+        cases.append(flagged_table)
+        for entries in cases:
+            with self.subTest(entries=repr(entries)[:160]), self.assertRaises(ValueError):
+                firewall._parse_nft(self.raw(entries))
+        for raw in (None, b"", b"x" * 1_048_577, b"[]", b'{"nftables":[],"nftables":[]}', b"\xff"):
+            with self.subTest(raw_type=type(raw).__name__), self.assertRaises((ValueError, TypeError)):
+                firewall._parse_nft(raw)
+
+    def test_owned_nft_rule_requires_exact_ipv4_tcp_web_semantics(self):
+        self.assertTrue(firewall._nft_owned(self.own_rule()))
+        valid = self.own_rule()
+        valid["expr"].pop(1)
+        self.assertTrue(firewall._nft_owned(valid))
+        for mutate in (lambda rule: rule.update(comment="foreign"),
+                       lambda rule: rule.update(extra=PRIVATE),
+                       lambda rule: rule["expr"][0]["match"].update(right="ipv6"),
+                       lambda rule: rule["expr"][1]["match"].update(right="udp"),
+                       lambda rule: rule["expr"][2]["match"].update(right={"set": [22, 443]}),
+                       lambda rule: rule["expr"][2]["match"].update(right={"set": [80, "443"]}),
+                       lambda rule: rule["expr"].__setitem__(-1, {"drop": None})):
+            rule = self.own_rule()
+            mutate(rule)
+            self.assertFalse(firewall._nft_owned(rule))
+
+    def test_nft_inserts_ipv4_web_rule_at_each_chain_head_without_deleting_foreign_rules(self):
+        foreign = {"family": "inet", "table": "filter", "chain": "input", "expr": [{"reject": None}]}
+        before_entries = self.entries(rules=[foreign, self.own_rule()]) + self.entries("ip", "host", "inbound")
+        after_entries = self.entries(rules=[self.own_rule(), foreign, self.own_rule()]) + self.entries(
+            "ip", "host", "inbound", rules=[self.own_rule("ip", "host", "inbound")])
+        before, after = firewall._parse_nft(self.raw(before_entries)), firewall._parse_nft(self.raw(after_entries))
+        with mock.patch.object(firewall, "_inspect_nft", side_effect=[before, after]), \
+                mock.patch.object(firewall, "_command", return_value=(0, b"")) as command:
+            firewall._apply_nft()
+        expected = []
+        for family, table, chain in (("inet", "filter", "input"), ("ip", "host", "inbound")):
+            expected.append(mock.call([firewall.NFT, "insert", "rule", family, table, chain,
+                "meta", "nfproto", "ipv4", "meta", "l4proto", "tcp", "tcp", "dport", "{", "80", ",", "443", "}",
+                "accept", "comment", '"quanta-web-v1"'], timeout=10, limit=4096))
+        self.assertEqual(command.call_args_list, expected)
+        self.assertIn(foreign, after[("inet", "filter", "input")]["rules"])
+
+    def test_nft_exact_owned_rule_already_first_is_idempotent(self):
+        selected = firewall._parse_nft(self.raw(self.entries(rules=[self.own_rule()])))
+        with mock.patch.object(firewall, "_inspect_nft", side_effect=[selected, selected]) as inspect, \
+                mock.patch.object(firewall, "_command") as command:
+            firewall._apply_nft()
+        self.assertEqual(inspect.call_count, 2)
+        command.assert_not_called()
+
+    def test_nft_post_write_requires_same_scope_definition_and_owned_rule_first(self):
+        before = firewall._parse_nft(self.raw(self.entries()))
+        changed_definition = firewall._parse_nft(self.raw(self.entries(policy="accept", rules=[self.own_rule()])))
+        cases = [before, changed_definition, firewall._parse_nft(self.raw(self.entries("ip", "other", "input")))]
+        for after in cases:
+            with mock.patch.object(firewall, "_inspect_nft", side_effect=[before, after]), \
+                    mock.patch.object(firewall, "_command", return_value=(0, b"")), self.assertRaises(ValueError):
+                firewall._apply_nft()
 
 
 class FixedParentSafetyTests(unittest.TestCase):
@@ -307,12 +469,14 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
             yield calls, files
 
     @contextlib.contextmanager
-    def configured(self, *, ufw=False, tls=False):
+    def configured(self, *, ufw=False, tls=False, manager=None):
+        manager = manager or ("ufw" if ufw else "iptables")
         with contextlib.ExitStack() as stack:
             names = {"_scope": None, "_own_paths_absent": None, "_ufw_active": ufw,
+                     "_detect_manager": manager_facts(manager), "_firewalld_zone": "public", "_inspect_nft": {},
                      "_trusted_command": None, "_inspect_input": [], "_carried_source": SCRIPT.read_bytes(),
                      "_write_new": None, "_command": (0, b""), "_effective_unit": None, "_active": True,
-                     "_apply_iptables": None, "_apply_ufw": None, "_wait_tls": tls}
+                     "_apply_iptables": None, "_apply_ufw": None, "_apply_nft": None, "_apply_firewalld": None, "_wait_tls": tls}
             mocks = {name: stack.enter_context(mock.patch.object(firewall, name, return_value=value)) for name, value in names.items()}
             yield mocks
 
@@ -375,8 +539,78 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
         self.assertEqual([call.args[0] for call in calls["_command"].call_args_list],
                          [[firewall.SYSTEMCTL, "restart", "quanta-https.service"]])
 
+    def test_native_firewalld_uses_only_its_runtime_and_permanent_persistence(self):
+        with self.configured(manager="firewalld") as calls:
+            result = firewall.configure(config())
+        self.assertEqual(result, success(manager="firewalld"))
+        calls["_firewalld_zone"].assert_called_once_with()
+        calls["_apply_firewalld"].assert_called_once_with("public")
+        for name in ("_write_new", "_carried_source", "_apply_iptables", "_apply_ufw", "_apply_nft"):
+            calls[name].assert_not_called()
+        self.assertEqual([call.args[0] for call in calls["_command"].call_args_list],
+                         [[firewall.SYSTEMCTL, "restart", "quanta-https.service"]])
+
+    def test_native_nftables_inspects_before_writing_own_boot_persistence_and_dispatches_only_nft(self):
+        with self.configured(manager="nftables") as calls:
+            result = firewall.configure(config())
+        self.assertEqual(result, success(manager="nftables"))
+        calls["_inspect_nft"].assert_called_once_with()
+        calls["_apply_nft"].assert_called_once_with()
+        calls["_apply_iptables"].assert_not_called()
+        calls["_apply_ufw"].assert_not_called()
+        calls["_apply_firewalld"].assert_not_called()
+        self.assertEqual(calls["_write_new"].call_args_list, [
+            mock.call(firewall.HELPER, SCRIPT.read_bytes(), 0o755),
+            mock.call(firewall.UNIT, firewall.UNIT_TEXT.encode("ascii"), 0o644)])
+        self.assertIn("nftables.service", firewall.UNIT_TEXT.split("After=", 1)[1].splitlines()[0])
+        with self.configured(manager="nftables") as calls:
+            calls["_inspect_nft"].side_effect = firewall.FirewallError("unsupported nftables input scope")
+            result = firewall.configure(config())
+        self.assertEqual(result["failure_reason"], "nft_scope_unsupported")
+        calls["_write_new"].assert_not_called()
+        calls["_command"].assert_not_called()
+
+    def test_overlapping_managers_are_reported_and_refused_before_any_write(self):
+        facts = {"manager": "ambiguous", "ufw_active": False, "nftables_active": True, "firewalld_active": True}
+        with self.configured() as calls:
+            calls["_detect_manager"].return_value = facts
+            result = firewall.configure(config())
+        self.assertEqual(result["failure_reason"], "manager_overlap")
+        self.assertEqual({key: result[key] for key in facts}, facts)
+        self.assertFalse(result["rule_mutation_attempted"])
+        for name in ("_write_new", "_command", "_inspect_input", "_inspect_nft", "_firewalld_zone",
+                     "_apply_iptables", "_apply_nft", "_apply_ufw", "_apply_firewalld"):
+            calls[name].assert_not_called()
+
+    def test_failed_later_manager_inspection_retains_native_manager_already_observed(self):
+        detect = firewall._detect_manager
+        for known in ("firewalld", "nftables"):
+            with self.subTest(known=known), self.configured() as calls:
+                calls["_detect_manager"].side_effect = detect
+                calls["_active"].side_effect = lambda unit: unit == known + ".service"
+                calls["_ufw_active"].side_effect = FileNotFoundError(PRIVATE)
+                result = firewall.configure(config())
+                self.assertEqual(result["manager"], known)
+                self.assertTrue(result[known + "_active"])
+                self.assertEqual(result["failure_reason"], "system_path_missing")
+                self.assertFalse(result["rule_mutation_attempted"])
+                calls["_write_new"].assert_not_called()
+                calls["_command"].assert_not_called()
+                self.assertNotIn(PRIVATE, json.dumps(result))
+
+    def test_missing_native_cli_is_reported_before_any_write(self):
+        with self.configured(manager="firewalld") as calls:
+            calls["_firewalld_zone"].side_effect = firewall.FirewallError("required manager command is missing")
+            result = firewall.configure(config())
+        self.assertEqual(result["manager"], "firewalld")
+        self.assertEqual(result["failure_reason"], "manager_cli_missing")
+        self.assertFalse(result["rule_mutation_attempted"])
+        calls["_write_new"].assert_not_called()
+        calls["_command"].assert_not_called()
+        calls["_apply_firewalld"].assert_not_called()
+
     def test_scope_and_collision_denial_precede_any_rule_or_file_mutation(self):
-        for failing in ("_scope", "_own_paths_absent", "_ufw_active", "_inspect_input", "_carried_source"):
+        for failing in ("_scope", "_own_paths_absent", "_detect_manager", "_inspect_input", "_carried_source"):
             with self.subTest(failing=failing), self.configured() as calls:
                 calls[failing].side_effect = firewall.FirewallError(PRIVATE)
                 result = firewall.configure(config())
@@ -391,7 +625,7 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
     def test_preflight_and_manager_failures_have_fixed_reasons_before_any_write(self):
         for failing, message, expected in [("_scope", "unsafe fixed path", "unsafe_path"),
                                            ("_scope", "untrusted system directory alias", "untrusted_system_alias"),
-                                           ("_ufw_active", "another firewall manager is active", "other_firewall_active")]:
+                                           ("_detect_manager", "another firewall manager is active", "other_firewall_active")]:
             with self.subTest(failing=failing, reason=expected), self.configured() as calls:
                 calls[failing].side_effect = firewall.FirewallError(message)
                 result = firewall.configure(config())
@@ -502,21 +736,30 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
             self.assertEqual(path, firewall.HELPER)
             self.assertEqual(kwargs, {"mode": 0o755, "limit": 65_536})
             return SCRIPT.read_bytes()
-        with mock.patch.object(firewall, "_read", side_effect=read), mock.patch.object(firewall, "_scope") as scope, \
-                mock.patch.object(firewall, "_effective_unit") as effective, \
-                mock.patch.object(firewall, "_ufw_active", return_value=False), \
-                mock.patch.object(firewall, "_apply_iptables") as apply, mock.patch.object(firewall, "_command") as command:
-            firewall.restore()
-        scope.assert_called_once_with(config(), require_active=False)
-        effective.assert_called_once_with("quanta-web-firewall.service", firewall.UNIT)
-        apply.assert_called_once_with()
-        command.assert_not_called()
-        with mock.patch.object(firewall, "_read", side_effect=read), mock.patch.object(firewall, "_scope"), \
-                mock.patch.object(firewall, "_effective_unit"), \
-                mock.patch.object(firewall, "_ufw_active", return_value=True), mock.patch.object(firewall, "_apply_iptables") as apply:
-            with self.assertRaises(ValueError):
-                firewall.restore()
-        apply.assert_not_called()
+        for manager in ("iptables", "nftables", "ufw", "firewalld", "ambiguous"):
+            with self.subTest(manager=manager), contextlib.ExitStack() as stack:
+                stack.enter_context(mock.patch.object(firewall, "_read", side_effect=read))
+                scope = stack.enter_context(mock.patch.object(firewall, "_scope"))
+                effective = stack.enter_context(mock.patch.object(firewall, "_effective_unit"))
+                stack.enter_context(mock.patch.object(firewall, "_detect_manager", return_value=manager_facts(manager)))
+                stack.enter_context(mock.patch.object(firewall, "_firewalld_zone", return_value="public"))
+                command = stack.enter_context(mock.patch.object(firewall, "_command"))
+                applies = {name: stack.enter_context(mock.patch.object(firewall, name))
+                           for name in ("_apply_iptables", "_apply_nft", "_apply_ufw", "_apply_firewalld")}
+                if manager == "ambiguous":
+                    with self.assertRaises(ValueError):
+                        firewall.restore()
+                else:
+                    firewall.restore()
+                scope.assert_called_once_with(config(), require_active=False)
+                effective.assert_called_once_with("quanta-web-firewall.service", firewall.UNIT)
+                selected = "_apply_nft" if manager == "nftables" else "_apply_" + manager
+                for name, apply in applies.items():
+                    if name == selected:
+                        apply.assert_called_once_with(*(["public"] if manager == "firewalld" else []))
+                    else:
+                        apply.assert_not_called()
+                command.assert_not_called()
 
     def test_carried_source_is_compiled_but_not_executed_and_cannot_be_arbitrary_argv(self):
         source = SCRIPT.read_text()

@@ -36,6 +36,11 @@ jobs:
         run: |
           sudo -n env DEBIAN_FRONTEND=noninteractive apt-get update -qq
           sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
+      - name: Verify native nftables rules in an isolated network namespace
+        if: steps.authorize.outputs.operation == 'configure-web-firewall'
+        run: |
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nftables
+          sudo -n unshare --net /usr/bin/python3 -I deploy/oci/verify_nft_namespace.py
       - name: Execute the authorized fixed installer
         id: install
         env:

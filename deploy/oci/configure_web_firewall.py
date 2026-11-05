@@ -33,6 +33,8 @@ BINPATH = "/usr/sbin:/usr/bin:/sbin:/bin"
 SYSTEMCTL = "/usr/bin/systemctl"
 IPTABLES = "/usr/sbin/iptables"
 UFW = "/usr/sbin/ufw"
+NFT = "/usr/sbin/nft"
+FIREWALL_CMD = "/usr/bin/firewall-cmd"
 MARKER = Path("/etc/quanta/installed.json")
 HTTPS_UNIT = Path("/etc/systemd/system/quanta-https.service")
 CADDY = Path("/usr/local/lib/quanta/caddy")
@@ -55,11 +57,12 @@ UNIT_DIRECTORIES = (
     "/lib/systemd/system", "/run/systemd/generator.late",
 )
 BOOLEAN_FIELDS = (
-    "scope_verified", "rules_inspected", "ufw_active", "rule_mutation_attempted",
+    "scope_verified", "rules_inspected", "ufw_active", "nftables_active", "firewalld_active", "rule_mutation_attempted",
     "rules_applied", "persistence_configured", "persistence_service_active",
     "https_service_active", "tls_issued", "ipv6_changed", "cloud_ingress_changed",
 )
-FIELDS = frozenset(("scope", "status", "failure_stage", "failure_reason", *BOOLEAN_FIELDS))
+FIELDS = frozenset(("scope", "status", "failure_stage", "failure_reason", "manager", *BOOLEAN_FIELDS))
+MANAGERS = frozenset(("unknown", "ambiguous", "iptables", "ufw", "nftables", "firewalld"))
 STAGES = frozenset(("none", "config", "preflight", "inspection", "persistence", "rules", "https"))
 _ERROR_REASONS = {
     "invalid structured input": "invalid_config",
@@ -100,6 +103,12 @@ _ERROR_REASONS = {
     "web rule service differs": "persistence_mismatch",
     "UFW now owns the firewall": "ufw_active_during_restore",
     "invalid web firewall report": "report_invalid",
+    "multiple firewall managers are active": "manager_overlap",
+    "required manager command is missing": "manager_cli_missing",
+    "invalid firewalld zone": "firewalld_zone_invalid",
+    "invalid nftables ruleset": "nft_ruleset_invalid",
+    "unsupported nftables input scope": "nft_scope_unsupported",
+    "nftables web rule verification failed": "nft_rule_unverified",
 }
 REASONS = frozenset(("none", "operation_failed", "system_path_missing", "permission_denied",
                      *_ERROR_REASONS.values()))
@@ -352,9 +361,6 @@ def _scope(config, *, require_active):
 
 
 def _ufw_active():
-    for unit in ("firewalld.service", "nftables.service"):
-        if _active(unit):
-            raise FirewallError("another firewall manager is active")
     try:
         Path(UFW).lstat()
     except FileNotFoundError:
@@ -367,6 +373,168 @@ def _ufw_active():
     if first == [b"Status: inactive"]:
         return False
     raise FirewallError("unknown firewall status")
+
+
+def _detect_manager(progress=None):
+    facts = {"firewalld_active": False, "nftables_active": False, "ufw_active": False,
+             "manager": "unknown"}
+    for index, (name, inspect) in enumerate((
+            ("firewalld", lambda: _active("firewalld.service")),
+            ("nftables", lambda: _active("nftables.service")), ("ufw", _ufw_active))):
+        facts[name + "_active"] = inspect()
+        active = [item for item in ("firewalld", "nftables", "ufw") if facts[item + "_active"]]
+        facts["manager"] = ("ambiguous" if len(active) > 1 else active[0] if active
+                            else "iptables" if index == 2 else "unknown")
+        if progress is not None:
+            progress.update(facts)
+    return facts
+
+
+def _native_command(path):
+    try:
+        _trusted_command(path)
+    except FileNotFoundError:
+        raise FirewallError("required manager command is missing") from None
+
+
+def _firewalld_zone():
+    _native_command(FIREWALL_CMD)
+    _, raw = _command([FIREWALL_CMD, "--get-default-zone"], timeout=5, limit=128)
+    if not re.fullmatch(rb"[A-Za-z][A-Za-z0-9_-]{0,31}\n", raw):
+        raise FirewallError("invalid firewalld zone")
+    return raw[:-1].decode("ascii")
+
+
+def _rich_rule(port):
+    if port not in PORTS:
+        raise FirewallError("unsupported port")
+    return f'rule family="ipv4" priority="-100" port port="{port}" protocol="tcp" accept'
+
+
+def _apply_firewalld(zone):
+    # Native rich rules preserve IPv6. Never reload or overwrite runtime state.
+    # https://firewalld.org/documentation/man-pages/firewalld.richlanguage.html
+    if not isinstance(zone, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,31}", zone):
+        raise FirewallError("invalid firewalld zone")
+    for port in PORTS:
+        rule = _rich_rule(port)
+        for permanent in (False, True):
+            prefix = [FIREWALL_CMD, "--zone=" + zone] + (["--permanent"] if permanent else [])
+            query = prefix + ["--query-rich-rule=" + rule]
+            code, _ = _command(query, allowed=(0, 1), timeout=10, limit=4096)
+            if code == 1:
+                _command(prefix + ["--add-rich-rule=" + rule], allowed=(0, 11), timeout=10, limit=4096)
+            _command(query, timeout=10, limit=4096)
+
+
+def _nft_owned(rule):
+    if (not isinstance(rule, dict) or rule.get("comment") != "quanta-web-v1"
+            or set(rule) - {"family", "table", "chain", "expr", "handle", "index", "comment"}):
+        return False
+    expressions = rule.get("expr")
+    if not isinstance(expressions, list) or len(expressions) not in {3, 4} or expressions[-1] != {"accept": None}:
+        return False
+    kinds = []
+    for expression in expressions[:-1]:
+        if not isinstance(expression, dict) or set(expression) != {"match"}:
+            return False
+        match = expression["match"]
+        if not isinstance(match, dict) or set(match) != {"op", "left", "right"} or match["op"] != "==":
+            return False
+        left, right = match["left"], match["right"]
+        if left == {"meta": {"key": "nfproto"}} and right in ("ipv4", 2) and type(right) in (str, int):
+            kinds.append("ipv4")
+        elif left == {"meta": {"key": "l4proto"}} and right in ("tcp", 6) and type(right) in (str, int):
+            kinds.append("tcp")
+        elif (left == {"payload": {"protocol": "tcp", "field": "dport"}}
+              and isinstance(right, dict) and set(right) == {"set"}
+              and isinstance(right["set"], list) and len(right["set"]) == 2
+              and all(type(port) is int for port in right["set"]) and set(right["set"]) == set(PORTS)):
+            kinds.append("ports")
+        else:
+            return False
+    return sorted(kinds) in (["ipv4", "ports"], ["ipv4", "ports", "tcp"])
+
+
+def _parse_nft(raw):
+    # Schema: upstream libnftables-json(5), shipped by Ubuntu 26.04.
+    # https://manpages.ubuntu.com/manpages/resolute/man5/libnftables-json.5.html
+    if not isinstance(raw, bytes) or not 1 <= len(raw) <= 1_048_576:
+        raise FirewallError("invalid nftables ruleset")
+    value = _json(raw)
+    if (not isinstance(value, dict) or set(value) != {"nftables"}
+            or not isinstance(value["nftables"], list) or len(value["nftables"]) > 16_384):
+        raise FirewallError("invalid nftables ruleset")
+    tables, chains, rules = {}, {}, []
+    for entry in value["nftables"]:
+        if not isinstance(entry, dict) or len(entry) != 1:
+            raise FirewallError("invalid nftables ruleset")
+        kind, item = next(iter(entry.items()))
+        if kind not in {"table", "chain", "rule"}:
+            continue
+        if not isinstance(item, dict):
+            raise FirewallError("invalid nftables ruleset")
+        if kind == "table":
+            key = (item.get("family"), item.get("name"))
+            if not all(isinstance(part, str) for part in key) or key in tables:
+                raise FirewallError("invalid nftables ruleset")
+            tables[key] = item
+        elif kind == "chain":
+            key = (item.get("family"), item.get("table"), item.get("name"))
+            if not all(isinstance(part, str) for part in key) or key in chains:
+                raise FirewallError("invalid nftables ruleset")
+            chains[key] = item
+        else:
+            rules.append(item)
+    selected = {}
+    for key, chain in chains.items():
+        family, table, name = key
+        if family == "ip6" or chain.get("hook") != "input":
+            continue
+        if (family not in {"ip", "inet"} or chain.get("type") != "filter"
+                or chain.get("policy") not in {"accept", "drop"}
+                or type(chain.get("prio")) is not int or not -2_147_483_648 <= chain["prio"] <= 2_147_483_647
+                or set(chain) - {"family", "table", "name", "handle", "type", "hook", "prio", "policy", "comment"}
+                or any(not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,63}", identifier) for identifier in (table, name))
+                or "docker" in (table + "_" + name).lower()
+                or table.lower() == "nat"
+                or (family, table) not in tables or tables[(family, table)].get("flags") not in (None, [])):
+            raise FirewallError("unsupported nftables input scope")
+        selected[key] = {"definition": dict(chain), "rules": []}
+    if not 1 <= len(selected) <= 8:
+        raise FirewallError("unsupported nftables input scope")
+    for rule in rules:
+        key = (rule.get("family"), rule.get("table"), rule.get("chain"))
+        if not all(isinstance(part, str) for part in key):
+            raise FirewallError("invalid nftables ruleset")
+        if key in selected:
+            if not isinstance(rule.get("expr"), list):
+                raise FirewallError("invalid nftables ruleset")
+            selected[key]["rules"].append(rule)
+    return selected
+
+
+def _inspect_nft():
+    _native_command(NFT)
+    _, raw = _command([NFT, "--json", "--numeric", "list", "ruleset"], timeout=10, limit=1_048_576)
+    return _parse_nft(raw)
+
+
+def _apply_nft():
+    # insert without a position prepends; all identifiers were strictly checked.
+    # https://netfilter.org/projects/nftables/manpage.html#lbAJ
+    before = _inspect_nft()
+    for (family, table, chain), data in before.items():
+        if data["rules"] and _nft_owned(data["rules"][0]):
+            continue
+        _command([NFT, "insert", "rule", family, table, chain, "meta", "nfproto", "ipv4",
+                  "meta", "l4proto", "tcp", "tcp", "dport", "{", "80", ",", "443", "}",
+                  "accept", "comment", '"quanta-web-v1"'], timeout=10, limit=4096)
+    after = _inspect_nft()
+    if set(before) != set(after) or any(
+            before[key]["definition"] != after[key]["definition"] or not after[key]["rules"]
+            or not _nft_owned(after[key]["rules"][0]) for key in before):
+        raise FirewallError("nftables web rule verification failed")
 
 
 def _rule(port):
@@ -514,7 +682,7 @@ def _wait_tls(host):
 
 def _report():
     return {"scope": "web_firewall", "status": "failed", "failure_stage": "config",
-            "failure_reason": "invalid_config",
+            "failure_reason": "invalid_config", "manager": "unknown",
             **dict.fromkeys(BOOLEAN_FIELDS, False)}
 
 
@@ -527,18 +695,29 @@ def configure(config):
         result.update(scope_verified=True, https_service_active=True)
         _own_paths_absent()
         result["failure_stage"] = "inspection"
-        ufw = _ufw_active()
-        result["ufw_active"] = ufw
-        if not ufw:
+        detected = _detect_manager(result)
+        result.update(detected)
+        manager = detected["manager"]
+        if manager == "ambiguous":
+            raise FirewallError("multiple firewall managers are active")
+        if manager == "iptables":
             _trusted_command(IPTABLES)
             _inspect_input()
+        elif manager == "nftables":
+            _inspect_nft()
+        elif manager == "firewalld":
+            zone = _firewalld_zone()
+        if manager in {"iptables", "nftables"}:
             # Ensure the boot copy is available before any new file/rule is written.
             carried = _carried_source()
         result["rules_inspected"] = True
-        if ufw:
+        if manager in {"ufw", "firewalld"}:
             result["failure_stage"] = "rules"
             result["rule_mutation_attempted"] = True
-            _apply_ufw()
+            if manager == "ufw":
+                _apply_ufw()
+            else:
+                _apply_firewalld(zone)
             result.update(rules_applied=True, persistence_configured=True)
         else:
             result["failure_stage"] = "persistence"
@@ -554,7 +733,10 @@ def configure(config):
             if not _active("quanta-web-firewall.service"):
                 raise FirewallError("web rule service is not active")
             result["persistence_service_active"] = True
-            _apply_iptables()
+            if manager == "nftables":
+                _apply_nft()
+            else:
+                _apply_iptables()
             result["rules_applied"] = True
         result["failure_stage"] = "https"
         _command([SYSTEMCTL, "restart", "quanta-https.service"], timeout=40, limit=4096)
@@ -576,15 +758,24 @@ def restore():
         raise FirewallError("web rule service differs")
     _effective_unit("quanta-web-firewall.service", UNIT)
     _read(HELPER, mode=0o755, limit=65_536)
-    if _ufw_active():
-        raise FirewallError("UFW now owns the firewall")
-    _apply_iptables()
+    manager = _detect_manager()["manager"]
+    if manager == "ambiguous":
+        raise FirewallError("multiple firewall managers are active")
+    if manager == "nftables":
+        _apply_nft()
+    elif manager == "firewalld":
+        _apply_firewalld(_firewalld_zone())
+    elif manager == "ufw":
+        _apply_ufw()
+    else:
+        _apply_iptables()
 
 
 def validate_report(value):
     if (not isinstance(value, dict) or set(value) != FIELDS or value["scope"] != "web_firewall"
             or value["status"] not in {"success", "failed"} or value["failure_stage"] not in STAGES
             or value["failure_reason"] not in REASONS
+            or value["manager"] not in MANAGERS
             or any(type(value[field]) is not bool for field in BOOLEAN_FIELDS)
             or value["ipv6_changed"] or value["cloud_ingress_changed"]):
         raise FirewallError("invalid web firewall report")
@@ -593,7 +784,8 @@ def validate_report(value):
                     "persistence_configured", "https_service_active")
         if (value["failure_stage"] != "none" or value["failure_reason"] != "none"
                 or not all(value[key] for key in required)
-                or not value["ufw_active"] and not value["persistence_service_active"]):
+                or value["manager"] in {"unknown", "ambiguous"}
+                or value["manager"] in {"iptables", "nftables"} and not value["persistence_service_active"]):
             raise FirewallError("invalid web firewall report")
     elif value["failure_stage"] == "none" or value["failure_reason"] == "none":
         raise FirewallError("invalid web firewall report")
@@ -602,6 +794,12 @@ def validate_report(value):
             or value["persistence_service_active"] and not value["persistence_configured"]
             or value["rule_mutation_attempted"] and not value["rules_inspected"]
             or value["rules_inspected"] and not value["scope_verified"]):
+        raise FirewallError("invalid web firewall report")
+    active = [name for name in ("ufw", "nftables", "firewalld") if value[name + "_active"]]
+    if (value["manager"] == "ambiguous" and len(active) < 2
+            or value["manager"] == "unknown" and active
+            or value["manager"] == "iptables" and active
+            or value["manager"] in {"ufw", "nftables", "firewalld"} and active != [value["manager"]]):
         raise FirewallError("invalid web firewall report")
     return dict(value)
 
