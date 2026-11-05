@@ -35,7 +35,7 @@ GitHub의 `Hyunwoo1205/quanta` 저장소에서 웹 또는 모바일 브라우저
 
 ## 기존 PPK로 로그인만 검사하는 준비
 
-PPK를 직접 읽는 Unix Plink를 사용하므로 `.key` export나 새 공개키 등록 없이 기존 PPK로 인증을 검사할 수 있습니다. `OCI login check (existing PPK)`는 수동 실행만 허용하며 `confirm_key_use` 기본값이 false입니다. 사용자가 명시적으로 선택하고 아래 secret이 모두 있어야 연결을 시도합니다. 아직 이 workflow로 로그인하지 않았고 개인키도 등록하지 않았습니다.
+PPK를 직접 읽는 Unix Plink를 사용하므로 `.key` export나 새 공개키 등록 없이 기존 PPK로 인증을 검사할 수 있습니다. `OCI login check (existing PPK)`는 main에서 명시적으로 선택한 수동 실행 또는 `ops/oci`의 고정된 로그인 요청을 허용합니다. 수동 실행의 `confirm_key_use` 기본값은 false입니다. 아래 secret과 신뢰한 호스트 키가 모두 있어야 연결을 시도합니다. 실제 성공 여부는 해당 실행 로그로 확인합니다.
 
 이 작업이 요청하는 서버 명령은 고정된 `true` 하나입니다. 성공은 핀으로 지정한 서버의 비자명한 SSH 인증과 해당 명령의 종료 코드 0을 뜻합니다. sudo 권한·설치·Quanta 동작·배포는 검증하지 않습니다. SSH 로그인 자체로 서버의 정상 접속·감사 로그가 남을 수 있습니다.
 
@@ -64,7 +64,11 @@ ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key.pub
 
 ### 실행과 결과
 
-선택과 지문 확인·secret 등록이 끝나면 **Actions → OCI login check (existing PPK) → Run workflow → main**에서 `confirm_key_use`를 선택하고 실행합니다. 선택하지 않으면 연결 전에 실패하며 개인키를 사용하지 않습니다. 해당 선택을 유지하는 자동 push·PR 실행은 없습니다.
+선택과 지문 확인·secret 등록이 끝나면 **Actions → OCI login check (existing PPK) → Run workflow → main**에서 `confirm_key_use`를 선택하고 수동 실행할 수 있습니다. 선택하지 않으면 연결 전에 실패하며 개인키를 사용하지 않습니다.
+
+이 대화의 작업자는 별도 실행 버튼 대신 `ops/oci`의 `.github/oci/login-request.json`에 고유한 고정 요청을 올려 검사를 시작할 수 있습니다. 이 요청은 최대 1024바이트이며 정확히 `schema_version=1`, `operation=login-check`, 정규 UUID인 `request_id`만 허용합니다. 잘못된 event·ref·요청은 설치와 개인키 단계 전에 거부합니다. 요청 파일에는 주소·키·명령 문자열을 넣지 않습니다. 이 경로도 `true` 이외의 서버 명령은 요청하지 않습니다. 기존 runner-only 검사와는 다른 파일을 사용합니다.
+
+환경의 배포 가능 브랜치를 제한했다면 `ops/oci`가 허용되어 있어야 합니다. 기존 reviewer·승인 정책은 그대로 따릅니다. 차단되더라도 secret을 다른 보관처로 옮기거나 승인을 자동 해제하지 않습니다. PR·fork 이벤트는 인증 작업을 시작하지 않습니다.
 
 도구는 공개 IPv4·32바이트 SHA256 지문·최대 32 KiB의 PPK v2/v3 형식과 `Encryption: none`을 먼저 확인합니다. Plink는 key 내용을 실제로 검증하며, 형식 검사만으로 키 일치나 인증 성공을 판정하지 않습니다. 임시 개인 디렉터리와 0600 키 파일을 만들고 원본 bytes를 그대로 사용합니다. 다른 키·인증 에이전트·포워딩·접속 공유를 끄고, 새 HOME과 최소 환경변수를 적용합니다. 서버 출력·원본 Plink 오류는 모두 버리고 고정 JSON 결과만 표시합니다. 실행 제한은 15초이고 정상·실패·timeout 종료 뒤 임시 파일을 정리합니다. 실행기 자체가 강제 종료되면 정리는 임시 실행기의 폐기 경계에 의존합니다.
 

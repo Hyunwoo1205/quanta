@@ -166,6 +166,10 @@ bootstrap·환경 검사·수치 측정·설치 패키지가 해당 CPU 잠금�
 
 먼저 개인키·환경 secret·SSH 클라이언트·OCI 명령 없이 자동 실행 자체를 검증했습니다. 지정된 `ops/oci` 브랜치와 `.github/oci/request.json`에만 반응하는 workflow를 추가하고, 이 브랜치는 기존 계산 CI의 push 검사에서만 제외했습니다. 로컬 workflow 경계·8개 요청 사례를 확인한 뒤 연결 도구로 request commit `92bb010`을 올렸습니다. 사용자 실행 버튼 없이 시작한 [실행 42009404699](https://github.com/Hyunwoo1205/quanta/actions/runs/42009404699)·job `127184267415`가 `completed/success`이며 실제 로그의 고유 요청 UUID·checkout commit이 일치합니다. 같은 commit에 전체 계산 CI는 관측되지 않았습니다. [검증 기록](docs/oci_runner_control_verification.json)에 자동 실행·결과 조회 범위만 보존합니다. 실제 서버 인증·명령·배포는 여전히 미확인이고, 이 대화에서 개인키 등록·사용은 수행하지 않았습니다.
 
+## 등록한 기존 키의 로그인 검사 시작점
+
+사용자는 `QUANTA_OCI_PPK`와 신뢰한 서버 호스트 키의 SHA256 부분을 환경 secret에 등록했다고 알렸습니다. 비밀값을 이 대화나 저장소로 가져오지 않고 기존 GitHub 실행기가 사용하도록 진행합니다. 현재 대화를 유지하는 자동 실행 요청을 인증 검사에도 연결하며, `ops/oci`의 별도 `login-request.json`은 고정된 `login-check`와 UUID만 허용합니다. main의 수동 실행은 기존 기본 false 확인을 유지하고 환경의 브랜치 제한·reviewer 정책은 변경하지 않습니다. 첫 요청은 `true` 하나이며 서버 내부 점검·설치·배포와 구분합니다. 실제 접속 결과를 확인하기 전에는 로그인 성공으로 표시하지 않습니다.
+
 ## 다음 작업
 
 [비공개 클라우드 파일럿 계획](docs/deployment-plan.md)의 호스트를 사용자 선택에 따라 **OCI 단독**으로 확정했습니다. 화면·API·계산·SQLite를 A1 Linux ARM64 VM 한 대에서 운영합니다. 실제 준비된 2 OCPU·12 GB·부트 200 GB 한 개를 유지하며, 이전 부트 50 GB·데이터 150 GB 제안으로 재구성하지 않습니다. 본인만 접속하는 Access·Tunnel은 인증·진입점 기본안입니다. 실제 무료 한도와 사용량은 배포 전에 확인합니다. 이 작업에서 실제 서버 생성·인증 접속·배포는 수행하지 않았습니다.

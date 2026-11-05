@@ -1,6 +1,11 @@
 name: OCI login check (existing PPK)
 
 on:
+  push:
+    branches:
+      - ops/oci
+    paths:
+      - .github/oci/login-request.json
   workflow_dispatch:
     inputs:
       confirm_key_use:
@@ -18,7 +23,7 @@ concurrency:
 
 jobs:
   login-check:
-    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    if: github.repository == 'Hyunwoo1205/quanta' && ((github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch') || (github.ref == 'refs/heads/ops/oci' && github.event_name == 'push'))
     runs-on: ubuntu-24.04
     environment: oci-preflight
     timeout-minutes: 5
@@ -26,21 +31,19 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Require explicit key-use selection
+      - name: Authorize only a confirmed manual run or a fixed login request
         env:
-          QUANTA_OCI_AUTH_CONFIRMED: ${{ inputs.confirm_key_use }}
-        run: |
-          if [ "$QUANTA_OCI_AUTH_CONFIRMED" != "true" ]; then
-            python3 -I deploy/oci/probe_login.py
-            exit 2
-          fi
+          QUANTA_OCI_EVENT: ${{ github.event_name }}
+          QUANTA_OCI_REF: ${{ github.ref }}
+          QUANTA_OCI_MANUAL_CONFIRM: ${{ inputs.confirm_key_use }}
+        run: python3 -I deploy/oci/authorize_login.py
       - name: Install Plink on the GitHub runner
         run: |
           sudo -n env DEBIAN_FRONTEND=noninteractive apt-get update -qq
           sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
       - name: Check pinned SSH login with the existing PPK
         env:
-          QUANTA_OCI_AUTH_CONFIRMED: ${{ inputs.confirm_key_use }}
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
           QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
           QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
           QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
