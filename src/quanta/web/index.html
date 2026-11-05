@@ -34,7 +34,7 @@
 
       <section id="connection-panel" class="connection-panel" aria-labelledby="connection-heading">
         <div><span class="eyebrow">CONNECT YOUR ENVIRONMENT</span><h2 id="connection-heading">계산 환경에 연결하세요.</h2><p id="connection-description">연결 방식을 확인하고 있습니다.</p></div>
-        <form id="connection-form" class="connection-form" hidden><label for="api-token">API 토큰</label><div class="connection-input-row"><input id="api-token" type="password" autocomplete="off" spellcheck="false" placeholder="서버의 QUANTA_API_TOKEN" required minlength="32"><button class="button primary" id="connect-button" type="submit">연결하기 <span aria-hidden="true">→</span></button></div><span id="connection-origin" class="microcopy"></span></form>
+        <form id="connection-form" class="connection-form" hidden><label id="api-token-label" for="api-token">API 토큰</label><div class="connection-input-row"><input id="api-token" type="password" autocomplete="off" spellcheck="false" placeholder="서버의 QUANTA_API_TOKEN" required minlength="32"><button class="button primary" id="connect-button" type="submit">연결하기 <span aria-hidden="true">→</span></button></div><span id="connection-origin" class="microcopy"></span></form>
         <div id="access-actions" class="access-actions" hidden><button id="access-login" class="button primary" type="button">로그인</button><span class="microcopy">이동 전 필요한 입력은 아래의 JSON 내보내기로 보관하세요.</span></div>
         <button id="check-session" class="button secondary session-check" type="button" hidden>로그인 상태 확인</button>
       </section>

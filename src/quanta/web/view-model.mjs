@@ -4,7 +4,8 @@ export const terminalStatuses = new Set(["SUCCEEDED", "FAILED", "CANCELLED"]);
 
 /** Only the fixed same-origin Access navigation routes are accepted. */
 export function authConfiguration(value) {
-  if (value?.mode === "bearer") return { mode: "bearer", authenticated: false };
+  if (value?.mode === "bearer") return { mode: "bearer", authenticated: false,
+    ...(value.authentication === "owner_token" ? { authentication: "owner_token" } : {}) };
   if (value?.mode !== "access" || typeof value.authenticated !== "boolean"
       || value.login_url !== "/" || value.logout_url !== "/cdn-cgi/access/logout") {
     throw new TypeError("연결 방식을 확인할 수 없습니다.");

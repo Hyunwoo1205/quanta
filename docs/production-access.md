@@ -1,8 +1,8 @@
 # 외부 로그인과 운영용 HTTP
 
-2026-11-05 · 패키지 0.10.0 · 입력 계약 0.2.0
+2026-11-06 · 패키지 0.11.0 · 입력 계약 0.2.0
 
-Cloudflare Access로 본인 한 명만 인증한 뒤 named Tunnel을 통해 OCI의 루프백 ASGI 서버에 연결하는 어댑터입니다. 화면·API·계산·SQLite는 같은 OCI 호스트에서 실행합니다. 개발용 `quanta serve`의 메모리 bearer 인증은 계속 사용할 수 있습니다.
+Cloudflare Access로 본인 한 명만 인증한 뒤 named Tunnel을 통해 OCI의 루프백 ASGI 서버에 연결하는 기본 운영 어댑터입니다. 화면·API·계산·SQLite는 같은 OCI 호스트에서 실행합니다. 개발용 `quanta serve`의 메모리 bearer 인증은 계속 사용할 수 있습니다. Cloudflare에 등록하지 않은 도메인을 사용할 때는 [직접 HTTPS와 소유자 접속키](direct-https.md)를 별도로 선택합니다. 아래 Access 설정이 없다고 다른 인증으로 자동 전환하지 않습니다.
 
 구현·자동 시험과 실제 외부 서비스를 구분합니다. 서명 검증과 실제 Uvicorn·계산 프로세스의 통합 시험에는 메모리에서 생성한 임시 RSA 키와 JWKS를 사용합니다. 이 시험은 실제 이메일 코드 발송·Cloudflare 계정·공개 TLS·OCI·모바일 브라우저 검증이 아닙니다. 현재 결과는 [검증 기록](production_access_verification.json)에 남깁니다.
 

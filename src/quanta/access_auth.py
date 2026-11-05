@@ -46,6 +46,37 @@ class AuthUnavailable(RuntimeError):
         super().__init__("Access verification is temporarily unavailable")
 
 
+def validate_public_origin(public_origin: str) -> None:
+    """Require the same explicit HTTPS DNS origin for every production adapter."""
+    if not isinstance(public_origin, str) or not public_origin.startswith("https://"):
+        raise ValueError("The public origin must be an explicit HTTPS origin")
+    try:
+        parsed = urlsplit(public_origin)
+        host, port = parsed.hostname, parsed.port
+    except ValueError:
+        raise ValueError("The public origin is invalid") from None
+    if (not host or not _DOMAIN.fullmatch(host) or host.endswith(".localhost")
+            or host.rsplit(".", 1)[-1].isdigit()
+            or parsed.path or parsed.query or parsed.fragment or parsed.username is not None
+            or parsed.password is not None or parsed.scheme != "https"
+            or public_origin != "https://" + parsed.netloc
+            or parsed.netloc != host + (f":{port}" if port is not None else "")
+            or (port is not None and (port == 443 or not 1 <= port <= 65535))):
+        raise ValueError("The public origin must contain only a public DNS host and optional port")
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("The public origin must use a DNS hostname")
+
+
+def validate_owner(owner: str) -> None:
+    if (not isinstance(owner, str) or not 1 <= len(owner) <= 200
+            or any(ord(char) < 33 or ord(char) == 127 for char in owner)):
+        raise ValueError("One explicit internal owner is required")
+
+
 @dataclass(frozen=True)
 class AccessConfig:
     public_origin: str
@@ -55,27 +86,7 @@ class AccessConfig:
     owner: str = "local"
 
     def __post_init__(self):
-        if not isinstance(self.public_origin, str) or not self.public_origin.startswith("https://"):
-            raise ValueError("The public origin must be an explicit HTTPS origin")
-        try:
-            parsed = urlsplit(self.public_origin)
-            host, port = parsed.hostname, parsed.port
-        except ValueError:
-            raise ValueError("The public origin is invalid") from None
-        if (not host or not _DOMAIN.fullmatch(host) or host.endswith(".localhost")
-                or host.rsplit(".", 1)[-1].isdigit()
-                or parsed.path or parsed.query or parsed.fragment or parsed.username is not None
-                or parsed.password is not None or parsed.scheme != "https"
-                or self.public_origin != "https://" + parsed.netloc
-                or parsed.netloc != host + (f":{port}" if port is not None else "")
-                or (port is not None and (port == 443 or not 1 <= port <= 65535))):
-            raise ValueError("The public origin must contain only a public DNS host and optional port")
-        try:
-            ipaddress.ip_address(host)
-        except ValueError:
-            pass
-        else:
-            raise ValueError("The public origin must use a DNS hostname")
+        validate_public_origin(self.public_origin)
         if not isinstance(self.team_domain, str) or not _TEAM.fullmatch(self.team_domain):
             raise ValueError("The Access team domain must be <team>.cloudflareaccess.com")
         if not isinstance(self.audience, str) or not _AUDIENCE.fullmatch(self.audience):
@@ -83,9 +94,7 @@ class AccessConfig:
         if (not isinstance(self.allowed_email, str) or len(self.allowed_email) > 254
                 or not _EMAIL.fullmatch(self.allowed_email)):
             raise ValueError("One explicit authorized email address is required")
-        if (not isinstance(self.owner, str) or not 1 <= len(self.owner) <= 200
-                or any(ord(char) < 33 or ord(char) == 127 for char in self.owner)):
-            raise ValueError("One explicit internal owner is required")
+        validate_owner(self.owner)
 
     @property
     def issuer(self) -> str:

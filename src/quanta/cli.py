@@ -122,14 +122,22 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "serve-production":
         from .access_auth import AccessConfig
+        from .owner_token import OwnerTokenConfig
         from .production import create_app
         from .service import ExecutionService
         from .production_server import run_production
         try:
-            config = AccessConfig(public_origin=os.environ.get("QUANTA_PUBLIC_ORIGIN", ""),
-                team_domain=os.environ.get("QUANTA_ACCESS_TEAM_DOMAIN", ""),
-                audience=os.environ.get("QUANTA_ACCESS_AUDIENCE", ""),
-                allowed_email=os.environ.get("QUANTA_ALLOWED_EMAIL", ""))
+            auth_mode = os.environ.get("QUANTA_AUTH_MODE", "access")
+            if auth_mode == "access":
+                config = AccessConfig(public_origin=os.environ.get("QUANTA_PUBLIC_ORIGIN", ""),
+                    team_domain=os.environ.get("QUANTA_ACCESS_TEAM_DOMAIN", ""),
+                    audience=os.environ.get("QUANTA_ACCESS_AUDIENCE", ""),
+                    allowed_email=os.environ.get("QUANTA_ALLOWED_EMAIL", ""))
+            elif auth_mode == "owner-token":
+                config = OwnerTokenConfig(public_origin=os.environ.get("QUANTA_PUBLIC_ORIGIN", ""),
+                    token=os.environ.get("QUANTA_OWNER_TOKEN", ""))
+            else:
+                raise ValueError("The production authentication mode must be access or owner-token")
             if not 0 <= args.port <= 65535:
                 raise ValueError("The port must be between 0 and 65535")
             app = create_app(ExecutionService(args.store), config)

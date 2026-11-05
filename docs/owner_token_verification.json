@@ -1,0 +1,118 @@
+{
+  "verification_kind": "optional_production_owner_token",
+  "package_version": "0.11.0",
+  "architecture": "x86_64",
+  "python": "3.12.14",
+  "dependency_lock_changed": false,
+  "authentication_default": "access",
+  "owner_token_activated_on_oci": false,
+  "tests": {
+    "focused_python": {
+      "passed": 197,
+      "seconds": 11.83
+    },
+    "full_python": {
+      "passed": 1095,
+      "subtests_passed": 94,
+      "seconds": 269.25
+    },
+    "node": {
+      "passed": 35,
+      "milliseconds": 136.233439
+    },
+    "contracts_valid": true,
+    "pip_check_passed": true
+  },
+  "caddy": {
+    "release": "v2.11.9",
+    "linux_amd64_archive_sha256": "5b8cb7faf8726a2028ad96a66e54e6e81e8f361bc6175e5d22bbd997cc5177fb",
+    "local_proof": {
+      "caddy": "v2.11.9 h1:bhZtcRKQOq0fuLvEgCdPYvUxXyGn9kzjG4lh2332DTE=",
+      "template_validation": "passed",
+      "local_tls": "temporary_internal_ca",
+      "public_tls_verified": false,
+      "cases": [
+        {
+          "case": "http1_known_length",
+          "status": 200,
+          "frontend_http": "1.1",
+          "passed": true
+        },
+        {
+          "case": "http1_empty_mutation",
+          "status": 200,
+          "frontend_http": "1.1",
+          "passed": true
+        },
+        {
+          "case": "http1_chunked",
+          "status": 400,
+          "frontend_http": "1.1",
+          "passed": true
+        },
+        {
+          "case": "http1_chunked_trailer",
+          "status": 400,
+          "frontend_http": "1.1",
+          "passed": true
+        },
+        {
+          "case": "http2_offer_falls_back_to_http1",
+          "status": 200,
+          "frontend_http": "1.1",
+          "passed": true
+        },
+        {
+          "case": "http1_exact_limit",
+          "status": 200,
+          "frontend_http": "1.1",
+          "passed": true
+        },
+        {
+          "case": "http1_over_limit",
+          "status": 413,
+          "frontend_http": "1.1",
+          "passed": true
+        },
+        {
+          "case": "http2_only_alpn_rejected",
+          "result": "tls_handshake_rejected",
+          "passed": true
+        },
+        {
+          "case": "http1_after_rejected_handshake",
+          "status": 200,
+          "frontend_http": "1.1",
+          "passed": true
+        }
+      ]
+    }
+  },
+  "scope": {
+    "physical_validation_status": "unvalidated",
+    "new_scientific_model": false,
+    "public_tls_verified": false,
+    "oci_application_deployed": false,
+    "authenticated_browser_verified": false,
+    "native_ci_verified": false
+  },
+  "source_files_sha256": {
+    "pyproject.toml": "ba6a588a9d4fa39de06270a3fa11ca8069d4bbe61dc5ade5bbf910fa680e8c5f",
+    "src/quanta/__init__.py": "c58b3d06757c5eacc95f23ba99e980bda7c3149db837b912cf7cf85b751aaac0",
+    "src/quanta/access_auth.py": "f096678d5e9d89badcb3b92600836e2f91ab2f2dd794a0f43752ca8fe4d85d27",
+    "src/quanta/owner_token.py": "b1d8165f79282032f80f147d426208bb2510f8ba3a838947d05276936bc2e183",
+    "src/quanta/production.py": "cb1e20142e513d83fc91cd4a257b35d99df3c8c943235424adc92bb248bba308",
+    "src/quanta/cli.py": "0d2e23a9fc05f714f08dd4834182e49765bbf8e7ba74209f32826754a461939d",
+    "src/quanta/web/app.js": "c875534d3aa0737eb21aa5a7053b4cea0b49e2b95f0f6727a250fc8c855efc76",
+    "src/quanta/web/index.html": "3715c5c71f9f46d8893714ed899c9917683cb4032ffbdd381613bd797225aa81",
+    "src/quanta/web/view-model.mjs": "0577321cd015ea209ad4d8899a81bb37369e0bda0bbefcd60cfae981e3d0adde",
+    "deploy/oci/Caddyfile.example": "0af075db4d4f2653931916e40aa22bdd1c76c237407fe6fed5a8cb52b0392df9",
+    "scripts/verify_caddy.py": "59a49fe51821ce6d64b6ed4ababee8b270b980c3f996466948b5c877eecfc54d"
+  },
+  "notes": [
+    "Test tokens are fixed synthetic fixtures; no production token was read, generated, or recorded.",
+    "The 0.10.0-to-0.11.0 metadata mismatch was corrected before the final focused and full passing runs.",
+    "Historical numerical verification records retain their original implementation hashes; fresh native CI remains separate.",
+    "First native CI 42062861784 stopped in the negative ALPN probe because OpenSSL reported the expected rejection with a different message. The probe now checks handshake rejection and a succeeding H1 request without matching text; application source was unchanged."
+  ]
+}
