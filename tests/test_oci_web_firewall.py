@@ -485,6 +485,17 @@ class FixedParentSafetyTests(unittest.TestCase):
 
 
 class FixedScopeAndLifecycleTests(unittest.TestCase):
+    @staticmethod
+    def acme_files(files, email="operator@example.com"):
+        files[firewall.CADDYFILE] = files[firewall.CADDYFILE].replace(
+            b"\tadmin off\n", b"\tadmin off\n\temail {$QUANTA_ACME_EMAIL}\n"
+            b"\tacme_ca https://acme.zerossl.com/v2/DV90\n")
+        files[firewall.HTTPS_ENV] += ("QUANTA_ACME_EMAIL=" + email + "\n").encode("ascii")
+        receipt = {"schema": 1, **config(), "issuer": "zerossl_acme",
+                   "email_sha256": hashlib.sha256(email.encode("ascii")).hexdigest()}
+        files[firewall.ACME_RECEIPT] = json.dumps(receipt).encode()
+        return receipt
+
     @contextlib.contextmanager
     def scoped_host(self):
         spec = importlib.util.spec_from_file_location("quanta_test_https_unit_fixture", ROOT / "deploy/oci/install_https.py")
@@ -734,6 +745,7 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
             if fragment != firewall.HTTPS_UNIT:
                 expected.append(mock.call(fragment))
             expected.append(mock.call(Path(directory) / "quanta-https.service.d"))
+        expected.append(mock.call(firewall.ACME_RECEIPT))
         self.assertEqual(calls["absent"].call_args_list, expected)
         calls["active"].assert_called_once_with("quanta-https.service")
         self.assertEqual(calls["command"].call_args_list, [
@@ -743,6 +755,79 @@ class FixedScopeAndLifecycleTests(unittest.TestCase):
         calls["read"].assert_any_call(firewall.HTTPS_UNIT, mode=0o644)
         calls["read"].assert_any_call(firewall.CADDYFILE, private=True)
         calls["read"].assert_any_call(firewall.HTTPS_ENV, private=True)
+
+    def test_acme_variant_requires_exact_config_environment_and_protected_hashed_receipt(self):
+        with self.scoped_host() as (calls, files):
+            receipt = self.acme_files(files)
+            firewall._scope(config(), require_active=True)
+        self.assertEqual(set(receipt), {"schema", "source_sha", "public_origin", "auth_mode", "issuer", "email_sha256"})
+        self.assertNotIn("operator@example.com", json.dumps(receipt))
+        calls["read"].assert_any_call(firewall.ACME_RECEIPT, private=True)
+        self.assertNotIn(mock.call(firewall.ACME_RECEIPT), calls["absent"].call_args_list)
+        calls["active"].assert_called_once_with("quanta-https.service")
+
+    def test_acme_receipt_schema_identity_hash_and_presence_are_required_before_commands(self):
+        for changed in ({"schema": True}, {"schema": 2}, {"source_sha": "0" * 40},
+                        {"public_origin": "https://other.example.com"}, {"auth_mode": "access"},
+                        {"issuer": "unknown"}, {"email_sha256": "0" * 64}, {"email": "operator@example.com"}):
+            with self.subTest(fields=sorted(changed)), self.scoped_host() as (calls, files):
+                receipt = self.acme_files(files)
+                files[firewall.ACME_RECEIPT] = json.dumps({**receipt, **changed}).encode()
+                with self.assertRaises(ValueError):
+                    firewall._scope(config(), require_active=True)
+                calls["command"].assert_not_called()
+        with self.scoped_host() as (calls, files):
+            self.acme_files(files)
+            def read(path, **kwargs):
+                if path == firewall.ACME_RECEIPT:
+                    raise FileNotFoundError(PRIVATE)
+                return files[path]
+            calls["read"].side_effect = read
+            with self.assertRaises(FileNotFoundError):
+                firewall._scope(config(), require_active=True)
+            calls["command"].assert_not_called()
+
+    def test_acme_unknown_configuration_or_email_environment_injection_is_refused(self):
+        for altered in ("unknown_caddy", "unknown_ca", "email_without_variant", "wrong_host", "non_ascii",
+                        "crlf", "extra_assignment", "shell_expression", "double_dot", "missing_newline"):
+            with self.subTest(altered=altered), self.scoped_host() as (calls, files):
+                self.acme_files(files)
+                if altered == "unknown_caddy":
+                    files[firewall.CADDYFILE] += b"\n# unknown\n"
+                elif altered == "unknown_ca":
+                    files[firewall.CADDYFILE] = files[firewall.CADDYFILE].replace(b"acme.zerossl.com", b"other.example.com")
+                elif altered == "email_without_variant":
+                    files[firewall.CADDYFILE] = files[firewall.TEMPLATE].replace(b"\tadmin 127.0.0.1:2019\n", b"\tadmin off\n")
+                elif altered == "wrong_host":
+                    files[firewall.HTTPS_ENV] = files[firewall.HTTPS_ENV].replace(b"quanta.example.com", b"other.example.com")
+                else:
+                    email = {"non_ascii": b"person@ex\xffample.com", "crlf": b"operator@example.com\r\nEVIL=1",
+                             "extra_assignment": b"operator@example.com\nEVIL=1", "shell_expression": b"$(private)@example.com",
+                             "double_dot": b"operator..one@example.com", "missing_newline": b"operator@example.com"}[altered]
+                    files[firewall.HTTPS_ENV] = b"QUANTA_PUBLIC_HOST=quanta.example.com\nQUANTA_ACME_EMAIL=" + email
+                    if altered != "missing_newline":
+                        files[firewall.HTTPS_ENV] += b"\n"
+                with self.assertRaises((ValueError, UnicodeError)):
+                    firewall._scope(config(), require_active=True)
+                calls["command"].assert_not_called()
+
+    def test_legacy_https_requires_absent_acme_receipt_and_receipt_reads_require_root0600(self):
+        with self.scoped_host() as (calls, _):
+            def absent(path):
+                if path == firewall.ACME_RECEIPT:
+                    raise firewall.FirewallError("fixed path already exists")
+            calls["absent"].side_effect = absent
+            with self.assertRaises(ValueError):
+                firewall._scope(config(), require_active=True)
+            calls["command"].assert_not_called()
+        for mode, owner in ((stat.S_IFREG | 0o644, 0), (stat.S_IFREG | 0o640, 0),
+                            (stat.S_IFREG | 0o600, 1000), (stat.S_IFLNK | 0o600, 0), (stat.S_IFDIR | 0o600, 0)):
+            info = types.SimpleNamespace(st_mode=mode, st_uid=owner)
+            with self.subTest(mode=mode, owner=owner), mock.patch.object(firewall, "_parents"), \
+                    mock.patch.object(Path, "lstat", return_value=info), mock.patch.object(firewall.os, "open") as opened:
+                with self.assertRaises(ValueError):
+                    firewall._read(firewall.ACME_RECEIPT, private=True)
+                opened.assert_not_called()
 
     def test_dropin_conflict_or_effective_unit_mismatch_blocks_scope(self):
         for path in [Path("/etc/systemd/system/quanta-https.service.d"), Path("/run/systemd/transient/quanta-https.service")]:

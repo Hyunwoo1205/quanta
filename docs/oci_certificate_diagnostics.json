@@ -1,0 +1,62 @@
+{
+  "verification_kind": "read_only_certificate_issue_classification",
+  "workflow_run": {
+    "id": 42081277238,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42081277238",
+    "head_sha": "5cd661e5fb6a9b8b1ddaab58ea9c7dbdbac89211",
+    "created_at_utc": "2026-11-05T18:07:54Z",
+    "completed_at_utc": "2026-11-05T18:08:29Z",
+    "conclusion": "failure",
+    "diagnostic_job_id": 127434645557,
+    "diagnostic_job_conclusion": "success",
+    "public_job_id": 127434844365,
+    "public_job_conclusion": "failure"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "diagnose-https",
+    "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "request_id": "8f5a93d2-6714-45e1-9408-e7b4b7fe5079"
+  },
+  "result": {
+    "authentication_attempted": true,
+    "requested_operation": "diagnose-https",
+    "result": {
+      "acme_error": "rate_limit",
+      "authorization_failure_rate_limit_seen": false,
+      "caddy_tls_events_seen": true,
+      "failure_stage": "none",
+      "journal_read": true,
+      "latest_issuer": "letsencrypt",
+      "letsencrypt_seen": true,
+      "rate_limit_subtype": "registered_domain",
+      "registered_domain_rate_limit_seen": true,
+      "retry_delay_seconds": 600,
+      "retry_pending": true,
+      "scope": "https_diagnostics",
+      "scope_verified": true,
+      "service_active": true,
+      "status": "success",
+      "tls_verified": false,
+      "unknown_issuer_seen": false,
+      "zerossl_seen": false
+    },
+    "scope": "ssh_fixed_installation",
+    "status": "success"
+  },
+  "scope": {
+    "registered_domain_rate_limit_observed": true,
+    "firewall_rule_application_previously_verified": true,
+    "public_http_redirect_previously_verified": true,
+    "public_tls_verified": false,
+    "raw_journal_recorded": false,
+    "origin_or_email_recorded": false,
+    "private_key_read": false,
+    "configuration_changed": false
+  },
+  "notes": [
+    "retry_delay_seconds is the observed Caddy backoff interval; it is not the remaining CA rate-limit period.",
+    "The certificate failure is an external registered-domain issuance limit, not a host firewall configuration failure.",
+    "A different free ACME issuer requires an explicitly supplied certificate contact email; none has been used or transmitted yet."
+  ]
+}

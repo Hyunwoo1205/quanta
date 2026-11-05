@@ -41,6 +41,8 @@ CADDY = Path("/usr/local/lib/quanta/caddy")
 TEMPLATE = Path("/srv/quanta/source") / SOURCE_SHA / "deploy/oci/Caddyfile.example"
 CADDYFILE = Path("/etc/quanta/Caddyfile")
 HTTPS_ENV = Path("/etc/quanta/https.env")
+ACME_RECEIPT = Path("/etc/quanta/acme.json")
+ACME_CA = "https://acme.zerossl.com/v2/DV90"
 HELPER = Path("/usr/local/lib/quanta/web_firewall.py")
 UNIT = Path("/etc/systemd/system/quanta-web-firewall.service")
 BOOT_ARGUMENT = "--restore"
@@ -109,6 +111,8 @@ _ERROR_REASONS = {
     "invalid nftables ruleset": "nft_ruleset_invalid",
     "unsupported nftables input scope": "nft_scope_unsupported",
     "nftables web rule verification failed": "nft_rule_unverified",
+    "invalid ACME contact email": "acme_email_invalid",
+    "ACME policy receipt differs": "acme_receipt_mismatch",
 }
 REASONS = frozenset(("none", "operation_failed", "system_path_missing", "permission_denied",
                      *_ERROR_REASONS.values()))
@@ -322,6 +326,50 @@ def _effective_unit(unit, path):
         raise FirewallError("effective fixed service differs")
 
 
+def _acme_email(value):
+    if (not isinstance(value, str) or not value.isascii() or len(value) > 254
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@"
+                                r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+                                r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+", value)):
+        raise FirewallError("invalid ACME contact email")
+    local, domain = value.rsplit("@", 1)
+    if local.endswith(".") or ".." in local or len(domain) > 253 or domain.rsplit(".", 1)[-1].isdigit():
+        raise FirewallError("invalid ACME contact email")
+    return value
+
+
+def _acme_variant(base):
+    return base.replace(b"\tadmin off\n", b"\tadmin off\n\temail {$QUANTA_ACME_EMAIL}\n\tacme_ca "
+                        + ACME_CA.encode("ascii") + b"\n")
+
+
+def _acme_receipt(config, email):
+    return {"schema": 1, "source_sha": config["source_sha"], "public_origin": config["public_origin"],
+            "auth_mode": config["auth_mode"], "issuer": "zerossl_acme",
+            "email_sha256": hashlib.sha256(email.encode("ascii")).hexdigest()}
+
+
+def _https_config_guard(config, template):
+    base = template.replace(b"\tadmin 127.0.0.1:2019\n", b"\tadmin off\n")
+    host = urlsplit(config["public_origin"]).hostname
+    original_env = ("QUANTA_PUBLIC_HOST=" + host + "\n").encode("ascii")
+    actual, environment = _read(CADDYFILE, private=True), _read(HTTPS_ENV, private=True)
+    if actual == base and environment == original_env:
+        _absent(ACME_RECEIPT)
+        return
+    if actual != _acme_variant(base):
+        raise FirewallError("HTTPS configuration differs")
+    prefix = original_env + b"QUANTA_ACME_EMAIL="
+    if not environment.startswith(prefix) or not environment.endswith(b"\n"):
+        raise FirewallError("HTTPS environment differs")
+    email = _acme_email(environment[len(prefix):-1].decode("ascii"))
+    if environment != prefix + email.encode("ascii") + b"\n":
+        raise FirewallError("HTTPS environment differs")
+    receipt = _json(_read(ACME_RECEIPT, private=True))
+    if not isinstance(receipt, dict) or type(receipt.get("schema")) is not int or receipt != _acme_receipt(config, email):
+        raise FirewallError("ACME policy receipt differs")
+
+
 def _scope(config, *, require_active):
     if os.geteuid() != 0:
         raise FirewallError("root is required")
@@ -337,12 +385,7 @@ def _scope(config, *, require_active):
     template = _read(TEMPLATE)
     if hashlib.sha256(template).hexdigest() != TEMPLATE_SHA256:
         raise FirewallError("source template differs")
-    expected = template.replace(b"\tadmin 127.0.0.1:2019\n", b"\tadmin off\n")
-    if _read(CADDYFILE, private=True) != expected:
-        raise FirewallError("HTTPS configuration differs")
-    host = urlsplit(config["public_origin"]).hostname
-    if _read(HTTPS_ENV, private=True) != ("QUANTA_PUBLIC_HOST=" + host + "\n").encode("ascii"):
-        raise FirewallError("HTTPS environment differs")
+    _https_config_guard(config, template)
     # The executable is large; inspect metadata and the fixed ARM64 ELF header.
     _parents(CADDY)
     info = CADDY.lstat()

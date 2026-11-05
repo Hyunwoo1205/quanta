@@ -16,7 +16,7 @@ _spec.loader.exec_module(transport)
 
 INSTALLERS = {'install-app': 'install_app', 'install-https': 'install_https',
               'configure-web-firewall': 'configure_web_firewall', 'verify-backup': 'verify_backup',
-              'diagnose-https': 'diagnose_https'}
+              'diagnose-https': 'diagnose_https', 'configure-acme': 'configure_acme'}
 SOURCE_SHA = '1738107301ef873bfe5e01f930866c2a74e4ec3f'
 
 
@@ -47,6 +47,8 @@ def probe(environ=None, *, runner=None):
         installer = transport._module(module_name)
         config = {'source_sha': SOURCE_SHA, 'public_origin': environ.get('QUANTA_PUBLIC_ORIGIN', ''),
                   'auth_mode': environ.get('QUANTA_AUTH_MODE', '')}
+        if operation == 'configure-acme':
+            config['acme_email'] = environ.get('QUANTA_ACME_EMAIL', '')
         installer.validate_config(config)
         encoded = base64.b64encode(json.dumps(config, sort_keys=True, separators=(',', ':')).encode()).decode('ascii')
         source = Path(__file__).with_name(module_name + '.py').read_text(encoding='utf-8')
