@@ -1,5 +1,13 @@
 # PC 없이 OCI 연결을 검증하는 첫 단계
 
+## 선택한 실행 경로
+
+현재 대화·기존 SSH 키·서버 구성을 유지하고 초기 설정을 줄이기 위해 GitHub 클라우드 실행기를 선택합니다. OCI에 Tailscale을 설치하거나 새 Codex Cloud 환경으로 작업을 옮기지 않습니다. Plink는 GitHub 실행기에서만 준비하며 서버의 기존 SSH와 PPK를 사용합니다.
+
+반복 작업의 실행 버튼을 줄이기 위해 `ops/oci` 브랜치의 `.github/oci/request.json` 변경으로 시작하는 자동 실행 경로를 추가했습니다. 첫 검증은 `runner-check` 요청만 허용하며 환경 secret·개인키·SSH·OCI 명령을 사용하지 않습니다. 운영 요청 브랜치는 무거운 계산 CI의 push 검사에서만 제외하고 main·PR·수동 계산 검사는 유지합니다. 키를 사용하는 자동 작업은 이 첫 검사에 포함하지 않습니다.
+
+사용자의 Run workflow 조작 없이 연결 도구의 branch update로 시작한 [실행 42009404699](https://github.com/Hyunwoo1205/quanta/actions/runs/42009404699)는 `completed/success`입니다. 실제 로그의 고유 요청 UUID·checkout commit을 대조했습니다. 같은 요청 commit에는 이 workflow만 관측됐고 전체 계산 CI는 시작하지 않았습니다. [검증 기록](oci_runner_control_verification.json)에 주소·키 없이 보존합니다. 이는 자동 실행·결과 회수 경로의 근거이며 실제 SSH 로그인·설치·배포 성공은 아닙니다. 원격 명령 자동화는 기존 키 인증을 확인한 뒤 필요한 고정 작업별로 추가합니다.
+
 이 문서는 GitHub Actions를 별도의 CI/CD 실행기로 사용하는 연결 준비 절차입니다. 현재 대화의 네트워크를 프록시나 터널로 바꾸지 않습니다. GitHub 실행기가 서버의 22번 포트에 도달하는지 먼저 검사하며, 성공해도 SSH 인증·서버 명령·설치가 가능한 것으로 표시하지 않습니다.
 
 ## 현재 확인한 한계

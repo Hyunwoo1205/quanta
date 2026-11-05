@@ -1,0 +1,46 @@
+{
+  "verification_kind": "github_push_control_only",
+  "workflow_run": {
+    "id": 42009404699,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42009404699",
+    "event": "push",
+    "branch": "ops/oci",
+    "head_sha": "92bb0105118d64c052d8a315737e9c12e6310e9f",
+    "conclusion": "success",
+    "created_at_utc": "2026-11-05T10:16:56Z",
+    "completed_at_utc": "2026-11-05T10:17:12Z",
+    "job_id": 127184267415
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "runner-check",
+    "request_id": "9a4c12c9-70ba-4f7e-ae03-f1cbb0536253"
+  },
+  "evidence": {
+    "source": "decoded GitHub job log",
+    "result": {
+      "oci_commands_sent": false,
+      "private_key_used": false,
+      "request_id": "9a4c12c9-70ba-4f7e-ae03-f1cbb0536253",
+      "scope": "runner_control",
+      "ssh_attempted": false,
+      "status": "success"
+    },
+    "checkout_commit_observed": true,
+    "all_job_steps_completed_successfully": true,
+    "workflows_observed_for_request_commit": [
+      "Cloud runner control check (no SSH)"
+    ]
+  },
+  "scope": {
+    "credential_custody_changed": false,
+    "ssh_authentication_verified": false,
+    "oci_deployment_verified": false,
+    "runner_control_only": true
+  },
+  "notes": [
+    "Connector branch update automatically triggered the runner without user Run workflow action.",
+    "No SSH client, private key, environment secret or OCI command was used.",
+    "Existing login check remains manual and opt-in."
+  ]
+}
