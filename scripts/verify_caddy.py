@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+from http.client import HTTPResponse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
@@ -202,13 +203,43 @@ def run_check(caddy: str) -> dict:
                     with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
                         with context.wrap_socket(raw, server_hostname=HOST):
                             raise RuntimeError("An HTTP/2-only client was not rejected")
-                except ssl.SSLError as exc:
-                    if "no application protocol" not in str(exc).lower():
-                        raise
+                except ssl.SSLError:
+                    # OpenSSL's alert text varies across supported hosts. Only
+                    # this negative handshake may fail; a positive handshake
+                    # and request below must succeed with the same CA and SNI.
+                    if process.poll() is not None:
+                        raise RuntimeError("Caddy exited during the HTTP/2-only probe")
                 if not observed.empty():
                     raise RuntimeError("Unsupported HTTP/2 reached the upstream")
                 results.append({"case": "http2_only_alpn_rejected",
-                                "result": "tls_no_application_protocol", "passed": True})
+                                "result": "tls_handshake_rejected", "passed": True})
+                context.set_alpn_protocols(["http/1.1"])
+                with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
+                    with context.wrap_socket(raw, server_hostname=HOST) as secured:
+                        if secured.selected_alpn_protocol() != "http/1.1":
+                            raise RuntimeError("Positive HTTP/1.1 handshake was not negotiated")
+                        headers = ("POST /probe HTTP/1.1\r\nHost: " + HOST
+                                   + "\r\nOrigin: " + ORIGIN
+                                   + "\r\nAuthorization: " + AUTHORIZATION
+                                   + "\r\nContent-Type: application/json\r\nContent-Length: "
+                                   + str(len(small)) + "\r\nConnection: close\r\n\r\n")
+                        secured.sendall(headers.encode("ascii") + small)
+                        response = HTTPResponse(secured)
+                        response.begin()
+                        if response.status != 200 or response.version != 11 or response.read() != b"{}":
+                            raise RuntimeError("HTTP/1.1 request failed after the negative TLS probe")
+                        response.close()
+                record = observed.get(timeout=2)
+                expected = {
+                    "version": "HTTP/1.1", "content_length": [str(len(small))],
+                    "transfer_encoding": [], "bytes": len(small),
+                    "sha256": hashlib.sha256(small).hexdigest(), "host": [HOST],
+                    "origin": [ORIGIN], "authorization": [AUTHORIZATION],
+                }
+                if record != expected:
+                    raise RuntimeError("Positive HTTP/1.1 upstream check failed after the negative TLS probe")
+                results.append({"case": "http1_after_rejected_handshake", "status": 200,
+                                "frontend_http": "1.1", "passed": True})
                 return {"caddy": version, "template_validation": "passed",
                         "local_tls": "temporary_internal_ca", "public_tls_verified": False,
                         "cases": results}

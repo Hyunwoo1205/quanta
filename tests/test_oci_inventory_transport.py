@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import stat
+import shlex
 import sys
 import tempfile
 import textwrap
@@ -27,6 +28,31 @@ KEY = '\n'.join([
 
 
 class InventoryTransportTests(unittest.TestCase):
+    def test_only_two_fixed_collectors_can_be_selected(self):
+        with mock.patch.object(inventory, '_module', side_effect=AssertionError('must not load')):
+            for collector in ('../probe_login', 'arbitrary-command', None, []):
+                with self.subTest(collector=collector):
+                    result = inventory.probe(self.config(), collector=collector)
+                    self.assertEqual(result['status'], 'not_configured')
+                    self.assertFalse(result['authentication_attempted'])
+
+    def test_preflight_uses_fixed_source_scope_and_same_private_transport(self):
+        real_module = inventory._module
+        sanitized = {'scope': 'deployment_preflight', 'status': 'success'}
+        def module(name):
+            return mock.Mock(sanitize_report=lambda raw: sanitized) if name == 'deployment_preflight' else real_module(name)
+        def runner(argv, environment, directory):
+            self.assertEqual(shlex.split(argv[-1]), ['/usr/bin/python3', '-I', '-B', '-c',
+                (ROOT / 'deploy/oci/deployment_preflight.py').read_text()])
+            self.assertEqual(Path(argv[argv.index('-i') + 1]).read_bytes(), KEY.encode())
+            self.assertEqual(environment, {'HOME': directory, 'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'})
+            return 'success', b'untrusted output is never logged', True
+        with mock.patch.object(inventory, '_module', side_effect=module):
+            result = inventory.probe(self.config(), runner=runner, collector='deployment_preflight')
+        self.assertEqual(result, {'scope': 'ssh_deployment_preflight', 'status': 'success',
+            'authentication_attempted': True, 'requested_operation': 'deployment-preflight',
+            'preflight': sanitized})
+
     def test_exact_opt_in_prevents_loading_or_launching(self):
         with mock.patch.object(inventory, '_module', side_effect=AssertionError('must not load')):
             self.assertEqual(inventory.probe({})['status'], 'not_configured')
@@ -114,9 +140,17 @@ class InventoryTransportTests(unittest.TestCase):
 
 class InventoryWorkflowGateTests(unittest.TestCase):
     def test_actual_gate_rejects_invalid_requests_before_credentials(self):
-        workflow = (ROOT / '.github/workflows/oci-host-inventory.yml').read_text()
+        for workflow, request, operation in (
+            ('oci-host-inventory.yml', 'inventory-request.json', 'host-inventory'),
+            ('oci-deployment-preflight.yml', 'deployment-request.json', 'deployment-preflight'),
+        ):
+            with self.subTest(operation=operation):
+                self.check_gate(workflow, request, operation)
+
+    def check_gate(self, workflow_name, request_name, operation):
+        workflow = (ROOT / '.github/workflows' / workflow_name).read_text()
         source = textwrap.dedent(workflow.split("python3 -I - <<'PY'\n", 1)[1].split('\n          PY', 1)[0])
-        valid = {'schema_version': 1, 'operation': 'host-inventory',
+        valid = {'schema_version': 1, 'operation': operation,
                  'request_id': 'a45e68ce-2a91-467e-a1a1-9d23d61eb0ff'}
         cases = [(json.dumps(valid), 0), ('[]', 2), ('x' * 1025, 2), ('broken', 2),
                  (json.dumps({**valid, 'schema_version': True}), 2),
@@ -125,7 +159,7 @@ class InventoryWorkflowGateTests(unittest.TestCase):
                  (json.dumps({**valid, 'extra': 'secret-like fixture'}), 2),
                  (json.dumps(valid)[:-1] + ',"operation":"host-inventory"}', 2)]
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / '.github/oci/inventory-request.json'
+            path = Path(directory) / '.github/oci' / request_name
             path.parent.mkdir(parents=True)
             for raw, expected in cases:
                 with self.subTest(raw=raw[:30]):

@@ -56,9 +56,11 @@ python3 scripts/verify_caddy.py --caddy /path/to/verified/caddy
 | HTTP/1.1 POST, JSON 본문·빈 본문 | upstream HTTP/1.1, 정확한 Content-Length, Transfer-Encoding 없음 |
 | HTTP/1.1 chunked 및 Trailer 헤더를 포함한 chunked | 프록시 400, upstream 도달 없음 |
 | HTTP/2를 제안하는 일반 클라이언트 | HTTP/1.1로 연결되어 일반 JSON 요청 성공 |
-| HTTP/2 전용 ALPN | TLS 단계에서 거부, upstream 도달 없음 |
+| HTTP/2 전용 ALPN | TLS handshake 거부, upstream 도달 없음; 같은 CA·hostname의 후속 HTTP/1.1 요청 성공 |
 | 정확히 1 MiB / 1 MiB 초과 본문 | 경계 크기 전달 / 413 거부 |
 | Host·Origin·Authorization | 원래 공개 hostname·origin·합성 테스트 bearer 보존 |
+
+최종 로컬 검사는 설정 검사와 요청 9개 사례를 통과했습니다. HTTP/2 전용 연결의 음성 검사는 OpenSSL 오류 문구에 의존하지 않고 TLS handshake 실패를 기록합니다. 이어서 동일한 Python TLS context·CA·hostname에서 HTTP/1.1 POST가 정상 전달되는지 검사해 일반 TLS 실패나 서버 중단을 합격으로 처리하지 않습니다.
 
 실제 운영 검증에는 외부 HTTPS 인증서 신뢰·HTTP→HTTPS 이동, 토큰 없는 API 401, 잘못된 토큰 401, 올바른 토큰의 준비 상태·계산·조회·다운로드, 다른 Host·Origin 거부, 재시작 후 단일 worker와 데이터 보존을 포함합니다. 브라우저에서 인증한 실제 동작과 단순한 TLS 연결 성공을 구분합니다.
 

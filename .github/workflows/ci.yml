@@ -89,8 +89,10 @@ jobs:
           curl --fail --location --max-time 60 --output .cache/caddy/release.tar.gz "https://github.com/caddyserver/caddy/releases/download/v2.11.9/caddy_2.11.9_linux_${QUANTA_CADDY_ARCH}.tar.gz"
           printf '%s  %s\n' "$QUANTA_CADDY_SHA" '.cache/caddy/release.tar.gz' | sha256sum --check --strict
           tar -xzf .cache/caddy/release.tar.gz -C .cache/caddy caddy
-          python scripts/verify_caddy.py --caddy .cache/caddy/caddy > .cache/caddy_verification.json
+          QUANTA_CADDY_RESULT=0
+          python scripts/verify_caddy.py --caddy .cache/caddy/caddy > .cache/caddy_verification.json || QUANTA_CADDY_RESULT=$?
           cat .cache/caddy_verification.json
+          test "$QUANTA_CADDY_RESULT" -eq 0
       - name: Run tests
         run: python -m pytest
       - name: Measure named numerical benchmarks

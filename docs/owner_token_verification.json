@@ -76,7 +76,13 @@
         },
         {
           "case": "http2_only_alpn_rejected",
-          "result": "tls_no_application_protocol",
+          "result": "tls_handshake_rejected",
+          "passed": true
+        },
+        {
+          "case": "http1_after_rejected_handshake",
+          "status": 200,
+          "frontend_http": "1.1",
           "passed": true
         }
       ]
@@ -101,11 +107,12 @@
     "src/quanta/web/index.html": "3715c5c71f9f46d8893714ed899c9917683cb4032ffbdd381613bd797225aa81",
     "src/quanta/web/view-model.mjs": "0577321cd015ea209ad4d8899a81bb37369e0bda0bbefcd60cfae981e3d0adde",
     "deploy/oci/Caddyfile.example": "0af075db4d4f2653931916e40aa22bdd1c76c237407fe6fed5a8cb52b0392df9",
-    "scripts/verify_caddy.py": "01da9309a3119a619de173a07b01bf3d38ddb533a1db5cf8456b961ea5cd5f21"
+    "scripts/verify_caddy.py": "59a49fe51821ce6d64b6ed4ababee8b270b980c3f996466948b5c877eecfc54d"
   },
   "notes": [
     "Test tokens are fixed synthetic fixtures; no production token was read, generated, or recorded.",
     "The 0.10.0-to-0.11.0 metadata mismatch was corrected before the final focused and full passing runs.",
-    "Historical numerical verification records retain their original implementation hashes; fresh native CI remains separate."
+    "Historical numerical verification records retain their original implementation hashes; fresh native CI remains separate.",
+    "First native CI 42062861784 stopped in the negative ALPN probe because OpenSSL reported the expected rejection with a different message. The probe now checks handshake rejection and a succeeding H1 request without matching text; application source was unchanged."
   ]
 }
