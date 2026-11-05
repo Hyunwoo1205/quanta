@@ -1,0 +1,26 @@
+name: OCI network check (no private key)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quanta-oci-network-check
+  cancel-in-progress: false
+
+jobs:
+  network-check:
+    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: oci-preflight
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # existing verified project pin
+        with:
+          persist-credentials: false
+      - name: Check TCP port 22 and SSH banner without authenticating
+        env:
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+        run: python3 -I deploy/oci/probe_transport.py
