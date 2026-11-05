@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "configure-web-firewall",
+  "operation": "verify-backup",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "d724f50b-78e8-44e3-bba0-6e3b2b4d74a5"
+  "request_id": "0ec07fcb-c56b-4da8-a75f-69e315dc36b1"
 }
