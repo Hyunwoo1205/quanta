@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "diagnose-https",
+  "operation": "configure-acme",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "8f5a93d2-6714-45e1-9408-e7b4b7fe5079"
+  "request_id": "89c9480f-2557-451f-bed7-c499662add4d"
 }

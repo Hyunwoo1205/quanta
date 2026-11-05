@@ -95,7 +95,7 @@ class RequestAuthorizationTests(unittest.TestCase):
         self.assertEqual(authorize.SOURCE_SHA, probe.SOURCE_SHA)
         self.assertRegex(authorize.SOURCE_SHA, r"\A[0-9a-f]{40}\Z")
         self.assertEqual(authorize.CI_URL, "https://api.github.com/repos/Hyunwoo1205/quanta/actions/runs/" + str(authorize.CI_RUN))
-        for operation in ("install-app", "install-https", "configure-web-firewall", "verify-backup", "diagnose-https"):
+        for operation in ("install-app", "install-https", "configure-web-firewall", "verify-backup", "diagnose-https", "configure-acme"):
             with self.subTest(operation=operation):
                 self.assertEqual(self.check_raw(json.dumps(request(operation)).encode(), True), request(operation))
 
@@ -251,6 +251,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
         return {"QUANTA_OCI_AUTH_CONFIRMED": "true", "QUANTA_OCI_INSTALL_OPERATION": operation,
                 "QUANTA_OCI_HOST": HOST, "QUANTA_OCI_HOST_KEY": PIN, "QUANTA_OCI_PPK": KEY,
                 "QUANTA_PUBLIC_ORIGIN": "https://quanta.example.com", "QUANTA_AUTH_MODE": "owner-token",
+                "QUANTA_ACME_EMAIL": "owner@example.com",
                 "QUANTA_CI_READ_TOKEN": PRIVATE, "GITHUB_TOKEN": PRIVATE,
                 "REMOTE_COMMAND": PRIVATE, "QUANTA_SOURCE_SHA": "0" * 40}
 
@@ -306,7 +307,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
 
     def test_fixed_quoted_source_json_config_private_ppk_environment_and_cleanup(self):
         paths = []
-        for operation in ("install-app", "install-https", "configure-web-firewall", "verify-backup", "diagnose-https"):
+        for operation in ("install-app", "install-https", "configure-web-firewall", "verify-backup", "diagnose-https", "configure-acme"):
             clean = {"scope": "fixed_install_fixture", "status": "success"}
             with self.subTest(operation=operation), self.installer(operation=operation, sanitized=clean) as (module, source):
                 def runner(argv, environment, directory):
@@ -323,8 +324,10 @@ class FixedInstallationTransportTests(unittest.TestCase):
                     self.assertEqual(remote[:6], ["/usr/bin/sudo", "-n", "/usr/bin/python3", "-I", "-B", "-c"])
                     self.assertEqual(len(remote), 8)
                     self.assertEqual(remote[6], source)
-                    self.assertEqual(json.loads(base64.b64decode(remote[7], validate=True)),
-                        {"source_sha": probe.SOURCE_SHA, "public_origin": "https://quanta.example.com", "auth_mode": "owner-token"})
+                    expected = {"source_sha": probe.SOURCE_SHA, "public_origin": "https://quanta.example.com", "auth_mode": "owner-token"}
+                    if operation == "configure-acme":
+                        expected["acme_email"] = "owner@example.com"
+                    self.assertEqual(json.loads(base64.b64decode(remote[7], validate=True)), expected)
                     self.assertNotIn(PRIVATE, argv[-1])
                     self.assertNotIn(KEY, argv[-1])
                     return "success", b"untrusted raw output", True

@@ -43,6 +43,7 @@ jobs:
           sudo -n unshare --net /usr/bin/python3 -I deploy/oci/verify_nft_namespace.py
       - name: Execute the authorized fixed installer
         id: install
+        if: steps.authorize.outputs.operation != 'configure-acme'
         env:
           QUANTA_OCI_AUTH_CONFIRMED: 'true'
           QUANTA_OCI_INSTALL_OPERATION: ${{ steps.authorize.outputs.operation }}
@@ -52,9 +53,21 @@ jobs:
           QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
           QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
         run: python3 -I deploy/oci/probe_install.py
+      - name: Configure the explicitly selected ACME provider
+        if: steps.authorize.outputs.operation == 'configure-acme'
+        env:
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
+          QUANTA_OCI_INSTALL_OPERATION: ${{ steps.authorize.outputs.operation }}
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+          QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
+          QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
+          QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
+          QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
+          QUANTA_ACME_EMAIL: ${{ secrets.QUANTA_ACME_EMAIL }}
+        run: python3 -I deploy/oci/probe_install.py
   public:
     needs: install
-    if: ${{ !cancelled() && (needs.install.outputs.operation == 'install-https' || needs.install.outputs.operation == 'configure-web-firewall' || needs.install.outputs.operation == 'diagnose-https') }}
+    if: ${{ !cancelled() && (needs.install.outputs.operation == 'install-https' || needs.install.outputs.operation == 'configure-web-firewall' || needs.install.outputs.operation == 'diagnose-https' || needs.install.outputs.operation == 'configure-acme') }}
     runs-on: ubuntu-24.04
     environment: oci-preflight
     timeout-minutes: 2
