@@ -1,0 +1,36 @@
+{
+  "verification_kind": "unauthenticated_transport_only",
+  "workflow_run": {
+    "id": 42002630779,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42002630779",
+    "job_id": 127161390355,
+    "head_sha": "4574fd2c9456bf5c4897ab2ea5ffeb7b19282a8a",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "completed_at_utc": "2026-11-05T09:28:22Z"
+  },
+  "evidence": {
+    "source": "decoded GitHub job log",
+    "result_at_utc": "2026-11-05T09:28:20.3469513Z",
+    "result": {
+      "authentication_attempted": false,
+      "scope": "tcp_ssh_banner",
+      "server_modified": false,
+      "status": "reachable"
+    }
+  },
+  "scope": {
+    "tcp_port": 22,
+    "connections": 1,
+    "connect_timeout_seconds": 8,
+    "banner_timeout_seconds": 5,
+    "max_banner_bytes": 1024,
+    "private_key_used": false,
+    "remote_commands_sent": false,
+    "server_identity_verified": false,
+    "ssh_authentication_verified": false,
+    "deployment_verified": false,
+    "endpoint_banner_and_raw_errors_recorded": false
+  },
+  "next": "Confirm existing PPK passphrase status, trusted server host-key fingerprint and user decision about credential custody before implementing authentication."
+}

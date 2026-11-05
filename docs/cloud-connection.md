@@ -6,7 +6,11 @@
 
 작업 컨테이너의 직접 SSH는 `Network is unreachable`입니다. 이번 대화에서 별도 클라우드 브라우저도 확인했지만 OCI 콘솔이 `Site Unavailable`로 열리지 않았고 한 차례 reload 후에도 같았습니다. 과거 사용자의 연결된 Chrome에서는 OCI 콘솔·Cloud Shell에 접근했으나 현재 그 로컬 브라우저 연결은 제공되지 않습니다. 서버 쪽의 사용자 PuTTY 접속 성공과는 다른 실행 환경입니다.
 
-따라서 키 변환만으로 대화의 직접 서버 연결이 보장되지 않습니다. PC에서 ChatGPT 앱을 연결하는 방법 외에도 GitHub 클라우드 실행기를 사용할 수 있지만, 실제 GitHub 실행기→OCI 통신은 아직 검사하지 않았습니다.
+따라서 키 변환만으로 대화의 직접 서버 연결이 보장되지 않습니다. 별도의 GitHub 클라우드 실행기 경로는 아래 실제 검사에서 TCP·SSH 배너 응답을 확인했습니다.
+
+## 실제 연결 검사 결과
+
+2026-11-05 18:28 KST에 사용자가 실행한 [검사 42002630779](https://github.com/Hyunwoo1205/quanta/actions/runs/42002630779)는 `completed/success`입니다. 실행 commit `4574fd2`의 실제 job 로그에서 `status=reachable`, `authentication_attempted=false`, `server_modified=false`를 확인했습니다. 설정된 주소의 22번 포트와 SSH 배너가 응답했다는 근거이며, 서버 신원·개인키 일치·로그인·서버 내부 명령·배포는 아직 확인하지 않았습니다. 주소·배너·개인키 없이 [검증 기록](oci_transport_verification.json)을 보존합니다. 이미 검사를 마친 사용자는 첫 검사를 반복할 필요가 없습니다.
 
 ## 첫 검사는 주소만 사용
 
