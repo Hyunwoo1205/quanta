@@ -62,15 +62,66 @@ def test_bad_host_never_launches_client(host):
 
 
 @pytest.mark.parametrize("pin", [
-    None, "", "*", "SHA256:*", "-hostkey", PIN + " ", " " + PIN, PIN + "\n",
+    None, "", "*", "SHA256:*", "-hostkey",
     PIN + ",other", "SHA256:" + "a" * 42, "SHA256:" + "a" * 44,
     "SHA256:" + "a" * 42 + "!", "SHA256:" + "a" * 42 + "B",
     PIN + "=", "sha256:" + PIN[7:], "MD5:" + "aa:" * 16,
 ])
-def test_pin_must_be_one_canonical_sha256_digest(pin):
+def test_invalid_fingerprint_is_rejected_before_client(pin):
     issue = "host_key_missing" if pin is None or pin == "" else "host_key_invalid"
     assert login.probe(config(QUANTA_OCI_HOST_KEY=pin), runner=forbidden) == login._report(
         "not_configured", configuration_issues=[issue])
+
+
+@pytest.mark.parametrize("pin", [
+    PIN, " " + PIN + " ", "\t\r\n" + PIN + "\r\n\f", PIN[7:],
+    "256 " + PIN + " root@fixture (ED25519)",
+    "4096\t" + PIN + "\troot@example (RSA)",
+    "256 " + PIN, "1 " + PIN + " comment", "65536 " + PIN + " (RSA)",
+    "256 " + PIN + " -proxycmd id", "256 " + PIN + " root@host -load session",
+])
+def test_supported_fingerprint_representations_use_only_canonical_pin(pin, capsys):
+    def runner(argv, **kwargs):
+        assert argv[argv.index("-hostkey") + 1] == PIN
+        assert argv[-2:] == [HOST, "true"]
+        assert "root@fixture" not in " ".join(argv)
+        assert "-proxycmd" not in argv and "-load" not in argv
+        return subprocess.CompletedProcess(argv, 0)
+
+    report = login.probe(config(QUANTA_OCI_HOST_KEY=pin), runner=runner)
+    assert report == login._report("success", True)
+    assert capsys.readouterr() == ("", "")
+
+
+@pytest.mark.parametrize("pin", [
+    "256 " + PIN + " another " + PIN,
+    PIN + "\n" + PIN, "256\n" + PIN, "256 " + PIN + "\nroot@host (ED25519)",
+    "junk " + PIN, "-hostkey " + PIN, "-proxycmd " + PIN, "MD5:" + "aa:" * 16,
+    "256 MD5:" + "aa:" * 16, "256 " + PIN + " MD5:aa",
+    "0 " + PIN, "65537 " + PIN, "999999 " + PIN, "0256 " + PIN,
+    "256 " + PIN + "= root@host (ED25519)", PIN[7:] + "=",
+    "256 " + "SHA256:" + "a" * 42 + "B root@host (ED25519)",
+    "256 " + PIN + "\x00 root@host", "256 " + PIN + "\vroot@host",
+    "256 " + PIN + " " + "x" * 1024,
+])
+def test_ambiguous_nonstandard_or_oversized_fingerprint_is_rejected(pin, capsys):
+    assert login.probe(config(QUANTA_OCI_HOST_KEY=pin), runner=forbidden) == login._report(
+        "not_configured", configuration_issues=["host_key_invalid"])
+    assert capsys.readouterr() == ("", "")
+
+
+def test_canonical_digest_validator_remains_strict():
+    assert login._host_key(PIN)
+    assert not login._host_key(" " + PIN)
+    assert not login._host_key(PIN + "\n")
+    assert not login._host_key(PIN[7:])
+    assert not login._host_key("256 " + PIN + " root@host (ED25519)")
+
+
+def test_normalization_preserves_a_different_digest_without_substitution():
+    other_pin = "SHA256:" + base64.b64encode(bytes(reversed(range(32)))).decode().rstrip("=")
+    assert other_pin != PIN
+    assert login._normalized_host_key("256 " + other_pin + " ignored comment") == other_pin
 
 
 @pytest.mark.parametrize("ppk", [
