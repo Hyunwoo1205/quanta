@@ -347,6 +347,32 @@ class NativeNftablesTests(unittest.TestCase):
             mutate(rule)
             self.assertFalse(firewall._nft_owned(rule))
 
+    def test_nft_set_membership_normalization_does_not_relax_scalar_protocol_matches(self):
+        for family in ("ip", "inet"):
+            rule = self.own_rule(family)
+            rule["expr"][2]["match"]["op"] = "in"
+            self.assertTrue(firewall._nft_owned(rule))
+            for index in (0, 1):
+                changed = self.own_rule(family)
+                changed["expr"][index]["match"]["op"] = "in"
+                self.assertFalse(firewall._nft_owned(changed))
+            for right in (80, {"range": [80, 443]}, {"set": [80, 443, 8765]}, {"set": [80, "443"]}):
+                changed = self.own_rule(family)
+                changed["expr"][2]["match"].update(op="in", right=right)
+                self.assertFalse(firewall._nft_owned(changed))
+
+    def test_nft_implicit_ipv4_is_accepted_only_for_the_ip_family(self):
+        for family in ("ip", "inet", "ip6", "bridge", None):
+            for include_tcp_meta in (True, False):
+                rule = self.own_rule(family)
+                rule["expr"].pop(0)
+                if not include_tcp_meta:
+                    rule["expr"].pop(0)
+                rule["expr"][-2]["match"]["op"] = "in"
+                self.assertEqual(firewall._nft_owned(rule), family == "ip")
+            explicit = self.own_rule(family)
+            self.assertEqual(firewall._nft_owned(explicit), family in {"ip", "inet"})
+
     def test_nft_inserts_ipv4_web_rule_at_each_chain_head_without_deleting_foreign_rules(self):
         foreign = {"family": "inet", "table": "filter", "chain": "input", "expr": [{"reject": None}]}
         before_entries = self.entries(rules=[foreign, self.own_rule()]) + self.entries("ip", "host", "inbound")

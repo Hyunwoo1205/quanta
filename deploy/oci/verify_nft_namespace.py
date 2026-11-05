@@ -35,7 +35,7 @@ class VerificationFailed(ValueError):
 
 def _report():
     return {"scope": "nft_namespace_verification", "status": "refused", "phase": "namespace_guard",
-            **dict.fromkeys(_FLAGS, False)}
+            **dict.fromkeys(_FLAGS, False), "apply_diagnostics": None}
 
 
 def _namespace_guard(expected=None):
@@ -89,9 +89,9 @@ def _nonfinite(value):
     raise VerificationFailed
 
 
-def _snapshot(backend):
+def _snapshot(backend, *, timeout=10):
     _, raw = backend._command([backend.NFT, "--json", "--numeric", "list", "ruleset"],
-                              timeout=10, limit=MAX_NFT_BYTES)
+                              timeout=timeout, limit=MAX_NFT_BYTES)
     if type(raw) is not bytes or len(raw) > MAX_NFT_BYTES:
         raise VerificationFailed
     data = json.loads(raw, object_pairs_hook=_unique, parse_constant=_nonfinite)
@@ -182,6 +182,112 @@ def _forward_entries(entries):
             or entry.get("rule", {}).get("chain") == "forward"]
 
 
+def _apply_with_trace(backend, trace):
+    original = backend._command
+
+    def tracked(command, **kwargs):
+        kind = "other"
+        if command == [backend.NFT, "--json", "--numeric", "list", "ruleset"]:
+            kind = "query"
+        elif (type(command) is list and command[:3] == [backend.NFT, "insert", "rule"]
+                and tuple(command[3:6]) in INPUTS):
+            kind = "insert"
+            trace["last_insert_family"] = command[3]
+        trace["last_command"] = kind
+        trace[kind + "_commands"] = min(16, trace[kind + "_commands"] + 1)
+        try:
+            return original(command, **kwargs)
+        except Exception:
+            trace["last_command_failed"] = True
+            raise
+
+    backend._command = tracked
+    try:
+        backend._apply_nft()
+    finally:
+        backend._command = original
+
+
+def _safe_value(value):
+    known_numbers = {2, 6, 10, 17, 80, 443, 8080, 8081, 8082}
+    known_strings = {"ip", "ip6", "ipv4", "ipv6", "tcp", "udp"}
+    return ((type(value) is int and value in known_numbers)
+            or (type(value) is str and value in known_strings))
+
+
+def _describe_expression(expression):
+    description = {"kind": "other"}
+    if type(expression) is not dict or len(expression) != 1:
+        return description
+    for verdict in ("accept", "drop", "counter"):
+        if verdict in expression:
+            return {"kind": verdict}
+    match = expression.get("match")
+    if type(match) is not dict:
+        return description
+    left, right, operator = match.get("left"), match.get("right"), match.get("op")
+    description["kind"] = "other_match"
+    for kind, expected in (("meta_nfproto", {"meta": {"key": "nfproto"}}),
+                           ("meta_l4proto", {"meta": {"key": "l4proto"}}),
+                           ("tcp_dport", {"payload": {"protocol": "tcp", "field": "dport"}}),
+                           ("ip_protocol", {"payload": {"protocol": "ip", "field": "protocol"}})):
+        if left == expected:
+            description["kind"] = kind
+            break
+    description["operator"] = operator if type(operator) is str and operator in {"==", "in", "!=", "not in"} else "other"
+    if type(right) is dict and set(right) in ({"set"}, {"range"}):
+        form = next(iter(right))
+        values = right[form]
+    elif type(right) is list:
+        form, values = "list", right
+    else:
+        form, values = "scalar", [right]
+    safe = type(values) is list and len(values) <= 4 and all(_safe_value(value) for value in values)
+    description.update(value_form=form, values=values if safe else [], unknown_value=not safe)
+    return description
+
+
+def _describe_head(backend, rules):
+    description = {"present": bool(rules), "owned_comment": False, "backend_owned": False,
+                   "independent_owned": False, "expression_count": 0, "truncated": False, "expressions": []}
+    if not rules:
+        return description
+    rule = rules[0]
+    description["owned_comment"] = rule.get("comment") == "quanta-web-v1"
+    try:
+        description["backend_owned"] = bool(backend._nft_owned(rule))
+        description["independent_owned"] = bool(_head_is_ipv4_web(rule))
+    except Exception:
+        pass
+    expressions = rule.get("expr")
+    if type(expressions) is list:
+        description["expression_count"] = min(256, len(expressions))
+        description["truncated"] = len(expressions) > 16
+        description["expressions"] = [_describe_expression(expression) for expression in expressions[:16]]
+    return description
+
+
+def _apply_diagnostics(backend, namespace, error, trace):
+    labels = {"fixed command failed": "command_failed", "fixed command timed out": "command_timeout",
+              "fixed command output exceeded limit": "command_output_limit",
+              "nftables web rule verification failed": "rule_verification",
+              "invalid nftables ruleset": "ruleset_schema", "unsupported nftables input scope": "input_scope",
+              "required manager command is missing": "missing_command", "untrusted fixed command": "untrusted_command"}
+    failure = "operation_timeout" if isinstance(error, TimeoutError) else labels.get(str(error), "unclassified")
+    description = {"failure_kind": failure, **trace, "snapshot_available": False, "inet_head": None, "ip_head": None}
+    if isinstance(error, TimeoutError):
+        return description
+    try:
+        _namespace_guard(namespace)
+        entries = _snapshot(backend, timeout=3)
+        description["snapshot_available"] = True
+        for key in sorted(INPUTS):
+            description[key[0] + "_head"] = _describe_head(backend, _rules(entries, key))
+    except Exception:
+        pass
+    return description
+
+
 def _fixture_shape(entries):
     tables = [entry["table"] for entry in entries if "table" in entry]
     chains = [entry["chain"] for entry in entries if "chain" in entry]
@@ -242,6 +348,8 @@ def _cleanup(backend, namespace):
 def verify():
     result = _report()
     backend, namespace, cleanup_allowed = None, None, False
+    trace = {"query_commands": 0, "insert_commands": 0, "other_commands": 0,
+             "last_command": "none", "last_insert_family": None, "last_command_failed": False}
     try:
         namespace = _namespace_guard()
         result.update(status="failed", namespace_guard_passed=True)
@@ -265,7 +373,7 @@ def verify():
             result["input_chains_selected"] = True
             result["phase"] = "apply"
             _namespace_guard(namespace)
-            backend._apply_nft()
+            _apply_with_trace(backend, trace)
             after = _snapshot(backend)
             result["phase"] = "head_rules"
             for key in INPUTS:
@@ -286,15 +394,18 @@ def verify():
                 raise VerificationFailed
             result["phase"] = "idempotence"
             _namespace_guard(namespace)
-            backend._apply_nft()
+            _apply_with_trace(backend, trace)
             result["idempotence_verified"] = _snapshot(backend) == after
             if not result["idempotence_verified"]:
                 raise VerificationFailed
             result.update(status="success", phase="complete")
-    except TimeoutError:
+    except TimeoutError as error:
         result["status"] = "timeout"
-    except Exception:
-        pass
+        if result["phase"] in {"apply", "head_rules", "idempotence"} and cleanup_allowed:
+            result["apply_diagnostics"] = _apply_diagnostics(backend, namespace, error, trace)
+    except Exception as error:
+        if result["phase"] in {"apply", "head_rules", "idempotence"} and cleanup_allowed:
+            result["apply_diagnostics"] = _apply_diagnostics(backend, namespace, error, trace)
     finally:
         if cleanup_allowed:
             try:
