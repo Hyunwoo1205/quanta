@@ -2,6 +2,8 @@ name: Contract and environment checks
 
 on:
   push:
+    branches-ignore:
+      - ops/oci
   pull_request:
   workflow_dispatch:
 

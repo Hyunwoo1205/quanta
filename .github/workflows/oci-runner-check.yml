@@ -1,0 +1,58 @@
+name: Cloud runner control check (no SSH)
+
+on:
+  push:
+    branches:
+      - ops/oci
+    paths:
+      - .github/oci/request.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quanta-oci-runner-check
+  cancel-in-progress: false
+
+jobs:
+  runner-check:
+    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/ops/oci' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate a fixed request without SSH or credentials
+        run: |
+          python3 -I - <<'PY'
+          import json
+          from pathlib import Path
+          import uuid
+
+          try:
+              with Path('.github/oci/request.json').open('rb') as request_file:
+                  raw = request_file.read(1025)
+              request = json.loads(raw)
+              valid = (
+                  len(raw) <= 1024
+                  and isinstance(request, dict)
+                  and set(request) == {'schema_version', 'operation', 'request_id'}
+                  and type(request['schema_version']) is int
+                  and request['schema_version'] == 1
+                  and request['operation'] == 'runner-check'
+                  and isinstance(request['request_id'], str)
+                  and len(request['request_id']) == 36
+                  and str(uuid.UUID(request['request_id'])) == request['request_id']
+              )
+          except Exception:
+              valid = False
+          if not valid:
+              print('{"scope":"runner_control","status":"invalid_request","ssh_attempted":false}')
+              raise SystemExit(2)
+          print(json.dumps({
+              'scope': 'runner_control', 'status': 'success',
+              'request_id': request['request_id'], 'ssh_attempted': False,
+              'private_key_used': False, 'oci_commands_sent': False,
+          }, sort_keys=True))
+          PY
