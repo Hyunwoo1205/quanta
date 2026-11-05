@@ -1,0 +1,70 @@
+{
+  "verification_kind": "authenticated_read_only_host_inventory",
+  "workflow_run": {
+    "id": 42056158077,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42056158077",
+    "event": "push",
+    "branch": "ops/oci",
+    "head_sha": "ef1d299668872f15285bd020db762419d9d7d4b5",
+    "created_at_utc": "2026-11-05T15:33:21Z",
+    "completed_at_utc": "2026-11-05T15:33:40Z",
+    "job_id": 127344986183,
+    "conclusion": "success"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "host-inventory",
+    "request_id": "b67522d1-ae91-4bbb-8e8d-95007169cd91"
+  },
+  "result": {
+    "authentication_attempted": true,
+    "inventory": {
+      "architecture": "aarch64",
+      "docker_cli_present": true,
+      "ensurepip_module_present": false,
+      "git_present": true,
+      "logical_cpus": 2,
+      "memory_total_gib": 11.65,
+      "os_id": "ubuntu",
+      "os_version": "26.04",
+      "quanta_units_active": {
+        "quanta-backup-boot.timer": false,
+        "quanta-backup.timer": false,
+        "quanta-boot.service": false,
+        "quanta.service": false
+      },
+      "root_filesystem_free_gib": 187.66,
+      "root_filesystem_total_gib": 192.69,
+      "scope": "host_inventory",
+      "srv_quanta_exists": false,
+      "srv_quanta_group_other_writable": null,
+      "srv_quanta_is_directory": null,
+      "srv_quanta_is_symlink": null,
+      "srv_quanta_root_owned": null,
+      "srv_quanta_same_device_as_root": null,
+      "status": "success",
+      "systemctl_present": true,
+      "venv_module_present": true
+    },
+    "requested_operation": "host-inventory",
+    "scope": "ssh_host_inventory",
+    "status": "success"
+  },
+  "all_job_steps_completed_successfully": true,
+  "scope": {
+    "configuration_changes_requested": false,
+    "packages_installed_on_oci": false,
+    "sudo_checked": false,
+    "docker_daemon_checked": false,
+    "filesystem_uuid_checked": false,
+    "application_execution_checked": false,
+    "external_login_checked": false,
+    "deployment_verified": false,
+    "credential_values_recorded": false
+  },
+  "notes": [
+    "Docker CLI presence does not establish daemon readiness.",
+    "Filesystem capacity/free space are observed filesystem facts, not proof of OCI allocated-volume quota.",
+    "No hostname, network address, device UUID, key value or configuration content was collected."
+  ]
+}

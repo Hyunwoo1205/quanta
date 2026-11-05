@@ -6,7 +6,7 @@
 
 ## 먼저 확인할 상태
 
-사용자가 접속 정보를 제공했고, OCI 콘솔에서 Ubuntu 26.04 ARM64·2 OCPU·12 GB와 부트 볼륨 200 GB 한 개·추가 블록 볼륨 없음 구성을 확인했습니다. 기존 PuTTY 접속은 사용자 확인으로 성공 상태입니다. 작업 환경의 직접 SSH 경로는 Network is unreachable로 막혀 있으며, OCI Cloud Shell에서는 서버의 SSH 호스트 키 검사 단계까지 도달했습니다. 서버 내부 명령·설치·재부팅은 아직 확인하지 않았습니다. 비밀키 내용을 채팅·저장소에 넣지 않습니다. 연결할 수 있는 경로가 마련되면 먼저 읽기 전용으로 `uname -m`, OS 버전, `lsblk -f`, `findmnt`, 여유 공간과 기존 서비스·데이터를 확인합니다. 기존 디스크 포맷·데이터 삭제·새 유료 자원 생성은 이 배포 파일에 포함하지 않습니다.
+OCI 콘솔에서 부트 볼륨 200 GB 한 개·추가 블록 볼륨 없음 구성을 확인했고, GitHub 실행기에서 기존 PPK와 고정된 서버 지문으로 실제 로그인했습니다. [로그인 기록](oci_login_verification.json)과 [읽기 전용 점검](oci_host_inventory_verification.json)에서 Ubuntu 26.04·ARM64·논리 CPU 2개·메모리 11.65 GiB와 루트 파일시스템 192.69 GiB·여유 187.66 GiB를 확인했습니다. Docker CLI·Git·systemctl이 있고 Quanta 관련 unit은 비활성이며 `/srv/quanta`는 없습니다. Docker 엔진·sudo·파일시스템 UUID·기존 다른 작업과의 자원 공존·설치·재부팅은 아직 확인하지 않았습니다. 비밀키 내용을 채팅·저장소에 넣지 않습니다. 기존 디스크 포맷·데이터 삭제·새 유료 자원 생성은 이 배포 파일에 포함하지 않습니다.
 
 구성은 Linux ARM64 A1, systemd, Docker Engine, `findmnt`를 대상으로 합니다. 정확한 CPython 3.12.14·의존성 27개는 digest 고정 기반 이미지와 두 CPU별 기존 wheel 잠금을 사용합니다. 호스트 Python은 배포 wrapper의 표준 라이브러리만 실행합니다. 실제 OS에 맞는 Docker 설치와 데이터 볼륨 연결·fstab은 점검 후 수행합니다.
 

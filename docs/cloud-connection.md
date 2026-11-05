@@ -24,6 +24,12 @@
 
 최초 세 시도는 서버 지문 표기의 형식 검사에서 인증 전에 멈췄습니다. 사용자가 secret을 수정한 뒤 2026-11-06 00:20 KST [실행 42013432968의 attempt 2](https://github.com/Hyunwoo1205/quanta/actions/runs/42013432968/attempts/2)가 `completed/success`입니다. 실제 job 로그에서 기존 PPK·고정한 호스트 키를 사용한 `authentication_attempted=true`, `requested_command=true`, `status=success`를 확인했습니다. 서버 지문을 새로 수집하거나 키를 교체하지 않았습니다. [검증 기록](oci_login_verification.json)에 과거 실패와 실제 로그인 성공을 함께 보존합니다. 설치·sudo·Quanta 실행·배포는 이 검사 범위가 아닙니다.
 
+## 인증된 서버 상태 점검
+
+고정된 `host-inventory` 요청으로 시작한 [실행 42056158077](https://github.com/Hyunwoo1205/quanta/actions/runs/42056158077)는 `completed/success`입니다. Ubuntu 26.04·ARM64·논리 CPU 2개·메모리 11.65 GiB, 루트 파일시스템 192.69 GiB·여유 187.66 GiB를 관측했습니다. Docker CLI·Git·systemctl이 존재하고 Quanta 관련 unit은 비활성, `/srv/quanta`는 없습니다. Docker 엔진·sudo·UUID·앱 구동·배포는 아직 검사하지 않았습니다.
+
+이 작업은 `.github/oci/inventory-request.json`에 정확히 `schema_version=1`, `operation=host-inventory`, 정규 UUID인 `request_id`만 허용합니다. 고정된 Python 표준 라이브러리 코드만 SSH로 실행하며 원본 출력은 8 KiB·20초로 제한합니다. 정확한 필드·타입·범위를 통과한 JSON만 공개하고 호스트명·IP·UUID·키·원본 설정은 수집하지 않습니다. [검증 기록](oci_host_inventory_verification.json)에 수집 범위와 미확인 항목을 구분합니다.
+
 ## 첫 검사는 주소만 사용
 
 GitHub의 `Hyunwoo1205/quanta` 저장소에서 웹 또는 모바일 브라우저로 설정할 수 있습니다. 인스턴스·방화벽·SSH 공개키를 바꾸지 않습니다.
