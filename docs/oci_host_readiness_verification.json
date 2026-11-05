@@ -1,0 +1,78 @@
+{
+  "verification_kind": "authenticated_bounded_host_readiness",
+  "workflow_run": {
+    "id": 42060682951,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42060682951",
+    "event": "push",
+    "branch": "ops/oci",
+    "head_sha": "243f68d64e38ce7bbe3719c4d7c7f0be30e0e695",
+    "created_at_utc": "2026-11-05T16:00:24Z",
+    "completed_at_utc": "2026-11-05T16:01:18Z",
+    "job_id": 127361381363,
+    "conclusion": "success"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "host-inventory",
+    "request_id": "3fd85c3d-e2c8-4d61-b064-8a975da28267"
+  },
+  "result": {
+    "authentication_attempted": true,
+    "inventory": {
+      "architecture": "aarch64",
+      "docker_cli_present": true,
+      "docker_engine_ready": true,
+      "docker_running_containers": 1,
+      "docker_server_version": "29.9.1",
+      "ensurepip_module_present": false,
+      "git_present": true,
+      "logical_cpus": 2,
+      "memory_available_gib": 9.56,
+      "memory_total_gib": 11.65,
+      "os_id": "ubuntu",
+      "os_version": "26.04",
+      "quanta_units_active": {
+        "quanta-backup-boot.timer": false,
+        "quanta-backup.timer": false,
+        "quanta-boot.service": false,
+        "quanta.service": false
+      },
+      "root_filesystem_free_gib": 187.66,
+      "root_filesystem_total_gib": 192.69,
+      "scope": "host_inventory",
+      "srv_quanta_exists": false,
+      "srv_quanta_group_other_writable": null,
+      "srv_quanta_is_directory": null,
+      "srv_quanta_is_symlink": null,
+      "srv_quanta_root_owned": null,
+      "srv_quanta_same_device_as_root": null,
+      "status": "success",
+      "sudo_noninteractive": true,
+      "systemctl_present": true,
+      "venv_module_present": true
+    },
+    "requested_operation": "host-inventory",
+    "scope": "ssh_host_inventory",
+    "status": "success"
+  },
+  "all_job_steps_completed_successfully": true,
+  "scope": {
+    "configuration_changes_requested": false,
+    "packages_installed_on_oci": false,
+    "sudo_checked": true,
+    "docker_daemon_checked": true,
+    "container_names_collected": false,
+    "filesystem_uuid_checked": false,
+    "application_execution_checked": false,
+    "public_tls_checked": false,
+    "external_login_checked": false,
+    "deployment_verified": false,
+    "credential_values_recorded": false
+  },
+  "notes": [
+    "Docker was queried through the fixed local unix:///var/run/docker.sock only.",
+    "One existing running container was observed; its identity and workload were not collected or modified.",
+    "sudo -n true may produce normal audit bookkeeping; no application or host configuration change was requested.",
+    "No hostname, network address, filesystem UUID, private key, fingerprint or configuration content was collected."
+  ]
+}

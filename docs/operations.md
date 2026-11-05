@@ -1,6 +1,6 @@
 # OCI 운영 배포와 SQLite 복구
 
-2026-11-05 · 패키지 0.10.0 · 입력 계약 0.2.0
+2026-11-06 · 패키지 0.11.0 · 입력 계약 0.2.0
 
 화면·API·계산·DB를 OCI 한 대에서 운영하는 파일럿 구성입니다. 배포 파일은 `deploy/oci/`에 있습니다. 실제 인스턴스의 OS·접속·볼륨 UUID와 Access 설정은 현장에서 확인해야 합니다. 자동 시험의 로컬 파일시스템·컨테이너 검증을 OCI 재부팅·볼륨 복원·외부 로그인 합격으로 표시하지 않습니다.
 
@@ -23,15 +23,15 @@ OCI 콘솔에서 부트 볼륨 200 GB 한 개·추가 블록 볼륨 없음 구�
 이미지 빌드 예시는 다음과 같습니다. 컨테이너 기본 명령은 계약 검사이고 기본 UID/GID는 10001:10001입니다.
 
 ```bash
-sudo docker build --file Dockerfile.aarch64 --tag quanta:0.10.0 .
-sudo docker image inspect --format '{{.Id}}' quanta:0.10.0
+sudo docker build --file Dockerfile.aarch64 --tag quanta:0.11.0 .
+sudo docker image inspect --format '{{.Id}}' quanta:0.11.0
 ```
 
 앱은 host network의 `127.0.0.1:8765`에서만 듣습니다. 이 고정 loopback listener에는 일반 포트 publish 대신 host network를 사용합니다. host의 cloudflared가 연결하며 OCI 방화벽에 앱 HTTP 포트를 공개하지 않습니다. 읽기 전용 이미지, private `/tmp` tmpfs, capabilities 제거, `no-new-privileges`, 2 CPU·2 GiB·PID 제한을 적용합니다. 전체 2 GiB 제한은 초기 구성값이며 A1 실측 후 조정할 수 있습니다. 계산 자식의 1,024 MiB·120초·단일 수치 스레드 정책은 별개로 유지합니다.
 
 ## 설정 설치와 시작
 
-root 소유의 `/usr/local/lib/quanta/runtime.py`, `/etc/quanta/deployment.json`, `/etc/quanta/app.env`와 systemd unit을 설치합니다. 설정 파일은 group/world 쓰기를 허용하지 않으며 앱 env는 비공개로 둡니다. `app.env.example`의 네 Access 설정을 실제 origin·팀·AUD·허용 이메일에 맞춥니다. JWT·쿠키·Tunnel 자격 증명은 예시 파일에 넣지 않습니다. Access·Tunnel 연결 순서는 [운영 인증](production-access.md)을 따릅니다.
+root 소유의 `/usr/local/lib/quanta/runtime.py`, `/etc/quanta/deployment.json`, `/etc/quanta/app.env`와 systemd unit을 설치합니다. 설정 파일은 group/world 쓰기를 허용하지 않으며 앱 env는 비공개로 둡니다. 기본 Access 구성은 `app.env.example`의 네 설정을 실제 origin·팀·AUD·허용 이메일에 맞춥니다. JWT·쿠키·Tunnel 자격 증명은 예시 파일에 넣지 않습니다. Access·Tunnel 연결 순서는 [운영 인증](production-access.md)을 따릅니다. Cloudflare에 등록하지 않은 도메인은 [직접 HTTPS](direct-https.md) 절차와 `app.owner-token.env.example`을 명시적으로 선택합니다. 실제 접속키는 예시·저장소·공개 로그에 넣지 않습니다.
 
 최초 설치의 파일 배치 예시입니다. 기존 설정 파일이 있으면 예시로 덮어쓰지 않고 내용을 대조합니다. 설정 예시는 실제 UUID·검증 이미지 ID·Access 값으로 수정한 후 검사합니다.
 

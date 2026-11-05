@@ -1,0 +1,32 @@
+# Optional direct HTTPS entry point. See docs/direct-https.md before use.
+# QUANTA_PUBLIC_HOST must be one validated DNS hostname, without scheme or port.
+# Authentication stays in Quanta; never put the owner token in this file.
+{
+	admin 127.0.0.1:2019
+	servers {
+		# HTTP/1.1 keeps the supported request framing explicit.
+		protocols h1
+		timeouts {
+			read_header 10s
+			read_body 15s
+		}
+	}
+}
+
+https://{$QUANTA_PUBLIC_HOST} {
+	@transfer_encoded header Transfer-Encoding *
+	respond @transfer_encoded "Streaming request framing is unsupported" 400
+	request_body {
+		max_size 1048576
+	}
+	reverse_proxy 127.0.0.1:8765 {
+		# Greater than Quanta's 1 MiB limit, so accepted bodies fit in full.
+		# This does not normalize Transfer-Encoding; those requests are rejected.
+		request_buffers 2MiB
+		transport http {
+			versions 1.1
+			dial_timeout 3s
+			response_header_timeout 30s
+		}
+	}
+}

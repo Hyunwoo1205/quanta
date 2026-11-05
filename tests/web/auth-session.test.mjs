@@ -39,6 +39,26 @@ test('discovery accepts only the known session configuration and fixed local nav
   assert.equal(unauthenticated.authenticated,false);
 });
 
+test('owner-token discovery requires manual key entry and accepts no identity or navigation routes',()=>{
+  const owner={mode:'bearer',authenticated:false,authentication:'owner_token'};
+  assert.deepEqual(authConfiguration(owner),owner);
+  assert.deepEqual(authConfiguration({...owner,authenticated:true,principal:{email:'ignore',owner:'other'},
+    login_url:'https://attacker.example/',logout_url:'javascript:alert(1)'}),owner);
+  assert.deepEqual(authConfiguration({mode:'bearer',authenticated:false,authentication:'https://attacker.example/'}),
+    {mode:'bearer',authenticated:false});
+});
+
+test('owner key requests keep bearer transport with cookies omitted for APIs and downloads',()=>{
+  const configuration=authConfiguration({mode:'bearer',authenticated:false,authentication:'owner_token'});
+  for(const json of [true,false]){
+    const options=authRequestOptions(configuration.mode,'owner-key',{json});
+    assert.equal(options.credentials,'omit');
+    assert.equal(options.redirect,'error');
+    assert.equal(options.headers.Authorization,'Bearer owner-key');
+    assert.equal(options.headers.Cookie,undefined);
+  }
+});
+
 test('discovery cannot introduce an external login/logout destination or malformed identity',()=>{
   for(const changed of [
     {...access,login_url:'https://attacker.example/'},

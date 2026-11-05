@@ -1,4 +1,4 @@
-"""Single-worker ASGI transport behind a configured Cloudflare Access Tunnel."""
+"""Single-worker ASGI transport behind an explicitly authenticated HTTPS origin."""
 from __future__ import annotations
 
 import asyncio
@@ -11,27 +11,33 @@ from urllib.parse import urlsplit
 
 from .access_auth import AccessConfig, AccessDenied, AccessVerifier, AuthUnavailable
 from .job_store import ServiceError
+from .owner_token import OwnerTokenConfig, OwnerTokenDenied, OwnerTokenVerifier
 from .parsing import parse_json
 from .server import _CSP, _WEB_RESOURCES, error_document
 from .worker import JobWorker
 
 MAX_BODY = 1_048_576
 MIN_FREE_BYTES = 128 * 1024 * 1024
+_OWNER_PUBLIC_SHELL = frozenset({"/", "/index.html", "/assets/app.css", "/assets/app.js", "/assets/view-model.mjs"})
 
 
 class ProductionApp:
-    def __init__(self, service, config: AccessConfig, *, verifier=None, worker=None):
-        if not isinstance(config, AccessConfig):
-            raise ValueError("A validated Access configuration is required")
+    def __init__(self, service, config: AccessConfig | OwnerTokenConfig, *, verifier=None, worker=None):
+        if not isinstance(config, (AccessConfig, OwnerTokenConfig)):
+            raise ValueError("A validated production authentication configuration is required")
         self.service = service
         self.config = config
-        self.verifier = verifier if verifier is not None else AccessVerifier(config)
+        self.owner_token = isinstance(config, OwnerTokenConfig)
+        self.verifier = verifier if verifier is not None else (
+            OwnerTokenVerifier(config) if self.owner_token else AccessVerifier(config))
         self.worker = worker if worker is not None else JobWorker(service.directory)
         self.authority = urlsplit(config.public_origin).netloc.lower()
         self._started = False
         self._active = 0
 
     def _session(self, identity=None):
+        if self.owner_token:
+            return {"mode": "bearer", "authenticated": False, "authentication": "owner_token"}
         result = {"mode": "access", "authenticated": identity is not None,
                   "login_url": "/", "logout_url": "/cdn-cgi/access/logout"}
         if identity is not None:
@@ -101,7 +107,8 @@ class ProductionApp:
                 raise ServiceError(422, "INPUT_SCHEMA", str(exc)) from exc
         status, response = self.service.request(identity["owner"], method, path, body, idempotency_key=key)
         if method == "GET" and path == "/v1/capabilities" and status == 200:
-            response["execution"]["authentication"] = "cloudflare_access_jwt"
+            response["execution"]["authentication"] = (
+                "server_configured_bearer_principal" if self.owner_token else "cloudflare_access_jwt")
         return status, response, None
 
     async def _request(self, scope, receive):
@@ -129,15 +136,19 @@ class ProductionApp:
             raise ServiceError(400, "HTTP_REQUEST", "Request target must be ASCII encoded") from None
         if not path.startswith("/") or any(ord(c) < 32 or ord(c) == 127 for c in path):
             raise ServiceError(400, "HTTP_REQUEST", "Invalid request target")
-        assertion = self._single(headers, b"cf-access-jwt-assertion")
+        credential = self._single(headers, b"authorization" if self.owner_token else b"cf-access-jwt-assertion")
         # These identity/transport headers never establish an authenticated owner.
-        try:
-            identity = await asyncio.to_thread(self.verifier.verify, assertion or "")
-        except AccessDenied:
-            error = ServiceError(401, "UNAUTHORIZED", "A valid permitted login is required")
-            return 401, {**error_document(error), **self._session()}, None
-        except AuthUnavailable:
-            raise ServiceError(503, "AUTH_UNAVAILABLE", "Login verification is temporarily unavailable") from None
+        public_shell = (self.owner_token and method in {"GET", "HEAD"}
+                        and (path == "/ui/auth" or path in _OWNER_PUBLIC_SHELL))
+        identity = None
+        if not public_shell:
+            try:
+                identity = await asyncio.to_thread(self.verifier.verify, credential or "")
+            except (AccessDenied, OwnerTokenDenied):
+                error = ServiceError(401, "UNAUTHORIZED", "A valid permitted login is required")
+                return 401, {**error_document(error), **self._session()}, None
+            except AuthUnavailable:
+                raise ServiceError(503, "AUTH_UNAVAILABLE", "Login verification is temporarily unavailable") from None
         if self._single(headers, b"transfer-encoding") is not None:
             raise ServiceError(400, "HTTP_REQUEST", "Streaming request framing is unsupported")
         length = self._single(headers, b"content-length")
@@ -218,5 +229,5 @@ class ProductionApp:
             pass
 
 
-def create_app(service, config: AccessConfig, *, verifier=None, worker=None):
+def create_app(service, config: AccessConfig | OwnerTokenConfig, *, verifier=None, worker=None):
     return ProductionApp(service, config, verifier=verifier, worker=worker)
