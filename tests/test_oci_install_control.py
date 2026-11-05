@@ -91,7 +91,7 @@ class RequestAuthorizationTests(unittest.TestCase):
             self.assertEqual(captured.getvalue(), "")
             return result
 
-    def test_only_two_fixed_operations_and_fixed_source_are_authorized(self):
+    def test_only_declared_fixed_operations_and_source_are_authorized(self):
         self.assertEqual(authorize.SOURCE_SHA, probe.SOURCE_SHA)
         self.assertRegex(authorize.SOURCE_SHA, r"\A[0-9a-f]{40}\Z")
         self.assertEqual(authorize.CI_URL, "https://api.github.com/repos/Hyunwoo1205/quanta/actions/runs/" + str(authorize.CI_RUN))
@@ -250,7 +250,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
     def config(operation="install-app"):
         return {"QUANTA_OCI_AUTH_CONFIRMED": "true", "QUANTA_OCI_INSTALL_OPERATION": operation,
                 "QUANTA_OCI_HOST": HOST, "QUANTA_OCI_HOST_KEY": PIN, "QUANTA_OCI_PPK": KEY,
-                "QUANTA_PUBLIC_ORIGIN": "https://quanta.example.com", "QUANTA_AUTH_MODE": "owner_token",
+                "QUANTA_PUBLIC_ORIGIN": "https://quanta.example.com", "QUANTA_AUTH_MODE": "owner-token",
                 "QUANTA_CI_READ_TOKEN": PRIVATE, "GITHUB_TOKEN": PRIVATE,
                 "REMOTE_COMMAND": PRIVATE, "QUANTA_SOURCE_SHA": "0" * 40}
 
@@ -302,7 +302,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
             self.assertFalse(result["authentication_attempted"])
             runner.assert_not_called()
             module.validate_config.assert_called_once_with({"source_sha": probe.SOURCE_SHA,
-                "public_origin": "https://quanta.example.com", "auth_mode": "owner_token"})
+                "public_origin": "https://quanta.example.com", "auth_mode": "owner-token"})
 
     def test_fixed_quoted_source_json_config_private_ppk_environment_and_cleanup(self):
         paths = []
@@ -324,7 +324,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
                     self.assertEqual(len(remote), 8)
                     self.assertEqual(remote[6], source)
                     self.assertEqual(json.loads(base64.b64decode(remote[7], validate=True)),
-                        {"source_sha": probe.SOURCE_SHA, "public_origin": "https://quanta.example.com", "auth_mode": "owner_token"})
+                        {"source_sha": probe.SOURCE_SHA, "public_origin": "https://quanta.example.com", "auth_mode": "owner-token"})
                     self.assertNotIn(PRIVATE, argv[-1])
                     self.assertNotIn(KEY, argv[-1])
                     return "success", b"untrusted raw output", True
@@ -402,6 +402,19 @@ class FixedInstallationTransportTests(unittest.TestCase):
 
 
 class InstallWorkflowTests(unittest.TestCase):
+    def test_public_recheck_job_has_no_ssh_or_owner_credentials(self):
+        workflow = (ROOT / '.github/workflows/oci-install.yml').read_text()
+        public = workflow.split('\n  public:\n', 1)[1]
+        self.assertIn('needs: install', public)
+        self.assertIn('needs.install.outputs.operation', public)
+        self.assertIn('configure-web-firewall', public)
+        self.assertIn('environment: oci-preflight', public)
+        self.assertIn('python3 -I deploy/oci/probe_public.py', public)
+        self.assertNotIn('QUANTA_OCI_PPK', public)
+        self.assertNotIn('QUANTA_OCI_HOST_KEY', public)
+        self.assertNotIn('QUANTA_OWNER_TOKEN', public)
+        self.assertNotIn('probe_install.py', public)
+
     def test_protected_fixed_gate_precedes_private_credentials_and_install_execution(self):
         workflow = (ROOT / ".github/workflows/oci-install.yml").read_text()
         self.assertIn("- ops/oci", workflow)

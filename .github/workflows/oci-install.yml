@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-24.04
     environment: oci-preflight
     timeout-minutes: 20
+    outputs:
+      operation: ${{ steps.authorize.outputs.operation }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -45,8 +47,19 @@ jobs:
           QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
           QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
         run: python3 -I deploy/oci/probe_install.py
+  public:
+    needs: install
+    if: ${{ !cancelled() && (needs.install.outputs.operation == 'install-https' || needs.install.outputs.operation == 'configure-web-firewall') }}
+    runs-on: ubuntu-24.04
+    environment: oci-preflight
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
       - name: Verify the public HTTPS entry without owner credentials
-        if: ${{ !cancelled() && (steps.authorize.outputs.operation == 'install-https' || steps.authorize.outputs.operation == 'configure-web-firewall') && steps.install.outcome != 'skipped' }}
         env:
           QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
           QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
