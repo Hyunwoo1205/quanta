@@ -18,15 +18,21 @@ INSTALLERS = {'install-app': 'install_app', 'install-https': 'install_https',
               'configure-web-firewall': 'configure_web_firewall', 'verify-backup': 'verify_backup',
               'diagnose-https': 'diagnose_https', 'configure-acme': 'configure_acme'}
 SOURCE_SHA = '1738107301ef873bfe5e01f930866c2a74e4ec3f'
+CONFIGURATION_FAILURES = frozenset({'installer_module_load_failed', 'base_configuration_invalid',
+                                    'acme_email_missing', 'acme_email_invalid',
+                                    'installer_preparation_failed'})
 
 
-def report(status, attempted=False, *, operation=None, result=None):
+def report(status, attempted=False, *, operation=None, result=None, failure_reason=None):
     value = {'scope': 'ssh_fixed_installation', 'status': status,
              'authentication_attempted': attempted}
     if operation in INSTALLERS:
         value['requested_operation'] = operation
     if result is not None:
         value['result'] = result
+    if (status == 'configuration_invalid' and isinstance(failure_reason, str)
+            and failure_reason in CONFIGURATION_FAILURES):
+        value['failure_reason'] = failure_reason
     return value
 
 
@@ -45,15 +51,29 @@ def probe(environ=None, *, runner=None):
     module_name = INSTALLERS[operation]
     try:
         installer = transport._module(module_name)
-        config = {'source_sha': SOURCE_SHA, 'public_origin': environ.get('QUANTA_PUBLIC_ORIGIN', ''),
-                  'auth_mode': environ.get('QUANTA_AUTH_MODE', '')}
-        if operation == 'configure-acme':
-            config['acme_email'] = environ.get('QUANTA_ACME_EMAIL', '')
-        installer.validate_config(config)
+        base_validator = transport._module('install_https') if operation == 'configure-acme' else installer
+    except Exception:
+        return report('configuration_invalid', operation=operation, failure_reason='installer_module_load_failed')
+    config = {'source_sha': SOURCE_SHA, 'public_origin': environ.get('QUANTA_PUBLIC_ORIGIN', ''),
+              'auth_mode': environ.get('QUANTA_AUTH_MODE', '')}
+    try:
+        base_validator.validate_config(config)
+    except Exception:
+        return report('configuration_invalid', operation=operation, failure_reason='base_configuration_invalid')
+    if operation == 'configure-acme':
+        email = environ.get('QUANTA_ACME_EMAIL', '')
+        if email == '':
+            return report('configuration_invalid', operation=operation, failure_reason='acme_email_missing')
+        config['acme_email'] = email
+        try:
+            installer.validate_config(config)
+        except Exception:
+            return report('configuration_invalid', operation=operation, failure_reason='acme_email_invalid')
+    try:
         encoded = base64.b64encode(json.dumps(config, sort_keys=True, separators=(',', ':')).encode()).decode('ascii')
         source = Path(__file__).with_name(module_name + '.py').read_text(encoding='utf-8')
     except Exception:
-        return report('configuration_invalid', operation=operation)
+        return report('configuration_invalid', operation=operation, failure_reason='installer_preparation_failed')
     remote = '/usr/bin/sudo -n /usr/bin/python3 -I -B -c ' + shlex.quote(source) + ' ' + shlex.quote(encoded)
     runner = (lambda command, environment, directory: transport._capture(
         command, environment, directory, timeout=900, limit=8192)) if runner is None else runner

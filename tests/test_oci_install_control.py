@@ -266,7 +266,7 @@ class FixedInstallationTransportTests(unittest.TestCase):
         def selected(module_name):
             if module_name == name:
                 return module
-            self.assertEqual(module_name, "probe_login")
+            self.assertIn(module_name, ("probe_login", "install_https"))
             return real_module(module_name)
         def read_source(path, *args, **kwargs):
             self.assertEqual(path, DEPLOY / (name + ".py"))
@@ -300,10 +300,74 @@ class FixedInstallationTransportTests(unittest.TestCase):
             runner = mock.Mock(side_effect=AssertionError("must not launch"))
             result = probe.probe(self.config(), runner=runner)
             self.assertEqual(result["status"], "configuration_invalid")
+            self.assertEqual(result["failure_reason"], "base_configuration_invalid")
             self.assertFalse(result["authentication_attempted"])
             runner.assert_not_called()
             module.validate_config.assert_called_once_with({"source_sha": probe.SOURCE_SHA,
                 "public_origin": "https://quanta.example.com", "auth_mode": "owner-token"})
+
+    def rejected_config(self, config, reason):
+        runner = mock.Mock(side_effect=AssertionError("must not launch"))
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with mock.patch.object(probe.tempfile, "TemporaryDirectory", side_effect=AssertionError("must not create")), \
+                contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            result = probe.probe(config, runner=runner)
+        self.assertEqual(result, {"scope": "ssh_fixed_installation", "status": "configuration_invalid",
+            "authentication_attempted": False, "requested_operation": config["QUANTA_OCI_INSTALL_OPERATION"],
+            "failure_reason": reason})
+        runner.assert_not_called()
+        self.assertEqual(stdout.getvalue() + stderr.getvalue(), "")
+        for private in (PRIVATE, KEY, PIN, HOST):
+            self.assertNotIn(private, json.dumps(result))
+
+    def test_actual_acme_validator_distinguishes_missing_and_empty_contact_before_ssh(self):
+        config = self.config("configure-acme")
+        del config["QUANTA_ACME_EMAIL"]
+        self.rejected_config(config, "acme_email_missing")
+        self.rejected_config({**config, "QUANTA_ACME_EMAIL": ""}, "acme_email_missing")
+
+    def test_actual_acme_validator_reports_invalid_contact_without_echoing_it(self):
+        for email in (None, " ", "owner@example.com\n" + PRIVATE, "not-an-email", "한@example.com"):
+            with self.subTest(email_type=type(email).__name__):
+                self.rejected_config({**self.config("configure-acme"), "QUANTA_ACME_EMAIL": email},
+                                     "acme_email_invalid")
+
+    def test_invalid_base_is_not_misreported_as_a_contact_problem(self):
+        for field, value in (("QUANTA_PUBLIC_ORIGIN", "http://quanta.example.com"),
+                             ("QUANTA_AUTH_MODE", "invalid")):
+            for email in ("", "owner@example.com"):
+                with self.subTest(field=field, contact_present=bool(email)):
+                    self.rejected_config({**self.config("configure-acme"), field: value,
+                                          "QUANTA_ACME_EMAIL": email}, "base_configuration_invalid")
+
+    def test_actual_valid_acme_configuration_reaches_only_the_injected_runner(self):
+        def runner(argv, environment, directory):
+            remote = shlex.split(argv[-1])
+            self.assertEqual(json.loads(base64.b64decode(remote[-1], validate=True)),
+                {"source_sha": probe.SOURCE_SHA, "public_origin": "https://quanta.example.com",
+                 "auth_mode": "owner-token", "acme_email": "owner@example.com"})
+            return "timeout", b"", True
+        result = probe.probe(self.config("configure-acme"), runner=runner)
+        self.assertEqual(result["status"], "timeout")
+        self.assertTrue(result["authentication_attempted"])
+        self.assertNotIn("failure_reason", result)
+
+    def test_module_load_and_source_preparation_failures_are_fixed_nonsecret_reasons(self):
+        real_module = probe.transport._module
+        for name in ("configure_acme", "install_https"):
+            def selected(module_name):
+                if module_name == name:
+                    raise OSError(PRIVATE)
+                return real_module(module_name)
+            with self.subTest(module=name), mock.patch.object(probe.transport, "_module", side_effect=selected):
+                self.rejected_config(self.config("configure-acme"), "installer_module_load_failed")
+        with mock.patch.object(Path, "read_text", side_effect=OSError(PRIVATE)):
+            self.rejected_config(self.config("configure-acme"), "installer_preparation_failed")
+
+    def test_failure_reason_is_limited_to_the_fixed_configuration_enum(self):
+        for reason in (PRIVATE, None, [], "acme_email_missing"):
+            self.assertNotIn("failure_reason", probe.report("failed", failure_reason=reason))
+        self.assertNotIn("failure_reason", probe.report("configuration_invalid", failure_reason=PRIVATE))
 
     def test_fixed_quoted_source_json_config_private_ppk_environment_and_cleanup(self):
         paths = []
