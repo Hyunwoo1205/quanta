@@ -67,6 +67,35 @@ def _host_key(pin: str | None) -> bool:
     return len(digest) == 32 and base64.b64encode(digest).decode().rstrip("=") == pin[7:]
 
 
+def _normalized_host_key(pin: str | None) -> str | None:
+    """Accept a bounded fingerprint representation, preserving the exact digest.
+
+    Comments from a standard ssh-keygen output line are discarded, never passed
+    to the client. Every accepted representation ends in strict digest validation.
+    """
+    if not isinstance(pin, str) or not 1 <= len(pin) <= 1024:
+        return None
+    value = pin.strip(" \t\r\n\v\f")
+    if (not value or any(character in value for character in "\r\n")
+            or any((ord(character) < 32 and character != "\t") or ord(character) == 127
+                   for character in value)):
+        return None
+    if _host_key(value):
+        return value
+    candidate = "SHA256:" + value
+    if _host_key(candidate):
+        return candidate
+    if value.count("SHA256:") != 1 or "MD5:" in value:
+        return None
+    match = re.fullmatch(
+        r"([1-9][0-9]{0,4})[ \t]+(SHA256:[A-Za-z0-9+/]{43})(?:[ \t]+([^\r\n]*))?",
+        value,
+    )
+    if not match or int(match[1]) > 65536:
+        return None
+    return match[2] if _host_key(match[2]) else None
+
+
 def _base64_section(lines: list[str], index: int, name: str) -> int | None:
     if index >= len(lines):
         return None
@@ -125,12 +154,15 @@ def probe(environ=None, *, runner=None) -> dict:
     environ = os.environ if environ is None else environ
     if environ.get("QUANTA_OCI_AUTH_CONFIRMED") != "true":
         return _report("not_configured")
-    host, pin = environ.get("QUANTA_OCI_HOST"), environ.get("QUANTA_OCI_HOST_KEY")
+    host = environ.get("QUANTA_OCI_HOST")
+    supplied_pin = environ.get("QUANTA_OCI_HOST_KEY")
+    pin = _normalized_host_key(supplied_pin)
     issues = []
     if not _global_ipv4(host):
         issues.append("host_missing" if host is None or host == "" else "host_invalid")
-    if not _host_key(pin):
-        issues.append("host_key_missing" if pin is None or pin == "" else "host_key_invalid")
+    if pin is None:
+        issues.append("host_key_missing" if supplied_pin is None or supplied_pin == ""
+                      else "host_key_invalid")
     ppk = environ.get("QUANTA_OCI_PPK")
     error, raw_key = _key_bytes(ppk)
     if error == "not_configured":
