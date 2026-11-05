@@ -1,5 +1,13 @@
 # PC 없이 OCI 연결을 검증하는 첫 단계
 
+## 선택한 실행 경로
+
+현재 대화·기존 SSH 키·서버 구성을 유지하고 초기 설정을 줄이기 위해 GitHub 클라우드 실행기를 선택합니다. OCI에 Tailscale을 설치하거나 새 Codex Cloud 환경으로 작업을 옮기지 않습니다. Plink는 GitHub 실행기에서만 준비하며 서버의 기존 SSH와 PPK를 사용합니다.
+
+반복 작업의 실행 버튼을 줄이기 위해 `ops/oci` 브랜치의 `.github/oci/request.json` 변경으로 시작하는 자동 실행 경로를 추가했습니다. 첫 검증은 `runner-check` 요청만 허용하며 환경 secret·개인키·SSH·OCI 명령을 사용하지 않습니다. 운영 요청 브랜치는 무거운 계산 CI의 push 검사에서만 제외하고 main·PR·수동 계산 검사는 유지합니다. 키를 사용하는 자동 작업은 이 첫 검사에 포함하지 않습니다.
+
+사용자의 Run workflow 조작 없이 연결 도구의 branch update로 시작한 [실행 42009404699](https://github.com/Hyunwoo1205/quanta/actions/runs/42009404699)는 `completed/success`입니다. 실제 로그의 고유 요청 UUID·checkout commit을 대조했습니다. 같은 요청 commit에는 이 workflow만 관측됐고 전체 계산 CI는 시작하지 않았습니다. [검증 기록](oci_runner_control_verification.json)에 주소·키 없이 보존합니다. 이는 자동 실행·결과 회수 경로의 근거이며 실제 SSH 로그인·설치·배포 성공은 아닙니다. 원격 명령 자동화는 기존 키 인증을 확인한 뒤 필요한 고정 작업별로 추가합니다.
+
 이 문서는 GitHub Actions를 별도의 CI/CD 실행기로 사용하는 연결 준비 절차입니다. 현재 대화의 네트워크를 프록시나 터널로 바꾸지 않습니다. GitHub 실행기가 서버의 22번 포트에 도달하는지 먼저 검사하며, 성공해도 SSH 인증·서버 명령·설치가 가능한 것으로 표시하지 않습니다.
 
 ## 현재 확인한 한계
@@ -27,7 +35,7 @@ GitHub의 `Hyunwoo1205/quanta` 저장소에서 웹 또는 모바일 브라우저
 
 ## 기존 PPK로 로그인만 검사하는 준비
 
-PPK를 직접 읽는 Unix Plink를 사용하므로 `.key` export나 새 공개키 등록 없이 기존 PPK로 인증을 검사할 수 있습니다. `OCI login check (existing PPK)`는 수동 실행만 허용하며 `confirm_key_use` 기본값이 false입니다. 사용자가 명시적으로 선택하고 아래 secret이 모두 있어야 연결을 시도합니다. 아직 이 workflow로 로그인하지 않았고 개인키도 등록하지 않았습니다.
+PPK를 직접 읽는 Unix Plink를 사용하므로 `.key` export나 새 공개키 등록 없이 기존 PPK로 인증을 검사할 수 있습니다. `OCI login check (existing PPK)`는 main에서 명시적으로 선택한 수동 실행 또는 `ops/oci`의 고정된 로그인 요청을 허용합니다. 수동 실행의 `confirm_key_use` 기본값은 false입니다. 아래 secret과 신뢰한 호스트 키가 모두 있어야 연결을 시도합니다. 실제 성공 여부는 해당 실행 로그로 확인합니다.
 
 이 작업이 요청하는 서버 명령은 고정된 `true` 하나입니다. 성공은 핀으로 지정한 서버의 비자명한 SSH 인증과 해당 명령의 종료 코드 0을 뜻합니다. sudo 권한·설치·Quanta 동작·배포는 검증하지 않습니다. SSH 로그인 자체로 서버의 정상 접속·감사 로그가 남을 수 있습니다.
 
@@ -56,7 +64,11 @@ ssh-keygen -l -E sha256 -f /etc/ssh/ssh_host_ed25519_key.pub
 
 ### 실행과 결과
 
-선택과 지문 확인·secret 등록이 끝나면 **Actions → OCI login check (existing PPK) → Run workflow → main**에서 `confirm_key_use`를 선택하고 실행합니다. 선택하지 않으면 연결 전에 실패하며 개인키를 사용하지 않습니다. 해당 선택을 유지하는 자동 push·PR 실행은 없습니다.
+선택과 지문 확인·secret 등록이 끝나면 **Actions → OCI login check (existing PPK) → Run workflow → main**에서 `confirm_key_use`를 선택하고 수동 실행할 수 있습니다. 선택하지 않으면 연결 전에 실패하며 개인키를 사용하지 않습니다.
+
+이 대화의 작업자는 별도 실행 버튼 대신 `ops/oci`의 `.github/oci/login-request.json`에 고유한 고정 요청을 올려 검사를 시작할 수 있습니다. 이 요청은 최대 1024바이트이며 정확히 `schema_version=1`, `operation=login-check`, 정규 UUID인 `request_id`만 허용합니다. 잘못된 event·ref·요청은 설치와 개인키 단계 전에 거부합니다. 요청 파일에는 주소·키·명령 문자열을 넣지 않습니다. 이 경로도 `true` 이외의 서버 명령은 요청하지 않습니다. 기존 runner-only 검사와는 다른 파일을 사용합니다.
+
+환경의 배포 가능 브랜치를 제한했다면 `ops/oci`가 허용되어 있어야 합니다. 기존 reviewer·승인 정책은 그대로 따릅니다. 차단되더라도 secret을 다른 보관처로 옮기거나 승인을 자동 해제하지 않습니다. PR·fork 이벤트는 인증 작업을 시작하지 않습니다.
 
 도구는 공개 IPv4·32바이트 SHA256 지문·최대 32 KiB의 PPK v2/v3 형식과 `Encryption: none`을 먼저 확인합니다. Plink는 key 내용을 실제로 검증하며, 형식 검사만으로 키 일치나 인증 성공을 판정하지 않습니다. 임시 개인 디렉터리와 0600 키 파일을 만들고 원본 bytes를 그대로 사용합니다. 다른 키·인증 에이전트·포워딩·접속 공유를 끄고, 새 HOME과 최소 환경변수를 적용합니다. 서버 출력·원본 Plink 오류는 모두 버리고 고정 JSON 결과만 표시합니다. 실행 제한은 15초이고 정상·실패·timeout 종료 뒤 임시 파일을 정리합니다. 실행기 자체가 강제 종료되면 정리는 임시 실행기의 폐기 경계에 의존합니다.
 
