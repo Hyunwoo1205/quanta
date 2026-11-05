@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import stat
 import subprocess
+import sys
 import types
 import unittest
 from unittest.mock import patch, mock_open
@@ -21,7 +22,9 @@ def fixture():
     return {
         "scope": "host_inventory", "status": "success", "os_id": "ubuntu",
         "os_version": "26.04", "architecture": "aarch64", "logical_cpus": 2,
-        "memory_total_gib": 11.5, "root_filesystem_total_gib": 190,
+        "memory_total_gib": 11.5, "memory_available_gib": 8.0,
+        "docker_server_version": None, "docker_running_containers": None,
+        "root_filesystem_total_gib": 190,
         "root_filesystem_free_gib": 182,
         **{field: False for field in inventory.BOOLEAN_FIELDS},
         "quanta_units_active": {unit: False for unit in inventory.UNITS},
@@ -48,6 +51,13 @@ class HostInventoryTests(unittest.TestCase):
             ("logical_cpus", 4097), ("logical_cpus", 2.0),
             ("memory_total_gib", float("nan")), ("memory_total_gib", float("inf")),
             ("memory_total_gib", -1), ("memory_total_gib", 65537),
+            ("memory_available_gib", 12), ("memory_available_gib", float("nan")),
+            ("docker_server_version", "28.0.0-private"), ("docker_server_version", 28),
+            ("docker_server_version", "28.0\nprivate"),
+            ("docker_running_containers", True), ("docker_running_containers", -1),
+            ("docker_running_containers", 10001), ("docker_running_containers", "1"),
+            ("docker_engine_ready", True),
+            ("sudo_noninteractive", None),
             ("root_filesystem_total_gib", 1048577),
             ("root_filesystem_free_gib", 191), ("root_filesystem_free_gib", True),
         ]
@@ -73,7 +83,8 @@ class HostInventoryTests(unittest.TestCase):
                 inventory.parse_output(json.dumps(data).encode())
         data = fixture()
         for field in (*inventory.BOOLEAN_FIELDS, *inventory.NUMBER_FIELDS, "logical_cpus"):
-            data[field] = None
+            if field != "sudo_noninteractive":
+                data[field] = None
         data["quanta_units_active"] = {unit: None for unit in inventory.UNITS}
         self.assertEqual(inventory.parse_output(json.dumps(data).encode()), data)
 
@@ -94,11 +105,92 @@ class HostInventoryTests(unittest.TestCase):
                 self.assertIsNone(inventory.sanitize_report(raw))
 
     def test_memory_read_is_bounded_and_converted(self):
-        handle = mock_open(read_data="MemTotal:       12582912 kB\nPrivate: ignored\n")
+        handle = mock_open(read_data="MemTotal:       12582912 kB\nMemAvailable: 8388608 kB\nPrivate: ignored\n")
         with patch("builtins.open", handle):
             self.assertEqual(inventory._memory_gib(), 12)
         handle.assert_called_once_with("/proc/meminfo", encoding="ascii")
         handle().read.assert_called_once_with(65536)
+        with patch("builtins.open", handle):
+            self.assertEqual(inventory._memory_gib("MemAvailable"), 8)
+
+    def test_sudo_check_is_fixed_noninteractive_and_sanitized(self):
+        for outcome, expected in [(types.SimpleNamespace(returncode=0), True),
+                                  (types.SimpleNamespace(returncode=1), False)]:
+            with patch.object(inventory.subprocess, "run", return_value=outcome) as run:
+                self.assertIs(inventory._sudo_ready(), expected)
+            run.assert_called_once_with(
+                ["/usr/bin/sudo", "-n", "true"], stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                env={"PATH": inventory.BINPATH, "LC_ALL": "C"}, cwd="/", timeout=2, check=False)
+        with patch.object(inventory.subprocess, "run", side_effect=OSError("private error")):
+            self.assertFalse(inventory._sudo_ready())
+
+    def test_docker_probe_targets_only_local_daemon_and_returns_numeric_facts(self):
+        for privileged in (False, True):
+            with self.subTest(privileged=privileged), \
+                    patch.object(inventory.shutil, "which", return_value="/usr/bin/docker"), \
+                    patch.object(inventory, "_bounded_output", return_value=b"28.3.3-rc.1 2\n") as capture:
+                facts = inventory._docker_facts(privileged)
+            prefix = ["/usr/bin/sudo", "-n"] if privileged else []
+            capture.assert_called_once_with(prefix + [
+                "/usr/bin/docker", "--host", "unix:///var/run/docker.sock", "info", "--format",
+                "{{.ServerVersion}} {{.ContainersRunning}}"])
+            self.assertEqual(facts, {"docker_engine_ready": True, "docker_server_version": "28.3.3",
+                                    "docker_running_containers": 2})
+            data = {**fixture(), **facts}
+            self.assertEqual(inventory.parse_output(json.dumps(data).encode()), data)
+
+    def test_docker_missing_failed_or_malformed_output_exposes_no_raw_data(self):
+        unknown = {"docker_engine_ready": None, "docker_server_version": None,
+                   "docker_running_containers": None}
+        with patch.object(inventory.shutil, "which", return_value=None), \
+                patch.object(inventory, "_bounded_output") as capture:
+            self.assertEqual(inventory._docker_facts(True), unknown)
+            capture.assert_not_called()
+        for raw in [None, b"host-private secret", b"28.3.3 10001\n", b"28.3.3 True\n",
+                    b"28.3.3 1\nextra", b"28.3.3 -1", b"28.3 1\n\n"]:
+            with self.subTest(raw=raw), patch.object(inventory.shutil, "which", return_value="/usr/bin/docker"), \
+                    patch.object(inventory, "_bounded_output", return_value=raw):
+                expected = {**unknown, "docker_engine_ready": False} if raw is None else unknown
+                self.assertEqual(inventory._docker_facts(False), expected)
+
+    def test_docker_contract_requires_ready_status_for_version_and_container_count(self):
+        facts = {"docker_engine_ready": True, "docker_server_version": "28.3.3",
+                 "docker_running_containers": 0}
+        for changed in [{"docker_engine_ready": False}, {"docker_engine_ready": None},
+                        {"docker_server_version": None}, {"docker_running_containers": None}]:
+            data = {**fixture(), **facts, **changed}
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                inventory.validate_report(data)
+
+    def test_docker_four_component_and_ip_shaped_versions_are_rejected(self):
+        unknown = {"docker_engine_ready": None, "docker_server_version": None,
+                   "docker_running_containers": None}
+        for version in ("28.3.3.1", "192.0.2.1"):
+            with self.subTest(version=version):
+                data = {**fixture(), "docker_engine_ready": True,
+                        "docker_server_version": version, "docker_running_containers": 1}
+                self.assertIsNone(inventory.sanitize_report(json.dumps(data).encode()))
+                with patch.object(inventory.shutil, "which", return_value="/usr/bin/docker"), \
+                        patch.object(inventory, "_bounded_output", return_value=(version + " 1\n").encode()):
+                    self.assertEqual(inventory._docker_facts(False), unknown)
+
+    def test_bounded_client_local_eof_failure_output_limit_and_timeout(self):
+        cases = [("import sys; sys.stderr.write('hidden'); print('ok')", {}, b"ok\n"),
+                 ("raise SystemExit(7)", {}, None),
+                 ("import sys; sys.stdout.write('x'*1000000)", {"limit": 10}, None),
+                 ("import time; time.sleep(5)", {"timeout": 0.05}, None)]
+        for code, options, expected in cases:
+            with self.subTest(code=code), contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(inventory._bounded_output([sys.executable, "-I", "-c", code], **options), expected)
+                self.assertEqual(out.getvalue(), "")
+
+    def test_bounded_client_uses_no_inherited_environment_and_hides_spawn_error(self):
+        with patch.object(inventory.subprocess, "Popen", side_effect=OSError("private error")) as spawn:
+            self.assertIsNone(inventory._bounded_output(["/fixed/client"]))
+        spawn.assert_called_once_with(["/fixed/client"], stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=False,
+            env={"PATH": inventory.BINPATH, "LC_ALL": "C"}, cwd="/")
 
     def test_path_facts_distinguish_absent_unknown_symlink_and_directory(self):
         for error, expected in [(FileNotFoundError(), False), (PermissionError(), None)]:
@@ -141,6 +233,10 @@ class HostInventoryTests(unittest.TestCase):
                 patch.object(inventory.os, "cpu_count", return_value=2), \
                 patch.object(inventory.shutil, "disk_usage", return_value=disk), \
                 patch.object(inventory, "_memory_gib", return_value=12), \
+                patch.object(inventory, "_sudo_ready", return_value=False), \
+                patch.object(inventory, "_docker_facts", return_value={
+                    "docker_engine_ready": False, "docker_server_version": None,
+                    "docker_running_containers": None}), \
                 patch.object(inventory, "_available", return_value=True) as available, \
                 patch.object(inventory.importlib.util, "find_spec", return_value=object()), \
                 patch.object(inventory, "_path_facts", return_value=facts), \
