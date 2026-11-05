@@ -1,0 +1,74 @@
+name: OCI host inventory (read only)
+
+on:
+  push:
+    branches:
+      - ops/oci
+    paths:
+      - .github/oci/inventory-request.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quanta-oci-host-inventory
+  cancel-in-progress: false
+
+jobs:
+  inventory:
+    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/ops/oci' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    environment: oci-preflight
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Authorize the fixed inventory request
+        run: |
+          python3 -I - <<'PY'
+          import json
+          from pathlib import Path
+          import uuid
+
+          def unique(pairs):
+              result = {}
+              for key, value in pairs:
+                  if key in result:
+                      raise ValueError('duplicate key')
+                  result[key] = value
+              return result
+          try:
+              path = Path('.github/oci/inventory-request.json')
+              if path.is_symlink():
+                  raise ValueError('invalid request')
+              with path.open('rb') as handle:
+                  raw = handle.read(1025)
+              request = json.loads(raw, object_pairs_hook=unique)
+              valid = (
+                  len(raw) <= 1024 and isinstance(request, dict)
+                  and set(request) == {'schema_version', 'operation', 'request_id'}
+                  and type(request['schema_version']) is int and request['schema_version'] == 1
+                  and request['operation'] == 'host-inventory'
+                  and isinstance(request['request_id'], str) and len(request['request_id']) == 36
+                  and str(uuid.UUID(request['request_id'])) == request['request_id']
+              )
+          except Exception:
+              valid = False
+          if not valid:
+              print('{"scope":"inventory_request","status":"denied"}')
+              raise SystemExit(2)
+          print(json.dumps({'scope': 'inventory_request', 'status': 'authorized',
+                            'request_id': request['request_id']}, sort_keys=True))
+          PY
+      - name: Install Plink on the GitHub runner
+        run: |
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
+      - name: Read a bounded allowlist of host facts
+        env:
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+          QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
+          QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
+        run: python3 -I deploy/oci/probe_inventory.py

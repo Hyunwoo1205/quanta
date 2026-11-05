@@ -22,7 +22,7 @@
 
 ## 등록 후 로그인 검사 현황
 
-등록값으로 실제 실행한 첫 요청과 진단·표기 정리 후 요청은 모두 인증 전 사전 검사에서 중단되었습니다. 마지막 [실행 42013432968](https://github.com/Hyunwoo1205/quanta/actions/runs/42013432968)의 고정 결과는 `host_key_invalid`, `authentication_attempted=false`입니다. 주소·PPK 파일 구조는 통과했으나 `QUANTA_OCI_HOST_KEY`의 값이 유효한 SHA256 지문으로 인식되지 않았습니다. 신뢰한 OCI 서버의 공개 호스트 키 지문을 원본과 대조해야 하며 개인키를 다시 등록하거나 호스트 키 검사를 끄지 않습니다. [검증 기록](oci_login_verification.json)에 세 요청의 범위만 보존합니다.
+최초 세 시도는 서버 지문 표기의 형식 검사에서 인증 전에 멈췄습니다. 사용자가 secret을 수정한 뒤 2026-11-06 00:20 KST [실행 42013432968의 attempt 2](https://github.com/Hyunwoo1205/quanta/actions/runs/42013432968/attempts/2)가 `completed/success`입니다. 실제 job 로그에서 기존 PPK·고정한 호스트 키를 사용한 `authentication_attempted=true`, `requested_command=true`, `status=success`를 확인했습니다. 서버 지문을 새로 수집하거나 키를 교체하지 않았습니다. [검증 기록](oci_login_verification.json)에 과거 실패와 실제 로그인 성공을 함께 보존합니다. 설치·sudo·Quanta 실행·배포는 이 검사 범위가 아닙니다.
 
 ## 첫 검사는 주소만 사용
 

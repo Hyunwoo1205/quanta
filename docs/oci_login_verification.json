@@ -1,6 +1,6 @@
 {
   "verification_kind": "pinned_ppk_login_preflight",
-  "state": "blocked_by_host_key_format",
+  "state": "ssh_login_verified",
   "attempts": [
     {
       "run_id": 42011858942,
@@ -76,17 +76,40 @@
         "scope": "ssh_login_true",
         "status": "not_configured"
       }
+    },
+    {
+      "run_id": 42013432968,
+      "run_attempt": 2,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42013432968",
+      "head_sha": "f7cd1098683e3d2903dee67b96c37c7be56b7cc4",
+      "event": "push",
+      "branch": "ops/oci",
+      "conclusion": "success",
+      "result_at_utc": "2026-11-05T15:20:38.7069219Z",
+      "completed_at_utc": "2026-11-05T15:20:40Z",
+      "job_id": 127337126931,
+      "request": {
+        "schema_version": 1,
+        "operation": "login-check",
+        "request_id": "ef66519b-213a-4a25-86ac-f0e0b989334c"
+      },
+      "request_gate_authorized": true,
+      "client_install_step_success": true,
+      "result": {
+        "authentication_attempted": true,
+        "requested_command": "true",
+        "scope": "ssh_login_true",
+        "status": "success"
+      }
     }
   ],
-  "last_configuration_issues": [
-    "host_key_invalid"
-  ],
+  "last_configuration_issues": [],
   "scope": {
-    "ssh_authentication_attempted": false,
-    "ssh_authentication_verified": false,
-    "host_identity_verified": false,
-    "private_key_cryptographic_match_verified": false,
-    "remote_commands_sent": false,
+    "ssh_authentication_attempted": true,
+    "ssh_authentication_verified": true,
+    "host_identity_verified": true,
+    "private_key_cryptographic_match_verified": true,
+    "remote_commands_sent": true,
     "oci_installation_attempted": false,
     "credential_values_recorded": false
   },
@@ -96,5 +119,5 @@
     "combined_request_login_transport_cases": 331,
     "combined_seconds": 0.41
   },
-  "next_required_action": "Verify the existing server's public SHA256 host fingerprint and replace QUANTA_OCI_HOST_KEY with a valid representation. Do not disclose the login private key."
+  "next_required_action": "Run the fixed read-only host inventory; deployment, sudo, mounts and application operation are not yet verified."
 }
