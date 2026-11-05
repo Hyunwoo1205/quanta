@@ -94,7 +94,7 @@
     "public_tls_verified": false,
     "oci_application_deployed": false,
     "authenticated_browser_verified": false,
-    "native_ci_verified": false
+    "native_ci_verified": true
   },
   "source_files_sha256": {
     "pyproject.toml": "ba6a588a9d4fa39de06270a3fa11ca8069d4bbe61dc5ade5bbf910fa680e8c5f",
@@ -114,5 +114,12 @@
     "The 0.10.0-to-0.11.0 metadata mismatch was corrected before the final focused and full passing runs.",
     "Historical numerical verification records retain their original implementation hashes; fresh native CI remains separate.",
     "First native CI 42062861784 stopped in the negative ALPN probe because OpenSSL reported the expected rejection with a different message. The probe now checks handshake rejection and a succeeding H1 request without matching text; application source was unchanged."
-  ]
+  ],
+  "native_ci": {
+    "run_id": 42064056609,
+    "source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "status": "completed",
+    "conclusion": "success",
+    "manifest": "verification/v0.11.0/manifest.json"
+  }
 }

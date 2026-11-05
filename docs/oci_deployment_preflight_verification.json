@@ -1,0 +1,70 @@
+{
+  "verification_kind": "authenticated_read_only_deployment_preflight",
+  "workflow_run": {
+    "id": 42064118059,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42064118059",
+    "event": "push",
+    "branch": "ops/oci",
+    "head_sha": "8692e89a5d2adc3f1f2ac51ecea4bec197eb4cf0",
+    "created_at_utc": "2026-11-05T16:24:32Z",
+    "completed_at_utc": "2026-11-05T16:25:41Z",
+    "job_id": 127373410611,
+    "conclusion": "success"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "deployment-preflight",
+    "request_id": "02cb5e39-5a63-46fc-b49d-f6e19e3ce23e"
+  },
+  "result": {
+    "authentication_attempted": true,
+    "preflight": {
+      "docker_names_inspected": true,
+      "docker_quanta_backup_name_absent": true,
+      "docker_quanta_name_absent": true,
+      "etc_quanta_absent": true,
+      "etc_quanta_conflicting": false,
+      "loopback_8765_available": true,
+      "paths_inspected": true,
+      "quanta_unit_paths_absent": true,
+      "quanta_unit_paths_conflicting": false,
+      "ready_for_initial_deployment": true,
+      "root_filesystem_inspected": true,
+      "root_filesystem_is_root": true,
+      "root_filesystem_type_supported": true,
+      "root_filesystem_uuid_available": true,
+      "root_filesystem_writable": true,
+      "scope": "deployment_preflight",
+      "srv_quanta_absent": true,
+      "srv_quanta_conflicting": false,
+      "status": "success",
+      "sudo_noninteractive": true,
+      "tcp_443_available": true,
+      "tcp_80_available": true,
+      "tcp_tables_inspected": true
+    },
+    "requested_operation": "deployment-preflight",
+    "scope": "ssh_deployment_preflight",
+    "status": "success"
+  },
+  "all_job_steps_completed_successfully": true,
+  "scope": {
+    "ports_checked_for_occupancy": true,
+    "ports_reserved": false,
+    "oci_ingress_checked": false,
+    "docker_dnat_checked": false,
+    "root_filesystem_uuid_availability_checked": true,
+    "root_filesystem_uuid_recorded": false,
+    "runtime_wrapper_destination_checked": false,
+    "configuration_changes_requested": false,
+    "packages_installed_on_oci": false,
+    "public_tls_verified": false,
+    "application_deployed": false,
+    "credential_values_recorded": false
+  },
+  "notes": [
+    "Readiness is a conservative snapshot, not a port reservation or a guarantee of external reachability.",
+    "The later installer must separately inspect the fixed /usr/local/lib/quanta runtime wrapper destination before writing.",
+    "No existing container, service, storage volume or configuration was changed."
+  ]
+}

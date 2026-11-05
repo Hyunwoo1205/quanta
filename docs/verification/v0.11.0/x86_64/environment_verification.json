@@ -1,0 +1,157 @@
+{
+  "locked_profile_matches": true,
+  "profile": {
+    "profile_id": "cpython-3.12.14-linux-x86_64-cpu-v1",
+    "architecture": "x86_64",
+    "lock_text": "requirements.lock.txt",
+    "lock_manifest": "requirements.lock.json"
+  },
+  "requirements_lock_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5",
+  "errors": [],
+  "observations": {
+    "valid": true,
+    "baseline": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "runtime_profile": "cpython-3.12.14-linux-x86_64-cpu-v1",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "rfc8785": "0.1.4",
+      "threadpoolctl": "3.6.0"
+    },
+    "implementation": "CPython",
+    "platform": {
+      "os": "Linux",
+      "architecture": "x86_64"
+    },
+    "python_executable": "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-fdde5778.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      },
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-6cdc3b4a.so",
+        "version": "0.3.30",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      }
+    ],
+    "numpy_build_configuration": {
+      "Compilers": {
+        "c": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "cc"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "gcc",
+          "linker": "ld.bfd",
+          "version": "14.2.1",
+          "commands": "c++"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        },
+        "build": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "linux"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        },
+        "lapack": {
+          "name": "scipy-openblas",
+          "found": true,
+          "version": "0.3.30",
+          "detection method": "pkgconfig",
+          "include directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/include",
+          "lib directory": "/opt/_internal/cpython-3.12.12/lib/python3.12/site-packages/scipy_openblas64/lib",
+          "openblas configuration": "OpenBLAS 0.3.30  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+          "pc file directory": "/project/.openblas"
+        }
+      },
+      "Python Information": {
+        "path": "/tmp/build-env-aw1mwcap/bin/python",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "SSE",
+          "SSE2",
+          "SSE3"
+        ],
+        "found": [
+          "SSSE3",
+          "SSE41",
+          "POPCNT",
+          "SSE42",
+          "AVX",
+          "F16C",
+          "FMA3",
+          "AVX2",
+          "AVX512F",
+          "AVX512CD",
+          "AVX512_SKX",
+          "AVX512_CLX",
+          "AVX512_CNL",
+          "AVX512_ICL"
+        ],
+        "not found": [
+          "AVX512_KNL",
+          "AVX512_KNM",
+          "AVX512_SPR"
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "physical_validation_status": "unvalidated",
+    "simulation_executed": false
+  }
+}

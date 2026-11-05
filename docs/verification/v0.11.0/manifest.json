@@ -1,0 +1,168 @@
+{
+  "verification_kind": "native_two_architecture_release",
+  "package_version": "0.11.0",
+  "source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "workflow_run": {
+    "id": 42064056609,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42064056609",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at_utc": "2026-11-05T16:24:11Z",
+    "completed_at_utc": "2026-11-05T16:33:56Z"
+  },
+  "jobs": [
+    {
+      "architecture": "aarch64",
+      "id": 127373196614,
+      "python_tests_passed": 1116,
+      "python_seconds": 318.04,
+      "node_tests_passed": 35,
+      "caddy_cases_passed": 9
+    },
+    {
+      "architecture": "x86_64",
+      "id": 127373196718,
+      "python_tests_passed": 1116,
+      "python_seconds": 321.37,
+      "node_tests_passed": 35,
+      "caddy_cases_passed": 9
+    }
+  ],
+  "all_steps_completed_successfully": true,
+  "source_hash_references_verified": 466,
+  "artifacts": [
+    {
+      "id": 13434916196,
+      "name": "numerical-verification-x86_64-1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "size_in_bytes": 76779,
+      "sha256": "e31dcb999e8c9da71a59350cf96f3f601ed82314106123fe01727f848a1e064a",
+      "zip_bytes_verified": true
+    },
+    {
+      "id": 13433216857,
+      "name": "numerical-verification-aarch64-1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "size_in_bytes": 76192,
+      "sha256": "e56b9f4848dcf911f8fb5663813bcdf1cc96cbd67de7917aabc2e1ff80780a32",
+      "zip_bytes_verified": true
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/verification/v0.11.0/x86_64/caddy_verification.json",
+      "length_characters": 1305,
+      "sha256": "a44e18f62f060593c985d73531a7aae39961316b63d1f4082dfdae748bb1deda"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/selected_lock_sha256.txt",
+      "length_characters": 259,
+      "sha256": "4acee360898477b8c54d5b0c08355280fe421ab9b4c19beab26946971d5dea52"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/environment_verification.json",
+      "length_characters": 4690,
+      "sha256": "ff3b9e6b718c93fe77d72ff948e12bb5fef72d4459db080950541439e67396b8"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/numerical_verification.json",
+      "length_characters": 43558,
+      "sha256": "41916544b89b02e7b6a67a6ab64aae61e68ce5171fae2062484a1a64ae9055c0"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/relaxation_verification.json",
+      "length_characters": 20981,
+      "sha256": "cf78ba57a42457fe0dedbb34c84c451f2e810aa8de6e5420fbd0a0ebfbfce0d5"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/quantum_verification.json",
+      "length_characters": 67497,
+      "sha256": "9a5a650e81ad0b8d472e3e745d540f3c9d3f8de1cfde925248d690023b959054"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/workflow_verification.json",
+      "length_characters": 75202,
+      "sha256": "e2a2f141457b758bde2917e194d23b33731b3e02ffd5169bd113dc13d76c5df6"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/service_verification.json",
+      "length_characters": 37145,
+      "sha256": "49a8947d5c2ebf6bec687c1c4b5408a8d88b9761f03f009e9606cb31832e02e4"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/web_verification.json",
+      "length_characters": 23430,
+      "sha256": "63d8292ec03cb883a6543138d0bc6fe845c3c56a35b142381414e3ba317c8ee6"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/production_verification.json",
+      "length_characters": 31085,
+      "sha256": "b941891d7cbf8fb4a1744a5e9ca33831d99e8dc7c852e806582d413f34ba705a"
+    },
+    {
+      "path": "docs/verification/v0.11.0/x86_64/operations_verification.json",
+      "length_characters": 34799,
+      "sha256": "4fdc9c15555ecf948f52faf84797f5b764c6fe2ec1d0c623bffd5bbd50a706a5"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/environment_verification.json",
+      "length_characters": 4429,
+      "sha256": "be1731629d0e5bc955a3f871137161e4cc0aa72fd2172649c081d7b0dc13ba04"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/caddy_verification.json",
+      "length_characters": 1305,
+      "sha256": "a44e18f62f060593c985d73531a7aae39961316b63d1f4082dfdae748bb1deda"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/selected_lock_sha256.txt",
+      "length_characters": 275,
+      "sha256": "ed994314b76546862ed4d3ed6fe2fc0dc26b26a3b0d1f313279d57dacc9b44ab"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/numerical_verification.json",
+      "length_characters": 43223,
+      "sha256": "90b083ad29bc22c0bf92292afeec0e543e4d88b2bc7fcc464e5ebe682dfbe3ae"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/relaxation_verification.json",
+      "length_characters": 20702,
+      "sha256": "6548f4e7a6b9c8b398d68288549020ec616cdceea3c71095a2abd5206d8eb4bb"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/quantum_verification.json",
+      "length_characters": 67176,
+      "sha256": "32723fce14db16888461c1569243955b9a9f2f90194fc63c8e3d23a2ca8cfb17"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/workflow_verification.json",
+      "length_characters": 74923,
+      "sha256": "7b2b5a75feb7df84c0ccda2037a664a433dd2c5eb4e33f242567d938365d769e"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/service_verification.json",
+      "length_characters": 36865,
+      "sha256": "afa5aee9a2b83ba47f97110dada54726f5f4ffb01cdaed8d8cf311f71872b8b9"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/web_verification.json",
+      "length_characters": 23151,
+      "sha256": "ca2b613886e70ea8df364e1fc19f94aa8f0000a7d639634402f152dd7910f9ab"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/production_verification.json",
+      "length_characters": 30806,
+      "sha256": "fbd5f0d08d959d038f5e68c5b1c513104df3a737e5654db9d8dd97a0651ada9a"
+    },
+    {
+      "path": "docs/verification/v0.11.0/aarch64/operations_verification.json",
+      "length_characters": 34519,
+      "sha256": "48acb179ea9d73393e436601516de2fff1ae2a25c46657047134c7e401efd95f"
+    }
+  ],
+  "scope": {
+    "eight_measurements_per_architecture": true,
+    "pinned_container_and_hardened_operations_verified": true,
+    "physical_validation_status": "unvalidated",
+    "oci_deployment_verified": false,
+    "public_login_verified": false
+  }
+}
