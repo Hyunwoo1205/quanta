@@ -429,31 +429,38 @@ def _apply_firewalld(zone):
 
 def _nft_owned(rule):
     if (not isinstance(rule, dict) or rule.get("comment") != "quanta-web-v1"
+            or rule.get("family") not in {"ip", "inet"}
             or set(rule) - {"family", "table", "chain", "expr", "handle", "index", "comment"}):
         return False
     expressions = rule.get("expr")
-    if not isinstance(expressions, list) or len(expressions) not in {3, 4} or expressions[-1] != {"accept": None}:
+    if not isinstance(expressions, list) or len(expressions) not in {2, 3, 4} or expressions[-1] != {"accept": None}:
         return False
     kinds = []
     for expression in expressions[:-1]:
         if not isinstance(expression, dict) or set(expression) != {"match"}:
             return False
         match = expression["match"]
-        if not isinstance(match, dict) or set(match) != {"op", "left", "right"} or match["op"] != "==":
+        if not isinstance(match, dict) or set(match) != {"op", "left", "right"}:
             return False
-        left, right = match["left"], match["right"]
-        if left == {"meta": {"key": "nfproto"}} and right in ("ipv4", 2) and type(right) in (str, int):
+        left, right, operator = match["left"], match["right"], match["op"]
+        if (left == {"meta": {"key": "nfproto"}} and operator == "=="
+                and right in ("ipv4", 2) and type(right) in (str, int)):
             kinds.append("ipv4")
-        elif left == {"meta": {"key": "l4proto"}} and right in ("tcp", 6) and type(right) in (str, int):
+        elif (left == {"meta": {"key": "l4proto"}} and operator == "=="
+              and right in ("tcp", 6) and type(right) in (str, int)):
             kinds.append("tcp")
         elif (left == {"payload": {"protocol": "tcp", "field": "dport"}}
+              and operator in {"==", "in"}
               and isinstance(right, dict) and set(right) == {"set"}
               and isinstance(right["set"], list) and len(right["set"]) == 2
               and all(type(port) is int for port in right["set"]) and set(right["set"]) == set(PORTS)):
             kinds.append("ports")
         else:
             return False
-    return sorted(kinds) in (["ipv4", "ports"], ["ipv4", "ports", "tcp"])
+    accepted = (["ipv4", "ports"], ["ipv4", "ports", "tcp"])
+    if rule["family"] == "ip":
+        accepted += (["ports"], ["ports", "tcp"])
+    return sorted(kinds) in accepted
 
 
 def _parse_nft(raw):
