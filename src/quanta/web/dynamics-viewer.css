@@ -1,4 +1,5 @@
 @charset "UTF-8";
+.visualization-card>.chart-caption{overflow-wrap:anywhere}
 .dynamics-viewer,.dynamics-data{min-width:0;color:#365a4d}
 .dynamics-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
 .dynamics-heading .eyebrow{font-size:8px;margin-bottom:8px}
