@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "audit-recovery",
+  "operation": "prepare-recovery",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "1f53d117-7103-484b-b278-72e207785f31"
+  "request_id": "9d91c2ff-1afc-4b30-a635-ee0800a186d7"
 }
