@@ -1,0 +1,13 @@
+{
+  "verification_kind": "dynamics_web_trajectory",
+  "status": "implementation_ready_verification_in_progress",
+  "app_version": "0.16.0",
+  "general_contract": "0.4.0",
+  "embedded_solver_contract": "0.3.1",
+  "physical_validation_status": "unvalidated",
+  "local": {"node_tests_passed": 89, "focused_python_tests_passed": 167, "focused_python_subtests_passed": 7, "new_http_tests_passed": 9, "http_cases_passed": ["DWEB01", "DWEB02", "DWEB03", "DWEB04"]},
+  "browser": {"scope": "isolated_synthetic_preview_real_backend_worker", "credential_flow_tested": false, "basic_real_flow_and_raw_frame_graph_parity": true, "remaining_interaction_and_layout_checks": true},
+  "native_ci": {"source_sha": null, "run_id": null, "completed": false},
+  "production": {"app_version": "0.15.0", "source_sha": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4", "updated_this_step": false},
+  "contracts_or_numerics_or_dependency_locks_changed": false
+}

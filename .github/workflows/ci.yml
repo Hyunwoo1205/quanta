@@ -120,6 +120,8 @@ jobs:
         run: python scripts/verify_service.py --output .cache/service_verification.json
       - name: Measure packaged web workspace and actual execution flow
         run: python scripts/verify_web.py --output .cache/web_verification.json
+      - name: Measure dynamics web assets, stored frames and artifact evidence
+        run: python scripts/verify_dynamics_web.py --output .cache/dynamics_web_verification.json
       - name: Measure Access origin and authenticated ASGI execution
         run: python scripts/verify_production.py --output .cache/production_verification.json
       - name: Measure consistent backup, separate restore and worker recovery
@@ -141,6 +143,7 @@ jobs:
             .cache/workflow_verification.json
             .cache/service_verification.json
             .cache/web_verification.json
+            .cache/dynamics_web_verification.json
             .cache/production_verification.json
             .cache/operations_verification.json
           include-hidden-files: true
@@ -180,6 +183,7 @@ jobs:
           docker run --rm --workdir /tmp quanta-contracts-ci sh -c 'python -m quanta plan /app/examples/pair_workflow.json --format text && python -m quanta run /app/examples/pair_workflow.json --output-dir /tmp/quanta-run --format text && python -m quanta replay /tmp/quanta-run --output-dir /tmp/quanta-replay --format text && python -m quanta run /app/examples/quantum_workflow.json --output-dir /tmp/quanta-quantum-run --format text'
           docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_service.py --output /tmp/service-verification.json
           docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_web.py --output /tmp/web-verification.json
+          docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_dynamics_web.py --output /tmp/dynamics-web-verification.json
           docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_production.py --output /tmp/production-verification.json
       - name: Check hardened non-root installed-container operations
         run: |

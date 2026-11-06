@@ -266,16 +266,92 @@ export function formatJSONPreservingNumbers(text) {
   return formatted;
 }
 
-/** Raw insertion is intentional: JSON.stringify(JSON.parse(text)) erases -0. */
-export function buildRevisionBody(title, rawDefinition) {
-  if (typeof title !== "string") throw new TypeError("실험 제목은 문자열이어야 합니다.");
-  parseDefinition(rawDefinition);
-  return `{"schema_version":"0.2.0","title":${JSON.stringify(title)},"definition":${rawDefinition}}`;
+const experimentVersions = Object.freeze(["0.2.0", "0.4.0"]);
+
+function requireExperimentVersion(value) {
+  if (!experimentVersions.includes(value)) {
+    throw new TypeError("지원하지 않는 실험 계약 버전입니다. 0.2.0 또는 0.4.0을 명시하세요.");
+  }
+  return value;
 }
 
-export function buildValidationBody(rawDefinition) {
+/** Raw insertion is intentional: JSON.stringify(JSON.parse(text)) erases -0. */
+export function buildRevisionBody(title, rawDefinition, schemaVersion = "0.2.0") {
+  if (typeof title !== "string") throw new TypeError("실험 제목은 문자열이어야 합니다.");
+  requireExperimentVersion(schemaVersion);
   parseDefinition(rawDefinition);
-  return `{"schema_version":"0.2.0","definition":${rawDefinition}}`;
+  return `{"schema_version":${JSON.stringify(schemaVersion)},"title":${JSON.stringify(title)},"definition":${rawDefinition}}`;
+}
+
+export function buildValidationBody(rawDefinition, schemaVersion = "0.2.0") {
+  requireExperimentVersion(schemaVersion);
+  parseDefinition(rawDefinition);
+  return `{"schema_version":${JSON.stringify(schemaVersion)},"definition":${rawDefinition}}`;
+}
+
+/**
+ * Import an envelope without serializing its scientific numbers. Bare definitions
+ * keep the historical default; selecting a dynamics contract is an explicit UI
+ * action, never inferred from the module name or an operation in the input.
+ */
+export function importDraftJSON(raw) {
+  const source = jsonText(raw);
+  parseDefinition(source);
+  const definition = rawMember(source, "definition");
+  const version = rawMember(source, "schema_version");
+  if (definition === undefined) {
+    if (version !== undefined) {
+      throw new TypeError("계약 버전을 명시한 파일에는 definition 객체가 필요합니다.");
+    }
+    return { definitionText: source, schemaVersion: "0.2.0" };
+  }
+  const title = rawMember(source, "title");
+  const schemaVersion = requireExperimentVersion(version === undefined ? "0.2.0" : JSON.parse(version));
+  parseDefinition(definition);
+  const result = { definitionText: definition, schemaVersion };
+  if (title !== undefined) {
+    const value = JSON.parse(title);
+    if (typeof value !== "string") throw new TypeError("실험 제목은 문자열이어야 합니다.");
+    result.title = value;
+  }
+  return result;
+}
+
+/**
+ * The client exposes only versions implemented by both this UI and the server.
+ * A future version is left unavailable, rather than aliased to a known contract.
+ * Old services without versioned declarations can expose their original 0.2 API.
+ */
+export function supportedExperimentVersions(capabilities) {
+  if (!capabilities || typeof capabilities !== "object" || Array.isArray(capabilities)) {
+    throw new TypeError("계산 환경의 실험 계약 정보를 확인할 수 없습니다.");
+  }
+  const declared = capabilities.supported_experiment_versions;
+  const contracts = capabilities.experiment_contracts;
+  if (declared === undefined && contracts === undefined) {
+    return capabilities.contract_version === "0.2.0" ? ["0.2.0"] : [];
+  }
+  if (!Array.isArray(declared) || declared.some(value => typeof value !== "string")
+      || new Set(declared).size !== declared.length || !contracts || typeof contracts !== "object"
+      || Array.isArray(contracts)) {
+    throw new TypeError("계산 환경의 버전별 실험 계약 정보를 확인할 수 없습니다.");
+  }
+  return experimentVersions.filter(version => {
+    if (!declared.includes(version)) return false;
+    const entry = Object.hasOwn(contracts, version) ? contracts[version] : null;
+    const operations = entry?.implemented_operations;
+    const expected = version === "0.4.0"
+      ? { "quanta.pair_dynamics@0.1.0": ["integrate"] }
+      : { "quanta.pair_static@0.1.0": ["energy_forces", "relax"],
+        "quanta.quantum_stationary@0.1.0": ["eigenstates"] };
+    if (entry?.schema_version !== version || !operations || typeof operations !== "object"
+        || Array.isArray(operations) || Object.entries(expected).some(([module, required]) =>
+          !Object.hasOwn(operations, module) || !Array.isArray(operations[module])
+          || required.some(operation => !operations[module].includes(operation)))) {
+      throw new TypeError("계산 환경의 버전별 실험 지원 범위가 일치하지 않습니다.");
+    }
+    return true;
+  });
 }
 
 /** A draft summary is descriptive only; server validation decides support. */

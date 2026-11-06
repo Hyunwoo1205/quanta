@@ -7,6 +7,7 @@
   <meta name="description" content="Quanta 연구 실험 작업 공간 — 실험 정의, 검증, 실행과 결과 탐색">
   <title>Quanta · 연구 작업 공간</title>
   <link rel="stylesheet" href="/assets/app.css">
+  <link rel="stylesheet" href="/assets/dynamics-viewer.css">
   <script type="module" src="/assets/app.js"></script>
 </head>
 <body>
@@ -104,6 +105,7 @@
           <section class="card definition-card" aria-labelledby="definition-heading">
             <div class="card-heading"><div><span class="card-index">01</span><h2 id="definition-heading">실험 정의</h2></div><span id="draft-state" class="badge neutral">새 입력</span></div>
             <div class="title-field"><label for="experiment-title">실험 이름</label><input id="experiment-title" maxlength="200" placeholder="예: 입자 배치와 에너지 분석"></div>
+            <div class="title-field"><label for="schema-version">실험 계약</label><select id="schema-version" aria-describedby="schema-help"><option value="0.2.0">정적·양자 실험 · 0.2.0</option><option value="0.4.0">입자 동역학 · 0.4.0</option></select><span id="schema-help" class="microcopy">입력의 계약을 명시적으로 선택합니다. JSON을 자동 변환하지 않습니다.</span></div>
             <div class="editor-toolbar"><label class="sample-field" for="sample-select"><span>시작할 예제</span><select id="sample-select" aria-label="시작할 예제 선택"><option value="">예제를 불러오는 중…</option></select></label><button id="load-sample" class="button secondary small">불러오기</button><label class="button secondary small file-label" for="import-file">JSON 가져오기</label><input id="import-file" type="file" accept=".json,application/json" hidden></div>
             <div class="code-header"><span><span class="code-dot"></span> definition.json</span><div><button id="format-json" class="code-action">정렬</button><button id="export-draft" class="code-action">내보내기</button></div></div>
             <label class="visually-hidden" for="definition-editor">실험 정의 JSON 편집기</label><textarea id="definition-editor" class="code-editor" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-describedby="editor-help"></textarea>

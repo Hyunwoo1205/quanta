@@ -20,7 +20,8 @@ from .worker import JobWorker
 
 MAX_BODY = 1_048_576
 MIN_FREE_BYTES = 128 * 1024 * 1024
-_OWNER_PUBLIC_SHELL = frozenset({"/", "/index.html", "/assets/app.css", "/assets/app.js", "/assets/view-model.mjs"})
+_OWNER_PUBLIC_SHELL = frozenset({"/", "/index.html", "/assets/app.css", "/assets/app.js", "/assets/view-model.mjs",
+    "/assets/dynamics-model.mjs", "/assets/dynamics-evidence.mjs", "/assets/dynamics-viewer.mjs", "/assets/dynamics-viewer.css"})
 _COOKIE_NAME = "__Host-quanta_session"
 _AUTH_BODY = 8192
 _AUTH_PUBLIC_POSTS = frozenset({

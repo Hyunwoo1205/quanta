@@ -96,12 +96,13 @@ def test_head_shell_preserves_length_without_response_body(server):
 def test_public_examples_have_no_private_identifiers_and_are_detached(server, service):
     status, raw, _ = request(server, "/ui/examples")
     examples = json.loads(raw)["examples"]
-    assert status == 200 and len(examples) == 5
-    assert len({example["id"] for example in examples}) == 5
+    assert status == 200 and len(examples) == 7
+    assert len({example["id"] for example in examples}) == 7
+    assert {example["schema_version"] for example in examples} == {"0.2.0", "0.4.0"}
     for example in examples:
         assert {"id", "title", "schema_version", "definition"} <= set(example)
         assert set(example) <= {"id", "title", "description", "schema_version", "definition"}
-        assert example["schema_version"] == "0.2.0"
+        assert example["schema_version"] in {"0.2.0", "0.4.0"}
         report = service.request("alice", "POST", "/v1/validate", {
             "schema_version": example["schema_version"], "definition": example["definition"]})[1]
         assert report["valid"], (example["id"], report["errors"])

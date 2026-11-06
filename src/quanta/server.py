@@ -18,6 +18,10 @@ _WEB_RESOURCES = {
     "/assets/app.css": ("app.css", "text/css; charset=utf-8"),
     "/assets/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/assets/view-model.mjs": ("view-model.mjs", "text/javascript; charset=utf-8"),
+    "/assets/dynamics-model.mjs": ("dynamics-model.mjs", "text/javascript; charset=utf-8"),
+    "/assets/dynamics-evidence.mjs": ("dynamics-evidence.mjs", "text/javascript; charset=utf-8"),
+    "/assets/dynamics-viewer.mjs": ("dynamics-viewer.mjs", "text/javascript; charset=utf-8"),
+    "/assets/dynamics-viewer.css": ("dynamics-viewer.css", "text/css; charset=utf-8"),
     "/ui/examples": ("examples.json", "application/json; charset=utf-8"),
 }
 _CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
