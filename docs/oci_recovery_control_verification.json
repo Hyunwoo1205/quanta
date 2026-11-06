@@ -57,9 +57,9 @@
   "revised_backup_basis": "user_reported_oci_daily",
   "new_reboot_preservation_basis": "quiescent_current_live_database",
   "latest_local_standard_library_tests": {
-    "operations": 168,
+    "operations": 170,
     "caddy_readiness": 10,
-    "total": 178,
+    "total": 180,
     "python": "3.12.14"
   },
   "additional_external_refresh_or_export_performed_after_user_backup_report": false,
@@ -69,6 +69,23 @@
     "http_case_retries_added": false,
     "tls_verification_relaxed": false,
     "production_configuration_changed": false,
-    "actual_pinned_caddy_ci_reverification": "pending"
+    "actual_pinned_caddy_ci_reverification": "Both architecture framing steps passed in run42162923559; full repository run still in progress"
+  },
+  "current_control_source": "34dda174b422714e3ad6a7316cfd067d97e0a458",
+  "current_control_ci": {
+    "id": 42162923545,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42162923545",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "tests_each": 178,
+    "conclusion": "success"
+  },
+  "predeployment_review_correction": {
+    "issue": "Nested reduced-identity call into audit database reader required root entry",
+    "found_before_remote_execution_of_revised_source": true,
+    "correction": "Call actual audit database reader as root and let it perform its own single SQLite identity transition",
+    "cross_module_actual_sqlite_regressions_added": 2
   }
 }

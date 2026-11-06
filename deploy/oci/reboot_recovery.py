@@ -561,8 +561,9 @@ def _reboot_audit(config, *, enforce=True):
     audit._containers(image, report)
     audit._worker(report, device)
     _check_auxiliary_files(helper.DATA / "jobs.sqlite3", device)
-    with _store_reader_identity():
-        audit._database(report, device)
+    # The audit collector owns its SQLite-only identity transition. Enter it
+    # as root rather than nesting another reduced-identity context around it.
+    audit._database(report, device)
     _check_auxiliary_files(helper.DATA / "jobs.sqlite3", device)
     report["sufficient_disk_space"] = helper.shutil.disk_usage(helper.ROOT).free >= 1024**3
     required = set(audit.PREREQUISITES) - {"latest_snapshot_present"}

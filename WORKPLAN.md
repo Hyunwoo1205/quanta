@@ -320,6 +320,10 @@ ACME job `127588786706`은 기존 설치·Caddy·설정 범위를 확인한 뒤 
 
 새 정책·진단/cleanup·SQLite 읽기 권한·CI 준비 검사를 보완했습니다. 운영 회귀168개와 Caddy 준비 검사10개, 합계178개가 로컬CPython3.12.14에서 통과했습니다. SQLite는 mode=ro도WAL/SHM을 생성할 수 있어, 실제 연결/조회/종료만10001:10001 effective권한으로 실행하고 예외/신호에도 root로 복귀하도록 검증했습니다. 기존 보조 파일을 삭제하거나소유권을바꾸지않으며metadata오류는정제진단으로거부합니다. Caddy시험은같은CA/SNI/HTTP1.1의검증된TLS handshake준비를최대20초기다리게했고기존7HTTP+2TLS기준과운영설정은유지했습니다. HTTP시험재시도나TLS검증완화는없습니다. 새고정8operation의실제요청분류11개fixture와원격program조립/구문/단일인자크기상한(가장큰약97KB)도확인했습니다. 실제source/CI재핀뒤읽기전용진단→현재live기준재부팅→부트/보존검증→서버내부새계산순서로진행합니다. 추가refresh/export는수행하지않았습니다.
 
+수정 운영 소스 `34dda174b422714e3ad6a7316cfd067d97e0a458`의 [전용CI42162923545](https://github.com/Hyunwoo1205/quanta/actions/runs/42162923545)는 ARM/x86 각각178개 시험과 종료 단계까지 성공했습니다. [전체CI42162923559](https://github.com/Hyunwoo1205/quanta/actions/runs/42162923559)의 실제 고정 Caddy framing 단계도 두 CPU에서 성공했고 나머지 전체 실행은 진행 중입니다. 앱 배포 소스는1738107/0.11.0으로 유지하며, 새 control소스/CI에 workflow를 고정해 읽기 전용 진단과 실제 재부팅 검증을 이어갑니다.
+
+배포 전 독립 통합 검토에서reboot 전용수집기가UID10001로내린뒤자체권한전환을하는audit DBreader를중복호출하는문제를찾았습니다. 실제서버신규작업을실행하기전에바깥전환을제거했고, actualaudit DBreader와실제SQLite를연결하는정상/오류2회귀를추가했습니다. 이변경은새source/CI에서다시고정하며문제가있던34dda소스를서버에서실행하지않았습니다. audit권한전환은ALRM/HUP/TERM criticalmask도적용합니다. 현재운영회귀170개+Caddy준비10개, 총180개검증을기준으로새CI후재개합니다.
+
 ## 다음 작업
 
 OCI 단독 A1의 기존 2 OCPU·12 GB·부트 200 GB를 유지한 앱 0.11.0 설치, 실제 ARM 계산 smoke·인증·검증 API, 영속 데이터·백업 및 격리 복원, 앱 자동 시작·일일 SQLite 백업을 완료했습니다. 기존 컨테이너·데이터를 보존했고 새 SSH 키·상시 PC·Tailscale을 추가하지 않았습니다. 관리형 OCI 볼륨 백업과 off-host 복구는 별도 미설정 범위입니다.

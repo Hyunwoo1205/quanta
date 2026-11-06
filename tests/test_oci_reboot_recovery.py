@@ -510,6 +510,71 @@ class RebootRecoveryTests(unittest.TestCase):
                     self.assertRaises(operation.RebootError):
                 operation._reboot_audit(config())
 
+    def _cooperative_database_fixture(self, *, invalid_status=False):
+        """Actual audit DB collector + identity context + SQLite, fake OS IDs.
+
+        Non-database host collectors stand in for unavailable systemd/Docker.
+        Neither audit._database nor audit._database_identity is replaced.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            data = Path(directory) / "data"; data.mkdir(mode=0o700)
+            path = data / "jobs.sqlite3"; self.make_database(path); path.chmod(0o600)
+            if invalid_status:
+                with sqlite3.connect(path) as db:
+                    db.execute("UPDATE runs SET status='UNKNOWN'")
+            real_lstat, real_connect = os.lstat, sqlite3.connect
+            device = real_lstat(path).st_dev
+            metadata_identities, sqlite_identities = [], []
+            def installation(config, report):
+                report.update(source_verified=True, storage_verified=True, boot_id_valid=True)
+                return "sha256:" + "a" * 64, device, TOKEN
+            def services(report):
+                for field in ("app_active", "app_enabled", "https_active", "https_enabled", "docker_active", "docker_enabled",
+                              "backup_timer_active", "backup_timer_enabled", "backup_services_idle"):
+                    report[field] = True
+            def containers(image, report):
+                report.update(single_app_container=True, peer_restart_policies_safe=True)
+            def worker(report, actual_device):
+                report["worker_exclusivity_verified"] = True
+            with fake_root_identity() as (state, events):
+                def owner_view(item, *args, **kwargs):
+                    info = real_lstat(item, *args, **kwargs)
+                    if os.fspath(item) == str(data) or os.fspath(item).startswith(str(data) + os.sep):
+                        metadata_identities.append((state["uid"], state["gid"]))
+                        values = list(info); values[4] = values[5] = 10001
+                        return os.stat_result(values)
+                    return info
+                def open_database(*args, **kwargs):
+                    sqlite_identities.append((state["uid"], state["gid"]))
+                    return real_connect(*args, **kwargs)
+                with patch.object(helper, "DATA", data), patch.object(audit, "DATA", data), \
+                        patch.object(audit, "_installation", side_effect=installation), patch.object(audit, "_services", side_effect=services), \
+                        patch.object(audit, "_ready", return_value=True), patch.object(audit, "_containers", side_effect=containers), \
+                        patch.object(audit, "_worker", side_effect=worker), \
+                        patch.object(helper.shutil, "disk_usage", return_value=types.SimpleNamespace(free=2 * 1024**3)), \
+                        patch.object(operation.os, "lstat", side_effect=owner_view), \
+                        patch.object(audit.sqlite3, "connect", side_effect=open_database):
+                    if invalid_status:
+                        with self.assertRaises(audit.AuditError):
+                            operation._reboot_audit(config())
+                    else:
+                        report, actual_device, token = operation._reboot_audit(config())
+                        self.assertTrue(report["database_checked"])
+                        self.assertTrue(report["no_pending_runs"])
+                        self.assertEqual((report["experiments"], report["runs"], report["artifacts"]), (4, 2, 4))
+                        self.assertEqual((actual_device, token), (device, TOKEN))
+                self.assertEqual(state, {"uid": 0, "gid": 0})
+                self.assertEqual(sqlite_identities, [(10001, 10001)])
+                self.assertTrue(metadata_identities)
+                self.assertTrue(all(identity == (0, 0) for identity in metadata_identities))
+                self.assertEqual(events, [("gid", 10001), ("uid", 10001), ("uid", 0), ("gid", 0)])
+
+    def test_actual_audit_database_enters_as_root_and_owns_its_single_identity_transition(self):
+        self._cooperative_database_fixture()
+
+    def test_actual_audit_database_sql_failure_restores_root_without_outer_identity_drop(self):
+        self._cooperative_database_fixture(invalid_status=True)
+
     def test_version_two_baseline_keeps_core_identity_and_marks_policy_as_user_report(self):
         current = baseline()
         current.pop("backup"); current.pop("external_copy_verification")

@@ -396,7 +396,7 @@ def _database_identity():
 
     @contextmanager
     def transition():
-        previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGALRM})
+        previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGALRM, signal.SIGHUP, signal.SIGTERM})
         try:
             yield
         finally:
