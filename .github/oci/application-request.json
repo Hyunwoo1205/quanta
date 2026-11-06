@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "verify-application",
+  "operation": "smoke-application",
   "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
-  "request_id": "68351a5c-8774-4419-98db-0db2da41a3be"
+  "request_id": "3a518698-5419-48d2-9c09-25e76223d8c8"
 }
