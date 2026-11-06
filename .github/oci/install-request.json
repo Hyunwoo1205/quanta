@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "configure-acme",
+  "operation": "audit-recovery",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "5665c59e-d075-4840-bf25-22267e5aba15"
+  "request_id": "1f53d117-7103-484b-b278-72e207785f31"
 }
