@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "reboot-recovery",
+  "operation": "verify-reboot",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "630225fa-f044-4e67-a97d-a82705d08442"
+  "request_id": "0b2a7f3f-9d78-434e-804f-cbc29d689607"
 }
