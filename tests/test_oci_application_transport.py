@@ -60,8 +60,8 @@ def responses():
 
 class GateTests(unittest.TestCase):
     def test_exact_release_and_four_operations(self):
-        self.assertEqual(gate.APP_SOURCE,'be398c636bbb9ba18590a7edec601bbcb5f9b1f4')
-        self.assertEqual(gate.APP_CI_RUN,42197895494)
+        self.assertEqual(gate.APP_SOURCE,'5723290fc5f4ec9a6fa3b167f00745b18fc03a59')
+        self.assertEqual(gate.APP_CI_RUN,42214845497)
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/'request.json'
             for operation in sorted(gate.OPERATIONS):

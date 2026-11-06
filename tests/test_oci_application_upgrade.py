@@ -26,8 +26,8 @@ spec = importlib.util.spec_from_file_location('test_fixed_application_controller
 operation = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(operation)
 
-SHA = 'be398c636bbb9ba18590a7edec601bbcb5f9b1f4'
-OLD_SOURCE = '9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9'
+SHA = '5723290fc5f4ec9a6fa3b167f00745b18fc03a59'
+OLD_SOURCE = 'be398c636bbb9ba18590a7edec601bbcb5f9b1f4'
 REQUEST_ID = '6265bde1-e559-45b3-87c2-14a41fd3251d'
 OLD_IMAGE = 'sha256:' + 'c' * 64
 NEW_IMAGE = 'sha256:' + 'd' * 64
@@ -89,7 +89,7 @@ def fake_upgrade():
         mocks['_installation']=stack.enter_context(patch.object(operation,'_installation',side_effect=installation))
         def readiness(_config,token,*,new,report):
             report.update(services_ready=True,auth_boundaries_verified=True,account_discovery_verified=True,
-                          application_version='0.15.0' if new else '0.12.0',mail_configured=True,registration='open')
+                          application_version='0.16.0' if new else '0.15.0',mail_configured=True,registration='open')
             if new:report['dynamics_capability_verified']=True
         mocks['_readiness']=stack.enter_context(patch.object(operation,'_readiness',side_effect=readiness))
         state={'journal':None}
@@ -293,15 +293,19 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(value['status'],'success',value)
         for update in ({'owner_token':TOKEN},{'password':'synthetic-private'},
                 {'database':databases()},{'mail_settings':mail_settings()},{'source_path':'/private'},
-                {'peer_containers':True},{'status':[]},{'application_version':'0.12.0'},
+                {'peer_containers':True},{'status':[]},{'application_version':'0.15.0'},
                 {'mail_delivery_verified':True},{'auth_database_preserved':False},
                 {'mail_settings_preserved':False},{'dynamics_capability_verified':False}):
             with self.subTest(update=update):self.assertIsNone(operation.sanitize_report(operation._encoded({**value,**update})))
 
     def test_fixed_watchdog_is_compileable_namespaced_and_contains_no_secret_literal(self):
         source=operation._watchdog_source();compile(source,'<application-watchdog>','exec')
-        self.assertIn(b'/etc/quanta/application-upgrade.json',source)
+        self.assertIn(b'/etc/quanta/application-upgrade-0.16.json',source)
+        self.assertNotIn(b"P=pathlib.Path('/etc/quanta/application-upgrade.json')",source)
+        self.assertIn(b'/etc/quanta/.application-upgrade-0.16.publish',source)
         self.assertIn(b'/run/quanta-application-upgrade.lock',source)
+        self.assertEqual(operation.ROLLBACK_SCRIPT,Path('/usr/local/lib/quanta/application-rollback-0.16.py'))
+        self.assertEqual(operation.WATCHDOG,'quanta-application-rollback-0-16')
         self.assertNotIn(TOKEN.encode(),source);self.assertNotIn(b'accounts-upgrade.json',source)
         self.assertNotIn(b'rmtree',source)
 
@@ -315,26 +319,94 @@ class ControllerTests(unittest.TestCase):
 
     def readiness_values(self):
         return [(200,{'status':'ready'}),(401,{}),(401,{}),
-            (200,{'package_version':'0.15.0','contract_version':'0.2.0',
+            (200,{'package_version':'0.16.0','contract_version':'0.2.0',
                   'supported_experiment_versions':['0.2.0','0.4.0'],
                   'experiment_contracts':{'0.4.0':{'implemented_operations':{'quanta.pair_dynamics@0.1.0':['integrate']}}}}),
             (200,{'mode':'account','authenticated':False,'mail_configured':True,'registration':'open'})]
 
     def test_readiness_requires_target_capabilities_and_cookie_free_account_discovery(self):
         value=operation._initial('verify-application')
-        with patch.object(operation,'_http',side_effect=self.readiness_values()) as http:
+        with patch.object(operation,'_http',side_effect=self.readiness_values()) as http, patch.object(operation,'_web_assets') as assets:
             operation._readiness(config(),TOKEN,new=True,report=value)
         self.assertTrue(value['dynamics_capability_verified']);self.assertTrue(value['mail_configured'])
-        self.assertEqual(http.call_args_list[-1],call(config(),'/ui/auth'))
+        self.assertEqual(http.call_args_list[-1],call(config(),'/ui/auth'));assets.assert_called_once_with(config())
 
     def test_readiness_refuses_wrong_version_missing_dynamics_or_authenticated_discovery(self):
         for mutation in ('old_version','no_dynamics','session_cookie'):
             values=self.readiness_values()
-            if mutation=='old_version':values[3][1]['package_version']='0.12.0'
+            if mutation=='old_version':values[3][1]['package_version']='0.15.0'
             elif mutation=='no_dynamics':values[3][1]['experiment_contracts']={}
             else:values[4][1]['authenticated']=True
-            with self.subTest(mutation=mutation),patch.object(operation,'_http',side_effect=values),self.assertRaises(operation.UpgradeError):
+            with self.subTest(mutation=mutation),patch.object(operation,'_http',side_effect=values),patch.object(operation,'_web_assets'),self.assertRaises(operation.UpgradeError):
                 operation._readiness(config(),TOKEN,new=True,report=operation._initial('verify-application'))
+
+
+class WebAssetTests(unittest.TestCase):
+    def pins(self):
+        return {'/':{'size_bytes':6,'sha256':hashlib.sha256(b'Quanta').hexdigest()},
+                '/assets/dynamics-viewer.mjs':{'size_bytes':4,'sha256':hashlib.sha256(b'view').hexdigest()}}
+
+    def test_exact_frozen_assets_match_candidate_source_bytes(self):
+        self.assertEqual(set(operation.WEB_ASSETS),{'/','/assets/app.js','/assets/view-model.mjs',
+            '/assets/dynamics-evidence.mjs','/assets/dynamics-model.mjs',
+            '/assets/dynamics-viewer.mjs','/assets/dynamics-viewer.css'})
+        for path,expected in operation.WEB_ASSETS.items():
+            relative='index.html' if path=='/' else path.rsplit('/',1)[1]
+            raw=(ROOT/'src/quanta/web'/relative).read_bytes()
+            operation._check_web_asset(path,200,raw)
+            self.assertLessEqual(expected['size_bytes'],1024**2)
+
+    def test_private_assets_are_exact_bounded_requests_without_credentials(self):
+        with patch.object(operation,'WEB_ASSETS',self.pins()),patch.object(operation,'_api',side_effect=[(200,b'Quanta'),(200,b'view')]) as api:
+            operation._web_assets(config())
+        self.assertEqual(api.call_args_list,[
+            call(config(),'GET','/',maximum=6,raw_response=True),
+            call(config(),'GET','/assets/dynamics-viewer.mjs',maximum=4,raw_response=True)])
+
+    def test_private_missing_tampered_truncated_and_overlong_assets_fail_closed(self):
+        for response in ((404,b'view'),(200,b'evil'),(200,b'vie'),(200,b'views'),(200,'view')):
+            with self.subTest(response=response),patch.object(operation,'WEB_ASSETS',self.pins()), \
+                    patch.object(operation,'_api',side_effect=[(200,b'Quanta'),response]),self.assertRaises(operation.UpgradeError):
+                operation._web_assets(config())
+
+    def test_readiness_cannot_succeed_when_new_asset_proof_fails(self):
+        report=operation._initial('verify-application')
+        with patch.object(operation,'_http',side_effect=ControllerTests().readiness_values()), \
+                patch.object(operation,'_web_assets',side_effect=operation.UpgradeError()),self.assertRaises(operation.UpgradeError):
+            operation._readiness(config(),TOKEN,new=True,report=report)
+        self.assertFalse(report['services_ready']);self.assertFalse(report['dynamics_capability_verified'])
+
+    def public(self,values,*,new=True):
+        requests=[];reads=[];closed=[]
+        class Response:
+            def __init__(self,status,raw):self.status=status;self.raw=raw
+            def read(self,limit):reads.append(limit);return self.raw[:limit]
+        class Connection:
+            def __init__(self,host,port,**kwargs):
+                self.values=iter(values);self.host=host;self.port=port
+                self.value=None
+            def request(self,method,path,headers):
+                requests.append((method,path,headers));self.value=values[path]
+            def getresponse(self):return Response(*self.value)
+            def close(self):closed.append(True)
+        with patch.object(operation,'WEB_ASSETS',self.pins()),patch.object(operation.http.client,'HTTPSConnection',Connection):
+            operation._public(config(),new)
+        return requests,reads,closed
+
+    def test_public_https_assets_are_exact_bounded_and_cookie_free(self):
+        requests,reads,closed=self.public({'/':(200,b'Quanta'),'/assets/dynamics-viewer.mjs':(200,b'view')})
+        self.assertEqual([item[:2] for item in requests],[('GET','/'),('GET','/assets/dynamics-viewer.mjs')])
+        self.assertTrue(all(item[2]=={'Connection':'close'} for item in requests))
+        self.assertEqual(reads,[7,5]);self.assertEqual(len(closed),2)
+
+    def test_public_https_refuses_any_wrong_status_size_or_sha(self):
+        for response in ((404,b'view'),(200,b'evil'),(200,b'vie'),(200,b'views')):
+            with self.subTest(response=response),self.assertRaises(operation.UpgradeError):
+                self.public({'/':(200,b'Quanta'),'/assets/dynamics-viewer.mjs':response})
+
+    def test_old_release_audit_uses_old_shell_without_new_asset_assumptions(self):
+        requests,reads,closed=self.public({'/':(200,b'<html>Quanta older shell</html>')},new=False)
+        self.assertEqual(len(requests),1);self.assertEqual(reads,[1024**2+1]);self.assertEqual(len(closed),1)
 
 
 class LocalDatabaseTests(unittest.TestCase):
@@ -638,7 +710,7 @@ class PrivateJournalTests(unittest.TestCase):
             root=Path(directory);original_lstat,original_fstat=os.lstat,os.fstat
             def rootlike(value):
                 fields=list(value);fields[4]=fields[5]=0;return os.stat_result(fields)
-            with patch.object(operation,'ETC',root),patch.object(operation,'JOURNAL',root/'application-upgrade.json'),patch.object(operation,'JOURNAL_STAGING',root/'.application-upgrade.publish'),patch.object(operation,'_parents'),patch.object(os,'lstat',lambda path,*a,**kw:rootlike(original_lstat(path,*a,**kw))),patch.object(os,'fstat',lambda fd:rootlike(original_fstat(fd))):
+            with patch.object(operation,'ETC',root),patch.object(operation,'JOURNAL',root/'application-upgrade-0.16.json'),patch.object(operation,'JOURNAL_STAGING',root/'.application-upgrade-0.16.publish'),patch.object(operation,'_parents'),patch.object(os,'lstat',lambda path,*a,**kw:rootlike(original_lstat(path,*a,**kw))),patch.object(os,'fstat',lambda fd:rootlike(original_fstat(fd))):
                 yield root
 
     def test_journal_publication_is_complete_private_and_no_replace(self):
@@ -648,6 +720,29 @@ class PrivateJournalTests(unittest.TestCase):
             self.assertFalse(operation.JOURNAL_STAGING.exists());self.assertEqual(operation.JOURNAL.stat().st_nlink,1)
             self.assertEqual(stat.S_IMODE(operation.JOURNAL.stat().st_mode),0o600)
             with self.assertRaises(FileExistsError):operation._write_journal(journal())
+
+    def test_old_release_journal_remains_untouched_and_is_not_new_resume_evidence(self):
+        with self.sandbox() as root:
+            legacy=root/'application-upgrade.json'
+            raw=b'{"status":"complete","source_sha":"be398c636bbb9ba18590a7edec601bbcb5f9b1f4"}'
+            legacy.write_bytes(raw);legacy.chmod(0o600)
+            with self.assertRaises(FileNotFoundError):operation._journal()
+            operation._write_journal(journal())
+            self.assertEqual(legacy.read_bytes(),raw)
+            self.assertNotEqual(operation.JOURNAL,legacy)
+            self.assertEqual(operation._journal()['source_sha'],SHA)
+
+    def test_new_watchdog_script_does_not_replace_old_release_script(self):
+        with self.sandbox() as root:
+            legacy=root/'application-rollback.py';legacy.write_bytes(b'legacy fixed watchdog');legacy.chmod(0o600)
+            current=root/'application-rollback-0.16.py'
+            with patch.object(operation,'ROLLBACK_SCRIPT',current), \
+                    patch.object(operation,'_unit',return_value={'LoadState':'not-found','ActiveState':'inactive'}), \
+                    patch.object(operation,'_quiet') as quiet:
+                operation._arm_watchdog()
+            self.assertEqual(legacy.read_bytes(),b'legacy fixed watchdog')
+            self.assertEqual(current.read_bytes(),operation._watchdog_source())
+            self.assertIn('--unit=quanta-application-rollback-0-16',quiet.call_args.args[0])
 
     def test_interrupted_write_cannot_expose_partial_final_journal(self):
         with self.sandbox():

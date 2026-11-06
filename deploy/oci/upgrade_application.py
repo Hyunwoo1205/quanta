@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixed 0.12-to-0.15 application upgrade; no database or credential replacement.
+"""Fixed 0.15-to-0.16 application upgrade; no database or credential replacement.
 
 The separately pinned runner gate verifies the requested app commit's full CI.
 Only one existing boot installation may be upgraded. A private immutable journal
@@ -35,23 +35,23 @@ import urllib.request
 import uuid
 import zlib
 
-OLD_SOURCE = '9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9'
-TARGET_SOURCE = 'be398c636bbb9ba18590a7edec601bbcb5f9b1f4'
-OLD_VERSION = '0.12.0'
-TARGET_VERSION = '0.15.0'
+OLD_SOURCE = 'be398c636bbb9ba18590a7edec601bbcb5f9b1f4'
+TARGET_SOURCE = '5723290fc5f4ec9a6fa3b167f00745b18fc03a59'
+OLD_VERSION = '0.15.0'
+TARGET_VERSION = '0.16.0'
 ROOT = Path('/srv/quanta')
 DATA = ROOT / 'data'
 ETC = Path('/etc/quanta')
-JOURNAL = ETC / 'application-upgrade.json'
-JOURNAL_STAGING = ETC / '.application-upgrade.publish'
+JOURNAL = ETC / 'application-upgrade-0.16.json'
+JOURNAL_STAGING = ETC / '.application-upgrade-0.16.publish'
 LOCK = Path('/run/quanta-application-upgrade.lock')
-ROLLBACK_SCRIPT = Path('/usr/local/lib/quanta/application-rollback.py')
+ROLLBACK_SCRIPT = Path('/usr/local/lib/quanta/application-rollback-0.16.py')
 RUNTIME = Path('/usr/local/lib/quanta/runtime.py')
 SYSTEMD = Path('/etc/systemd/system')
 APP = 'quanta-boot.service'
 HTTPS = 'quanta-https.service'
 TIMER = 'quanta-backup-boot.timer'
-WATCHDOG = 'quanta-application-rollback'
+WATCHDOG = 'quanta-application-rollback-0-16'
 DOCKER = ['/usr/bin/docker', '--host', 'unix:///var/run/docker.sock']
 TRUSTED = {
     'runtime': '88a865b2755c1ecf4a16a0bee18b4d233c63bc937064a6431e50c052ac1abc38',
@@ -65,6 +65,8 @@ SOURCE_FILES = {
     'requirements.aarch64.lock.txt': '2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f',
     'deploy/oci/runtime.py': TRUSTED['runtime'],
 }
+# Fixed candidate package bytes. These hashes prove installation, not browser rendering.
+WEB_ASSETS = {'/': {'size_bytes': 21922, 'sha256': '79c8660cd4502aea16d39e3eefb6a77e770306f39b6001812122cc1a4350b6ff'}, '/assets/app.js': {'size_bytes': 64196, 'sha256': 'f833b472d5f8dbf60070fa4ef817e4c1890321a04fc9a6e52b7516ae2f82f586'}, '/assets/view-model.mjs': {'size_bytes': 21052, 'sha256': 'a3d5b92478fa9cc449b2eb11860346fc74ec68d51602ce4d10af8c970385b0c6'}, '/assets/dynamics-evidence.mjs': {'size_bytes': 2325, 'sha256': '7ab9c6d4778e4dd475b334afb692c54d0bfc02a15a0d00713445efb876fae1c1'}, '/assets/dynamics-model.mjs': {'size_bytes': 14952, 'sha256': '715ea0dc8d0424bf2f91f5aece4e3252fde742c3eb0b4c41474b730e9ae516fc'}, '/assets/dynamics-viewer.mjs': {'size_bytes': 29484, 'sha256': 'b11bf6db20bc93603568ed680558444f9484b55a6c7e6e80c4f0fb52c499a04d'}, '/assets/dynamics-viewer.css': {'size_bytes': 6139, 'sha256': '0bbb4e1042074cf70aa1c0babd4b8b4ce423d9d8cd6939acbf8ac18ecf40c549'}}
 TABLES = ('artifacts', 'events', 'experiments', 'idempotency', 'revisions', 'runs')
 TERMINAL = frozenset({'SUCCEEDED', 'FAILED', 'CANCELLED'})
 OPERATIONS = frozenset({'audit-application', 'upgrade-application', 'verify-application', 'smoke-application'})
@@ -542,6 +544,20 @@ def _http(config, path, token=None):
     return _api(config,'GET',path,token,maximum=1024**2)
 
 
+def _check_web_asset(path, status, raw):
+    expected = WEB_ASSETS[path]
+    if (status != 200 or not isinstance(raw, bytes) or len(raw) != expected['size_bytes']
+            or hashlib.sha256(raw).hexdigest() != expected['sha256']):
+        raise UpgradeError()
+
+
+def _web_assets(config):
+    # Public static shell only, with no bearer or cookie: no account-session write.
+    for path, expected in WEB_ASSETS.items():
+        status, raw = _api(config, 'GET', path, maximum=expected['size_bytes'], raw_response=True)
+        _check_web_asset(path, status, raw)
+
+
 def _readiness(config, token, *, new, report):
     expires=time.monotonic()+45
     while True:
@@ -563,6 +579,7 @@ def _readiness(config, token, *, new, report):
         if (capabilities.get('supported_experiment_versions')!=['0.2.0','0.4.0'] or not isinstance(contracts,dict)
                 or contracts.get('0.4.0',{}).get('implemented_operations')!={'quanta.pair_dynamics@0.1.0':['integrate']}):
             raise UpgradeError()
+        _web_assets(config)
         report['dynamics_capability_verified']=True
     report['application_version']=TARGET_VERSION if new else OLD_VERSION
     status,discovery=_http(config,'/ui/auth')
@@ -679,8 +696,12 @@ def _stage(config, report=None):
         for relative, digest in SOURCE_FILES.items():
             if hashlib.sha256(_file(directory / relative, mode=0o644, limit=MAX_FILE)).hexdigest() != digest:
                 raise UpgradeError()
+        for path, expected in WEB_ASSETS.items():
+            relative = 'src/quanta/web/index.html' if path == '/' else 'src/quanta/web/' + path.rsplit('/', 1)[1]
+            raw = _file(directory / relative, mode=0o644, limit=MAX_FILE)
+            _check_web_asset(path, 200, raw)
         version = _file(directory / 'src/quanta/__init__.py', mode=0o644, limit=1024)
-        if not re.search(rb'^__version__ = [\'"]0\.15\.0[\'"]$', version, re.M):
+        if not re.search(rb'^__version__ = [\'"]0\.16\.0[\'"]$', version, re.M):
             raise UpgradeError()
     finally:
         archive.close()
@@ -875,17 +896,21 @@ def _cancel_watchdog():
         _quiet(['/usr/bin/systemctl', 'stop', unit], timeout=10)
 
 
-def _public(config):
+def _public(config, new=False):
     host = config['public_origin'][8:]
-    connection = http.client.HTTPSConnection(host, 443, timeout=5, context=ssl.create_default_context())
-    try:
-        connection.request('GET', '/', headers={'Connection': 'close'})
-        response = connection.getresponse()
-        raw = response.read(1024**2 + 1)
-        if response.status != 200 or not 1 <= len(raw) <= 1024**2 or b'Quanta' not in raw:
-            raise UpgradeError()
-    finally:
-        connection.close()
+    paths = WEB_ASSETS if new else {'/': {'size_bytes': 1024**2}}
+    for path, expected in paths.items():
+        connection = http.client.HTTPSConnection(host, 443, timeout=5, context=ssl.create_default_context())
+        try:
+            connection.request('GET', path, headers={'Connection': 'close'})
+            response = connection.getresponse()
+            raw = response.read(expected['size_bytes'] + 1)
+            if new:
+                _check_web_asset(path, response.status, raw)
+            elif response.status != 200 or not 1 <= len(raw) <= 1024**2 or b'Quanta' not in raw:
+                raise UpgradeError()
+        finally:
+            connection.close()
 
 
 
@@ -941,7 +966,7 @@ def _audit(config, report):
     report['worker_exclusive']=True
     _readiness(config,token,new=new,report=report)
     database=_databases(require_idle=False);_mail_settings();_counts(database,report)
-    report['stage']='public';_public(config);report['public_https_verified']=True
+    report['stage']='public';_public(config,new);report['public_https_verified']=True
     report.update(status='success',stage='complete',failure_reason='none')
 
 
@@ -967,7 +992,7 @@ def _resume(config, report, journal):
     _containers(deployment['image']);_worker();report['worker_exclusive']=True
     _counts(_databases(require_idle=False),report);_mail_settings()
     _quiet(['/usr/bin/systemctl','start',HTTPS,TIMER],timeout=30)
-    _services();report['stage']='public';_public(config);report['public_https_verified']=True
+    _services();report['stage']='public';_public(config,True);report['public_https_verified']=True
     try:_cancel_watchdog()
     except Exception:pass
     report.update(status='success',stage='complete',failure_reason='none')
@@ -1041,7 +1066,7 @@ def _upgrade(config, report):
             # new-version writes may exist, so no automatic old-image rollback.
             journal=_journal_status(journal,'complete')
             _quiet(['/usr/bin/systemctl','start',HTTPS,TIMER],timeout=30)
-            _services();report['stage']='public';_public(config);report['public_https_verified']=True
+            _services();report['stage']='public';_public(config,True);report['public_https_verified']=True
             try:_cancel_watchdog()
             except Exception:pass
             watchdog=False;_counts(database,report)
@@ -1080,7 +1105,7 @@ def _verify(config, report):
     # sessions, new experiments and Gmail quotas may legitimately change later.
     _proof_report(report,scope='committed_upgrade')
     _counts(_databases(require_idle=False),report);_mail_settings()
-    report['stage']='public';_public(config);report['public_https_verified']=True
+    report['stage']='public';_public(config,True);report['public_https_verified']=True
     report.update(status='success',stage='complete',failure_reason='none')
 
 
@@ -1184,7 +1209,7 @@ def _smoke_application(config, report):
         _counts(after,report)
     finally:
         pass
-    _services();report['stage']='public';_public(config);report['public_https_verified']=True
+    _services();report['stage']='public';_public(config,True);report['public_https_verified']=True
     report.update(status='success',stage='complete',failure_reason='none')
 
 
