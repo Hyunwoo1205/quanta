@@ -10,7 +10,7 @@ Cloudflare Access가 기본 운영 인증입니다. Cloudflare에 등록하지 �
 
 ## 동역학 실험 실행
 
-개발0.15.0은 [동역학 실험의 실행·저장·재실행](docs/dynamics-workflows.md)을 추가합니다. 명시적 실험 계약0.4.0에서 초기 조건의 단일 integrate를 기존 계획·SQLite·비동기 작업자·HTTP·산출물·번들 재실행에 연결합니다. 물리 시각과 질량·위치·속도를 가진 위상 상태를 보존합니다. 기존 실험 기본 계약0.2.0과 검증 전용0.3.0·[독립 solver0.3.1](docs/dynamics-integration.md)의 원본을 유지합니다. 현재 범용 입자 쌍 모형과 실제 분자 구조·결합 모형을 구분하며, 웹3D 화면과 실제 OCI 배포 상태는 WORKPLAN을 따릅니다.
+0.15.0은 [동역학 실험의 실행·저장·재실행](docs/dynamics-workflows.md)을 추가합니다. 명시적 실험 계약0.4.0에서 초기 조건의 단일 integrate를 기존 계획·SQLite·비동기 작업자·HTTP·산출물·번들 재실행에 연결합니다. 물리 시각과 질량·위치·속도를 가진 위상 상태를 보존합니다. 기존 실험 기본 계약0.2.0과 검증 전용0.3.0·[독립 solver0.3.1](docs/dynamics-integration.md)의 원본을 유지합니다. 실제 OCI 운영도 고정 소스be398의0.15.0이며 계정·기존 기록·Gmail 설정의 전환 보존과 실제 동역학 계산·공개 HTTPS를 [검증 기록](docs/oci_application_upgrade_verification.json)에서 확인합니다. 현재 범용 입자 쌍 모형과 실제 분자 구조·결합 모형을 구분하며, 웹 동역학 입력·3D 재생 화면은 다음 작업입니다. 자세한 현재/과거 범위는 WORKPLAN을 따릅니다.
 
 ```bash
 quanta check-contracts --contract-version 0.4.0
