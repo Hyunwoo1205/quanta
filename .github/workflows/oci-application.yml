@@ -28,14 +28,14 @@ jobs:
       - name: Checkout independently verified fixed control
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: '4798d4701ff054a8d40886ad32fde2e293045d62'
+          ref: 'fd5d0c3bf87030205951391805c6e183d5166f9a'
           path: verified-application-control
           persist-credentials: false
       - name: Require completed controller and selected application CI
         id: authorize
         env:
-          QUANTA_APPLICATION_CONTROL_SHA: '4798d4701ff054a8d40886ad32fde2e293045d62'
-          QUANTA_APPLICATION_CONTROL_CI_RUN: '42207666428'
+          QUANTA_APPLICATION_CONTROL_SHA: 'fd5d0c3bf87030205951391805c6e183d5166f9a'
+          QUANTA_APPLICATION_CONTROL_CI_RUN: '42215072677'
           QUANTA_CI_READ_TOKEN: ${{ github.token }}
         run: python3 -I -B verified-application-control/deploy/oci/authorize_application_upgrade.py
       - name: Install existing-key SSH transport
@@ -44,8 +44,8 @@ jobs:
           sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
       - name: Execute the verified fixed application operation
         env:
-          QUANTA_APPLICATION_CONTROL_SHA: '4798d4701ff054a8d40886ad32fde2e293045d62'
-          QUANTA_APPLICATION_CONTROL_CI_RUN: '42207666428'
+          QUANTA_APPLICATION_CONTROL_SHA: 'fd5d0c3bf87030205951391805c6e183d5166f9a'
+          QUANTA_APPLICATION_CONTROL_CI_RUN: '42215072677'
           QUANTA_APPLICATION_OPERATION: ${{ steps.authorize.outputs.operation }}
           QUANTA_APPLICATION_SOURCE_SHA: ${{ steps.authorize.outputs.source_sha }}
           QUANTA_APPLICATION_REQUEST_ID: ${{ steps.authorize.outputs.request_id }}
