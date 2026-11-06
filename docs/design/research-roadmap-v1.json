@@ -1,0 +1,784 @@
+{
+  "document_kind": "development_plan",
+  "plan_id": "quanta-research-roadmap",
+  "plan_version": "1.0.0",
+  "updated_at": "2026-11-06",
+  "status": "planned_development",
+  "executable": false,
+  "runtime_contract_version": null,
+  "goal": "물리 계산에 근거한 입자·물리계의 운동·상호작용·구조 변화·반응을 같은3D 공간의 자연스러운 확대/축소로 미시부터 거시까지 관찰·분석하는 연구용 실험 플랫폼",
+  "baseline": {
+    "repository": "Hyunwoo1205/quanta",
+    "source_sha": "47e7f11e9feabade06d5a9a1abeae968607dcaf2",
+    "deployed_app": "0.16.0",
+    "deployed_source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+    "physical_validation_status": "unvalidated",
+    "reused": [
+      "불변 입력·계약 검사",
+      "계정·권한·작업 대기열·취소",
+      "원시 산출물·해시·재실행",
+      "범용 입자 동역학과3D 기반",
+      "OCI HTTPS·운영/백업"
+    ],
+    "not_implemented": [
+      "원자계·3차원 다전자 전자구조",
+      "화학 결합 변화·반응",
+      "독립 전자 시간 전파",
+      "큰 원자계 통계·solver 중간 재시작",
+      "물리적 규모 연결·미시~거시 줌 표현"
+    ]
+  },
+  "documents": {
+    "plan": "https://docs.google.com/document/d/1HlDfah1c5Idk2HIS2heLiicOgAvN2HbTL_3yP4OZD4k",
+    "design": "https://docs.google.com/document/d/14L4CkkRRF-yW0TXBXeKFoe4EL76jLzUL4VjqzfOIPA0",
+    "specification": "https://docs.google.com/document/d/1t0SUe1Z3tYB5rlpnujeguBRqIQzxuAynOcCxLk27tIQ"
+  },
+  "decisions": [
+    {
+      "id": "D01",
+      "decision": "첫 출발점은 원자핵+전자 기반의 제한된 원자계이며 쿼크/QCD·핵물리는 선행 의존성에서 제외",
+      "reason": "원자·화학 운동 목표에 직접 도달하고 검증 가능한 작은 범위부터 확장"
+    },
+    {
+      "id": "D02",
+      "decision": "CP2K 우선 후보, 실측 선정 뒤 처음에는 한 전자구조 엔진만 제품화; QE는 대안/독립 대조 후보",
+      "reason": "전자구조·핵 동역학·향후 전자 시간 전파의 경로를 유지하면서 초기 범위를 제한",
+      "adoption_status": "unselected_unbenchmarked"
+    },
+    {
+      "id": "D03",
+      "decision": "3D 확대/축소는P2부터 공통 트랙으로 개발하며 실제 거시 계산은P8에서 검증한 연결로 제공",
+      "reason": "동적 결과의3D 관찰을 뒤로 미루지 않고 표시 전환을 물리 연결과 구분"
+    },
+    {
+      "id": "D04",
+      "decision": "BOMD와 실제 전자 시간 전파는 별도 연산/상태로 등록",
+      "reason": "핵 배치별 바닥상태 재계산을 모든 전자 운동으로 과장하지 않음"
+    },
+    {
+      "id": "D05",
+      "decision": "첫 운동 릴리스는P3까지 포함; 정적 계산은 중간 검증 이정표",
+      "reason": "정적 원자 그림이나 전자밀도만으로 동적 핵심 목표 완료를 선언하지 않음"
+    },
+    {
+      "id": "D06",
+      "decision": "첫 실제 미시→거시 연결은 통계 계수의 순차 전달, 동시 양방향 결합은 후속",
+      "reason": "검증 가능한 전달량·조건 범위·불확실성을 먼저 확보"
+    },
+    {
+      "id": "D07",
+      "decision": "법칙·모형/근사·수치해법·구현·수치검증·물리검증을 분리하며 지원 밖 조건은 오류",
+      "reason": "임의 실험의 정확도나 미구현 현상을 보증하지 않음"
+    }
+  ],
+  "phases": [
+    {
+      "id": "P0",
+      "title": "통합 계획·현황 정렬",
+      "depends_on": [],
+      "status": "planning_complete",
+      "deliverables": [
+        "확정 목표·현재 구현·미지원 범위 정렬",
+        "단계 의존성과 완료 기준 확정",
+        "기존 문서·개발 현황 동기화"
+      ],
+      "exit_criteria": [
+        "계획과 구현을 구분하고 현재 운영 소스·버전을 보존",
+        "첫 원자 운동 목표에 정적 계산 이후의 동역학·3D까지 포함"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P1",
+      "title": "원자계 계약·엔진 실측",
+      "depends_on": [
+        "P0"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "지원 상태·경계·관측량의 첫 범위",
+        "CP2K 우선 설치·실행·취소·자원 벤치마크",
+        "원자계·전자 상태·산출물·실행 어댑터 계약"
+      ],
+      "exit_criteria": [
+        "선정 기준·독립 기준 자료·허용오차를 계산 전에 고정",
+        "ARM/x86 설치·라이선스·버전/자료 해시·자원 상한·취소 확인 후 첫 엔진 하나 선정"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P2",
+      "title": "정적 원자·전자 계산과 첫 3D",
+      "depends_on": [
+        "P1"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "구조화 입력→엔진→에너지·힘·전자 상태/밀도→불변 저장",
+        "좌표·단위·격자장과 원자핵의 같은3D 공간 표시",
+        "독립 수치·물리 비교 및 국소 구조 최적화"
+      ],
+      "exit_criteria": [
+        "입력 변환·파서·유한차분 힘·전자 수 의미·SCF/기저/격자 수렴 확인",
+        "원자 좌표와 전자장·원본 산출물 대응; 정적 계산은 중간 이정표"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P3",
+      "title": "실제 원자 운동과 3D 시간 관측",
+      "depends_on": [
+        "P2"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "전자구조 기반 힘과 핵의 시간 적분",
+        "먼저 고립계 NVE·짧고 제한된 궤적·부분 실패·취소",
+        "동일 계산의 시각·선택·확대/축소·핵/전자 상태 표시"
+      ],
+      "exit_criteria": [
+        "시간 간격·전자 수렴·해당 보존량·독립 기준과 운동 검증",
+        "같은run/frame의 위치·수치·전자 상태·화면 일치와 실제 브라우저/기기 확인",
+        "비정지 초기조건에서0이 아닌 핵 변위·속도 변화를 검증하고 정지 상태 유지와 구분"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P4",
+      "title": "환경 제어·자유 실험 작업 공간",
+      "depends_on": [
+        "P3"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "구조 생성/가져오기/편집·지원 조건·측정량 설정",
+        "적절한 계에서 NVT·주기 경계·그 뒤 NPT를 각각 검증",
+        "초기화→평형화→측정·조건 변화·반복·명시적 상태 전달"
+      ],
+      "exit_criteria": [
+        "환경 변수와 열/일 유출입·계 크기·통계 의미를 검증",
+        "미지원 조합·자동 상태 변환 거부; 사용자 입력과 실행 단계 추적"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P5",
+      "title": "검증된 화학 변화·반응",
+      "depends_on": [
+        "P3",
+        "P4"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "제한된 화학계의 결합 변화와 반응 에너지",
+        "경로·장벽·자유에너지와 물리적 시간 궤적의 분리",
+        "필요한 경우 검증된 반응성 모형·향상 샘플링"
+      ],
+      "exit_criteria": [
+        "반응 전후 조성·전하·구조·에너지와 독립 기준 대조",
+        "경로 번호/편향 샘플링/최적화 반복을 실제 시간으로 표시하지 않음"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P6",
+      "title": "전자 자체의 시간 변화",
+      "depends_on": [
+        "P2"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "RT-TDDFT 등 시간 의존 전자 상태 계산의 제한된 첫 범위",
+        "전자밀도·전류·쌍극자 등 동적 관측량과3D 표시",
+        "필요할 때 전자와 핵의 결합 운동"
+      ],
+      "exit_criteria": [
+        "초기 전자 상태·시간 간격·전파·전자 수/정규화·해당 에너지/응답 검증",
+        "BOMD의 순간 전자 바닥상태와 전자 시간 전파를 구분"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P7",
+      "title": "큰 원자계·긴 시간·통계",
+      "depends_on": [
+        "P3",
+        "P4"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "적용 범위가 검증된 원자 간 모형과 후속 LAMMPS 연결",
+        "평형화·유효 표본·상관·유한 크기/시간·불확실성 분석",
+        "중간 solver 체크포인트·대용량 궤적/장·필요 시 외부 워커"
+      ],
+      "exit_criteria": [
+        "새 모형의 대상 물성·조건 범위를 독립 기준으로 확인",
+        "시간/크기 수렴·손상/비호환 재시작 거부·자원/저장 예산 실측"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P8",
+      "title": "첫 미시→거시 물리 연결",
+      "depends_on": [
+        "P7"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "원자 운동→검증된 통계 계수·불확실성",
+        "선정한 상위 규모 방정식의 입력·경계·계수로 순차 전달",
+        "거시 계산과 보존한 미시 결과를 같은 관찰 공간에 연결"
+      ],
+      "exit_criteria": [
+        "연속체 독립 수치 검증·단위/상태 범위·보존량·전달 오차 확인",
+        "통계적 매핑과 실제 공간/시간 일치를 구분; 미계산 미시 궤적을 복원했다고 하지 않음"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated"
+    },
+    {
+      "id": "P9",
+      "title": "여러 물리 현상·규모의 연구 확장",
+      "depends_on": [
+        "P1"
+      ],
+      "status": "planned",
+      "deliverables": [
+        "연구 수요에 따른 전자기·열·역학·수송·다상/결합 모형",
+        "필요한 경우 QM/MM·영역 분할·양방향 결합",
+        "새 법칙·상태·관측량·계산 자원 확장"
+      ],
+      "exit_criteria": [
+        "각 하위 모형 독립 검증 후 경계·역반응·중복 에너지·안정성 검증",
+        "개별 응용을 플랫폼 전체 목표로 고정하지 않고 검증한 범위만 지원"
+      ],
+      "implementation_completed": false,
+      "physical_validation_status": "unvalidated",
+      "conditional_dependencies": [
+        {
+          "feature": "원자계 외부조건·전자기 응답",
+          "requires": [
+            "P2",
+            "P3"
+          ],
+          "additional": "전자 시간 전파가 필요한 기능은P6"
+        },
+        {
+          "feature": "QM/MM·화학 관련 결합",
+          "requires": [
+            "P2",
+            "P7"
+          ],
+          "additional": "화학 반응을 주장하는 기능은P5"
+        },
+        {
+          "feature": "미시/거시 양방향 결합",
+          "requires": [
+            "P8"
+          ],
+          "additional": "전달할 각 하위 모형의 독립 검증"
+        }
+      ]
+    }
+  ],
+  "first_delivery_tasks": [
+    {
+      "id": "A01",
+      "phase": "P1",
+      "title": "첫 원자계 지원 범위·독립 기준 선정",
+      "depends_on": [],
+      "status": "planned",
+      "acceptance": [
+        "지원 원소 집합·전하/스핀·경계·관측량·근사·미지원 조건을 명시",
+        "반복 가능한 비교 입력과 독립 기준 자료 및 출처를 확정"
+      ],
+      "owner_role": "과학 설계"
+    },
+    {
+      "id": "A02",
+      "phase": "P1",
+      "title": "엔진·자료·빌드 후보 잠금",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "CP2K 우선 후보의 안정 버전·아키텍처·라이선스·기저/유효핵 자료 해시 조사",
+        "미지원/실측 실패일 때만 QE 등 대안을 같은 기준으로 비교"
+      ],
+      "owner_role": "환경·계산"
+    },
+    {
+      "id": "A03",
+      "phase": "P1",
+      "title": "격리 실행·취소·자원 벤치마크",
+      "depends_on": [
+        "A02"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "설치/실행·wall time·peak RSS·출력 크기·취소 지연·자식 정리·웹 응답성 측정",
+        "공개 가입 한도와 서버 여유를 보존하는 자원 상한을 정하고 go/no-go 기록"
+      ],
+      "owner_role": "실행·운영"
+    },
+    {
+      "id": "A04",
+      "phase": "P1",
+      "title": "원자계와 엔진 어댑터 계약 확정",
+      "depends_on": [
+        "A01",
+        "A03"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
+        "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금"
+      ],
+      "owner_role": "계약·과학"
+    },
+    {
+      "id": "A05",
+      "phase": "P1",
+      "title": "시간·공간·원본/파생·장 자료 계약",
+      "depends_on": [
+        "A04"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "원자ID·격자·좌표·단위·시각·전자 수 의미·동적 상태 종류 명시",
+        "chunk/manifest·SHA·변환 버전·LOD/source 매핑·다운로드·손상 거부 설계"
+      ],
+      "owner_role": "데이터·3D"
+    },
+    {
+      "id": "A06",
+      "phase": "P2",
+      "title": "첫 정적 계산 어댑터 구현",
+      "depends_on": [
+        "A04",
+        "A05"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "구조화 입력 변환·독립 작업 경로·실행·엄격 파서·오류/부분 결과 연결",
+        "임의 셸/경로/엔진 스크립트를 공개 입력으로 받지 않음"
+      ],
+      "owner_role": "계산·백엔드"
+    },
+    {
+      "id": "A07",
+      "phase": "P2",
+      "title": "정적 계산 독립 검증",
+      "depends_on": [
+        "A06"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "직접 엔진 대조와 별도로 힘의 유한차분·SCF/격자/기저 수렴·독립 기준 비교",
+        "원자가전자/전전자 밀도 의미에 맞춘 적분과 좌표/단위 검사"
+      ],
+      "owner_role": "수치·물리 검증"
+    },
+    {
+      "id": "A08",
+      "phase": "P2",
+      "title": "저장·재실행·계정별 자원 연결",
+      "depends_on": [
+        "A06"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "원시 출력·관측량·계산장·환경/모형 해시 저장과 실패/취소·재실행 경계 확인",
+        "기존 기록·인증·사용자 격리·산출물 다운로드 보존"
+      ],
+      "owner_role": "실행·저장"
+    },
+    {
+      "id": "A09",
+      "phase": "P2",
+      "title": "첫 원자·전자 상태 3D와 줌",
+      "depends_on": [
+        "A05",
+        "A07",
+        "A08"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "같은 물리 좌표의 핵과 계산장·선택 수치·원본 의미가 일치",
+        "지원 계산 영역에서 확대/축소·표현 전환·표시 예산·실제 브라우저 검증"
+      ],
+      "owner_role": "3D·웹"
+    },
+    {
+      "id": "A10",
+      "phase": "P3",
+      "title": "핵의 짧은 시간 적분",
+      "depends_on": [
+        "A07",
+        "A08"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "NVE의 힘·적분·시각·저장 간격과 초기 상태를 명시",
+        "부분 실패·취소 시 마지막 검증 상태와 미수렴 결과 구분",
+        "비정지 초기조건에서0이 아닌 핵 변위·속도 변화와 상호작용 응답을 확인하고 독립 수렴 기준으로 검증"
+      ],
+      "owner_role": "동역학"
+    },
+    {
+      "id": "A11",
+      "phase": "P3",
+      "title": "동역학 수렴·보존량 검증",
+      "depends_on": [
+        "A10"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "시간 간격·전자 수렴을 변화시켜 운동과 에너지/해당 보존량 비교",
+        "사전 고정 허용오차·독립 기준과 실제값을 기록"
+      ],
+      "owner_role": "수치·물리 검증"
+    },
+    {
+      "id": "A12",
+      "phase": "P3",
+      "title": "움직임·계산장·3D 확대축소 동기화",
+      "depends_on": [
+        "A09",
+        "A11"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "원자 운동·저장 전자 상태·관측량의 같은run/frame/time 대응",
+        "선택/카메라 중심 유지·줌 경계 왕복·희소 저장 시각·GPU/표시 실패 검사"
+      ],
+      "owner_role": "3D·웹"
+    },
+    {
+      "id": "A13",
+      "phase": "P3",
+      "title": "첫 원자 운동 릴리스 검증·운영 반영",
+      "depends_on": [
+        "A12"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "CI·ARM/x86 실행 프로필·설치·실제 브라우저와 필요한 실기기 확인",
+        "고정 소스/성공 CI·DB/계정/설정 보존·기존 OCI 절차·운영 계산 확인"
+      ],
+      "owner_role": "릴리스·운영"
+    }
+  ],
+  "parallel_tracks": [
+    {
+      "id": "T-core",
+      "phases": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5"
+      ]
+    },
+    {
+      "id": "T-electron",
+      "phases": [
+        "P2",
+        "P6"
+      ],
+      "note": "P6는P3/P5/P7의 선행 필수가 아닌 P2 이후 독립 분기입니다."
+    },
+    {
+      "id": "T-scale",
+      "phases": [
+        "P3",
+        "P4",
+        "P7",
+        "P8"
+      ],
+      "note": "화학 반응과 전자 시간 전파 완료를 선행 필수로 두지 않습니다."
+    },
+    {
+      "id": "T-3d",
+      "phases": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8"
+      ],
+      "note": "같은 좌표·물리 시각·원본 자료에 대응하는 관찰을 단계마다 확장합니다."
+    },
+    {
+      "id": "T-verification-ops",
+      "phases": [
+        "P0",
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8",
+        "P9"
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "id": "M1",
+      "name": "검증된 정적 원자계와3D",
+      "required_phases": [
+        "P1",
+        "P2"
+      ],
+      "claim": "중간 계산·관찰 기반"
+    },
+    {
+      "id": "M2",
+      "name": "실제 원자 운동을 관찰하는 첫 실험",
+      "required_phases": [
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "claim": "명시한 모형·작은 계·조건에서 원자 운동과3D 대응"
+    },
+    {
+      "id": "M3",
+      "name": "환경을 설계하는 원자 실험",
+      "required_phases": [
+        "P4"
+      ],
+      "claim": "지원 환경·절차·측정량"
+    },
+    {
+      "id": "M4",
+      "name": "제한된 화학 변화",
+      "required_phases": [
+        "P5"
+      ],
+      "claim": "검증한 화학계·관측량의 반응"
+    },
+    {
+      "id": "M5",
+      "name": "전자 동적 상태",
+      "required_phases": [
+        "P6"
+      ],
+      "claim": "선정 전자 시간 전파 모형의 동적 관측량"
+    },
+    {
+      "id": "M6",
+      "name": "첫 미시→거시 계산과 줌 관찰",
+      "required_phases": [
+        "P7",
+        "P8"
+      ],
+      "claim": "선정 계수·상위 방정식·조건 범위의 연결"
+    }
+  ],
+  "artifact_contract_requirements": [
+    "고전적 핵 좌표와 양자적 전자 상태 구분",
+    "SI 공통 단위와 엔진 원본 단위·변환·에너지 기준",
+    "원자가/전전자 밀도 의미·격자·전자 수·전하/스핀",
+    "run/revision/atom ID·physical time·solver step·stored frame 구분",
+    "원본/파생/LOD 매핑·chunk manifest·크기/SHA·변환 버전",
+    "수치/해상도/통계/물리 검증 상태 분리",
+    "중간 solver 체크포인트의 완전성·호환성·원본 경로 검증"
+  ],
+  "zoom_acceptance": [
+    "같은3D 공간의 카메라 확대/축소에 따라 가용 자료의 범위·세부 수준이 자연 전환",
+    "선택 위치·관찰 중심·원본 좌표·물리 시각 유지",
+    "표시 전환만으로 계산 모형·초기 조건을 바꾸지 않음",
+    "없는 미시 궤적·미계산 거시 영역을 생성하지 않고 실제 지원 범위 표시",
+    "cross-fade/표시 보간과 물리 계산 프레임 구분",
+    "GPU 표시 정밀도·객체/장 예산·원본 수치 보존·실기기 성능 실측"
+  ],
+  "verification_layers": [
+    "구조화 입력·단위·파서·엔진 직접 실행의 연동 일치",
+    "SCF/기저/격자/시간 적분의 수치 수렴",
+    "보존량·대칭·독립 기준값·조건별 물리 대조",
+    "평형화·상관·유효 표본·계 크기/시간·통계 불확실성",
+    "원본/파생·3D 좌표/시각/선택·줌 경계의 대응",
+    "빌드/잠금·ARM/x86·자원/취소·계정/DB 보존·고정 소스 운영 반영"
+  ],
+  "resource_policy": {
+    "current_host": "OCI ARM64 2 OCPU/명목12GB",
+    "initial_strategy": "기존 운영과 격리한 작은 엔진 벤치마크·작업자 한도; 기존 로그인/메일·OCI 일일백업 유지",
+    "capacity_atoms": null,
+    "wall_time_guarantee": null,
+    "new_paid_compute_authorized": false,
+    "decision_gate": "A03 이후 실제 자원/정확도 기준으로 첫 지원 프로필과 필요 시 외부 워커 경계 확정",
+    "checkpoint_gate": "장시간 작업을 제공하기 전 실제 solver 상태 저장·재시작·손상/비호환 거부 검증"
+  },
+  "schedule_policy": {
+    "method": "의존성과 검증 완료 기준으로 단계 관리",
+    "calendar_estimate": null,
+    "estimate_gate": "A03 엔진 실측 및 M1 완료 후 실제 처리량·실패율로 범위별 일정 산정",
+    "first_execution": "A01"
+  },
+  "risks": [
+    {
+      "id": "R01",
+      "risk": "엔진 ARM 설치·자원 초과",
+      "mitigation": "A03 go/no-go와 제한 프로필; 첫 엔진 대안 또는 필요 확인 후 외부 계산"
+    },
+    {
+      "id": "R02",
+      "risk": "모형/매개변수의 적용 범위 밖 예측",
+      "mitigation": "대상 조건·검증 자료·수치/모형/통계 오차 분리; 미지원 명시"
+    },
+    {
+      "id": "R03",
+      "risk": "정적/경로/편향 표본을 실제 시간 운동으로 오인",
+      "mitigation": "상태 종류·시간 의미를 계약과 화면에서 구분"
+    },
+    {
+      "id": "R04",
+      "risk": "LOD/거친 자료로 없는 미시 정보를 생성",
+      "mitigation": "원본 매핑과 가용 범위·표시 효과 구분"
+    },
+    {
+      "id": "R05",
+      "risk": "대용량 결과·GPU 정밀도·웹 응답 저하",
+      "mitigation": "chunk 검증·표시 예산·국소 원점·원본binary64·실측 자원 상한"
+    },
+    {
+      "id": "R06",
+      "risk": "모형 결합의 에너지 중복·경계 오류",
+      "mitigation": "독립 모형 검증 뒤 명시적 전달 계약·보존량/연결 오차 검사"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.cp2k.org/features",
+      "use": "첫 엔진 후보의 공개 기능 범위"
+    },
+    {
+      "url": "https://manual.cp2k.org/trunk/methods/dft/index.html",
+      "use": "전자구조 설정과 수렴"
+    },
+    {
+      "url": "https://manual.cp2k.org/trunk/methods/sampling/molecular_dynamics.html",
+      "use": "핵 동역학·환경·반응/샘플링 한계"
+    },
+    {
+      "url": "https://manual.cp2k.org/cp2k-2025_1-branch/methods/sampling/ehrenfest.html",
+      "use": "전자 시간 전파의 별도 경로; 실제 채택 버전 문서와 재대조"
+    },
+    {
+      "url": "https://www.quantum-espresso.org/Doc/pw_user_guide/node3.html",
+      "use": "대안·독립 대조 후보"
+    },
+    {
+      "url": "https://docs.lammps.org/pair_reaxff.html",
+      "use": "반응성 모형의 매개변수·전하 처리"
+    },
+    {
+      "url": "https://threejs.org/docs/pages/LOD.html",
+      "use": "표시 해상도 전환 후보; 채택 라이브러리/버전 미확정"
+    },
+    {
+      "url": "https://www.nist.gov/programs-projects/nist-standard-reference-simulation-website",
+      "use": "재현성·공개 모형·통계 불확실성"
+    }
+  ],
+  "initial_atomistic_profile": {
+    "status": "proposed_for_P1_freeze",
+    "scope": "작은3D 비주기 원자계·비상대론적 전자 바닥상태·명시한 핵 좌표/조성/총전하/스핀·검증한 원소와 자료 조합",
+    "first_subprofile": "닫힌껍질 계부터 검증하며 추가 전하·열린껍질·주기계는 독립 지원 프로필로 확장",
+    "nuclear_dynamics": "P3에서 전자구조로 얻은 힘과 고전적 핵의 짧은 NVE 운동",
+    "not_claimed": [
+      "독립 전자 시간 전파",
+      "핵 터널링 등 모든 핵 양자효과",
+      "임의 원소·모든 반응",
+      "거시 규모 전체 계산",
+      "쿼크/QCD 계산"
+    ],
+    "freeze_gate": "A01–A04에서 기준 자료·실측·허용오차와 함께 확정"
+  },
+  "future_work_packages": [
+    {
+      "id": "ENV",
+      "phase": "P4",
+      "steps": [
+        "구조 생성·가져오기와 좌표 편집",
+        "경계/구속과 단위·적합성 검증",
+        "NVT·주기 경계·NPT를 각각 검증 후 노출",
+        "평형화·측정·반복/조건변화·실행 비교의 명시적 상태 전달"
+      ],
+      "gate": "지원 프로필별 물리 의미·열/일 유출입·통계 충분성·재현"
+    },
+    {
+      "id": "CHEM",
+      "phase": "P5",
+      "steps": [
+        "반응 대상·관측량·독립 기준·원자/전하 대응 선정",
+        "반응 전후 구조·전자 상태·에너지·분석 규약",
+        "경로/장벽 계산과 실제 반응 동역학 분리",
+        "필요한 향상 샘플링/반응성 모형은 별도 검증·범위 잠금"
+      ],
+      "gate": "해당 조건의 조성·전하·에너지·장벽/관측량 비교; 일반 반응 보증 금지"
+    },
+    {
+      "id": "ELEC",
+      "phase": "P6",
+      "steps": [
+        "명시적 초기 전자 상태와 시간 의존 Hamiltonian/외부 조건",
+        "전자 전파·저장 간격·전자장/관측량 계약",
+        "전자 수·정규화·전파 수렴·독립 응답 비교",
+        "필요한 전자-핵 결합·관찰 시각 정합"
+      ],
+      "gate": "핵 좌표별 바닥상태 재계산과 독립 시간 전파의 구분"
+    },
+    {
+      "id": "SCALE",
+      "phase": "P7",
+      "steps": [
+        "대상 조건에 맞는 고전/반응성 힘장 또는 대리 모형 검증",
+        "처음 한 후속 엔진·모형의 에너지/힘 대조",
+        "평형화·상관·유효 표본·불확실성/크기/시간 수렴",
+        "solver 체크포인트·장시간 취소/복구·chunk 저장",
+        "측정 필요 시 외부 워커와 인증/작업 위임 경계"
+      ],
+      "gate": "물리·통계 근거와 자원/복구 측정 후 지원 크기·시간 확정"
+    },
+    {
+      "id": "MACRO",
+      "phase": "P8",
+      "steps": [
+        "상위 규모 관측량과 연결 방정식 하나 선정",
+        "원자 통계 계수·불확실성·조건 유효 범위 잠금",
+        "단위·초기/경계·공간/시간 매핑",
+        "독립 상위 해법과 순차 연결 검증",
+        "원자료가 있는 미시 영역과 거시 결과의 줌 관찰"
+      ],
+      "gate": "연결 계수·보존량·오차와 데이터 가용 범위를 추적"
+    },
+    {
+      "id": "EXTEND",
+      "phase": "P9",
+      "steps": [
+        "연구 수요별 새 상태/법칙/관측량 등록",
+        "서로 다른 영역/물리 모형의 독립 검증",
+        "필요한 QM/MM/다중 영역·양방향 경계 교환",
+        "회귀·안정성·확장 가능성·재현 및 운영 검증"
+      ],
+      "gate": "검증된 기능 묶음별 독립 공개; 모든 법칙의 동시 지원을 완료 기준으로 삼지 않음"
+    }
+  ]
+}
