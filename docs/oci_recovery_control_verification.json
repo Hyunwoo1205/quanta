@@ -53,5 +53,22 @@
     ],
     "tests_each": 122
   },
-  "workflow_routing_local_actual_fixtures": 9
+  "workflow_routing_local_actual_fixtures": 11,
+  "revised_backup_basis": "user_reported_oci_daily",
+  "new_reboot_preservation_basis": "quiescent_current_live_database",
+  "latest_local_standard_library_tests": {
+    "operations": 168,
+    "caddy_readiness": 10,
+    "total": 178,
+    "python": "3.12.14"
+  },
+  "additional_external_refresh_or_export_performed_after_user_backup_report": false,
+  "caddy_harness_change": {
+    "scope": "test_readiness_and_bounded_failure_diagnostics_only",
+    "verified_tls_sni_alpn_readiness": true,
+    "http_case_retries_added": false,
+    "tls_verification_relaxed": false,
+    "production_configuration_changed": false,
+    "actual_pinned_caddy_ci_reverification": "pending"
+  }
 }

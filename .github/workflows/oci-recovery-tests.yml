@@ -36,7 +36,7 @@ jobs:
         env:
           QUANTA_EXPECTED_ARCH: ${{ matrix.architecture }}
         run: python -c 'import os, platform; assert platform.python_implementation() == "CPython"; assert platform.python_version() == "3.12.14"; assert platform.system() == "Linux"; assert platform.machine() == os.environ["QUANTA_EXPECTED_ARCH"]'
-      - name: Test fixed recovery authorization and read-only audit
+      - name: Test fixed recovery authorization, comparisons and recovery operations
         run: |
           python -m unittest discover -s tests -p 'test_oci_recovery_control.py' -v
           python -m unittest discover -s tests -p 'test_oci_audit_recovery.py' -v
@@ -44,3 +44,4 @@ jobs:
           python -m unittest discover -s tests -p 'test_oci_recovery_export.py' -v
           python -m unittest discover -s tests -p 'test_oci_reboot_recovery.py' -v
           python -m unittest discover -s tests -p 'test_oci_recovery_smoke.py' -v
+          python -m unittest discover -s tests -p 'test_caddy_probe_readiness.py' -v

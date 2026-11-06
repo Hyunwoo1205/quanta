@@ -85,12 +85,15 @@ def fake_operation():
             mocks[name] = stack.enter_context(patch.object(operation, name, return_value=value))
         mocks["audit_run"] = stack.enter_context(patch.object(audit, "run", return_value={
             "status": "success", "host_reboot_prerequisites_met": True,
-            "worker_exclusivity_verified": True, "no_pending_runs": True}))
+            "worker_exclusivity_verified": True, "no_pending_runs": True,
+            "source_verified": True, "app_active": True, "https_active": True,
+            "backup_timer_active": True, "backup_timer_enabled": True}))
+        mocks["_reboot_audit"] = stack.enter_context(patch.object(operation, "_reboot_audit", return_value=(
+            mocks["audit_run"].return_value, 1, TOKEN)))
         env = ("QUANTA_PUBLIC_ORIGIN=https://app.example.net\nQUANTA_AUTH_MODE=owner-token\nQUANTA_OWNER_TOKEN=" + TOKEN + "\n").encode()
         mocks["_read_root"] = stack.enter_context(patch.object(helper, "_read_root", return_value=env))
         mocks["_quiet"] = stack.enter_context(patch.object(helper, "_quiet"))
         stack.enter_context(patch.object(helper, "_deadline", side_effect=lambda seconds: contextlib.nullcontext()))
-        stack.enter_context(patch.object(operation.os, "lstat", return_value=types.SimpleNamespace(st_dev=1)))
         yield mocks
 
 
@@ -101,8 +104,30 @@ def report_success(action):
         return operation.run(config(), action)
 
 
+@contextlib.contextmanager
+def fake_root_identity(fail_enter=None):
+    state = {"uid": 0, "gid": 0}
+    events = []
+    def set_uid(value):
+        events.append(("uid", value))
+        if fail_enter == "uid" and value == 10001:
+            raise OSError("test entering effective UID failed")
+        state["uid"] = value
+    def set_gid(value):
+        events.append(("gid", value))
+        if fail_enter == "gid" and value == 10001:
+            raise OSError("test entering effective GID failed")
+        state["gid"] = value
+    with patch.object(operation.os, "getuid", return_value=0), \
+            patch.object(operation.os, "geteuid", side_effect=lambda: state["uid"]), \
+            patch.object(operation.os, "getegid", side_effect=lambda: state["gid"]), \
+            patch.object(operation.os, "seteuid", side_effect=set_uid), \
+            patch.object(operation.os, "setegid", side_effect=set_gid):
+        yield state, events
+
+
 class RebootRecoveryTests(unittest.TestCase):
-    def test_request_schedules_only_after_barrier_stopped_app_and_matching_snapshot(self):
+    def test_request_schedules_only_after_barrier_stopped_app_and_quiescent_live_capture(self):
         with fake_operation() as mocks:
             events = []
             for name in ("_transient", "_idle_database", "_publish_baseline"):
@@ -114,6 +139,12 @@ class RebootRecoveryTests(unittest.TestCase):
         self.assertFalse(result["boot_changed"])
         self.assertFalse(result["off_host_backup_verified_by_server"])
         self.assertFalse(result["new_calculation_verified"])
+        self.assertTrue(result["quiescent_live_baseline_verified"])
+        self.assertFalse(result["backup_baseline_verified"])
+        self.assertFalse(result["snapshot_semantics_matched"])
+        self.assertFalse(result["backup_policy_console_verified"])
+        self.assertEqual(result["baseline_schema_version"], 2)
+        mocks["_backup_baseline"].assert_not_called()
         self.assertEqual(events[0], ("_transient", (operation.RESUME_UNIT, 180, ["/usr/bin/systemctl", "start", operation.APP, operation.HTTPS, operation.TIMER])))
         self.assertEqual(events[1], ("quiet", ["/usr/bin/systemctl", "stop", operation.HTTPS]))
         self.assertEqual(events[2], ("_idle_database", (1,)))
@@ -133,12 +164,9 @@ class RebootRecoveryTests(unittest.TestCase):
             mocks["_operation_lock"].assert_not_called()
 
     def test_existing_reboot_claim_or_unsafe_audit_never_stop_services(self):
-        for field in ("_baseline_absent", "audit_run"):
+        for field in ("_baseline_absent", "_reboot_audit"):
             with self.subTest(field=field), fake_operation() as mocks:
-                if field == "audit_run":
-                    mocks[field].return_value = {"status": "success", "host_reboot_prerequisites_met": False}
-                else:
-                    mocks[field].side_effect = operation.RebootError()
+                mocks[field].side_effect = operation.RebootError()
                 result = operation.run(config())
             self.assertEqual(result["failure_reason"], "preflight_refused")
             mocks["_quiet"].assert_not_called()
@@ -175,7 +203,7 @@ class RebootRecoveryTests(unittest.TestCase):
         mocks["_restore_services"].assert_called_once()
         mocks["_publish_baseline"].assert_not_called()
 
-    def test_changed_snapshot_or_settings_prevents_reboot_and_restores(self):
+    def test_changed_quiescent_live_or_settings_prevents_reboot_and_restores(self):
         for field in ("_semantic_database", "_settings", "_boot_id"):
             with self.subTest(field=field), fake_operation() as mocks:
                 if field == "_semantic_database":
@@ -184,9 +212,9 @@ class RebootRecoveryTests(unittest.TestCase):
                 elif field == "_settings":
                     mocks[field].side_effect = [baseline()["settings"], {}]
                 else:
-                    mocks[field].return_value = NEW_BOOT
+                    mocks[field].side_effect = [OLD_BOOT, NEW_BOOT]
                 result = operation.run(config())
-            self.assertEqual(result["failure_reason"], "snapshot_mismatch")
+            self.assertEqual(result["failure_reason"], "live_baseline_failed")
             self.assertFalse(result["reboot_scheduled"])
             mocks["_publish_baseline"].assert_not_called()
             mocks["_restore_services"].assert_called_once()
@@ -371,6 +399,328 @@ class RebootRecoveryTests(unittest.TestCase):
         self.assertEqual(command[-2:], ["/usr/bin/systemctl", "reboot"])
         with patch.object(audit, "_unit_properties", return_value={"LoadState": "loaded"}), self.assertRaises(operation.RebootError):
             operation._absent_transients()
+
+    def test_transient_cleanup_accepts_collected_service_and_verifies_timer_cancellation(self):
+        values = [{"LoadState": "loaded", "ActiveState": "active"},
+                  {"LoadState": "not-found", "ActiveState": "inactive"},
+                  {"LoadState": "not-found", "ActiveState": "inactive"}]
+        with patch.object(audit, "_unit_properties", side_effect=values) as query, patch.object(helper, "_quiet") as quiet:
+            operation._stop_transient(operation.RESUME_UNIT)
+        quiet.assert_called_once_with(["/usr/bin/systemctl", "stop", operation.RESUME_UNIT + ".timer"], timeout=10)
+        self.assertEqual([call.args[0] for call in query.call_args_list], [operation.RESUME_UNIT + ".timer", operation.RESUME_UNIT + ".timer", operation.RESUME_UNIT + ".service"])
+
+    def test_transient_stop_failure_is_tolerated_only_when_inactive_is_observed(self):
+        for final, valid in (({"LoadState": "not-found", "ActiveState": "inactive"}, True),
+                             ({"LoadState": "loaded", "ActiveState": "active"}, False)):
+            values = [{"LoadState": "loaded", "ActiveState": "active"}, final,
+                      {"LoadState": "not-found", "ActiveState": "inactive"}]
+            with patch.object(audit, "_unit_properties", side_effect=values), \
+                    patch.object(helper, "_quiet", side_effect=helper.VerificationError()):
+                if valid:
+                    operation._stop_transient(operation.RESUME_UNIT)
+                else:
+                    with self.assertRaises(operation.RebootError):
+                        operation._stop_transient(operation.RESUME_UNIT)
+
+    def test_compare_collects_safe_generation_difference_without_stopping_or_locking(self):
+        changed = semantics(); changed["tables"]["runs"]["rows"] += 1
+        with fake_operation() as mocks, patch.object(audit, "_unit_properties", return_value={"LoadState": "not-found", "ActiveState": "inactive"}):
+            mocks["_semantic_database"].side_effect = [semantics(), changed]
+            result = operation.run(config(), "compare-recovery")
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["action"], "compare-recovery")
+        self.assertFalse(result["all_tables_match"])
+        self.assertFalse(result["runs_matches"])
+        self.assertEqual(result["live_runs_rows"], result["snapshot_runs_rows"] + 1)
+        self.assertFalse(result["server_modified"])
+        mocks["_backup_baseline"].assert_called_once_with(require_current_boot=False)
+        mocks["_operation_lock"].assert_not_called()
+        mocks["_quiet"].assert_not_called()
+        mocks["_publish_baseline"].assert_not_called()
+        self.assertEqual(operation.sanitize_report(json.dumps(result).encode()), result)
+
+    def test_compare_database_read_failure_exposes_stage_but_not_private_exception(self):
+        with fake_operation() as mocks:
+            mocks["_semantic_database"].side_effect = [semantics(), RuntimeError("PRIVATE TOKEN")]
+            result = operation.run(config(), "compare-recovery")
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["stage"], "live_database")
+        self.assertTrue(result["snapshot_checked"])
+        self.assertFalse(result["live_checked"])
+        self.assertNotIn("PRIVATE", json.dumps(result))
+        mocks["_quiet"].assert_not_called()
+
+    def test_compare_report_rejects_unknown_values_and_any_modification_claim(self):
+        with fake_operation(), patch.object(audit, "_unit_properties", return_value={"LoadState": "not-found", "ActiveState": "inactive"}):
+            valid = operation.run(config(), "compare-recovery")
+        self.assertTrue(valid["all_tables_match"])
+        for changed in ({**valid, "server_modified": True}, {**valid, "private_path": "/private"},
+                        {**valid, "runs_matches": 1}, {**valid, "live_runs_rows": True},
+                        {**valid, "runs_matches": False}, {**valid, "snapshot_checked": False}):
+            with self.assertRaises(ValueError):
+                operation.validate_report(changed)
+
+    def test_failed_reboot_comparison_records_fixed_detail_separately_from_cleanup(self):
+        changed = semantics(); changed["tables"]["revisions"]["rows"] += 1
+        with fake_operation() as mocks:
+            mocks["_semantic_database"].side_effect = [semantics(), changed]
+            result = operation.run(config())
+        self.assertEqual(result["comparison_detail"], "table_mismatch")
+        self.assertEqual(result["cleanup_detail"], "complete")
+        self.assertTrue(result["fallback_recovery_verified"])
+        with self.assertRaises(ValueError):
+            operation.validate_report({**result, "comparison_detail": "PRIVATE"})
+
+    def test_reboot_host_checks_do_not_inventory_or_require_any_sqlite_snapshot(self):
+        def installation(config, report):
+            report.update(source_verified=True, storage_verified=True, boot_id_valid=True)
+            return "sha256:" + "a" * 64, 1, TOKEN
+        def services(report):
+            for field in ("app_active", "app_enabled", "https_active", "https_enabled", "docker_active", "docker_enabled",
+                          "backup_timer_active", "backup_timer_enabled", "backup_services_idle"):
+                report[field] = True
+        def containers(image, report):
+            report.update(single_app_container=True, peer_restart_policies_safe=True)
+        def worker(report, device):
+            report["worker_exclusivity_verified"] = True
+        def database(report, device):
+            report.update(database_checked=True, no_pending_runs=True)
+        with patch.object(audit, "_installation", side_effect=installation), patch.object(audit, "_services", side_effect=services), \
+                patch.object(audit, "_ready", return_value=True), patch.object(audit, "_containers", side_effect=containers), \
+                patch.object(audit, "_worker", side_effect=worker), patch.object(audit, "_database", side_effect=database), \
+                patch.object(helper.shutil, "disk_usage", return_value=types.SimpleNamespace(free=2 * 1024**3)), \
+                patch.object(audit, "_backups", side_effect=AssertionError("snapshot inventory is not a reboot gate")) as snapshots, \
+                patch.object(audit, "run", side_effect=AssertionError("full audit includes snapshot inventory")):
+            report, device, token = operation._reboot_audit(config())
+        self.assertFalse(report["latest_snapshot_present"])
+        self.assertTrue(report["sufficient_disk_space"])
+        self.assertEqual((device, token), (1, TOKEN))
+        snapshots.assert_not_called()
+
+    def test_new_policy_does_not_remove_other_required_host_checks(self):
+        for missing in ("worker_exclusivity_verified", "backup_services_idle", "peer_restart_policies_safe", "sufficient_disk_space"):
+            def installation(config, report):
+                report.update({field: True for field in audit.PREREQUISITES if field != "latest_snapshot_present"})
+                report[missing] = False
+                return "sha256:" + "a" * 64, 1, TOKEN
+            with self.subTest(missing=missing), patch.object(audit, "_installation", side_effect=installation), \
+                    patch.object(audit, "_services"), patch.object(audit, "_ready", return_value=True), \
+                    patch.object(audit, "_containers"), patch.object(audit, "_worker"), patch.object(audit, "_database"), \
+                    patch.object(helper.shutil, "disk_usage", return_value=types.SimpleNamespace(free=0 if missing == "sufficient_disk_space" else 2 * 1024**3)), \
+                    self.assertRaises(operation.RebootError):
+                operation._reboot_audit(config())
+
+    def test_version_two_baseline_keeps_core_identity_and_marks_policy_as_user_report(self):
+        current = baseline()
+        current.pop("backup"); current.pop("external_copy_verification")
+        current.update(schema_version=2, database_basis=operation.DATABASE_BASIS,
+                       backup_policy_basis=operation.BACKUP_POLICY_BASIS, backup_policy_console_verified=False)
+        for value in (baseline(), current):
+            with patch.object(helper, "_read_root", return_value=json.dumps(value).encode()), patch.object(operation, "_recent"):
+                self.assertEqual(operation._read_reboot_baseline(), value)
+        for changes in ({"backup_policy_console_verified": True}, {"database_basis": "old_snapshot"},
+                        {"backup_policy_basis": "verified_by_agent"}, {"schema_version": 3}):
+            with patch.object(helper, "_read_root", return_value=json.dumps({**current, **changes}).encode()), \
+                    patch.object(operation, "_recent"), self.assertRaises(operation.RebootError):
+                operation._read_reboot_baseline()
+
+    def test_new_policy_reports_cannot_claim_snapshot_or_console_verification(self):
+        valid = report_success("reboot-recovery")
+        for field in ("snapshot_semantics_matched", "backup_baseline_verified", "backup_policy_console_verified"):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                operation.validate_report({**valid, field: True})
+        for changes in ({"quiescent_live_baseline_verified": False}, {"baseline_schema_version": 1},
+                        {"prerequisite_basis": "legacy_full_backup_audit"}):
+            with self.assertRaises(ValueError):
+                operation.validate_report({**valid, **changes})
+
+    def test_reader_identity_drops_effective_gid_then_uid_and_restores_both(self):
+        with fake_root_identity() as (state, events):
+            with operation._store_reader_identity():
+                self.assertEqual(state, {"uid": 10001, "gid": 10001})
+                self.assertEqual(operation.os.getuid(), 0)
+            self.assertEqual(state, {"uid": 0, "gid": 0})
+        self.assertEqual(events, [("gid", 10001), ("uid", 10001), ("uid", 0), ("gid", 0)])
+
+    def test_partial_identity_entry_failures_restore_original_effective_ids(self):
+        for failed in ("uid", "gid"):
+            with self.subTest(failed=failed), fake_root_identity(failed) as (state, events):
+                with self.assertRaises(OSError):
+                    with operation._store_reader_identity():
+                        self.fail("partial entry was accepted")
+                self.assertEqual(state, {"uid": 0, "gid": 0})
+                self.assertEqual(events[-2:], [("uid", 0), ("gid", 0)])
+
+    def test_identity_transition_masks_restore_original_mask_after_partial_failure(self):
+        original = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+        with fake_root_identity("uid"):
+            with self.assertRaises(OSError):
+                with operation._store_reader_identity():
+                    pass
+        self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, set()), original)
+
+    def test_pending_hangup_during_identity_entry_restores_root_before_propagation(self):
+        original_handler = signal.getsignal(signal.SIGHUP)
+        original_mask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+        def interrupted(signum, frame):
+            raise operation.RebootError()
+        signal.signal(signal.SIGHUP, interrupted)
+        try:
+            with fake_root_identity() as (state, events):
+                original_setuid = operation.os.seteuid.side_effect
+                def setuid_with_signal(value):
+                    original_setuid(value)
+                    if value == 10001:
+                        os.kill(os.getpid(), signal.SIGHUP)
+                operation.os.seteuid.side_effect = setuid_with_signal
+                with self.assertRaises(operation.RebootError):
+                    with operation._store_reader_identity():
+                        self.fail("pending hangup should propagate before SQL work")
+                self.assertEqual(state, {"uid": 0, "gid": 0})
+        finally:
+            signal.signal(signal.SIGHUP, original_handler)
+            signal.pthread_sigmask(signal.SIG_SETMASK, original_mask)
+
+    def test_pending_deadline_during_restore_propagates_only_after_gid_and_uid_restore(self):
+        original_handler = signal.getsignal(signal.SIGALRM)
+        original_mask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+        observed = []
+        def deadline(signum, frame):
+            observed.append(dict(state))
+            raise helper.VerificationError()
+        signal.signal(signal.SIGALRM, deadline)
+        try:
+            with fake_root_identity() as (state, events):
+                original_setuid = operation.os.seteuid.side_effect
+                def setuid_with_signal(value):
+                    original_setuid(value)
+                    if value == 0:
+                        os.kill(os.getpid(), signal.SIGALRM)
+                operation.os.seteuid.side_effect = setuid_with_signal
+                with self.assertRaises(helper.VerificationError):
+                    with operation._store_reader_identity():
+                        self.assertEqual(state["uid"], 10001)
+                self.assertEqual(state, {"uid": 0, "gid": 0})
+                self.assertEqual(observed, [{"uid": 0, "gid": 0}])
+        finally:
+            signal.signal(signal.SIGALRM, original_handler)
+            signal.pthread_sigmask(signal.SIG_SETMASK, original_mask)
+
+    def test_reader_refuses_effective_root_without_real_root_restore_guarantee(self):
+        with patch.object(operation.os, "geteuid", return_value=0), patch.object(operation.os, "getegid", return_value=0), \
+                patch.object(operation.os, "getuid", return_value=1000), patch.object(operation.os, "seteuid") as uid, \
+                patch.object(operation.os, "setegid") as gid, self.assertRaises(operation.RebootError):
+            with operation._store_reader_identity():
+                pass
+        uid.assert_not_called(); gid.assert_not_called()
+
+    def test_sql_exception_restores_root_before_final_metadata_checks(self):
+        path = Path("/synthetic/jobs.sqlite3")
+        with fake_root_identity() as (state, events):
+            metadata_ids = []
+            def metadata(path, device):
+                metadata_ids.append((state["uid"], state["gid"]))
+                return types.SimpleNamespace(st_dev=1, st_ino=2)
+            def read(path):
+                self.assertEqual(state, {"uid": 10001, "gid": 10001})
+                raise sqlite3.OperationalError("PRIVATE SQLITE DETAIL")
+            with patch.object(helper, "_private_file", side_effect=metadata), \
+                    patch.object(operation, "_check_auxiliary_files"), patch.object(operation, "_read_semantics", side_effect=read), \
+                    self.assertRaises(sqlite3.OperationalError):
+                operation._semantic_database(path, 1)
+            self.assertEqual(state, {"uid": 0, "gid": 0})
+            self.assertEqual(metadata_ids, [(0, 0), (0, 0)])
+
+    def test_deadline_during_sql_read_restores_effective_root(self):
+        import time
+        with fake_root_identity() as (state, events):
+            with patch.object(helper, "_private_file", return_value=types.SimpleNamespace(st_dev=1, st_ino=2)), \
+                    patch.object(operation, "_check_auxiliary_files"), \
+                    patch.object(operation, "_read_semantics", side_effect=lambda path: time.sleep(0.2)), \
+                    self.assertRaises(helper.VerificationError):
+                with helper._deadline(0.02):
+                    operation._semantic_database(Path("/synthetic/jobs.sqlite3"), 1)
+            self.assertEqual(state, {"uid": 0, "gid": 0})
+
+    def test_unexpected_auxiliary_ownership_is_refused_without_repair_or_sql_open(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "jobs.sqlite3"; path.write_bytes(b"untouched database")
+            wal = path.with_name(path.name + "-wal"); wal.write_bytes(b"unmodified WAL recovery bytes")
+            def metadata(item, device):
+                if item == wal:
+                    raise helper.VerificationError()
+                return path.stat()
+            with patch.object(helper, "_private_file", side_effect=metadata), \
+                    patch.object(operation.sqlite3, "connect") as connect, \
+                    patch.object(operation.os, "chown") as chown, patch.object(operation.os, "chmod") as chmod, \
+                    self.assertRaises(operation.AuxiliaryFileError):
+                operation._semantic_database(path, path.stat().st_dev)
+            connect.assert_not_called(); chown.assert_not_called(); chmod.assert_not_called()
+            self.assertEqual(path.read_bytes(), b"untouched database")
+            self.assertEqual(wal.read_bytes(), b"unmodified WAL recovery bytes")
+
+    def test_actual_wal_reader_includes_committed_wal_and_aux_files_keep_reader_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "jobs.sqlite3"
+            self.make_database(path)
+            writer = sqlite3.connect(path)
+            writer.execute("PRAGMA journal_mode=WAL")
+            writer.execute("INSERT INTO artifacts VALUES (?)", (b"committed-only-in-WAL",))
+            writer.commit()
+            try:
+                with patch.object(helper, "_private_file", side_effect=lambda p, device: p.stat()):
+                    value = operation._semantic_database(path, path.stat().st_dev)
+                self.assertEqual(value["tables"]["artifacts"]["rows"], 5)
+                for suffix in ("-wal", "-shm"):
+                    info = path.with_name(path.name + suffix).stat()
+                    self.assertEqual((info.st_uid, info.st_gid), (os.geteuid(), os.getegid()))
+            finally:
+                writer.close()
+
+    def test_auxiliary_refusal_uses_fixed_diagnostic_instead_of_raw_metadata(self):
+        with fake_operation() as mocks:
+            mocks["_semantic_database"].side_effect = operation.AuxiliaryFileError("PRIVATE")
+            result = operation.run(config(), "compare-recovery")
+        self.assertEqual(result["failure_reason"], "auxiliary_metadata_refused")
+        self.assertNotIn("PRIVATE", json.dumps(result))
+        self.assertIsNotNone(operation.sanitize_report(json.dumps(result).encode()))
+
+    def test_real_live_generation_can_exceed_old_snapshot_but_postboot_remains_exact(self):
+        real_semantic = operation._semantic_database
+        with tempfile.TemporaryDirectory() as directory:
+            data = Path(directory) / "data"; data.mkdir()
+            live = data / "jobs.sqlite3"
+            old = Path(directory) / "older-snapshot.sqlite3"
+            self.make_database(live); self.make_database(old)
+            with sqlite3.connect(live) as db:
+                db.execute("INSERT INTO experiments VALUES (?)", ("new user experiment",))
+                db.execute("INSERT INTO revisions VALUES (?)", ("new user revision",))
+                db.execute("INSERT INTO runs VALUES (?,?)", ("new-user-run", "SUCCEEDED"))
+                db.execute("INSERT INTO artifacts VALUES (?)", (b"new user artifact",))
+            with fake_operation() as mocks, patch.object(helper, "DATA", data), \
+                    patch.object(helper, "_private_file", side_effect=lambda path, device: path.stat()):
+                mocks["_backup_baseline"].side_effect = AssertionError("old backup must not be a reboot prerequisite")
+                mocks["_semantic_database"].side_effect = real_semantic
+                result = operation.run(config(), "reboot-recovery")
+                self.assertEqual(result["status"], "success")
+                saved = mocks["_publish_baseline"].call_args.args[0]
+                self.assertEqual(saved["schema_version"], 2)
+                self.assertNotIn("backup", saved)
+                self.assertFalse(saved["backup_policy_console_verified"])
+                self.assertEqual(saved["database"]["tables"]["runs"]["rows"], 3)
+                self.assertEqual(saved["database"]["tables"]["experiments"]["rows"], 5)
+                self.assertTrue(all(call.args[0] == live for call in mocks["_semantic_database"].call_args_list))
+                mocks["_read_reboot_baseline"].return_value = saved
+                mocks["_boot_id"].return_value = NEW_BOOT
+                verified = operation.run(config(), "verify-reboot")
+                self.assertEqual(verified["status"], "success")
+                self.assertTrue(verified["database_preserved"])
+                self.assertEqual(verified["baseline_schema_version"], 2)
+                with sqlite3.connect(live) as db:
+                    db.execute("UPDATE artifacts SET value=? WHERE typeof(value)='blob'", (b"unexpected changed bytes",))
+                changed = operation.run(config(), "verify-reboot")
+                self.assertEqual(changed["failure_reason"], "database_changed")
+                mocks["_backup_baseline"].assert_not_called()
 
     def test_idle_database_requires_no_pending_runs(self):
         def pending(report, device):

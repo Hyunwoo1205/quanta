@@ -8,6 +8,7 @@ operation because this calculation adds legitimate run/event/artifact records.
 """
 from __future__ import annotations
 
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import http.client
 import json
@@ -15,6 +16,7 @@ import math
 import os
 from pathlib import Path
 import re
+import signal
 import sqlite3
 import sys
 import time
@@ -92,39 +94,73 @@ def _reference_matches(values):
                     for row, targets in zip(forces, expected) for value, target in zip(row, targets)))
 
 
+@contextmanager
+def _database_identity():
+    """Keep real UID 0 for restoration; SQLite-created WAL/SHM belong to 10001."""
+    if os.getuid() != 0 or os.geteuid() != 0:
+        raise SmokeError()
+    original_uid, original_gid = os.geteuid(), os.getegid()
+
+    @contextmanager
+    def transition():
+        previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGALRM})
+        try:
+            yield
+        finally:
+            signal.pthread_sigmask(signal.SIG_SETMASK, previous_mask)
+
+    try:
+        with transition():
+            os.setegid(10001)
+            os.seteuid(10001)
+        yield
+    finally:
+        # Also execute when entering the second identity change fails, or when
+        # the SQLite deadline interrupts connect/query/close.
+        with transition():
+            try:
+                os.seteuid(original_uid)
+            finally:
+                os.setegid(original_gid)
+
+
 def _source_run():
     path = helper.DATA / 'jobs.sqlite3'
     device = os.lstat(helper.DATA).st_dev
     before = helper._private_file(path, device)
-    connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=2, isolation_level=None)
-    expires = time.monotonic() + 10
-    connection.set_progress_handler(lambda: int(time.monotonic() > expires), 1000)
-    try:
-        connection.execute('PRAGMA query_only=ON')
-        connection.execute('PRAGMA trusted_schema=OFF')
-        connection.execute('BEGIN')
-        rows = connection.execute("SELECT run_id,revision_id,report FROM runs "
-            "WHERE owner='local' AND status='SUCCEEDED' ORDER BY seq LIMIT ?", (MAX_SOURCE_ROWS,))
-        for run_id, revision_id, raw in rows:
-            if not _uuid(run_id) or not _uuid(revision_id) or not isinstance(raw, str) or len(raw) > MAX_REPORT_BYTES:
-                continue
-            report = helper._json(raw.encode('utf-8'))
-            if not isinstance(report, dict) or report.get('valid') is not True or not isinstance(report.get('result'), dict):
-                continue
-            try:
-                values = _values(report['result'])
-            except SmokeError:
-                continue
-            if (report['result'].get('run_id') != run_id or report['result'].get('revision_id') != revision_id
-                    or not _reference_matches(values)):
-                raise SmokeError()
-            after = helper._private_file(path, device)
-            if (before.st_dev, before.st_ino) != (after.st_dev, after.st_ino):
-                raise SmokeError()
-            return run_id, revision_id, values
-    finally:
-        connection.close()
-    raise SmokeError()
+    selected = None
+    with _database_identity():
+        connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=2, isolation_level=None)
+        try:
+            expires = time.monotonic() + 10
+            connection.set_progress_handler(lambda: int(time.monotonic() > expires), 1000)
+            connection.execute('PRAGMA query_only=ON')
+            connection.execute('PRAGMA trusted_schema=OFF')
+            connection.execute('BEGIN')
+            rows = connection.execute("SELECT run_id,revision_id,report FROM runs "
+                "WHERE owner='local' AND status='SUCCEEDED' ORDER BY seq LIMIT ?", (MAX_SOURCE_ROWS,))
+            for run_id, revision_id, raw in rows:
+                if not _uuid(run_id) or not _uuid(revision_id) or not isinstance(raw, str) or len(raw) > MAX_REPORT_BYTES:
+                    continue
+                report = helper._json(raw.encode('utf-8'))
+                if not isinstance(report, dict) or report.get('valid') is not True or not isinstance(report.get('result'), dict):
+                    continue
+                try:
+                    values = _values(report['result'])
+                except SmokeError:
+                    continue
+                if (report['result'].get('run_id') != run_id or report['result'].get('revision_id') != revision_id
+                        or not _reference_matches(values)):
+                    raise SmokeError()
+                selected = run_id, revision_id, values
+                break
+        finally:
+            connection.close()
+    # File identity checks run only after effective root identity is restored.
+    after = helper._private_file(path, device)
+    if selected is None or (before.st_dev, before.st_ino) != (after.st_dev, after.st_ino):
+        raise SmokeError()
+    return selected
 
 
 def _preflight(config):
@@ -132,11 +168,23 @@ def _preflight(config):
         raise SmokeError()
     baseline = helper._json(helper._read_root(REBOOT_BASELINE, private=True, limit=1024**2))
     if (not isinstance(baseline, dict) or type(baseline.get('schema_version')) is not int
-            or baseline['schema_version'] != 1 or baseline.get('source_sha') != SOURCE_SHA
+            or baseline['schema_version'] not in {1, 2} or baseline.get('source_sha') != SOURCE_SHA
             or not isinstance(baseline.get('old_boot_id'), str)
             or str(uuid.UUID(baseline['old_boot_id'])) != baseline['old_boot_id']
             or not isinstance(baseline.get('created_at'), str)):
         raise SmokeError()
+    if baseline['schema_version'] == 2:
+        fields = {'schema_version', 'source_sha', 'created_at', 'operation_id', 'old_boot_id',
+                  'database', 'peers', 'settings', 'database_basis', 'backup_policy_basis',
+                  'backup_policy_console_verified'}
+        if (set(baseline) != fields
+                or baseline['database_basis'] != 'quiescent_live_store_before_os_reboot'
+                or baseline['backup_policy_basis'] != 'user_reported_oci_daily'
+                or baseline['backup_policy_console_verified'] is not False
+                or not isinstance(baseline['operation_id'], str)
+                or str(uuid.UUID(baseline['operation_id'])) != baseline['operation_id']
+                or any(not isinstance(baseline[field], dict) for field in ('database', 'peers', 'settings'))):
+            raise SmokeError()
     created = datetime.strptime(baseline['created_at'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
     if not 0 <= (datetime.now(timezone.utc) - created).total_seconds() <= 86400:
         raise SmokeError()

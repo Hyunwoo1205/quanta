@@ -38,10 +38,15 @@ def config():
     return {"source_sha": operation.SOURCE_SHA, "public_origin": "https://app.example.net", "auth_mode": "owner-token"}
 
 
-def success():
-    return {"scope": "recovery_backup_preparation", "status": "success", "stage": "complete",
+def success(action="prepare-recovery"):
+    return {"scope": "recovery_backup_preparation", "action": action, "status": "success", "stage": "complete",
             "failure_reason": "none", **dict.fromkeys(operation.REQUIRED_SUCCESS, True),
-            "off_host_backup_verified": False, "operating_system_rebooted": False}
+            "off_host_backup_verified": False, "operating_system_rebooted": False,
+            "previous_baseline_archived": action == "refresh-recovery", "baseline_refreshed": action == "refresh-recovery"}
+
+
+def previous():
+    return {"raw": b"old-private-baseline", "identity": (1, 2, 3, 4), "value": {"boot_id": BOOT}}
 
 
 @contextlib.contextmanager
@@ -53,6 +58,8 @@ def fake_operation():
             "_operation_lock": contextlib.nullcontext(), "_services_idle": None,
             "_timer_state": ("active", "enabled"), "_boot_id": BOOT,
             "_publish_baseline": None,
+            "_read_previous_baseline": previous(), "_archive_previous": Path("/etc/quanta/recovery-backup-archive-test.json"),
+            "_replace_baseline": None,
         }
         for name, value in values.items():
             mocks[name] = stack.enter_context(patch.object(operation, name, return_value=value))
@@ -311,6 +318,141 @@ class RecoveryBackupTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(operation.main(args), 2)
             self.assertEqual(json.loads(output.getvalue()), operation._initial_report())
+
+    def test_explicit_refresh_archives_known_old_marker_then_replaces_only_current_marker(self):
+        with fake_operation() as mocks:
+            result = operation.run(config(), "refresh-recovery")
+        self.assertEqual(result, success("refresh-recovery"))
+        mocks["_read_previous_baseline"].assert_called_once_with()
+        mocks["_preflight"].assert_called_once_with(config(), previous=previous())
+        mocks["_archive_previous"].assert_called_once_with(previous())
+        mocks["_replace_baseline"].assert_called_once_with(SNAPSHOT, (20, bytes.fromhex("d" * 64)), BOOT,
+            previous(), Path("/etc/quanta/recovery-backup-archive-test.json"))
+        mocks["_publish_baseline"].assert_not_called()
+        self.assertEqual(operation.sanitize_report(json.dumps(result).encode()), result)
+
+    def test_refresh_refuses_invalid_old_marker_before_starting_backup(self):
+        with fake_operation() as mocks:
+            mocks["_read_previous_baseline"].side_effect = helper.VerificationError()
+            result = operation.run(config(), "refresh-recovery")
+        self.assertEqual(result["failure_reason"], "refresh_preflight_refused")
+        mocks["_preflight"].assert_not_called()
+        mocks["_quiet"].assert_not_called()
+        mocks["_archive_previous"].assert_not_called()
+
+    def test_refresh_archive_failure_never_replaces_current_marker(self):
+        with fake_operation() as mocks:
+            mocks["_archive_previous"].side_effect = helper.VerificationError()
+            result = operation.run(config(), "refresh-recovery")
+        self.assertEqual(result["failure_reason"], "archive_failed")
+        self.assertTrue(result["production_preserved"])
+        self.assertTrue(result["timer_state_preserved"])
+        self.assertFalse(result["baseline_refreshed"])
+        mocks["_replace_baseline"].assert_not_called()
+
+    def test_refresh_replace_failure_reports_preserved_archive_and_no_refresh_success(self):
+        with fake_operation() as mocks:
+            mocks["_replace_baseline"].side_effect = helper.VerificationError()
+            result = operation.run(config(), "refresh-recovery")
+        self.assertEqual(result["failure_reason"], "baseline_failed")
+        self.assertTrue(result["previous_baseline_archived"])
+        self.assertFalse(result["baseline_refreshed"])
+        self.assertIsNotNone(operation.sanitize_report(json.dumps(result).encode()))
+
+    def test_prepare_reports_cannot_claim_refresh_and_refresh_success_requires_archive(self):
+        cases = [{**success(), "previous_baseline_archived": True},
+                 {**success(), "baseline_refreshed": True},
+                 {**success("refresh-recovery"), "previous_baseline_archived": False},
+                 {**success("refresh-recovery"), "baseline_refreshed": False},
+                 {**success(), "action": "arbitrary-command"}]
+        for value in cases:
+            with self.assertRaises(ValueError):
+                operation.validate_report(value)
+
+    def test_real_refresh_keeps_old_bytes_in_private_single_link_archive(self):
+        with tempfile.TemporaryDirectory() as directory:
+            baseline = Path(directory) / "recovery-backup.json"
+            old = b'{"old":"immutable original bytes"}\n'
+            baseline.write_bytes(old); baseline.chmod(0o600)
+            prior = {"raw": old, "identity": operation._identity(baseline), "value": {"boot_id": BOOT}}
+            with patch.object(operation, "BASELINE", baseline), patch.object(operation, "REBOOT_BASELINE", Path(directory) / "reboot.json"), \
+                    patch.object(helper, "_root_parents"), patch.object(helper, "_read_root", side_effect=lambda p, **kw: p.read_bytes()):
+                archive = operation._archive_previous(prior)
+                operation._replace_baseline(SNAPSHOT, (20, bytes.fromhex("d" * 64)), BOOT, prior, archive)
+            self.assertEqual(archive.read_bytes(), old)
+            self.assertNotEqual(baseline.read_bytes(), old)
+            self.assertEqual(json.loads(baseline.read_bytes())["snapshot"], SNAPSHOT.name)
+            for path in (archive, baseline):
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+                self.assertEqual(path.stat().st_nlink, 1)
+            self.assertEqual(set(Path(directory).iterdir()), {archive, baseline})
+
+    def test_refresh_does_not_replace_concurrently_changed_known_marker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            baseline = Path(directory) / "recovery-backup.json"
+            baseline.write_bytes(b"known-old-marker"); baseline.chmod(0o600)
+            prior = {"raw": baseline.read_bytes(), "identity": operation._identity(baseline), "value": {"boot_id": BOOT}}
+            with patch.object(operation, "BASELINE", baseline), patch.object(operation, "REBOOT_BASELINE", Path(directory) / "reboot.json"), \
+                    patch.object(helper, "_root_parents"), patch.object(helper, "_read_root", side_effect=lambda p, **kw: p.read_bytes()):
+                archive = operation._archive_previous(prior)
+                baseline.write_bytes(b"concurrent-new-marker")
+                with self.assertRaises(helper.VerificationError):
+                    operation._replace_baseline(SNAPSHOT, (20, bytes.fromhex("d" * 64)), BOOT, prior, archive)
+            self.assertEqual(baseline.read_bytes(), b"concurrent-new-marker")
+            self.assertEqual(archive.read_bytes(), b"known-old-marker")
+            self.assertEqual(set(Path(directory).iterdir()), {archive, baseline})
+
+    def test_refresh_refuses_any_existing_reboot_claim_and_does_not_touch_marker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            claim = Path(directory) / "reboot.json"
+            claim.write_bytes(b"existing claim")
+            with patch.object(operation, "REBOOT_BASELINE", claim), patch.object(helper, "_root_parents"), \
+                    self.assertRaises(helper.VerificationError):
+                operation._reboot_baseline_absent()
+            self.assertEqual(claim.read_bytes(), b"existing claim")
+
+    def test_refresh_archive_collision_never_overwrites_any_existing_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            baseline = Path(directory) / "recovery-backup.json"
+            baseline.write_bytes(b"old marker"); baseline.chmod(0o600)
+            prior = {"raw": baseline.read_bytes(), "identity": operation._identity(baseline), "value": {"boot_id": BOOT}}
+            archive = Path(directory) / ("recovery-backup-archive-" + "a" * 32 + ".json")
+            archive.write_bytes(b"existing archive")
+            with patch.object(operation, "BASELINE", baseline), patch.object(operation, "REBOOT_BASELINE", Path(directory) / "reboot.json"), \
+                    patch.object(helper, "_root_parents"), patch.object(helper, "_read_root", side_effect=lambda p, **kw: p.read_bytes()), \
+                    patch.object(operation.uuid, "uuid4", return_value=types.SimpleNamespace(hex="a" * 32)), self.assertRaises(FileExistsError):
+                operation._archive_previous(prior)
+            self.assertEqual(archive.read_bytes(), b"existing archive")
+            self.assertEqual(baseline.read_bytes(), b"old marker")
+
+    def test_refresh_reader_requires_exact_root_marker_same_boot_source_and_snapshot_hash(self):
+        value = {"schema_version": 1, "source_sha": operation.SOURCE_SHA, "boot_id": BOOT,
+                 "snapshot": SNAPSHOT.name, "database_size": 20, "database_sha256": "d" * 64,
+                 "created_at": "2026-11-06T04:05:06Z"}
+        raw = json.dumps(value).encode()
+        with patch.object(operation, "_reboot_baseline_absent"), patch.object(operation, "_identity", return_value=(1, 2, 3, 4)), \
+                patch.object(helper, "_read_root", return_value=raw), patch.object(operation, "_boot_id", return_value=BOOT), \
+                patch.object(operation.time, "time", return_value=2_000_000_000), \
+                patch.object(operation.os, "lstat", return_value=types.SimpleNamespace(st_dev=1)), \
+                patch.object(helper, "_private_dir"), patch.object(helper, "_children"), patch.object(helper, "_private_file"), \
+                patch.object(helper, "_hash", return_value=(20, bytes.fromhex("d" * 64))):
+            previous_value = operation._read_previous_baseline()
+            self.assertEqual(previous_value, {"raw": raw, "identity": (1, 2, 3, 4), "value": value})
+        for change in ({"source_sha": "a" * 40}, {"boot_id": "wrong"}, {"database_size": True},
+                       {"snapshot": "../escape"}, {"extra": "private"}):
+            with patch.object(operation, "_reboot_baseline_absent"), patch.object(operation, "_identity", return_value=(1, 2, 3, 4)), \
+                    patch.object(helper, "_read_root", return_value=json.dumps({**value, **change}).encode()), \
+                    patch.object(operation, "_boot_id", return_value=BOOT), self.assertRaises(helper.VerificationError):
+                operation._read_previous_baseline()
+
+    def test_refresh_main_requires_explicit_fixed_literal(self):
+        encoded = base64.b64encode(json.dumps(config(), sort_keys=True, separators=(",", ":")).encode()).decode()
+        with fake_operation(), contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(operation.main([encoded, "refresh-recovery"]), 0)
+        self.assertEqual(json.loads(output.getvalue()), success("refresh-recovery"))
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(operation.main([encoded, "refresh-arbitrary"]), 2)
+        self.assertEqual(json.loads(output.getvalue())["status"], "failed")
 
 
 if __name__ == "__main__":

@@ -316,7 +316,7 @@ class TransportTests(unittest.TestCase):
         self.assertNotIn("private-origin", json.dumps(value))
 
     def test_plink_flags_private_key_cleanup_and_minimal_environment_for_both_operations(self):
-        for operation in ["audit-recovery", "prepare-recovery", "reboot-recovery", "verify-reboot", "post-reboot-compute"]:
+        for operation in probe.OPERATIONS.keys() - {"export-recovery"}:
             paths = []
             with self.modules(action=operation if operation in probe.BOOT_OPERATIONS else None) as (expected, _, source, _, _, _):
                 def runner(command, environment, directory):
@@ -335,7 +335,7 @@ class TransportTests(unittest.TestCase):
                     config = json.loads(base64.b64decode(remote[7]))
                     self.assertEqual(set(config), {"source_sha", "public_origin", "auth_mode"})
                     self.assertEqual(config["source_sha"], gate.SOURCE_SHA)
-                    if operation in probe.BOOT_OPERATIONS:
+                    if operation in probe.ACTION_OPERATIONS:
                         self.assertEqual(remote[8:], [operation])
                     else:
                         self.assertEqual(len(remote), 8)
@@ -388,7 +388,8 @@ class TransportTests(unittest.TestCase):
     def test_default_capture_is_bounded_separately_for_audit_and_backup(self):
         for operation, timeout in [("audit-recovery", 120), ("prepare-recovery", 600),
                                    ("reboot-recovery", 300), ("verify-reboot", 300),
-                                   ("post-reboot-compute", 180)]:
+                                   ("post-reboot-compute", 180), ("compare-recovery", 300),
+                                   ("refresh-recovery", 600)]:
             with self.modules(action=operation if operation in probe.BOOT_OPERATIONS else None) as (_, _, _, _, transport, _):
                 self.assertEqual(probe.probe(credentials(operation))["status"], "success")
                 self.assertEqual(transport._capture.call_args.kwargs, {"timeout": timeout, "limit": 8192})

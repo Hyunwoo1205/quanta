@@ -1,0 +1,157 @@
+{
+  "verification_kind": "oci_guarded_os_reboot_recovery",
+  "app_source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "attempts": [
+    {
+      "control_source_commit": "dda5b9f56ee72ad466816266390427f50d1b6c04",
+      "control_ci": 42159722619,
+      "workflow_run": {
+        "id": 42159908950,
+        "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42159908950",
+        "head_sha": "57011e2f987f3393039468d5e7a65a3661005c65",
+        "job_id": 127702856377,
+        "conclusion": "failure"
+      },
+      "request": {
+        "schema_version": 1,
+        "operation": "reboot-recovery",
+        "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+        "request_id": "44958c64-1daf-40d9-bc5e-f2518e41857c"
+      },
+      "result": {
+        "authentication_attempted": true,
+        "requested_operation": "reboot-recovery",
+        "result": {
+          "action": "reboot-recovery",
+          "admission_paused": true,
+          "application_stopped": true,
+          "artifacts": 0,
+          "audit_prerequisites_met": true,
+          "backup_baseline_verified": true,
+          "backup_timer_paused": true,
+          "boot_changed": false,
+          "database_preserved": false,
+          "events": 0,
+          "experiments": 0,
+          "failure_reason": "fallback_recovery_failed",
+          "fallback_recovery_verified": false,
+          "idempotency": 0,
+          "new_calculation_verified": false,
+          "no_pending_runs": true,
+          "off_host_backup_verified_by_server": false,
+          "peer_containers": 0,
+          "peer_containers_preserved": false,
+          "private_baseline_saved": false,
+          "reboot_scheduled": false,
+          "revisions": 0,
+          "runs": 0,
+          "scope": "os_reboot_recovery",
+          "services_restored": true,
+          "settings_preserved": false,
+          "snapshot_semantics_matched": false,
+          "stage": "compare",
+          "status": "failed",
+          "worker_exclusivity_verified": false
+        },
+        "scope": "ssh_fixed_recovery",
+        "status": "remote_failed"
+      },
+      "interpretation": {
+        "reboot_was_scheduled": false,
+        "reboot_baseline_was_saved": false,
+        "application_https_and_timer_recovery_was_reported_verified": true,
+        "full_fallback_cleanup_was_reported_failed": true,
+        "exact_compare_failure_not_yet_diagnosed": true
+      }
+    }
+  ],
+  "restored_service_readonly_audit": {
+    "workflow_run": {
+      "id": 42160115789,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42160115789",
+      "head_sha": "5c1627bccde10af094a4340a732066bc8afef8b7",
+      "job_id": 127703519483,
+      "conclusion": "success"
+    },
+    "request": {
+      "schema_version": 1,
+      "operation": "audit-recovery",
+      "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "request_id": "e9d49e1b-7bed-40ba-9511-c531e88b8467"
+    },
+    "result": {
+      "authentication_attempted": true,
+      "requested_operation": "audit-recovery",
+      "result": {
+        "app_active": true,
+        "app_enabled": true,
+        "artifacts": 767,
+        "authenticated_ready": true,
+        "backup_services_idle": true,
+        "backup_snapshots": 3,
+        "backup_timer_active": true,
+        "backup_timer_enabled": true,
+        "boot_id_valid": true,
+        "database_checked": true,
+        "docker_active": true,
+        "docker_enabled": true,
+        "experiments": 8,
+        "failure_reason": "none",
+        "free_disk_mib": 191295,
+        "host_reboot_prerequisites_met": true,
+        "https_active": true,
+        "https_enabled": true,
+        "latest_backup_service_succeeded": true,
+        "latest_snapshot_age_seconds": 1077,
+        "latest_snapshot_present": true,
+        "no_pending_runs": true,
+        "nonterminal_runs": 0,
+        "off_host_backup_verified": false,
+        "peer_containers": 1,
+        "peer_restart_policies_safe": true,
+        "restartable_running_peers": 1,
+        "revisions": 10,
+        "running_peer_containers": 1,
+        "runs": 11,
+        "safe_to_reboot": false,
+        "scope": "recovery_audit",
+        "server_modified": false,
+        "single_app_container": true,
+        "source_verified": true,
+        "stage": "complete",
+        "status": "success",
+        "storage_verified": true,
+        "sufficient_disk_space": true,
+        "worker_exclusivity_verified": true
+      },
+      "scope": "ssh_fixed_recovery",
+      "status": "success"
+    }
+  },
+  "observed_counts": {
+    "external_snapshot": {
+      "experiments": 7,
+      "revisions": 7,
+      "runs": 10,
+      "artifacts": 678
+    },
+    "after_failed_attempt": {
+      "experiments": 8,
+      "revisions": 10,
+      "runs": 11,
+      "artifacts": 767
+    }
+  },
+  "current_state": {
+    "os_reboot_verified": false,
+    "post_reboot_compute_verified": false,
+    "live_service_restored_and_ready": true,
+    "fresh_snapshot_required": true
+  },
+  "notes": [
+    "The comparison stopped before publishing a reboot baseline or scheduling an OS reboot.",
+    "Later records are present in the live store; this confirms that the previous external snapshot is older, but the exact failure-time difference still needs the read-only diagnostic.",
+    "The failed attempt remains evidence and must not be rewritten as a successful reboot.",
+    "No repeated reboot request has been made."
+  ]
+}

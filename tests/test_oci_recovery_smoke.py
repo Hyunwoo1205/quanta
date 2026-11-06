@@ -64,6 +64,23 @@ def fake_flow(responses=None):
         yield request
 
 
+@contextlib.contextmanager
+def simulated_identity(fail=None):
+    state = {'uid': 0, 'gid': 77}
+    calls = []
+    def change(kind, value):
+        calls.append((kind, value))
+        if fail == (kind, value):
+            raise PermissionError('synthetic identity failure')
+        state[kind] = value
+    with patch.object(operation.os, 'getuid', return_value=0), \
+            patch.object(operation.os, 'geteuid', side_effect=lambda: state['uid']), \
+            patch.object(operation.os, 'getegid', side_effect=lambda: state['gid']), \
+            patch.object(operation.os, 'seteuid', side_effect=lambda value: change('uid', value)), \
+            patch.object(operation.os, 'setegid', side_effect=lambda value: change('gid', value)):
+        yield state, calls
+
+
 class SmokeTests(unittest.TestCase):
     def test_existing_exact_config_and_invalid_inputs_never_submit(self):
         self.assertEqual(operation.validate_config(config()), config())
@@ -191,6 +208,40 @@ class SmokeTests(unittest.TestCase):
                     operation._preflight(config())
                 env = saved
 
+    def test_schema2_supports_live_baseline_and_preserves_user_report_evidence_boundary(self):
+        baseline = {'schema_version': 2, 'source_sha': operation.SOURCE_SHA, 'old_boot_id': OLD_BOOT,
+                    'created_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    'operation_id': '456789ab-4567-4567-8567-456789abcdef',
+                    'database': {}, 'peers': {}, 'settings': {},
+                    'database_basis': 'quiescent_live_store_before_os_reboot',
+                    'backup_policy_basis': 'user_reported_oci_daily',
+                    'backup_policy_console_verified': False}
+        env = ('QUANTA_PUBLIC_ORIGIN=' + config()['public_origin'] + '\nQUANTA_AUTH_MODE=owner-token\nQUANTA_OWNER_TOKEN=' + TOKEN + '\n').encode()
+        def reader(path, **kwargs):
+            if path == operation.REBOOT_BASELINE:
+                return json.dumps(baseline).encode()
+            if path == operation.BOOT_ID:
+                return (BOOT + '\n').encode()
+            if path.name == 'app.env':
+                return env
+            return json.dumps(config()).encode()
+        with patch.object(operation.os, 'geteuid', return_value=0), patch.object(helper, '_read_root', side_effect=reader):
+            self.assertEqual(operation._preflight(config()), (BOOT, TOKEN))
+            cases = [{'backup_policy_console_verified': True}, {'backup_policy_console_verified': 0},
+                     {'backup_policy_console_verified': None}, {'backup_policy_basis': 'agent_verified_oci_daily'},
+                     {'database_basis': 'old_external_copy'}, {'operation_id': 'PRIVATE'}, {'database': []},
+                     {'created_at': '2000-01-01T00:00:00Z'}, {'old_boot_id': BOOT},
+                     {'schema_version': 3}, {'schema_version': True}, {'backup': {}}]
+            for mutation in cases:
+                original = dict(baseline)
+                baseline.update(mutation)
+                with self.subTest(mutation=mutation), self.assertRaises(Exception):
+                    operation._preflight(config())
+                baseline.clear(); baseline.update(original)
+            del baseline['backup_policy_console_verified']
+            with self.assertRaises(Exception):
+                operation._preflight(config())
+
     def test_readonly_sqlite_chooses_oldest_supported_single_pair_without_writes(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'jobs.sqlite3'
@@ -204,9 +255,103 @@ class SmokeTests(unittest.TestCase):
             connection.commit(); connection.close()
             before = path.read_bytes()
             with patch.object(helper, 'DATA', Path(directory)), \
+                    patch.object(operation, '_database_identity', side_effect=contextlib.nullcontext), \
                     patch.object(helper, '_private_file', side_effect=lambda p, d, **kw: p.stat()):
                 self.assertEqual(operation._source_run(), (SOURCE, REVISION, VALUES))
             self.assertEqual(path.read_bytes(), before)
+
+    def test_sqlite_identity_retains_real_root_and_restores_after_success_and_body_failure(self):
+        for failure in (None, sqlite3.OperationalError('synthetic query failure'), helper.VerificationError()):
+            with simulated_identity() as (state, calls):
+                try:
+                    with operation._database_identity():
+                        self.assertEqual(state, {'uid': 10001, 'gid': 10001})
+                        self.assertEqual(operation.os.getuid(), 0)
+                        if failure is not None:
+                            raise failure
+                except Exception as caught:
+                    self.assertIs(caught, failure)
+                self.assertEqual(state, {'uid': 0, 'gid': 77})
+                self.assertEqual(calls, [('gid', 10001), ('uid', 10001), ('uid', 0), ('gid', 77)])
+
+    def test_sqlite_identity_partial_enter_and_nonroot_rejection_never_leak_identity(self):
+        for failed_change in (('gid', 10001), ('uid', 10001)):
+            with simulated_identity(fail=failed_change) as (state, calls), self.assertRaises(PermissionError):
+                with operation._database_identity():
+                    self.fail('partial identity change must not enter SQLite')
+            self.assertEqual(state, {'uid': 0, 'gid': 77})
+            self.assertEqual(calls[-2:], [('uid', 0), ('gid', 77)])
+        for real, effective in ((10001, 10001), (10001, 0), (0, 10001)):
+            with patch.object(operation.os, 'getuid', return_value=real), \
+                    patch.object(operation.os, 'geteuid', return_value=effective), \
+                    patch.object(operation.os, 'seteuid') as changed, self.assertRaises(operation.SmokeError):
+                with operation._database_identity():
+                    self.fail('nonroot caller must not enter SQLite')
+            changed.assert_not_called()
+
+    def test_real_alarm_deadline_restores_effective_identity_before_propagating(self):
+        with simulated_identity() as (state, calls), self.assertRaises(helper.VerificationError):
+            with helper._deadline(0.02):
+                with operation._database_identity():
+                    operation.time.sleep(0.2)
+        self.assertEqual(state, {'uid': 0, 'gid': 77})
+        self.assertEqual(calls[-2:], [('uid', 0), ('gid', 77)])
+
+    def test_alarm_mask_covers_only_identity_transitions_and_preserves_previous_mask(self):
+        alarm = operation.signal.SIGALRM
+        previous = {operation.signal.SIGUSR1}
+        mask = set(previous)
+        changes = []
+        def mask_call(how, requested):
+            nonlocal mask
+            original = set(mask)
+            changes.append((how, set(requested)))
+            mask = mask | set(requested) if how == operation.signal.SIG_BLOCK else set(requested)
+            return original
+        with simulated_identity() as (state, calls):
+            uid_change, gid_change = operation.os.seteuid, operation.os.setegid
+            def change(function, value):
+                self.assertIn(alarm, mask)
+                return function(value)
+            with patch.object(operation.signal, 'pthread_sigmask', side_effect=mask_call), \
+                    patch.object(operation.os, 'seteuid', side_effect=lambda value: change(uid_change, value)), \
+                    patch.object(operation.os, 'setegid', side_effect=lambda value: change(gid_change, value)):
+                with operation._database_identity():
+                    self.assertEqual(mask, previous)
+                    self.assertNotIn(alarm, mask)
+                    self.assertEqual(state, {'uid': 10001, 'gid': 10001})
+            self.assertEqual(mask, previous)
+            self.assertEqual(state, {'uid': 0, 'gid': 77})
+            self.assertEqual(changes, [(operation.signal.SIG_BLOCK, {alarm}),
+                (operation.signal.SIG_SETMASK, previous), (operation.signal.SIG_BLOCK, {alarm}),
+                (operation.signal.SIG_SETMASK, previous)])
+
+    def test_sqlite_connect_query_and_deadline_failures_restore_root_and_close_as_app_uid(self):
+        for failure_point in ('connect', 'query', 'deadline'):
+            connection = unittest.mock.MagicMock()
+            failure = sqlite3.OperationalError('query failed') if failure_point != 'deadline' else helper.VerificationError()
+            with simulated_identity() as (state, calls), \
+                    patch.object(operation.os, 'lstat', return_value=types.SimpleNamespace(st_dev=1)), \
+                    patch.object(helper, '_private_file', return_value=types.SimpleNamespace(st_dev=1, st_ino=2)) as checked:
+                def connect(*args, **kwargs):
+                    self.assertEqual(state, {'uid': 10001, 'gid': 10001})
+                    if failure_point == 'connect':
+                        raise failure
+                    return connection
+                def execute(*args):
+                    self.assertEqual(state, {'uid': 10001, 'gid': 10001})
+                    raise failure
+                connection.execute.side_effect = execute
+                connection.close.side_effect = lambda: self.assertEqual(state, {'uid': 10001, 'gid': 10001})
+                with patch.object(operation.sqlite3, 'connect', side_effect=connect), self.assertRaises(type(failure)):
+                    operation._source_run()
+                self.assertEqual(state, {'uid': 0, 'gid': 77})
+                self.assertEqual(calls[-2:], [('uid', 0), ('gid', 77)])
+                self.assertEqual(checked.call_count, 1)
+                if failure_point == 'connect':
+                    connection.close.assert_not_called()
+                else:
+                    connection.close.assert_called_once()
 
     def test_main_prints_only_sanitized_record_and_never_exception_or_secret(self):
         with patch.object(operation, '_perform', side_effect=Exception('PRIVATE-' + TOKEN)), contextlib.redirect_stdout(io.StringIO()) as output:

@@ -130,6 +130,89 @@ class AuditConfigurationTests(unittest.TestCase):
 
 
 class AuditCollectorsTests(unittest.TestCase):
+    @contextlib.contextmanager
+    def effective_identity_fixture(self, *, entry_failure=False):
+        state = {"uid": 0, "gid": 7}
+        calls = []
+        def uid(value):
+            calls.append(("uid", value))
+            if entry_failure and value == 10001:
+                raise PermissionError("private error")
+            state["uid"] = value
+        def gid(value):
+            calls.append(("gid", value))
+            state["gid"] = value
+        with patch.object(audit.os, "geteuid", side_effect=lambda: state["uid"]), \
+                patch.object(audit.os, "getegid", side_effect=lambda: state["gid"]), \
+                patch.object(audit.os, "seteuid", side_effect=uid), \
+                patch.object(audit.os, "setegid", side_effect=gid):
+            yield state, calls
+
+    def test_sqlite_identity_drops_effective_ids_and_restores_after_success(self):
+        with self.effective_identity_fixture() as (state, calls):
+            with audit._database_identity():
+                self.assertEqual(state, {"uid": 10001, "gid": 10001})
+            self.assertEqual(state, {"uid": 0, "gid": 7})
+        self.assertEqual(calls, [("gid", 10001), ("uid", 10001), ("uid", 0), ("gid", 7)])
+
+    def test_sqlite_identity_restores_after_partial_entry_failure(self):
+        with self.effective_identity_fixture(entry_failure=True) as (state, calls), self.assertRaises(PermissionError):
+            with audit._database_identity():
+                self.fail("must not enter body")
+        self.assertEqual(state, {"uid": 0, "gid": 7})
+        self.assertEqual(calls[-2:], [("uid", 0), ("gid", 7)])
+
+    def test_actual_alarm_unwinds_sqlite_identity_and_restores_mask(self):
+        original_mask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+        with self.effective_identity_fixture() as (state, calls), self.assertRaises(audit.AuditDeadline):
+            with audit._deadline(0.02):
+                with audit._database_identity():
+                    time.sleep(2)
+        self.assertEqual(state, {"uid": 0, "gid": 7})
+        self.assertEqual(calls[-2:], [("uid", 0), ("gid", 7)])
+        self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, set()), original_mask)
+
+    def test_sqlite_connection_closes_as_store_user_before_sql_error_privilege_restore(self):
+        connection = unittest.mock.Mock()
+        observed = []
+        with self.effective_identity_fixture() as (state, calls):
+            def connect(*args, **kwargs):
+                observed.append(("open", state.copy()))
+                return connection
+            def close():
+                observed.append(("close", state.copy()))
+            connection.execute.side_effect = sqlite3.OperationalError("private error")
+            connection.close.side_effect = close
+            with patch.object(audit, "_private", return_value=types.SimpleNamespace(st_dev=1, st_ino=1)), \
+                    patch.object(audit, "_database_auxiliaries"), patch.object(audit.sqlite3, "connect", side_effect=connect), \
+                    self.assertRaises(sqlite3.OperationalError):
+                audit._database(audit._initial_report(), 1)
+            self.assertEqual(state, {"uid": 0, "gid": 7})
+        self.assertEqual(observed, [("open", {"uid": 10001, "gid": 10001}),
+                                    ("close", {"uid": 10001, "gid": 10001})])
+
+    def test_sqlite_auxiliaries_are_optional_but_existing_bad_metadata_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(audit, "DATA", Path(directory)), patch.object(audit, "_private") as private:
+                audit._database_auxiliaries(1)
+                private.assert_not_called()
+                wal = Path(directory) / "jobs.sqlite3-wal"
+                wal.write_bytes(b"live changing fixture")
+                audit._database_auxiliaries(1)
+                private.assert_called_once_with(wal, 1, maximum=audit.MAX_DATABASE_BYTES)
+            with patch.object(audit, "DATA", Path(directory)), patch.object(audit, "_private", side_effect=audit.AuditError()), self.assertRaises(audit.AuditError):
+                audit._database_auxiliaries(1)
+            self.assertEqual(wal.read_bytes(), b"live changing fixture")
+
+    def test_sqlite_auxiliary_disappearing_between_metadata_reads_is_normal(self):
+        with tempfile.TemporaryDirectory() as directory:
+            wal = Path(directory) / "jobs.sqlite3-wal"
+            wal.write_bytes(b"transient SQLite helper")
+            with patch.object(audit, "DATA", Path(directory)), \
+                    patch.object(audit, "_private", side_effect=FileNotFoundError()) as private:
+                audit._database_auxiliaries(1)
+            private.assert_called_once_with(wal, 1, maximum=audit.MAX_DATABASE_BYTES)
+
     def test_real_capture_is_bounded_and_reaps_nonzero_timeout_and_output_limit(self):
         self.assertEqual(audit._capture([sys.executable, "-c", "print('ok')"]), b"ok\n")
         cases = [([sys.executable, "-c", "raise SystemExit(3)"], {}),
@@ -277,7 +360,8 @@ class AuditCollectorsTests(unittest.TestCase):
             db.close()
             before = path.read_bytes()
             result = audit._initial_report()
-            with patch.object(audit, "DATA", Path(directory)), patch.object(audit, "_private", side_effect=lambda p, device: p.stat()):
+            with patch.object(audit, "DATA", Path(directory)), patch.object(audit, "_private", side_effect=lambda p, device: p.stat()), \
+                    patch.object(audit, "_database_identity", side_effect=contextlib.nullcontext):
                 audit._database(result, path.stat().st_dev)
             self.assertEqual(path.read_bytes(), before)
             self.assertTrue(result["database_checked"])
@@ -297,10 +381,56 @@ class AuditCollectorsTests(unittest.TestCase):
             db.commit()
             db.close()
             result = audit._initial_report()
-            with patch.object(audit, "DATA", Path(directory)), patch.object(audit, "_private", side_effect=lambda p, device: p.stat()), self.assertRaises(audit.AuditError):
+            with patch.object(audit, "DATA", Path(directory)), patch.object(audit, "_private", side_effect=lambda p, device: p.stat()), \
+                    patch.object(audit, "_database_identity", side_effect=contextlib.nullcontext), self.assertRaises(audit.AuditError):
                 audit._database(result, path.stat().st_dev)
             self.assertFalse(result["database_checked"])
             self.assertFalse(result["no_pending_runs"])
+
+    def test_native_clean_wal_read_creates_auxiliaries_as_connection_owner(self):
+        # Native SQLite regression: mode=ro is not a promise of no helper files.
+        # Run the real UID drop when root; ordinary CI uses the fixture owner's
+        # UID while the separate identity tests exercise every transition.
+        with tempfile.TemporaryDirectory() as directory:
+            store = Path(directory) / "store"
+            store.mkdir(mode=0o700)
+            path = store / "jobs.sqlite3"
+            db = sqlite3.connect(path)
+            self.assertEqual(db.execute("PRAGMA journal_mode=WAL").fetchone(), ("wal",))
+            for table in ("experiments", "revisions", "runs", "idempotency", "events", "artifacts"):
+                db.execute("CREATE TABLE " + table + " (status TEXT)")
+            db.commit()
+            db.close()
+            path.chmod(0o600)
+            self.assertFalse(Path(str(path) + "-wal").exists())
+            self.assertFalse(Path(str(path) + "-shm").exists())
+            root = os.geteuid() == 0
+            if root:
+                Path(directory).chmod(0o755)
+                os.chown(store, 10001, 10001)
+                os.chown(path, 10001, 10001)
+            expected_owner = (path.stat().st_uid, path.stat().st_gid)
+            before = path.read_bytes()
+            observed = []
+            native_connect = sqlite3.connect
+            class TrackingConnection(sqlite3.Connection):
+                def close(self):
+                    for suffix in ("-wal", "-shm"):
+                        info = Path(str(path) + suffix).stat()
+                        observed.append((info.st_uid, info.st_gid))
+                    super().close()
+            with contextlib.ExitStack() as stack:
+                stack.enter_context(patch.object(audit, "DATA", store))
+                stack.enter_context(patch.object(audit.sqlite3, "connect", side_effect=lambda *args, **kwargs:
+                    native_connect(*args, **kwargs, factory=TrackingConnection)))
+                if not root:
+                    stack.enter_context(patch.object(audit, "_private", side_effect=lambda p, device, **kwargs: p.stat()))
+                    stack.enter_context(patch.object(audit, "_database_identity", side_effect=contextlib.nullcontext))
+                result = audit._initial_report()
+                audit._database(result, path.stat().st_dev)
+            self.assertEqual(observed, [expected_owner, expected_owner])
+            self.assertEqual(path.read_bytes(), before)
+            self.assertTrue(result["database_checked"])
 
     def test_private_storage_checks_owner_mode_device_and_link_count(self):
         metadata = dict(st_mode=stat.S_IFREG | 0o600, st_uid=10001, st_gid=10001, st_dev=1, st_nlink=1, st_size=20)

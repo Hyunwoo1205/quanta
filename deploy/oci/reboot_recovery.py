@@ -2,8 +2,9 @@
 """One guarded OS-reboot request and a separate, read-only post-boot check.
 
 The controller injects reviewed quanta_fixed_backup and quanta_fixed_audit
-modules. Requesting this operation is an operator action performed only after
-the separately checked off-host copy; this server does not attest that copy.
+modules. The operator reported daily OCI backups; the server does not attest
+that console policy. Reboot preservation uses the quiescent current live store,
+independently of any older SQLite snapshot or off-host copy generation.
 No arbitrary command/path, key rotation, peer mutation or data deletion exists.
 """
 from __future__ import annotations
@@ -40,8 +41,12 @@ TIMER = "quanta-backup-boot.timer"
 REBOOT_UNIT = "quanta-recovery-reboot"
 RESUME_UNIT = "quanta-recovery-resume"
 READINESS_TIMEOUT = 20.0
+PREREQUISITE_BASIS = "host_checks_without_snapshot_or_off_host_requirement"
+BACKUP_POLICY_BASIS = "user_reported_oci_daily"
+DATABASE_BASIS = "quiescent_live_store_before_os_reboot"
 TABLES = ("artifacts", "events", "experiments", "idempotency", "revisions", "runs")
-ACTIONS = frozenset({"reboot-recovery", "verify-reboot"})
+BOOT_ACTIONS = frozenset({"reboot-recovery", "verify-reboot"})
+ACTIONS = BOOT_ACTIONS | {"compare-recovery"}
 MAX_ROWS = 1_000_000
 MAX_VALUE_BYTES = 64 * 1024**2
 MAX_OUTPUT_BYTES = 8192
@@ -57,18 +62,27 @@ BOOLEANS = (
     "boot_changed", "services_restored", "database_preserved", "peer_containers_preserved",
     "settings_preserved", "worker_exclusivity_verified", "fallback_recovery_verified",
     "off_host_backup_verified_by_server", "new_calculation_verified",
+    "quiescent_live_baseline_verified", "backup_policy_console_verified",
 )
 COUNTS = ("experiments", "revisions", "runs", "artifacts", "events", "idempotency", "peer_containers")
 STAGES = frozenset({"configuration", "lock", "preflight", "barrier", "stop", "compare", "baseline",
                     "schedule", "postboot", "services", "database", "peers", "settings", "complete"})
 FAILURES = frozenset({"none", "invalid_configuration", "busy_or_unsafe", "preflight_refused",
-    "admission_barrier_failed", "application_stop_failed", "snapshot_mismatch", "baseline_failed",
+    "admission_barrier_failed", "application_stop_failed", "snapshot_mismatch", "live_baseline_failed", "baseline_failed",
     "scheduling_failed", "boot_not_changed_or_invalid_baseline", "service_recovery_failed",
     "database_changed", "peer_containers_changed", "settings_changed", "fallback_recovery_failed"})
 FIELDS = frozenset(("scope", "action", "status", "stage", "failure_reason", *BOOLEANS, *COUNTS))
+COMPARISON_DETAILS = frozenset({"not_checked", "snapshot_database_read", "snapshot_database_validation",
+    "live_database_read", "live_database_validation", "schema_mismatch", "table_mismatch", "status_mismatch",
+    "boot_check", "boot_mismatch", "settings_read", "settings_mismatch", "matched"})
+CLEANUP_DETAILS = frozenset({"not_required", "complete", "reboot_unit_cleanup_failed",
+                            "service_restore_failed", "resume_unit_cleanup_failed"})
+FIELDS = FIELDS | {"comparison_detail", "cleanup_detail", "prerequisite_basis", "backup_policy_basis", "baseline_schema_version"}
+COMPARISON_DETAILS = COMPARISON_DETAILS | {"live_baseline_verified"}
+COMPARISON_DETAILS = COMPARISON_DETAILS | {"auxiliary_metadata_refused"}
 FAILURE_BY_STAGE = {
     "configuration": "invalid_configuration", "lock": "busy_or_unsafe", "preflight": "preflight_refused",
-    "barrier": "admission_barrier_failed", "stop": "application_stop_failed", "compare": "snapshot_mismatch",
+    "barrier": "admission_barrier_failed", "stop": "application_stop_failed", "compare": "live_baseline_failed",
     "baseline": "baseline_failed", "schedule": "scheduling_failed",
     "postboot": "boot_not_changed_or_invalid_baseline", "services": "service_recovery_failed",
     "database": "database_changed", "peers": "peer_containers_changed", "settings": "settings_changed",
@@ -76,6 +90,10 @@ FAILURE_BY_STAGE = {
 
 
 class RebootError(Exception):
+    pass
+
+
+class AuxiliaryFileError(RebootError):
     pass
 
 
@@ -143,12 +161,13 @@ def _baseline_absent():
     raise RebootError()
 
 
-def _backup_baseline():
+def _backup_baseline(*, require_current_boot=True):
     value = helper._json(helper._read_root(BACKUP_BASELINE, private=True))
     fields = {"schema_version", "source_sha", "boot_id", "snapshot", "database_size", "database_sha256", "created_at"}
     if (not isinstance(value, dict) or set(value) != fields or type(value["schema_version"]) is not int
             or value["schema_version"] != 1 or value["source_sha"] != SOURCE_SHA
-            or value["boot_id"] != _boot_id() or not isinstance(value["snapshot"], str)
+            or not isinstance(value["boot_id"], str) or str(uuid.UUID(value["boot_id"])) != value["boot_id"]
+            or (require_current_boot and value["boot_id"] != _boot_id()) or not isinstance(value["snapshot"], str)
             or not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z-[0-9a-f]{32}", value["snapshot"])
             or type(value["database_size"]) is not int or not 0 < value["database_size"] <= helper.MAX_DATABASE_BYTES
             or not isinstance(value["database_sha256"], str)
@@ -189,9 +208,75 @@ def _typed(value):
     return kind + struct.pack(">Q", len(raw)) + raw
 
 
+@contextmanager
+def _store_reader_identity():
+    """Keep SQLite-created WAL/SHM files owned by the application, never root.
+
+    Real UID 0 is retained; finally restores the original effective identity
+    even if entering the reduced identity fails part way through. Local tests
+    run as an unprivileged user and keep that test user's identity unchanged.
+    """
+    original_uid, original_gid = os.geteuid(), os.getegid()
+    if original_uid != 0:
+        yield
+        return
+    if os.getuid() != 0:
+        raise RebootError()
+    transitions = {signal.SIGALRM, signal.SIGHUP, signal.SIGTERM}
+    original_mask = signal.pthread_sigmask(signal.SIG_BLOCK, transitions)
+    try:
+        os.setegid(10001)
+        os.seteuid(10001)
+        try:
+            # SQL work retains the caller's deadline/interruption behavior.
+            # The surrounding finally also handles a signal delivered here.
+            signal.pthread_sigmask(signal.SIG_SETMASK, original_mask)
+            yield
+        finally:
+            signal.pthread_sigmask(signal.SIG_BLOCK, transitions)
+    finally:
+        try:
+            os.seteuid(original_uid)
+        finally:
+            try:
+                os.setegid(original_gid)
+            finally:
+                signal.pthread_sigmask(signal.SIG_SETMASK, original_mask)
+
+
+def _check_auxiliary_files(path, device):
+    # Never chown/chmod/delete an unexpected auxiliary file. Such a condition
+    # needs a separate diagnosis while preserving the store and its WAL bytes.
+    for suffix in ("-wal", "-shm", "-journal"):
+        item = path.with_name(path.name + suffix)
+        try:
+            os.lstat(item)
+        except FileNotFoundError:
+            continue
+        try:
+            helper._private_file(item, device)
+        except Exception:
+            raise AuxiliaryFileError() from None
+
+
 def _semantic_database(path, device):
-    """Typed row multisets include artifact BLOBs and do not depend on page/WAL layout."""
+    """Typed row multisets include committed WAL data and all artifact BLOBs."""
     before = helper._private_file(path, device)
+    _check_auxiliary_files(path, device)
+    try:
+        with _store_reader_identity():
+            result = _read_semantics(path)
+    finally:
+        # Effective identity has been restored before these metadata checks,
+        # including when SQLite raises or the fixed deadline interrupts it.
+        _check_auxiliary_files(path, device)
+        after = helper._private_file(path, device)
+        if (before.st_dev, before.st_ino) != (after.st_dev, after.st_ino):
+            raise RebootError()
+    return result
+
+
+def _read_semantics(path):
     connection = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=2, isolation_level=None)
     expires = time.monotonic() + 20
     connection.set_progress_handler(lambda: int(time.monotonic() > expires), 1000)
@@ -236,9 +321,6 @@ def _semantic_database(path, device):
         connection.execute("ROLLBACK")
     finally:
         connection.close()
-    after = helper._private_file(path, device)
-    if (before.st_dev, before.st_ino) != (after.st_dev, after.st_ino):
-        raise RebootError()
     return result
 
 
@@ -306,7 +388,29 @@ def _transient(prefix, seconds, command):
 
 
 def _stop_transient(prefix):
-    helper._quiet(["/usr/bin/systemctl", "stop", prefix + ".timer", prefix + ".service"], timeout=10)
+    # --collect can unload the inactive service before its timer ever fires.
+    # A combined `stop timer service` then returns nonzero for the absent
+    # service even when the timer was canceled successfully. Inspect each unit
+    # separately and verify the desired state, including already-collected units.
+    for suffix in (".timer", ".service"):
+        unit = prefix + suffix
+        before = audit._unit_properties(unit, ("LoadState", "ActiveState"))
+        if before == {"LoadState": "not-found", "ActiveState": "inactive"}:
+            continue
+        if before.get("LoadState") != "loaded" or before.get("ActiveState") not in {
+                "active", "inactive", "failed", "activating", "deactivating", "reloading"}:
+            raise RebootError()
+        try:
+            helper._quiet(["/usr/bin/systemctl", "stop", unit], timeout=10)
+        except Exception:
+            # A concurrent collect can also make this one-unit stop return 5;
+            # only the subsequent inactive/not-found observation permits success.
+            pass
+        after = audit._unit_properties(unit, ("LoadState", "ActiveState"))
+        if after not in ({"LoadState": "not-found", "ActiveState": "inactive"},
+                         {"LoadState": "loaded", "ActiveState": "inactive"},
+                         {"LoadState": "loaded", "ActiveState": "failed"}):
+            raise RebootError()
 
 
 def _service_state(unit, expected):
@@ -366,15 +470,24 @@ def _publish_baseline(value):
 
 def _read_reboot_baseline():
     value = helper._json(helper._read_root(REBOOT_BASELINE, private=True, limit=1024 * 1024))
-    fields = {"schema_version", "source_sha", "created_at", "operation_id", "old_boot_id", "backup",
-              "database", "peers", "settings", "external_copy_verification"}
-    if (not isinstance(value, dict) or set(value) != fields or type(value["schema_version"]) is not int
-            or value["schema_version"] != 1 or value["source_sha"] != SOURCE_SHA
+    common = {"schema_version", "source_sha", "created_at", "operation_id", "old_boot_id", "database", "peers", "settings"}
+    if not isinstance(value, dict) or type(value.get("schema_version")) is not int or value["schema_version"] not in {1, 2}:
+        raise RebootError()
+    version = value["schema_version"]
+    extra = {"backup", "external_copy_verification"} if version == 1 else \
+            {"database_basis", "backup_policy_basis", "backup_policy_console_verified"}
+    if (set(value) != common | extra or value["source_sha"] != SOURCE_SHA
             or not isinstance(value["operation_id"], str) or str(uuid.UUID(value["operation_id"])) != value["operation_id"]
             or not isinstance(value["old_boot_id"], str) or str(uuid.UUID(value["old_boot_id"])) != value["old_boot_id"]
-            or value["external_copy_verification"] != "separate_operator_check_not_attested_by_server"
-            or not isinstance(value["backup"], dict) or not isinstance(value["database"], dict)
+            or not isinstance(value["database"], dict)
             or not isinstance(value["peers"], dict) or not isinstance(value["settings"], dict)):
+        raise RebootError()
+    if version == 1:
+        if (not isinstance(value["backup"], dict)
+                or value["external_copy_verification"] != "separate_operator_check_not_attested_by_server"):
+            raise RebootError()
+    elif (value["database_basis"] != DATABASE_BASIS or value["backup_policy_basis"] != BACKUP_POLICY_BASIS
+          or value["backup_policy_console_verified"] is not False):
         raise RebootError()
     _recent(value["created_at"])
     _validate_semantics(value["database"])
@@ -435,25 +548,39 @@ def _restore_services(config, token):
     _wait_ready(config, token)
 
 
+def _reboot_audit(config, *, enforce=True):
+    """Collect the necessary host checks without reading historical snapshots.
+
+    Full audit.run also inventories backup files. Those observations remain
+    available separately; snapshot existence/freshness is not a reboot gate.
+    """
+    report = audit._initial_report()
+    image, device, token = audit._installation(config, report)
+    audit._services(report)
+    report["authenticated_ready"] = audit._ready(config, token)
+    audit._containers(image, report)
+    audit._worker(report, device)
+    _check_auxiliary_files(helper.DATA / "jobs.sqlite3", device)
+    with _store_reader_identity():
+        audit._database(report, device)
+    _check_auxiliary_files(helper.DATA / "jobs.sqlite3", device)
+    report["sufficient_disk_space"] = helper.shutil.disk_usage(helper.ROOT).free >= 1024**3
+    required = set(audit.PREREQUISITES) - {"latest_snapshot_present"}
+    if enforce and not all(report[field] for field in required):
+        raise RebootError()
+    report.update(status="success", stage="complete", failure_reason="none")
+    return report, device, token
+
+
 def _request_reboot(config, report):
     report["stage"] = "preflight"
     _baseline_absent()
-    result = audit.run(config)
-    if result.get("status") != "success" or not result.get("host_reboot_prerequisites_met"):
-        raise RebootError()
+    result, device, token = _reboot_audit(config)
     report["audit_prerequisites_met"] = True
-    backup, snapshot, device = _backup_baseline()
-    report["backup_baseline_verified"] = True
-    snapshot_state = _semantic_database(snapshot / "jobs.sqlite3", device)
-    _validate_semantics(snapshot_state)
+    boot_id = _boot_id()
     peers = _peer_state()
     settings = _settings()
     _absent_transients()
-    token_bytes = helper._read_root(helper.ETC / "app.env", private=True)
-    prefix = ("QUANTA_PUBLIC_ORIGIN=" + config["public_origin"] + "\nQUANTA_AUTH_MODE=owner-token\nQUANTA_OWNER_TOKEN=").encode()
-    if not token_bytes.startswith(prefix) or not re.fullmatch(rb"[0-9a-f]{64}\n", token_bytes[len(prefix):]):
-        raise RebootError()
-    token = token_bytes[len(prefix):-1].decode("ascii")
     resume_attempted = admission_attempted = stop_attempted = scheduling_attempted = False
     accepted = False
     try:
@@ -481,22 +608,37 @@ def _request_reboot(config, report):
             _service_state(APP, "inactive")
             report["application_stopped"] = True
             report["stage"] = "compare"
+            report["comparison_detail"] = "live_database_read"
             current_state = _semantic_database(helper.DATA / "jobs.sqlite3", device)
+            report["comparison_detail"] = "live_database_validation"
             _validate_semantics(current_state)
-            if current_state != snapshot_state or _boot_id() != backup["boot_id"]:
+            confirmed_state = _semantic_database(helper.DATA / "jobs.sqlite3", device)
+            _validate_semantics(confirmed_state)
+            if current_state != confirmed_state:
+                report["comparison_detail"] = ("schema_mismatch" if current_state["schema_sha256"] != confirmed_state["schema_sha256"]
+                    else "table_mismatch" if current_state["tables"] != confirmed_state["tables"] else "status_mismatch")
                 raise RebootError()
+            report["comparison_detail"] = "boot_check"
+            if _boot_id() != boot_id:
+                report["comparison_detail"] = "boot_mismatch"
+                raise RebootError()
+            report["comparison_detail"] = "settings_read"
             if _settings() != settings:
+                report["comparison_detail"] = "settings_mismatch"
                 raise RebootError()
-            report["snapshot_semantics_matched"] = True
+            report["comparison_detail"] = "live_baseline_verified"
+            report["quiescent_live_baseline_verified"] = True
             _counts(report, current_state, peers)
             report["stage"] = "baseline"
-            baseline = {"schema_version": 1, "source_sha": SOURCE_SHA,
+            baseline = {"schema_version": 2, "source_sha": SOURCE_SHA,
                 "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "operation_id": str(uuid.uuid4()), "old_boot_id": backup["boot_id"], "backup": backup,
+                "operation_id": str(uuid.uuid4()), "old_boot_id": boot_id,
                 "database": current_state, "peers": peers, "settings": settings,
-                "external_copy_verification": "separate_operator_check_not_attested_by_server"}
+                "database_basis": DATABASE_BASIS, "backup_policy_basis": BACKUP_POLICY_BASIS,
+                "backup_policy_console_verified": False}
             _publish_baseline(baseline)
             report["private_baseline_saved"] = True
+            report["baseline_schema_version"] = 2
             report["stage"] = "schedule"
             scheduling_attempted = True
             _transient(REBOOT_UNIT, 10, ["/usr/bin/systemctl", "reboot"])
@@ -510,18 +652,23 @@ def _request_reboot(config, report):
                     _stop_transient(REBOOT_UNIT)
                 except Exception:
                     cleanup_ok = False
+                    report["cleanup_detail"] = "reboot_unit_cleanup_failed"
             if admission_attempted or stop_attempted:
                 try:
                     _restore_services(config, token)
                     report["services_restored"] = True
                 except Exception:
                     cleanup_ok = False
+                    report["cleanup_detail"] = "service_restore_failed"
             if resume_attempted and cleanup_ok:
                 try:
                     _stop_transient(RESUME_UNIT)
                 except Exception:
                     cleanup_ok = False
+                    report["cleanup_detail"] = "resume_unit_cleanup_failed"
             report["fallback_recovery_verified"] = cleanup_ok and report["services_restored"]
+            if report["fallback_recovery_verified"]:
+                report["cleanup_detail"] = "complete"
             if not cleanup_ok:
                 report["failure_reason"] = "fallback_recovery_failed"
     report.update(status="success", stage="complete", failure_reason="none")
@@ -534,21 +681,21 @@ def _verify_reboot(config, report):
         raise RebootError()
     report["boot_changed"] = True
     report["private_baseline_saved"] = True
+    report["baseline_schema_version"] = baseline["schema_version"]
+    report["backup_policy_basis"] = BACKUP_POLICY_BASIS if baseline["schema_version"] == 2 else "unverified_legacy_record"
     report["stage"] = "services"
-    result = audit.run(config)
-    if result.get("status") != "success" or not result.get("host_reboot_prerequisites_met"):
-        raise RebootError()
+    result, device, token = _reboot_audit(config)
     report["audit_prerequisites_met"] = True
     report["services_restored"] = True
     report["worker_exclusivity_verified"] = result["worker_exclusivity_verified"]
     report["no_pending_runs"] = result["no_pending_runs"]
     report["stage"] = "database"
-    device = os.lstat(helper.ROOT).st_dev
     current = _semantic_database(helper.DATA / "jobs.sqlite3", device)
     _validate_semantics(current)
     if current != baseline["database"]:
         raise RebootError()
     report["database_preserved"] = True
+    report["quiescent_live_baseline_verified"] = True
     report["stage"] = "peers"
     peers = _peer_state()
     if peers != baseline["peers"]:
@@ -562,13 +709,126 @@ def _verify_reboot(config, report):
     report.update(status="success", stage="complete", failure_reason="none")
 
 
+DIAGNOSTIC_BASE_BOOLS = (
+    "source_verified", "backup_baseline_verified", "snapshot_checked", "live_checked", "boot_id_matches",
+    "schemas_match", "all_tables_match", "snapshot_no_pending_runs", "live_no_pending_runs",
+    "settings_currently_readable", "services_state_checked", "app_active", "https_active",
+    "backup_timer_active_enabled", "transient_state_checked", "server_modified",
+)
+DIAGNOSTIC_TRANSIENT_BOOLS = tuple(prefix + "_" + kind + "_" + fact
+    for prefix in ("resume", "reboot") for kind in ("timer", "service") for fact in ("present", "active"))
+DIAGNOSTIC_BOOLS = DIAGNOSTIC_BASE_BOOLS + DIAGNOSTIC_TRANSIENT_BOOLS + tuple(table + "_matches" for table in TABLES)
+DIAGNOSTIC_COUNTS = tuple(prefix + "_" + table + "_rows" for prefix in ("snapshot", "live") for table in TABLES) \
+    + ("snapshot_nonterminal_runs", "live_nonterminal_runs")
+DIAGNOSTIC_STAGES = frozenset({"configuration", "preflight", "snapshot_database", "live_database", "inspection", "complete"})
+DIAGNOSTIC_FIELDS = frozenset(("scope", "action", "status", "stage", "failure_reason", *DIAGNOSTIC_BOOLS, *DIAGNOSTIC_COUNTS))
+
+
+def _comparison_initial():
+    return {"scope": "recovery_comparison_diagnostic", "action": "compare-recovery", "status": "failed",
+            "stage": "configuration", "failure_reason": "invalid_configuration",
+            **dict.fromkeys(DIAGNOSTIC_BOOLS, False), **dict.fromkeys(DIAGNOSTIC_COUNTS, 0)}
+
+
+def _compare_recovery(config):
+    """Observe two SQLite transactions; never pause services or publish a marker."""
+    report = _comparison_initial()
+    try:
+        config = validate_config(config)
+    except Exception:
+        return report
+    try:
+        with helper._deadline(120):
+            report["stage"] = "preflight"
+            current, current_device, _token = _reboot_audit(config, enforce=False)
+            if current.get("status") != "success" or not current.get("source_verified"):
+                raise RebootError()
+            report["source_verified"] = True
+            report["services_state_checked"] = True
+            report["app_active"] = current["app_active"]
+            report["https_active"] = current["https_active"]
+            report["backup_timer_active_enabled"] = current["backup_timer_active"] and current["backup_timer_enabled"]
+            baseline, snapshot, device = _backup_baseline(require_current_boot=False)
+            report["backup_baseline_verified"] = True
+            report["boot_id_matches"] = _boot_id() == baseline["boot_id"]
+            report["stage"] = "snapshot_database"
+            snapshot_state = _semantic_database(snapshot / "jobs.sqlite3", device)
+            report["snapshot_checked"] = True
+            report["snapshot_no_pending_runs"] = snapshot_state["nonterminal_runs"] == 0
+            report["snapshot_nonterminal_runs"] = snapshot_state["nonterminal_runs"]
+            for table in TABLES:
+                report["snapshot_" + table + "_rows"] = snapshot_state["tables"][table]["rows"]
+            report["stage"] = "live_database"
+            live_state = _semantic_database(helper.DATA / "jobs.sqlite3", device)
+            report["live_checked"] = True
+            report["live_no_pending_runs"] = live_state["nonterminal_runs"] == 0
+            report["live_nonterminal_runs"] = live_state["nonterminal_runs"]
+            for table in TABLES:
+                report["live_" + table + "_rows"] = live_state["tables"][table]["rows"]
+                report[table + "_matches"] = live_state["tables"][table] == snapshot_state["tables"][table]
+            report["schemas_match"] = live_state["schema_sha256"] == snapshot_state["schema_sha256"]
+            report["all_tables_match"] = all(report[table + "_matches"] for table in TABLES)
+            report["stage"] = "inspection"
+            try:
+                _settings()
+                report["settings_currently_readable"] = True
+            except Exception:
+                pass
+            for prefix, unit in (("resume", RESUME_UNIT), ("reboot", REBOOT_UNIT)):
+                for kind in ("timer", "service"):
+                    values = audit._unit_properties(unit + "." + kind, ("LoadState", "ActiveState"))
+                    if (values.get("LoadState") not in {"loaded", "not-found"}
+                            or values.get("ActiveState") not in {"active", "inactive", "failed", "activating", "deactivating", "reloading"}
+                            or values["LoadState"] == "not-found" and values["ActiveState"] != "inactive"):
+                        raise RebootError()
+                    report[prefix + "_" + kind + "_present"] = values["LoadState"] == "loaded"
+                    report[prefix + "_" + kind + "_active"] = values["ActiveState"] in {"active", "activating", "deactivating", "reloading"}
+            report["transient_state_checked"] = True
+            # Successful collection does not mean these two generations match.
+            report.update(status="success", stage="complete", failure_reason="none")
+    except Exception as error:
+        report["failure_reason"] = "auxiliary_metadata_refused" if isinstance(error, AuxiliaryFileError) else "inspection_failed"
+    return report
+
+
+def _validate_comparison(value):
+    if (not isinstance(value, dict) or set(value) != DIAGNOSTIC_FIELDS
+            or value["scope"] != "recovery_comparison_diagnostic" or value["action"] != "compare-recovery"
+            or not isinstance(value["status"], str) or value["status"] not in {"success", "failed"}
+            or not isinstance(value["stage"], str) or value["stage"] not in DIAGNOSTIC_STAGES
+            or not isinstance(value["failure_reason"], str) or value["failure_reason"] not in {"none", "invalid_configuration", "inspection_failed", "auxiliary_metadata_refused"}
+            or any(type(value[field]) is not bool for field in DIAGNOSTIC_BOOLS)
+            or any(type(value[field]) is not int or not 0 <= value[field] <= MAX_ROWS for field in DIAGNOSTIC_COUNTS)
+            or value["server_modified"]
+            or (value["status"] == "success") != (value["stage"] == "complete")
+            or (value["status"] == "success") != (value["failure_reason"] == "none")):
+        raise ValueError("invalid comparison diagnostic")
+    if value["status"] == "success" and not all(value[field] for field in (
+            "source_verified", "backup_baseline_verified", "snapshot_checked", "live_checked",
+            "services_state_checked", "transient_state_checked")):
+        raise ValueError("invalid comparison diagnostic")
+    if value["all_tables_match"] and not all(value[table + "_matches"] for table in TABLES):
+        raise ValueError("invalid comparison diagnostic")
+    if any(value[table + "_matches"] and not (value["snapshot_checked"] and value["live_checked"])
+           for table in TABLES):
+        raise ValueError("invalid comparison diagnostic")
+    return dict(value)
+
+
 def _initial_report(action):
-    return {"scope": "os_reboot_recovery", "action": action if action in ACTIONS else "reboot-recovery",
+    if action == "compare-recovery":
+        return _comparison_initial()
+    return {"scope": "os_reboot_recovery", "action": action if isinstance(action, str) and action in BOOT_ACTIONS else "reboot-recovery",
             "status": "failed", "stage": "configuration", "failure_reason": "invalid_configuration",
+            "comparison_detail": "not_checked", "cleanup_detail": "not_required",
+            "prerequisite_basis": PREREQUISITE_BASIS, "backup_policy_basis": BACKUP_POLICY_BASIS,
+            "baseline_schema_version": 0,
             **dict.fromkeys(BOOLEANS, False), **dict.fromkeys(COUNTS, 0)}
 
 
 def run(config, action="reboot-recovery"):
+    if action == "compare-recovery":
+        return _compare_recovery(config)
     report = _initial_report(action)
     try:
         if type(action) is not str or action not in ACTIONS:
@@ -583,32 +843,45 @@ def run(config, action="reboot-recovery"):
                 _request_reboot(config, report)
             else:
                 _verify_reboot(config, report)
-    except Exception:
+    except Exception as error:
         report["status"] = "failed"
+        if isinstance(error, AuxiliaryFileError):
+            report["comparison_detail"] = "auxiliary_metadata_refused"
         if report["failure_reason"] != "fallback_recovery_failed":
             report["failure_reason"] = FAILURE_BY_STAGE.get(report["stage"], "preflight_refused")
     return report
 
 
 def validate_report(value):
+    if isinstance(value, dict) and value.get("scope") == "recovery_comparison_diagnostic":
+        return _validate_comparison(value)
     if (not isinstance(value, dict) or set(value) != FIELDS or value["scope"] != "os_reboot_recovery"
-            or not isinstance(value["action"], str) or value["action"] not in ACTIONS
+            or not isinstance(value["action"], str) or value["action"] not in BOOT_ACTIONS
             or not isinstance(value["status"], str) or value["status"] not in {"success", "failed"}
             or not isinstance(value["stage"], str) or value["stage"] not in STAGES
             or not isinstance(value["failure_reason"], str) or value["failure_reason"] not in FAILURES
+            or not isinstance(value["comparison_detail"], str) or value["comparison_detail"] not in COMPARISON_DETAILS
+            or not isinstance(value["cleanup_detail"], str) or value["cleanup_detail"] not in CLEANUP_DETAILS
+            or value["prerequisite_basis"] != PREREQUISITE_BASIS
+            or not isinstance(value["backup_policy_basis"], str) or value["backup_policy_basis"] not in {BACKUP_POLICY_BASIS, "unverified_legacy_record"}
+            or type(value["baseline_schema_version"]) is not int or value["baseline_schema_version"] not in {0, 1, 2}
             or any(type(value[field]) is not bool for field in BOOLEANS)
             or any(type(value[field]) is not int or not 0 <= value[field] <= MAX_ROWS for field in COUNTS)
             or value["off_host_backup_verified_by_server"] or value["new_calculation_verified"]
+            or value["backup_policy_console_verified"] or value["backup_baseline_verified"] or value["snapshot_semantics_matched"]
             or (value["status"] == "success") != (value["stage"] == "complete")
             or (value["status"] == "success") != (value["failure_reason"] == "none")):
         raise ValueError("invalid reboot recovery report")
     if value["status"] == "success":
-        required = ("audit_prerequisites_met", "backup_baseline_verified", "admission_paused", "backup_timer_paused", "no_pending_runs",
-                    "application_stopped", "snapshot_semantics_matched", "private_baseline_saved", "reboot_scheduled") \
+        required = ("audit_prerequisites_met", "admission_paused", "backup_timer_paused", "no_pending_runs",
+                    "application_stopped", "quiescent_live_baseline_verified", "private_baseline_saved", "reboot_scheduled") \
                    if value["action"] == "reboot-recovery" else \
                    ("audit_prerequisites_met", "no_pending_runs", "private_baseline_saved", "boot_changed", "services_restored",
-                    "database_preserved", "peer_containers_preserved", "settings_preserved", "worker_exclusivity_verified")
+                    "database_preserved", "peer_containers_preserved", "settings_preserved", "worker_exclusivity_verified", "quiescent_live_baseline_verified")
         if not all(value[field] for field in required):
+            raise ValueError("invalid reboot recovery report")
+        if (value["action"] == "reboot-recovery" and value["baseline_schema_version"] != 2
+                or value["action"] == "verify-reboot" and value["baseline_schema_version"] not in {1, 2}):
             raise ValueError("invalid reboot recovery report")
     if value["action"] == "reboot-recovery" and any(value[field] for field in ("boot_changed", "database_preserved", "peer_containers_preserved", "settings_preserved")):
         raise ValueError("invalid reboot recovery report")

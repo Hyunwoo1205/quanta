@@ -19,6 +19,7 @@ import re
 import stat
 import subprocess
 import sys
+import time
 import uuid
 
 import quanta_fixed_backup as helper
@@ -27,27 +28,32 @@ import quanta_fixed_backup as helper
 SOURCE_SHA = "1738107301ef873bfe5e01f930866c2a74e4ec3f"
 LOCK = Path("/run/quanta-recovery.lock")
 BASELINE = Path("/etc/quanta/recovery-backup.json")
+REBOOT_BASELINE = Path("/etc/quanta/recovery-reboot.json")
 BOOT_ID = Path("/proc/sys/kernel/random/boot_id")
 TIMER = "quanta-backup-boot.timer"
 BACKUP_SERVICE = "quanta-backup-boot.service"
 MAX_OUTPUT_BYTES = 8192
+ACTIONS = frozenset({"prepare-recovery", "refresh-recovery"})
 BOOLEAN_FIELDS = (
     "source_verified", "backup_created", "backup_verified", "restore_verified",
     "production_preserved", "timer_state_preserved", "baseline_saved",
     "off_host_backup_verified", "operating_system_rebooted",
+    "previous_baseline_archived", "baseline_refreshed",
 )
 REQUIRED_SUCCESS = BOOLEAN_FIELDS[:7]
-STAGES = frozenset({"configuration", "lock", "preflight", "backup", "verify", "restore",
-                    "production_check", "baseline", "complete"})
+STAGES = frozenset({"configuration", "lock", "refresh_preflight", "preflight", "backup", "verify", "restore",
+                    "production_check", "archive", "baseline", "complete"})
 FAILURES = frozenset({"none", "configuration_invalid", "operation_busy_or_unsafe",
                       "preflight_refused", "backup_failed", "snapshot_verification_failed",
-                      "restore_failed", "production_or_timer_changed", "baseline_failed"})
-FIELDS = frozenset(("scope", "status", "stage", "failure_reason", *BOOLEAN_FIELDS))
+                      "restore_failed", "production_or_timer_changed", "baseline_failed",
+                      "refresh_preflight_refused", "archive_failed"})
+FIELDS = frozenset(("scope", "action", "status", "stage", "failure_reason", *BOOLEAN_FIELDS))
 FAILURE_BY_STAGE = {
     "configuration": "configuration_invalid", "lock": "operation_busy_or_unsafe",
     "preflight": "preflight_refused", "backup": "backup_failed",
     "verify": "snapshot_verification_failed", "restore": "restore_failed",
     "production_check": "production_or_timer_changed", "baseline": "baseline_failed",
+    "refresh_preflight": "refresh_preflight_refused", "archive": "archive_failed",
 }
 
 
@@ -123,10 +129,14 @@ def _services_idle():
             raise helper.VerificationError()
 
 
-def _preflight(config):
+def _preflight(config, *, previous=None):
     if os.geteuid() != 0:
         raise helper.VerificationError()
-    _baseline_absent()
+    if previous is None:
+        _baseline_absent()
+    else:
+        _reboot_baseline_absent()
+        _expect_previous(previous)
     if helper._json(helper._read_root(helper.ETC / "installed.json", private=True)) != config:
         raise helper.VerificationError()
     if hashlib.sha256(helper._read_root(helper.RUNTIME, limit=16384)).hexdigest() != helper.TRUSTED["runtime"]:
@@ -169,15 +179,27 @@ def _preflight(config):
     return image, device, token, identity, timer, _boot_id()
 
 
-def _publish_baseline(snapshot, snapshot_hash, boot_id):
-    """Publish once without replacing an earlier baseline or following links."""
-    _baseline_absent()
-    value = {
+def _baseline_value(snapshot, snapshot_hash, boot_id):
+    return {
         "schema_version": 1, "source_sha": SOURCE_SHA, "boot_id": boot_id,
         "snapshot": snapshot.name, "database_size": snapshot_hash[0],
         "database_sha256": snapshot_hash[1].hex(),
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
+
+
+def _sync_parent(path):
+    descriptor = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _publish_baseline(snapshot, snapshot_hash, boot_id):
+    """Publish once without replacing an earlier baseline or following links."""
+    _baseline_absent()
+    value = _baseline_value(snapshot, snapshot_hash, boot_id)
     raw = (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
     temporary = BASELINE.parent / (".recovery-backup-" + uuid.uuid4().hex + ".tmp")
     descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
@@ -205,14 +227,112 @@ def _publish_baseline(snapshot, snapshot_hash, boot_id):
             pass
 
 
-def _initial_report():
-    return {"scope": "recovery_backup_preparation", "status": "failed", "stage": "configuration",
+def _reboot_baseline_absent():
+    helper._root_parents(REBOOT_BASELINE)
+    try:
+        os.lstat(REBOOT_BASELINE)
+    except FileNotFoundError:
+        return
+    raise helper.VerificationError()
+
+
+def _identity(path):
+    info = os.lstat(path)
+    return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns
+
+
+def _read_previous_baseline():
+    _reboot_baseline_absent()
+    before = _identity(BASELINE)
+    raw = helper._read_root(BASELINE, private=True)
+    value = helper._json(raw)
+    fields = {"schema_version", "source_sha", "boot_id", "snapshot", "database_size", "database_sha256", "created_at"}
+    if (not isinstance(value, dict) or set(value) != fields or type(value["schema_version"]) is not int
+            or value["schema_version"] != 1 or value["source_sha"] != SOURCE_SHA
+            or value["boot_id"] != _boot_id() or not isinstance(value["snapshot"], str)
+            or not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z-[0-9a-f]{32}", value["snapshot"])
+            or type(value["database_size"]) is not int or not 0 < value["database_size"] <= helper.MAX_DATABASE_BYTES
+            or not isinstance(value["database_sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", value["database_sha256"])
+            or not isinstance(value["created_at"], str)):
+        raise helper.VerificationError()
+    stamp = datetime.strptime(value["created_at"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
+    snapshot_stamp = datetime.strptime(value["snapshot"][:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc).timestamp()
+    if max(stamp, snapshot_stamp) > time.time() + 300 or uuid.UUID(hex=value["snapshot"][17:]).version != 4:
+        raise helper.VerificationError()
+    device = os.lstat(helper.ROOT).st_dev
+    snapshot = helper.BACKUPS / value["snapshot"]
+    helper._private_dir(snapshot, device)
+    helper._children(snapshot, {"jobs.sqlite3", "manifest.json"})
+    helper._private_file(snapshot / "manifest.json", device, maximum=1024 * 1024)
+    size, digest = helper._hash(snapshot / "jobs.sqlite3", device)
+    if (size != value["database_size"] or digest.hex() != value["database_sha256"]
+            or _identity(BASELINE) != before):
+        raise helper.VerificationError()
+    return {"raw": raw, "identity": before, "value": value}
+
+
+def _expect_previous(previous):
+    if (_identity(BASELINE) != previous["identity"]
+            or helper._read_root(BASELINE, private=True) != previous["raw"]
+            or _identity(BASELINE) != previous["identity"]):
+        raise helper.VerificationError()
+
+
+def _archive_previous(previous):
+    _reboot_baseline_absent()
+    _expect_previous(previous)
+    archive = BASELINE.parent / ("recovery-backup-archive-" + uuid.uuid4().hex + ".json")
+    helper._root_parents(archive)
+    descriptor = os.open(archive, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    with os.fdopen(descriptor, "wb") as stream:
+        os.fchmod(stream.fileno(), 0o600)
+        stream.write(previous["raw"])
+        stream.flush()
+        os.fsync(stream.fileno())
+    _sync_parent(archive)
+    if helper._read_root(archive, private=True) != previous["raw"]:
+        raise helper.VerificationError()
+    return archive
+
+
+def _replace_baseline(snapshot, snapshot_hash, boot_id, previous, archive):
+    _reboot_baseline_absent()
+    if helper._read_root(archive, private=True) != previous["raw"]:
+        raise helper.VerificationError()
+    raw = (json.dumps(_baseline_value(snapshot, snapshot_hash, boot_id), sort_keys=True, separators=(",", ":")) + "\n").encode()
+    temporary = BASELINE.parent / (".recovery-backup-refresh-" + uuid.uuid4().hex + ".tmp")
+    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            os.fchmod(stream.fileno(), 0o600)
+            stream.write(raw)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # The private parent and shared operation lock exclude non-root/other
+        # Quanta writers. Reject any observed change to the known old marker.
+        _expect_previous(previous)
+        _reboot_baseline_absent()
+        os.replace(temporary, BASELINE)
+        _sync_parent(BASELINE)
+        if (helper._read_root(BASELINE, private=True) != raw
+                or helper._read_root(archive, private=True) != previous["raw"]):
+            raise helper.VerificationError()
+    finally:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+
+
+def _initial_report(action="prepare-recovery"):
+    return {"scope": "recovery_backup_preparation", "action": action if isinstance(action, str) and action in ACTIONS else "prepare-recovery",
+            "status": "failed", "stage": "configuration",
             "failure_reason": "configuration_invalid", **dict.fromkeys(BOOLEAN_FIELDS, False)}
 
 
-def _perform(config, report):
+def _perform(config, report, *, previous=None):
     report["stage"] = "preflight"
-    image, device, token, identity, timer, boot_id = _preflight(config)
+    image, device, token, identity, timer, boot_id = _preflight(config) if previous is None else _preflight(config, previous=previous)
     report["source_verified"] = True
     try:
         before = helper._entries()
@@ -246,8 +366,16 @@ def _perform(config, report):
         if _timer_state() != timer or _boot_id() != boot_id:
             raise helper.VerificationError()
         report["timer_state_preserved"] = True
-        report["stage"] = "baseline"
-        _publish_baseline(snapshot, snapshot_hash, boot_id)
+        if previous is not None:
+            report["stage"] = "archive"
+            archive = _archive_previous(previous)
+            report["previous_baseline_archived"] = True
+            report["stage"] = "baseline"
+            _replace_baseline(snapshot, snapshot_hash, boot_id, previous, archive)
+            report["baseline_refreshed"] = True
+        else:
+            report["stage"] = "baseline"
+            _publish_baseline(snapshot, snapshot_hash, boot_id)
         report["baseline_saved"] = True
     finally:
         # These observations also run after a failed verification. There is no
@@ -267,16 +395,23 @@ def _perform(config, report):
     report.update(status="success", stage="complete", failure_reason="none")
 
 
-def run(config):
-    report = _initial_report()
+def run(config, action="prepare-recovery"):
+    report = _initial_report(action)
     try:
+        if type(action) is not str or action not in ACTIONS:
+            return report
         config = validate_config(config)
     except Exception:
         return report
     try:
         report["stage"] = "lock"
         with helper._deadline(600), _operation_lock():
-            _perform(config, report)
+            if action == "refresh-recovery":
+                report["stage"] = "refresh_preflight"
+                previous = _read_previous_baseline()
+                _perform(config, report, previous=previous)
+            else:
+                _perform(config, report)
     except Exception:
         report["status"] = "failed"
         report["failure_reason"] = FAILURE_BY_STAGE.get(report["stage"], "production_or_timer_changed")
@@ -286,6 +421,7 @@ def run(config):
 def validate_report(value):
     if (not isinstance(value, dict) or set(value) != FIELDS
             or value["scope"] != "recovery_backup_preparation"
+            or not isinstance(value["action"], str) or value["action"] not in ACTIONS
             or not isinstance(value["status"], str) or value["status"] not in {"success", "failed"}
             or not isinstance(value["stage"], str) or value["stage"] not in STAGES
             or not isinstance(value["failure_reason"], str) or value["failure_reason"] not in FAILURES
@@ -298,8 +434,13 @@ def validate_report(value):
         raise ValueError("invalid recovery backup report")
     if value["baseline_saved"] and not all(value[field] for field in BOOLEAN_FIELDS[:4]):
         raise ValueError("invalid recovery backup report")
+    if (value["action"] == "prepare-recovery" and (value["previous_baseline_archived"] or value["baseline_refreshed"])
+            or value["baseline_refreshed"] and not (value["previous_baseline_archived"] and value["baseline_saved"])):
+        raise ValueError("invalid recovery backup report")
     if value["status"] == "success":
         if value["stage"] != "complete" or value["failure_reason"] != "none" or not all(value[f] for f in REQUIRED_SUCCESS):
+            raise ValueError("invalid recovery backup report")
+        if value["action"] == "refresh-recovery" and not (value["previous_baseline_archived"] and value["baseline_refreshed"]):
             raise ValueError("invalid recovery backup report")
     elif value["stage"] == "complete" or value["failure_reason"] == "none":
         raise ValueError("invalid recovery backup report")
@@ -317,16 +458,17 @@ def sanitize_report(raw):
 
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
+    action = "refresh-recovery" if len(argv) == 2 and argv[1] == "refresh-recovery" else "prepare-recovery"
     try:
-        if len(argv) != 1:
+        if len(argv) != 1 and not (len(argv) == 2 and argv[1] == "refresh-recovery"):
             raise ValueError
-        report = run(_argument(argv[0]))
+        report = run(_argument(argv[0]), action)
     except Exception:
-        report = _initial_report()
+        report = _initial_report(action)
     try:
         report = validate_report(report)
     except Exception:
-        report = _initial_report()
+        report = _initial_report(action)
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))
     return 0 if report["status"] == "success" else 2
 

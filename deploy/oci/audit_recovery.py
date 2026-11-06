@@ -271,6 +271,7 @@ def _installation(config, report):
     _private(BACKUPS, device, directory=True)
     for name in ("jobs.sqlite3", "worker.lock"):
         _private(DATA / name, device)
+    _database_auxiliaries(device)
     filesystem = _json(_capture(["/usr/bin/findmnt", "--json", "--target", str(ROOT), "--output",
                                 "TARGET,UUID,FSTYPE,OPTIONS,FSROOT"], limit=4096))
     rows = filesystem.get("filesystems") if isinstance(filesystem, dict) else None
@@ -379,33 +380,84 @@ def _ready(config, token):
         connection.close()
 
 
+@contextmanager
+def _database_identity():
+    """Keep SQLite WAL helpers owned by the store user, retaining real root.
+
+    SQLite mode=ro can still create WAL/SHM files. Only this bounded connection
+    is opened with effective 10001:10001; inspection before/after remains root.
+    Block the audit alarm during each credential transition, including partial
+    entry failure and restoration. A pending alarm is delivered after restoring
+    the previous mask and still unwinds through the outer finally block.
+    """
+    previous_uid, previous_gid = os.geteuid(), os.getegid()
+    if previous_uid != 0:
+        raise AuditError()
+
+    @contextmanager
+    def transition():
+        previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGALRM})
+        try:
+            yield
+        finally:
+            signal.pthread_sigmask(signal.SIG_SETMASK, previous_mask)
+
+    try:
+        with transition():
+            os.setegid(10001)
+            os.seteuid(10001)
+        yield
+    finally:
+        with transition():
+            try:
+                os.seteuid(previous_uid)
+            finally:
+                os.setegid(previous_gid)
+
+
+def _database_auxiliaries(device):
+    # WAL/SHM are optional, volatile SQLite helpers. Check ownership and bounds
+    # without comparing their size/mtime across a live read or changing them.
+    for name, maximum in (("jobs.sqlite3-wal", MAX_DATABASE_BYTES),
+                          ("jobs.sqlite3-shm", 128 * 1024**2)):
+        path = DATA / name
+        try:
+            os.lstat(path)
+            _private(path, device, maximum=maximum)
+        except FileNotFoundError:
+            continue
+
+
 def _database(report, device):
     path = DATA / "jobs.sqlite3"
     before = _private(path, device)
-    connection = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=2, isolation_level=None)
-    expires = time.monotonic() + 5
-    connection.set_progress_handler(lambda: int(time.monotonic() > expires), 1000)
-    try:
-        connection.execute("PRAGMA query_only=ON")
-        connection.execute("PRAGMA trusted_schema=OFF")
-        connection.execute("BEGIN")
-        if connection.execute("PRAGMA quick_check(1)").fetchall() != [("ok",)]:
-            raise AuditError()
-        tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
-        if tables != {"experiments", "revisions", "runs", "idempotency", "events", "artifacts"}:
-            raise AuditError()
-        counts = {name: connection.execute("SELECT count(*) FROM " + name).fetchone()[0]
-                  for name in ("experiments", "revisions", "runs", "artifacts")}
-        statuses = connection.execute("SELECT status,count(*) FROM runs GROUP BY status").fetchall()
-        if any(status not in STATUSES or type(count) is not int or not 0 <= count <= MAX_COUNT for status, count in statuses):
-            raise AuditError()
-        counts["nonterminal_runs"] = sum(count for status, count in statuses if status not in TERMINAL)
-        if any(type(value) is not int or not 0 <= value <= MAX_COUNT for value in counts.values()):
-            raise AuditError()
-        connection.execute("ROLLBACK")
-    finally:
-        connection.close()
+    _database_auxiliaries(device)
+    with _database_identity():
+        connection = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=2, isolation_level=None)
+        try:
+            expires = time.monotonic() + 5
+            connection.set_progress_handler(lambda: int(time.monotonic() > expires), 1000)
+            connection.execute("PRAGMA query_only=ON")
+            connection.execute("PRAGMA trusted_schema=OFF")
+            connection.execute("BEGIN")
+            if connection.execute("PRAGMA quick_check(1)").fetchall() != [("ok",)]:
+                raise AuditError()
+            tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
+            if tables != {"experiments", "revisions", "runs", "idempotency", "events", "artifacts"}:
+                raise AuditError()
+            counts = {name: connection.execute("SELECT count(*) FROM " + name).fetchone()[0]
+                      for name in ("experiments", "revisions", "runs", "artifacts")}
+            statuses = connection.execute("SELECT status,count(*) FROM runs GROUP BY status").fetchall()
+            if any(status not in STATUSES or type(count) is not int or not 0 <= count <= MAX_COUNT for status, count in statuses):
+                raise AuditError()
+            counts["nonterminal_runs"] = sum(count for status, count in statuses if status not in TERMINAL)
+            if any(type(value) is not int or not 0 <= value <= MAX_COUNT for value in counts.values()):
+                raise AuditError()
+            connection.execute("ROLLBACK")
+        finally:
+            connection.close()
     after = _private(path, device)
+    _database_auxiliaries(device)
     if (before.st_dev, before.st_ino) != (after.st_dev, after.st_ino):
         raise AuditError()
     report.update(counts)

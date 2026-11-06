@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "evidence_type": "user_attestation",
+  "reported_on": "2026-11-06",
+  "timezone": "Asia/Seoul",
+  "user_report": "OCI 콘솔에서 1일마다 자동 백업을 설정해 두었다.",
+  "daily_oci_backup_reported_configured": true,
+  "frequency_days": 1,
+  "agent_console_verified": false,
+  "policy_name": null,
+  "policy_assignment_to_current_boot_volume_verified": false,
+  "last_success_time": null,
+  "retention_period": null,
+  "console_read_attempt": {
+    "purpose": "read-only verification",
+    "result": "unavailable_connected_browser_context",
+    "settings_modified": false,
+    "new_authentication_requested": false
+  },
+  "operating_decision": {
+    "default_scheduled_backup": "user_reported_oci_daily",
+    "additional_scheduled_off_host_backup_required": false,
+    "repeat_drive_snapshot_refresh_required_for_os_reboot": false,
+    "os_reboot_preservation_basis": "exact_quiescent_live_database_before_vs_after_boot",
+    "existing_backups_or_schedules_deleted_or_disabled": false
+  },
+  "notes": [
+    "The present Quanta data and application reside on the existing single boot filesystem; coverage of that exact volume by the reported OCI policy was not independently read.",
+    "Earlier operation records saying OCI backup configured=false describe what those operations configured, not proof that the user had no existing OCI backup policy.",
+    "The one-time encrypted external SQLite copy and restore already completed remain valid historical evidence; no further external refresh/export is required by the revised reboot plan."
+  ],
+  "official_reference": "https://docs.oracle.com/en-us/iaas/Content/Block/Concepts/bootvolumebackups.htm"
+}

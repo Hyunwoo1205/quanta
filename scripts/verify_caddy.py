@@ -46,6 +46,52 @@ def find_handler(value, name):
     return None
 
 
+def _wait_for_local_tls(process, ca: Path, port: int, *, timeout: float = 20) -> None:
+    """Wait for the same verified TLS/SNI/ALPN used by the positive cases.
+
+    A listening socket and an internal root CA can exist before Caddy's
+    asynchronous leaf certificate issuance finishes. Do not send an HTTP
+    warm-up request: that would pollute the upstream observations below.
+    """
+    deadline = time.monotonic() + timeout
+    last_error = "not_ready"
+    while True:
+        if process.poll() is not None:
+            raise RuntimeError("Local Caddy exited during TLS startup")
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError("Local Caddy TLS startup timed out (" + last_error + ")")
+        try:
+            context = ssl.create_default_context(cafile=ca)
+            context.set_alpn_protocols(["http/1.1"])
+            with socket.create_connection(("127.0.0.1", port), timeout=min(0.5, remaining)) as raw:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("TLS startup deadline")
+                raw.settimeout(min(0.5, remaining))
+                with context.wrap_socket(raw, server_hostname=HOST) as secured:
+                    if secured.selected_alpn_protocol() != "http/1.1":
+                        raise RuntimeError("Local Caddy did not negotiate HTTP/1.1 during TLS startup")
+            if time.monotonic() < deadline:
+                if process.poll() is not None:
+                    raise RuntimeError("Local Caddy exited during TLS startup")
+                return
+        except OSError as exc:
+            # Includes missing CA, failed certificate verification and an
+            # incomplete TLS listener. Every accepted handshake stays verified.
+            last_error = type(exc).__name__
+        remaining = deadline - time.monotonic()
+        if remaining > 0:
+            time.sleep(min(0.05, remaining))
+
+
+def _curl_failure(name: str, response) -> str:
+    # This harness uses only the synthetic loopback hostname and fixture token.
+    # Preserve a bounded diagnostic instead of discarding curl's exit reason.
+    detail = response.stderr[:1024].decode("utf-8", errors="replace").strip()
+    return name + ": curl failed (exit=" + str(response.returncode) + "; stderr=" + (detail or "<empty>") + ")"
+
+
 def run_check(caddy: str) -> dict:
     curl = shutil.which("curl")
     if curl is None or "HTTP2" not in subprocess.run(
@@ -137,19 +183,7 @@ def run_check(caddy: str) -> dict:
             with (directory / "caddy.log").open("wb") as log:
                 process = subprocess.Popen([caddy, "run", "--config", str(config_path)],
                                            stdout=log, stderr=log, env=environment)
-                deadline = time.monotonic() + 10
-                while True:
-                    if process.poll() is not None:
-                        raise RuntimeError("Local Caddy exited during startup")
-                    try:
-                        with socket.create_connection(("127.0.0.1", port), timeout=0.2):
-                            if ca.is_file():
-                                break
-                    except OSError:
-                        pass
-                    if time.monotonic() >= deadline:
-                        raise RuntimeError("Local Caddy startup timed out")
-                    time.sleep(0.05)
+                _wait_for_local_tls(process, ca, port)
 
                 small = b'{"framing":true}'
                 cases = [
@@ -177,7 +211,7 @@ def run_check(caddy: str) -> dict:
                     command += [f"https://{HOST}:{port}/probe"]
                     response = subprocess.run(command, input=body, capture_output=True, timeout=25)
                     if response.returncode:
-                        raise RuntimeError(name + ": curl failed")
+                        raise RuntimeError(_curl_failure(name, response))
                     status, frontend_version = response.stdout.decode("ascii").split()
                     if int(status) != expected_status:
                         raise RuntimeError(name + ": unexpected response " + status)
@@ -270,3 +304,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
