@@ -28,14 +28,14 @@ jobs:
       - name: Checkout independently verified fixed control
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: CONTROL_SHA_LITERAL
+          ref: 9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9
           path: verified-accounts-control
           persist-credentials: false
       - name: Require completed controller and selected application CI
         id: authorize
         env:
-          QUANTA_ACCOUNTS_CONTROL_SHA: 'CONTROL_SHA_LITERAL'
-          QUANTA_ACCOUNTS_CONTROL_CI_RUN: 'CONTROL_CI_LITERAL'
+          QUANTA_ACCOUNTS_CONTROL_SHA: '9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9'
+          QUANTA_ACCOUNTS_CONTROL_CI_RUN: '42174555925'
           QUANTA_CI_READ_TOKEN: ${{ github.token }}
         run: python3 -I -B verified-accounts-control/deploy/oci/authorize_accounts_upgrade.py
       - name: Install existing-key SSH transport
@@ -44,8 +44,8 @@ jobs:
           sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
       - name: Execute the verified fixed account operation
         env:
-          QUANTA_ACCOUNTS_CONTROL_SHA: 'CONTROL_SHA_LITERAL'
-          QUANTA_ACCOUNTS_CONTROL_CI_RUN: 'CONTROL_CI_LITERAL'
+          QUANTA_ACCOUNTS_CONTROL_SHA: '9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9'
+          QUANTA_ACCOUNTS_CONTROL_CI_RUN: '42174555925'
           QUANTA_ACCOUNTS_OPERATION: ${{ steps.authorize.outputs.operation }}
           QUANTA_ACCOUNTS_SOURCE_SHA: ${{ steps.authorize.outputs.source_sha }}
           QUANTA_ACCOUNTS_REQUEST_ID: ${{ steps.authorize.outputs.request_id }}
@@ -56,3 +56,4 @@ jobs:
           QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
           QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
         run: python3 -I -B verified-accounts-control/deploy/oci/probe_accounts_upgrade.py
+

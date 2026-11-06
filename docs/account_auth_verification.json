@@ -68,14 +68,58 @@
     "production_credentials_committed": false
   },
   "remote_ci": {
-    "status": "pending"
+    "status": "success",
+    "source_sha": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+    "application": {
+      "run_id": 42174555867,
+      "workflow": ".github/workflows/ci.yml",
+      "jobs": [
+        {
+          "job_id": 127749913890,
+          "architecture": "x86_64",
+          "tests_passed": 1648,
+          "seconds": 483.69
+        },
+        {
+          "job_id": 127749914128,
+          "architecture": "aarch64",
+          "tests_passed": 1648,
+          "seconds": 332.03
+        }
+      ],
+      "numerical_workflow_service_web_production_operations_and_container_checks": "passed"
+    },
+    "fixed_upgrade_controller": {
+      "run_id": 42174555925,
+      "source_sha": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+      "tests_passed_per_architecture": 49,
+      "architectures": [
+        "x86_64",
+        "aarch64"
+      ]
+    }
   },
   "deployment": {
-    "status": "not_yet_performed",
+    "status": "success",
+    "source_sha": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+    "app_version": "0.12.0",
+    "upgrade_run_id": 42176201988,
+    "verification_run_id": 42176371527,
+    "scientific_database_preserved": true,
+    "counts": {
+      "experiments": 9,
+      "revisions": 11,
+      "runs": 13,
+      "artifacts": 927
+    },
+    "gmail_tls_connectivity_verified": true,
+    "mail_configured": false,
     "actual_gmail_smtp_authentication_verified": false,
     "actual_email_delivery_verified": false,
     "actual_user_registration_verified": false,
-    "actual_user_mfa_login_verified": false
+    "actual_user_mfa_login_verified": false,
+    "public_ui_forms_verified": true,
+    "remaining_private_user_action": "Configure existing Gmail app password in HTTPS owner setup, verify administrator email, complete username/password signup, and test optional email MFA."
   },
   "physical_validation_status": "unvalidated"
 }
