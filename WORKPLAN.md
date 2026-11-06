@@ -302,6 +302,8 @@ ACME job `127588786706`은 기존 설치·Caddy·설정 범위를 확인한 뒤 
 
 고정 `reboot-recovery`/`verify-reboot`와 서버 내부 API `post-reboot-compute` 구현·독립 검토 및 새 운영 회귀122개(로컬CPython3.12.14,1.494초)가 통과했습니다. 재부팅 시에만 Caddy 수락과 timer를 잠시 멈추며 실패/SSH단절에 대비한 복구 watchdog을 둡니다. 실제 재부팅 요청·부트 변화/데이터 보존·후속 계산은 아직 수행하지 않았고 새 운영 소스의 별도 CI 통과 뒤 진행합니다.
 
+재부팅/보존 검증/후속 계산을 포함한 운영 소스 `dda5b9f56ee72ad466816266390427f50d1b6c04`의 [전용CI42159722619](https://github.com/Hyunwoo1205/quanta/actions/runs/42159722619)가 ARM/x86 모두122개 시험과 종료 단계까지 성공했습니다. workflow에 이 소스/CI를 고정하고 실제9개 요청 분류 fixture와 public probe 실행 시점을 확인했습니다. 재부팅 예약 시점에 공개 probe를 실행하지 않고 `verify-reboot`·후속 계산 뒤에만 실행합니다. 아직 실제 OS 재부팅/복구를 완료한 것으로 기록하지 않습니다.
+
 ## 다음 작업
 
 OCI 단독 A1의 기존 2 OCPU·12 GB·부트 200 GB를 유지한 앱 0.11.0 설치, 실제 ARM 계산 smoke·인증·검증 API, 영속 데이터·백업 및 격리 복원, 앱 자동 시작·일일 SQLite 백업을 완료했습니다. 기존 컨테이너·데이터를 보존했고 새 SSH 키·상시 PC·Tailscale을 추가하지 않았습니다. 관리형 OCI 볼륨 백업과 off-host 복구는 별도 미설정 범위입니다.

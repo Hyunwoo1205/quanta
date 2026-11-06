@@ -41,5 +41,17 @@
     "superseding_success_ci": 42158128354,
     "notes": "The application and Caddy implementation were unchanged between these sources; the failure record is retained rather than rewritten."
   },
-  "physical_validation_status": "unvalidated"
+  "physical_validation_status": "unvalidated",
+  "reboot_control_source": "dda5b9f56ee72ad466816266390427f50d1b6c04",
+  "reboot_control_ci": {
+    "id": 42159722619,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42159722619",
+    "conclusion": "success",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "tests_each": 122
+  },
+  "workflow_routing_local_actual_fixtures": 9
 }
