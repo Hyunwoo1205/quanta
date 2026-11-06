@@ -1,0 +1,777 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:result:0.4.0",
+  "title": "Quanta common execution result envelope",
+  "$comment": "This common envelope never substitutes for module payload validation. Resolve payload_schema_ref from the frozen module manifest and validate each non-null payload using that exact local schema; mismatches are errors. Apply cross-field state/port/shape/unit checks after JSON Schema validation. No physical validation claim is introduced by the first contract. Top-level partial describes incomplete overall execution and does not mutate earlier successful step data. Every failed/cancelled/skipped step has partial=true and no admitted output state. Artifacts of an incomplete overall run remain evidence, not an assertion that the whole experiment succeeded. The common physical-validation enum is extensible by registered evidence policy; current A/B runs remain unvalidated. validated requires evidence refs whose scope, record hash and provenance are verified, never merely schema-valid references. Before preparation, failed/cancelled/skipped steps may have null source_binding and resolved_input_sha256; successful steps require both. Failure diagnostics must explain the outcome, checked by semantic validation.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.4.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "revision_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "input_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "resolved_input_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "execution_fingerprint": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "execution_status": {
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "CANCEL_REQUESTED",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "numerical_status": {
+      "enum": [
+        "pass",
+        "not_converged",
+        "not_checked",
+        "not_applicable"
+      ]
+    },
+    "resolution_status": {
+      "enum": [
+        "pass",
+        "not_converged",
+        "not_checked",
+        "not_applicable"
+      ]
+    },
+    "physical_validation_status": {
+      "enum": [
+        "unvalidated",
+        "validated",
+        "not_applicable"
+      ]
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "branch_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "step_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "module_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$"
+          },
+          "module_version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "resolved_input_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_binding": {
+            "anyOf": [
+              {
+                "$ref": "urn:quanta:schema:state:0.4.0#/$defs/portBinding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome": {
+            "enum": [
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED",
+              "SKIPPED"
+            ]
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "numerical_status": {
+            "enum": [
+              "pass",
+              "not_converged",
+              "not_checked",
+              "not_applicable"
+            ]
+          },
+          "resolution_status": {
+            "enum": [
+              "pass",
+              "not_converged",
+              "not_checked",
+              "not_applicable"
+            ]
+          },
+          "diagnostics": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/jsonValue"
+            }
+          },
+          "payload_schema_ref": {
+            "type": "string",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+          },
+          "payload": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:quanta:schema:artifact:0.4.0"
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "branch_index",
+          "step_id",
+          "module_id",
+          "module_version",
+          "resolved_input_sha256",
+          "state_ref",
+          "source_binding",
+          "outcome",
+          "partial",
+          "numerical_status",
+          "resolution_status",
+          "diagnostics",
+          "payload_schema_ref",
+          "payload",
+          "artifacts"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "outcome": {
+                  "const": "SUCCEEDED"
+                }
+              },
+              "required": [
+                "outcome"
+              ]
+            },
+            "then": {
+              "properties": {
+                "partial": {
+                  "const": false
+                },
+                "payload": {
+                  "type": "object"
+                },
+                "state_ref": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+                },
+                "resolved_input_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "source_binding": {
+                  "$ref": "urn:quanta:schema:state:0.4.0#/$defs/portBinding"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "outcome": {
+                  "enum": [
+                    "FAILED",
+                    "CANCELLED",
+                    "SKIPPED"
+                  ]
+                }
+              },
+              "required": [
+                "outcome"
+              ]
+            },
+            "then": {
+              "properties": {
+                "partial": {
+                  "const": true
+                },
+                "state_ref": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 0
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:quanta:schema:state:0.4.0"
+      },
+      "minItems": 0
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "step_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "branch_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "step_id",
+          "branch_index"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "enum": [
+              "input",
+              "support",
+              "numerical",
+              "resource",
+              "runtime"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^/"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "step_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "branch_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/jsonValue"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "category",
+          "message",
+          "path",
+          "step_id",
+          "branch_index",
+          "retryable",
+          "details"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:quanta:schema:artifact:0.4.0"
+      },
+      "minItems": 0
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "registry_snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "module_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "implementation_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "environment_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "constants_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resource_policy_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "replay_of": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "registry_snapshot_sha256",
+        "module_manifest_sha256",
+        "implementation_manifest_sha256",
+        "environment_manifest_sha256",
+        "constants_manifest_sha256",
+        "resource_policy_version",
+        "replay_of",
+        "started_at",
+        "finished_at"
+      ],
+      "additionalProperties": false
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "physical_validation_evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "evidence_artifact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validation_record_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "evidence_artifact_id",
+          "scope",
+          "source_run_id",
+          "validation_record_sha256"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "run_id",
+    "revision_id",
+    "input_sha256",
+    "resolved_input_sha256",
+    "execution_fingerprint",
+    "execution_status",
+    "numerical_status",
+    "resolution_status",
+    "physical_validation_status",
+    "steps",
+    "states",
+    "warnings",
+    "errors",
+    "artifacts",
+    "provenance",
+    "partial",
+    "physical_validation_evidence_refs"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "SUCCEEDED"
+          }
+        },
+        "required": [
+          "execution_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "resolved_input_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "steps": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "outcome": {
+                  "const": "SUCCEEDED"
+                },
+                "partial": {
+                  "const": false
+                }
+              }
+            }
+          },
+          "errors": {
+            "maxItems": 0
+          },
+          "provenance": {
+            "properties": {
+              "implementation_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "environment_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "started_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finished_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "SUCCEEDED"
+          }
+        },
+        "required": [
+          "execution_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "partial": {
+            "const": false
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "partial": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "enum": [
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ]
+          }
+        },
+        "required": [
+          "execution_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "provenance": {
+            "properties": {
+              "finished_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "enum": [
+              "FAILED",
+              "CANCELLED"
+            ]
+          },
+          "provenance": {
+            "properties": {
+              "started_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "started_at"
+            ]
+          }
+        },
+        "required": [
+          "execution_status",
+          "provenance"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "resolved_input_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "provenance": {
+            "properties": {
+              "implementation_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "environment_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "physical_validation_status": {
+            "const": "validated"
+          }
+        },
+        "required": [
+          "physical_validation_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "physical_validation_evidence_refs": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "jsonValue": {
+      "$defs": {},
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        }
+      ]
+    }
+  }
+}

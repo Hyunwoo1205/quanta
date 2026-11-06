@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:generic-dynamics-resource-policy:0.4.0",
+  "title": "Frozen dynamics protection ceilings",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "0.4.0"
+    },
+    "status": {
+      "const": "protection_ceilings_not_measured_performance"
+    },
+    "common_execution": {
+      "type": "object",
+      "properties": {
+        "cpu_workers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "cpu_threads_per_worker": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "memory_mib_per_run": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "wall_seconds_per_step": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "wall_seconds_per_run": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "max_input_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "max_artifact_bytes_per_run": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432
+        },
+        "max_queue_wait_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "max_queued_runs_per_owner": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "checkpoint_resume": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "cpu_workers",
+        "cpu_threads_per_worker",
+        "memory_mib_per_run",
+        "wall_seconds_per_step",
+        "wall_seconds_per_run",
+        "max_input_bytes",
+        "max_artifact_bytes_per_run",
+        "max_queue_wait_seconds",
+        "max_queued_runs_per_owner",
+        "checkpoint_resume"
+      ],
+      "additionalProperties": false
+    },
+    "profiles": {
+      "type": "object",
+      "properties": {
+        "pair_dynamics_cpu": {
+          "type": "object",
+          "properties": {
+            "module_versions": {
+              "const": [
+                "quanta.pair_dynamics@0.1.0"
+              ]
+            },
+            "max_particles": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128
+            },
+            "max_base_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "max_total_force_evaluations": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "max_pair_evaluations": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "max_total_output_frames": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 512
+            },
+            "max_ast_depth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "max_ast_nodes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128
+            },
+            "max_parameters": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 32
+            },
+            "max_protocol_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1
+            },
+            "max_expanded_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1
+            },
+            "max_sweep_axes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 0
+            }
+          },
+          "required": [
+            "module_versions",
+            "max_particles",
+            "max_base_steps",
+            "max_total_force_evaluations",
+            "max_pair_evaluations",
+            "max_total_output_frames",
+            "max_ast_depth",
+            "max_ast_nodes",
+            "max_parameters",
+            "max_protocol_steps",
+            "max_expanded_steps",
+            "max_sweep_axes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "pair_dynamics_cpu"
+      ],
+      "additionalProperties": false
+    },
+    "resource_semantics": {
+      "type": "object",
+      "properties": {
+        "force_calls": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pair_work": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_frames": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trajectory_byte_bound": {
+          "type": "string",
+          "minLength": 1
+        },
+        "whole_run_bytes": {
+          "type": "string",
+          "minLength": 1
+        },
+        "failure": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "force_calls",
+        "pair_work",
+        "output_frames",
+        "trajectory_byte_bound",
+        "whole_run_bytes",
+        "failure"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "status",
+    "common_execution",
+    "profiles",
+    "resource_semantics"
+  ],
+  "additionalProperties": false
+}

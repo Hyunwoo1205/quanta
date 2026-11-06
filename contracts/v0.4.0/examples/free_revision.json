@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.4.0",
+  "experiment_id": "e80fb0fa-70f6-48c5-bf9e-2cde168c9872",
+  "revision_id": "b4eb8bdb-85b8-4898-814a-6573055da6f1",
+  "title": "Free particles",
+  "created_at": "2026-11-06T00:00:00Z",
+  "definition": {
+    "unit_system": "SI",
+    "scales": {
+      "length_m": 1.0,
+      "energy_j": 1.0,
+      "time_s": 1.0
+    },
+    "system": {
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "representation": "particles_phase_space_3d",
+      "boundary": "nonperiodic",
+      "min_distance_m": 0.1,
+      "particles": [
+        {
+          "id": "p1",
+          "position_m": [
+            -1,
+            -0.25,
+            0.75
+          ],
+          "velocity_m_per_s": [
+            0.125,
+            -0.6875,
+            -0.03125
+          ],
+          "mass_kg": 1
+        },
+        {
+          "id": "p2",
+          "position_m": [
+            1,
+            -0.25,
+            0.75
+          ],
+          "velocity_m_per_s": [
+            0.125,
+            0.3125,
+            -0.03125
+          ],
+          "mass_kg": 3
+        }
+      ],
+      "potential": {
+        "expression": {
+          "op": "const",
+          "value": 0
+        },
+        "parameters": {}
+      }
+    },
+    "numerics": {
+      "integrator": "velocity_verlet_forward_ad",
+      "dt_s": 0.125,
+      "steps": 8,
+      "sample_stride": 1,
+      "refinement": "none",
+      "energy_drift_atol": 1e-12,
+      "momentum_drift_atol": 1e-10,
+      "angular_momentum_drift_atol": 1e-10,
+      "state_atol": 1e-06,
+      "state_rtol": 1e-06
+    },
+    "protocol": {
+      "steps": [
+        {
+          "step_id": "integrate",
+          "operation": "integrate",
+          "source": "initial",
+          "overrides": []
+        }
+      ],
+      "sweep": {
+        "axes": []
+      }
+    },
+    "observables": [
+      "trajectory",
+      "energy_components",
+      "linear_momentum",
+      "angular_momentum",
+      "conservation_diagnostics"
+    ],
+    "extensions": {}
+  }
+}

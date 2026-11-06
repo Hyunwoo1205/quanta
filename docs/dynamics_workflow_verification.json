@@ -1,0 +1,92 @@
+{
+  "verification_kind": "generic_dynamics_workflow_storage_api_checkpoint",
+  "package_version": "0.15.0",
+  "generic_contract_version": "0.4.0",
+  "solver_contract_version": "0.3.1",
+  "baseline_main": "6cde7740fa72ab6a41f1002a8b014abad7702d5c",
+  "implementation_source_commit": null,
+  "stage_complete": false,
+  "source_files_sha256": {
+    "quanta/__init__.py": "c881320a2ec63428c96d47c50ea1b3baab04cb311b83c91486b2e29bb88398f8",
+    "quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "quanta/access_auth.py": "f096678d5e9d89badcb3b92600836e2f91ab2f2dd794a0f43752ca8fe4d85d27",
+    "quanta/account_auth.py": "2960f00c538c0c17172625092b6b4b2b2fe7cc0e82f2209d02d81ddd1bb364a8",
+    "quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+    "quanta/backup.py": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+    "quanta/cli.py": "5226973b7e01e00b58611d49ba6a5f3a37e21531aa272142a1cb9a5bce3f0bce",
+    "quanta/dynamics.py": "3bf177c7b3c1626fc45fe6f9361ffc0e6549079da1613305f863cd7d74f301d6",
+    "quanta/dynamics_results.py": "47e5ecff034d76161f921ac1cf3f8c5682e034fc984bdc2146bb2ac256925940",
+    "quanta/dynamics_validation.py": "d04451d77d1fd30ffe0e70dc7ca1b213e6465d3e23eb520e3cda1873b596b6c1",
+    "quanta/dynamics_workflow.py": "68d3470ecb61769e8686fcf66284107843ac4c66e23bb7f5fa2d2878aa2c992d",
+    "quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+    "quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+    "quanta/gmail_mailer.py": "037b40e76997f49af695cf8b452d7a50331e4047869d85490ed178d3e75195f5",
+    "quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+    "quanta/job_store.py": "195d60efb36c0e0941c23f72b71ada0d3313f7e5de94e78c6822cde73f3e0554",
+    "quanta/owner_token.py": "b1d8165f79282032f80f147d426208bb2510f8ba3a838947d05276936bc2e183",
+    "quanta/pair.py": "36e058be7269d8ae808ac427db611368288e9f049c2349b58a1067f477314131",
+    "quanta/pair_kernel.py": "4d2e907a8a95db5fa0174c39dfd8760ce8ca522df8e8cb2ed42ed898f9e6a136",
+    "quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+    "quanta/planning.py": "59c3fde0ecd711cd1ce76c8c61a9f63f30ebdb09b09ac81151c2734f537f7c37",
+    "quanta/production.py": "bd93a5f564b049a6831396a121b3f5211835ffc640f5505898f181a56eefde52",
+    "quanta/production_server.py": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+    "quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+    "quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+    "quanta/registry.py": "cd226dabebd342580a7999b1d60db8f3651c3ed8051ab22bcc92f573ba1c0525",
+    "quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+    "quanta/run_store.py": "e8f987d8c244298b7920237a2b4499bd9ee8abacad9a8f9a44f5ae8908033c41",
+    "quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+    "quanta/service.py": "e9313b1164916a7f5018684588f12920d8a8a9a9cf14bbeda364e021772faf07",
+    "quanta/validation.py": "995c078698e84e8c592eb5e71993f6209bf01440d4d94d4d0d0a88d920e30556",
+    "quanta/worker.py": "1805a2e30c04425def74cec8e4b868a11e6872158e52239137760d7cb9ec3812",
+    "quanta/workflow.py": "13ee9bd8e9fa8d29a966ad45f83067208cc00dc916182b6a9c8261a819d2f612",
+    "scripts/verify_dynamics.py": "028c9e27675d31c81a28e0282f9c17a4f547dba5454847dfef6a6e4df5f6b698",
+    "scripts/verify_dynamics_workflow.py": "4354fefd92eeab8c5475bbc52b308a14eaba2e9628e1d6b0c909e065d54cbab0",
+    "scripts/verify_service.py": "68959ef1289c313280687b3a1e0a0177713aa5439f0a4b533df79c600091bed0"
+  },
+  "old_contract_bytes_preserved": {
+    "0.2.0": 24,
+    "0.3.0": 17,
+    "0.3.1": 18
+  },
+  "targeted_tests": {
+    "new_contracts": 59,
+    "contract_and_legacy_combined": 107,
+    "validation_and_cli": 19,
+    "planning_and_legacy_combined": 37,
+    "workflow": 13,
+    "independent_review": 31
+  },
+  "actual_backend_measurements": {
+    "status": "passed",
+    "record": "docs/dynamics_workflow_numerical_verification.json",
+    "cases": {
+      "DW01": "passed",
+      "DW02": "passed",
+      "DW03": "passed",
+      "DW04": "passed",
+      "DW05": "passed",
+      "DW06": "passed"
+    }
+  },
+  "local_full_regression": {
+    "status": "running",
+    "collected": 2021,
+    "note": "Two service test-helper parsing/carrier corrections occurred after collection; authoritative final targeted and CI results will be recorded."
+  },
+  "native_ci": {
+    "status": "pending"
+  },
+  "remaining": [
+    "3D particle/trajectory and observable UI parity",
+    "Molecular structures and interaction models require separate design/validation when selected",
+    "Multi-step continuation/sweeps/overrides/conversions/checkpoint resume unsupported"
+  ],
+  "full_D07_D11_acceptance_completed": false,
+  "physical_validation_status": "unvalidated",
+  "actual_deployment": {
+    "package_version": "0.12.0",
+    "source_commit": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+    "changed": false
+  }
+}

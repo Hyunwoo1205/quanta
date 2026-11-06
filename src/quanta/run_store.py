@@ -38,6 +38,143 @@ def _metadata_bytes(value: dict) -> bytes:
     return json.dumps(value, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode("utf-8")
 
 
+def _check_dynamics_solver_record(request: dict, solver_report: dict, raw_report: bytes,
+                                  *, registry: ContractRegistry, engine: dict,
+                                  implementation: dict, dependency_files: dict,
+                                  lock: dict, observed: dict) -> None:
+    """Verify retained solver evidence as bytes, never against current Python.
+
+    A previous implementation's internally consistent bundle remains readable.
+    Only replay compares its captured implementation to currently trusted code.
+    """
+    def require(condition, message):
+        if not condition:
+            raise BundleError(message)
+
+    from .dynamics_results import build_phase_state, check_payload, transport_bytes, _same_tree
+    registry.validator("dynamics_request.schema.json").validate(request)
+    registry.validator("dynamics_report.schema.json").validate(solver_report)
+    require(transport_bytes(solver_report) == raw_report,
+            "Standalone dynamics report transport changed its exact carriers")
+    payload = solver_report["payload"]
+    success = solver_report["execution_status"] == "SUCCEEDED"
+    validated = solver_report["input_validation_status"] == "pass"
+    require(solver_report["input_sha256"] == (_digest(canonical_bytes(request)) if validated else None),
+            "Standalone dynamics request hash differs from its mapped input")
+    require(solver_report["partial"] == (payload is not None and not success),
+            "Standalone dynamics partial flag differs from its payload")
+    # This contract is immutable and independently frozen by the engine binding;
+    # semantic checks do not evaluate forces or import captured source text.
+    solver_registry = ContractRegistry(contract_version="0.3.1")
+    require(not solver_registry.validate_integrity(), "The immutable solver contract is unavailable")
+    expected_files = {name: _digest(raw) for name, raw in solver_registry.raw_bytes.items()}
+    expected_manifest = _digest(solver_registry._manifest_path.read_bytes())
+    binding = engine["solver_contract_binding"]
+    require(binding == {"contract_version": "0.3.1", "registry_snapshot_sha256": expected_files["registry.json"],
+                        "resource_policy_sha256": expected_files["resource_policy.json"],
+                        "digest_manifest_sha256": expected_manifest,
+                        "files_sha256": {**expected_files, "SHA256SUMS.json": expected_manifest}},
+            "Standalone solver binding differs from its immutable contract")
+    for name, raw in solver_registry.raw_bytes.items():
+        if name.startswith("dynamics_") and name.endswith(".schema.json"):
+            require(registry.raw_bytes[name] == raw,
+                    "Generic dynamics science schema differs from its solver contract")
+    if payload is not None:
+        require(solver_report["initial_force_evaluation_performed"] is True,
+                "Retained dynamics trajectory has no initial force evaluation")
+        require(not any(leg["completed_steps"] > 0 for leg in payload["legs"])
+                or solver_report["dynamics_simulation_executed"] is True,
+                "Retained dynamics steps contradict the execution flag")
+        check_payload(request, payload, registry=solver_registry,
+                      execution_status=solver_report["execution_status"],
+                      numerical_status=solver_report["numerical_status"],
+                      resolution_status=solver_report["resolution_status"])
+    else:
+        require(solver_report["numerical_status"] == solver_report["resolution_status"] == "not_checked",
+                "Absent dynamics trajectory has an invented assessment")
+    if success:
+        require(payload is not None and solver_report["numerical_status"] == "pass",
+                "Successful dynamics report has no converged trajectory")
+        require(_same_tree(solver_report["final_state"],
+                           build_phase_state(request, payload, registry=solver_registry)),
+                "Standalone final phase state differs from its primary trajectory")
+    else:
+        require(solver_report["final_state"] is None,
+                "Failed dynamics execution publishes a successful final state")
+    provenance = solver_report["provenance"]
+    if provenance is None:
+        require(not success and payload is None,
+                "Retained successful or partial dynamics output has no provenance")
+        return
+    require(validated, "An unvalidated dynamics input has an execution provenance")
+    contents = provenance["captured_utf8_contents"]
+    require(all(isinstance(sha, str) and _SHA.fullmatch(sha) and isinstance(text, str)
+                and _digest(text.encode("utf-8")) == sha for sha, text in contents.items()),
+            "Captured standalone provenance bytes differ from their hashes")
+
+    def captured(sha):
+        require(sha in contents, "Standalone provenance references unavailable content")
+        return contents[sha].encode("utf-8")
+
+    from .dynamics_workflow import initial_phase_data
+    initial = initial_phase_data({"scales": request["scales"],
+                                  "system": request["system"], "numerics": request["numerics"]})
+    require(provenance["provenance_version"] == "0.1.0" and provenance["contract_version"] == "0.3.1"
+            and provenance["solver"] == {"id": "velocity_verlet_forward_ad", "version": "0.1.0"},
+            "Standalone dynamics provenance identity differs")
+    require(provenance["package_version"] == implementation["package_version"]
+            and provenance["source_files_sha256"] == implementation["source_files_sha256"],
+            "Standalone solver implementation differs from the workflow capture")
+    require(provenance["implementation_manifest_sha256"] == _digest(canonical_bytes({
+                "package_version": provenance["package_version"], "files": provenance["source_files_sha256"]})),
+            "Standalone implementation manifest hash differs")
+    require(provenance["dependency_lock_files_sha256"] == dependency_files
+            and provenance["contract_files_sha256"] == expected_files
+            and provenance["contract_digest_manifest_sha256"] == expected_manifest
+            and provenance["registry_snapshot_sha256"] == expected_files["registry.json"],
+            "Standalone contract or dependency snapshot differs from its workflow binding")
+    expected_distributions = [{"name": item["name"], "expected_version": item["version"],
+                              "observed_version": item["version"], "locked_filename": item["filename"],
+                              "locked_wheel_sha256": item["sha256"]} for item in lock["packages"]]
+    require(provenance["observed_locked_distributions"] == expected_distributions,
+            "Standalone dependency observations differ from the captured lock")
+    baseline_observation = {key: value for key, value in observed.items()
+                            if key not in {"locked_distribution_versions", "package_distribution"}}
+    require(canonical_bytes(provenance["environment"]) == canonical_bytes(baseline_observation)
+            and provenance["environment_sha256"] == _digest(canonical_bytes(provenance["environment"])),
+            "Standalone environment differs from the workflow observation")
+    require(provenance["instrumentation_present"] is False
+            and provenance["instrumentation_identity_captured"] is False
+            and provenance["original_input_encoding"] == "detached_dictionary_json",
+            "Standalone workflow execution has an unsupported instrumentation or source claim")
+    require(captured(provenance["authored_request_canonical_sha256"]) == canonical_bytes(request)
+            and captured(provenance["original_input_sha256"]) == transport_bytes(request)
+            and captured(provenance["initial_state_canonical_sha256"]) == canonical_bytes(initial)
+            and captured(provenance["initial_state_transport_sha256"]) == transport_bytes(initial),
+            "Standalone authored input or initial phase bytes differ")
+    for sha in (*provenance["source_files_sha256"].values(), *expected_files.values(),
+                expected_manifest, *dependency_files.values()):
+        captured(sha)
+    publication = provenance["publication"]
+    require(set(publication) == {"serialization", "artifact_byte_limit", "report_transport_bytes",
+                                "report_projection_sha256", "payload_canonical_sha256",
+                                "payload_transport_sha256", "payload_transport_bytes"}
+            and all(type(publication[key]) is int for key in
+                    ("artifact_byte_limit", "report_transport_bytes", "payload_transport_bytes")),
+            "Standalone publication has malformed counts or unregistered fields")
+    projection = copy.deepcopy(solver_report)
+    del projection["provenance"]["publication"]
+    require(publication["serialization"] == "compact_utf8_json_preserving_signed_zero"
+            and publication["report_transport_bytes"] == len(raw_report)
+            and len(raw_report) <= publication["artifact_byte_limit"] <= MAX_BUNDLE_BYTES
+            and publication["report_projection_sha256"] == _digest(canonical_bytes(projection)),
+            "Standalone publication bytes or projection differ")
+    require(publication["payload_transport_bytes"] == (len(transport_bytes(payload)) if payload is not None else 0)
+            and publication["payload_transport_sha256"] == (_digest(transport_bytes(payload)) if payload is not None else None)
+            and publication["payload_canonical_sha256"] == (_digest(canonical_bytes(payload)) if payload is not None else None),
+            "Standalone publication payload hashes differ")
+
+
 def _bundle_parts(report: dict) -> tuple[dict, dict[str, bytes]]:
     metadata = copy.deepcopy(report)
     assets: dict[str, bytes] = {}
@@ -196,7 +333,6 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         report = ensure_json_value(report)
         require(report.get("report_version") == "0.1.0" and report.get("scope") == "synchronous_workflow",
                 "Unsupported execution report")
-        registry = registry or ContractRegistry()
         plan = report["plan"]
         require(type(report["valid"]) is bool and report["valid"] == plan["valid"], "Plan validity differs")
         # Also verifies raw content digests before any content is interpreted.
@@ -225,6 +361,10 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                     "An invalid plan contains published results")
             return {"valid": True, "errors": []}
 
+        from .registry import experiment_registry
+        registry = experiment_registry(plan["experiment"], registry)
+        contract_version = registry.contract_version
+
         from .planning import _schema_bindings, _schema_refs
         from .validation import _assign, validate_definition, validate_experiment
 
@@ -237,7 +377,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         frozen = plan["frozen_plan"]
         require(set(frozen) == {"contract_version", "input_sha256", "branch_bases", "expanded_steps", "frozen_bindings"},
                 "Frozen plan contains a non-projected member")
-        require(frozen["contract_version"] == "0.2.0" and frozen["input_sha256"] == plan["input_sha256"],
+        require(frozen["contract_version"] == contract_version and frozen["input_sha256"] == plan["input_sha256"],
                 "Frozen plan input link differs")
         projection(frozen, plan["resolved_input_sha256"])
         bindings = frozen["frozen_bindings"]
@@ -249,6 +389,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         require(asset(bindings["registry_binding"]["registry_snapshot_sha256"]) == registry.raw_bytes["registry.json"],
                 "Captured registry bytes differ")
         system = authored["system"]
+        dynamics = system["module_id"] == "quanta.pair_dynamics"
         module = registry.get_module(system["module_id"], system["module_version"])
         require(module is not None, "Saved module registration is unavailable")
         module_sha = _digest(canonical_bytes(module))
@@ -313,6 +454,16 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             require(all(value[key] == engine[key] for key in ("module_id", "module_version", "operation"))
                     and value["implementation_manifest_sha256"] == manifests["implementation_manifest_sha256"],
                     "Operation implementation manifest differs")
+            if dynamics:
+                from .planning import _dynamics_bindings
+                adapter_binding, solver_binding = _dynamics_bindings(registry)
+                require(value.get("adapter_binding") == adapter_binding
+                        and value.get("solver_contract_binding") == solver_binding,
+                        "Dynamics adapter or solver contract binding differs")
+                require(asset(adapter_binding["manifest_sha256"]) == registry.raw_bytes["dynamics_adapter.json"],
+                        "Captured dynamics adapter registration differs")
+                for filename, sha in solver_binding["files_sha256"].items():
+                    asset(sha)
 
         science = ("unit_system", "scales", "system", "numerics", "extensions")
         def scientific(value):
@@ -378,7 +529,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             require(package_observation["name"] == "quanta-research-contracts"
                     and package_observation["expected_version"] == package_observation["version"] == implementation["package_version"],
                     "Executed package observation differs from its implementation")
-            fingerprint = {"contract_version": "0.2.0", "run_resolved_input_sha256": plan["resolved_input_sha256"],
+            fingerprint = {"contract_version": contract_version, "run_resolved_input_sha256": plan["resolved_input_sha256"],
                            **manifests, "environment_manifest_sha256": provenance["environment_manifest_sha256"]}
             projection(fingerprint, result["execution_fingerprint"])
         else:
@@ -395,7 +546,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         record = report["resolved_record"]
         for key in ("run_id", "revision_id", "input_sha256", "resolved_input_sha256"):
             require(record[key] == result[key], "Resolved record identity differs")
-        require(record["contract_version"] == "0.2.0" and equal(record["frozen_plan"], frozen)
+        require(record["contract_version"] == contract_version and equal(record["frozen_plan"], frozen)
                 and record["registry_snapshot_sha256"] == provenance["registry_snapshot_sha256"]
                 and record["engine_bindings"] == engines, "Resolved support record differs")
         runtime = record["runtime_evidence"]
@@ -409,9 +560,17 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         for ident, state in states.items():
             registry.validator(state["data_schema_ref"]).validate(state["data"])
             registry.validator(state["metadata_schema_ref"]).validate(state["metadata"])
-            require(state["module_id"] == system["module_id"] and state["module_version"] == system["module_version"]
-                    and state["time_kind"] == "static" and state["physical_time"] is None
-                    and state["metadata"]["precision"] == module["precision_contract"], "State scientific context differs")
+            require(state["module_id"] == system["module_id"] and state["module_version"] == system["module_version"],
+                    "State module context differs")
+            if dynamics:
+                from .dynamics_workflow import phase_metadata
+                require(state["time_kind"] == "evolving" and state["data"]["time_kind"] == "evolving"
+                        and record_equal(state["physical_time"], {"value": state["data"]["time_s"], "unit": "s"})
+                        and record_equal(state["metadata"], phase_metadata(state["data"])),
+                        "Dynamics state time or phase metadata differs")
+            else:
+                require(state["time_kind"] == "static" and state["physical_time"] is None
+                        and state["metadata"]["precision"] == module["precision_contract"], "State scientific context differs")
             require(all(parent in states for parent in state["parent_state_refs"]), "State parent is unavailable")
             producer = state["producer"]
             if producer["kind"] == "initial":
@@ -423,7 +582,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                     "State representation differs from its registered producer port")
             if module["module_id"] == "quanta.pair_static":
                 require(state["metadata"]["position_shape"] == [len(state["data"]["particles"]), 3], "Position metadata shape differs")
-            elif producer["kind"] == "step":
+            elif not dynamics and producer["kind"] == "step":
                 grid_size = len(state["data"]["x_m"])
                 require(state["metadata"]["grid_shape"] == [grid_size]
                         and state["metadata"]["state_shape"] == [len(state["data"]["energies_j"]), grid_size], "Quantum metadata shape differs")
@@ -436,9 +595,14 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         seen_states = set()
         for branch, ident in initial_map.items():
             state = states[ident]
+            if dynamics:
+                from .dynamics_workflow import initial_phase_data
+                expected_initial = initial_phase_data(branches[branch])
+            else:
+                expected_initial = branches[branch]["system"]
             require(0 <= branch < len(branches) and state["producer"] == {"kind": "initial", "revision_id": result["revision_id"]}
                     and state["parent_state_refs"] == [] and state["resolved_input_sha256"] == plan["resolved_input_sha256"]
-                    and record_equal(state["data"], branches[branch]["system"]), "Initial state does not match its swept branch")
+                    and record_equal(state["data"], expected_initial), "Initial state does not match its swept branch")
             require(runtime["state_unit_contexts"][ident] == {key: branches[branch][key] for key in ("unit_system", "scales")},
                     "Initial unit context differs")
             seen_states.add(ident)
@@ -447,12 +611,26 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
         input_map = {(row["branch_index"], row["step_id"]): row for row in inputs}
         require(len(inputs) == len(input_map), "Duplicate effective step inputs")
         steps = result["steps"]
+        solver_rows = runtime.get("dynamics_solver_reports", [])
+        require(isinstance(solver_rows, list) and (dynamics or not solver_rows),
+                "Unexpected standalone solver evidence in a static workflow")
+        if dynamics:
+            require("dynamics_solver_reports" in runtime, "Dynamics runtime evidence list is unavailable")
+        solver_map = {}
+        for row in solver_rows:
+            require(set(row) == {"branch_index", "step_id", "request", "solver_report_sha256", "control_error"},
+                    "Standalone dynamics evidence has an unregistered member")
+            require(type(row["branch_index"]) is int and isinstance(row["step_id"], str),
+                    "Standalone dynamics evidence has an invalid branch or step identity")
+            key = (row["branch_index"], row["step_id"])
+            require(key not in solver_map, "Duplicate standalone dynamics evidence")
+            solver_map[key] = row
         if provenance["started_at"] is None:
             require(not steps and not states and result["execution_status"] == "FAILED" and bool(result["errors"]),
                     "An unstarted execution contains scientific work")
         else:
             require(len(steps) == len(expanded), "Expanded step results are incomplete")
-        completed, consumed_inputs, observed_bindings = {}, set(), []
+        completed, consumed_inputs, observed_bindings, consumed_solver_rows = {}, set(), [], set()
         cancellation_seen = False
         for step, planned in zip(steps, expanded):
             branch, step_id = planned["branch_index"], planned["step_id"]
@@ -468,6 +646,10 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             if binding is None:
                 require(step["outcome"] != "SUCCEEDED" and step["resolved_input_sha256"] is None and key not in input_map
                         and step["payload"] is None and step["diagnostics"], "Unprepared step has invented scientific evidence")
+                require(key not in solver_map, "Unprepared step has standalone solver evidence")
+                if dynamics:
+                    require(step["numerical_status"] == step["resolution_status"] == "not_checked",
+                            "Unprepared dynamics step has an invented numerical assessment")
                 continue
             require(key in input_map and step["outcome"] != "SKIPPED", "Prepared step input is absent")
             row = input_map[key]
@@ -487,7 +669,8 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             for patch in planned["overrides"]:
                 _assign(effective, patch["path"], patch["value"])
             refs = planned["active_observable_refs"]
-            effective["observables"] = [ref["observable_id"] for ref in refs] or (["energy"] if module["module_id"] == "quanta.pair_static" else ["energies"])
+            effective["observables"] = [ref["observable_id"] for ref in refs] or (["trajectory"] if dynamics else
+                (["energy"] if module["module_id"] == "quanta.pair_static" else ["energies"]))
             effective["protocol"] = {"steps": [{"step_id": step_id, "operation": planned["operation"], "source": "initial", "overrides": []}], "sweep": {"axes": []}}
             require(record_equal(effective, row["definition"]) and validate_definition(effective, registry=registry)["valid"],
                     "Effective input does not match source inheritance and overrides")
@@ -495,27 +678,83 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
             step_bindings = {"registry_binding": bindings["registry_binding"], "module_bindings": bindings["module_bindings"],
                 "observable_bindings": refs, "schema_bindings": _schema_bindings(registry, _schema_refs(registry, module, relevant)),
                 "engine_bindings": [engine for engine in engines if engine["operation"] == planned["operation"]]}
-            expected_projection = {"contract_version": "0.2.0", "effective_definition": scientific(effective), "operation": planned["operation"],
+            expected_projection = {"contract_version": contract_version, "effective_definition": scientific(effective), "operation": planned["operation"],
                 "active_observable_refs": refs, "frozen_bindings": step_bindings,
                 "source_scientific_content_sha256": report["state_content_hashes"][source_id]}
+            if dynamics:
+                from .dynamics_workflow import solver_request
+                dynamic_engine = json_asset(step_bindings["engine_bindings"][0]["implementation_manifest_sha256"])
+                expected_projection.update(solver_request_sha256=_digest(canonical_bytes(solver_request(effective))),
+                                           adapter_binding=dynamic_engine["adapter_binding"])
             require(equal(row["projection"], expected_projection) and row["resolved_input_sha256"] == step["resolved_input_sha256"],
                     "Effective step projection differs")
             projection(expected_projection, step["resolved_input_sha256"])
             prepared_id = binding["effective_input_state_ref"]
             prepared = states[prepared_id]
             context = {name: effective[name] for name in ("unit_system", "scales")}
+            expected_prepared = initial_phase_data(effective) if dynamics else effective["system"]
             require(prepared_id != source_id and prepared["producer"] == {"kind": "prepared_input", "run_id": result["run_id"], "branch_index": branch, "step_id": step_id}
                     and prepared["parent_state_refs"] == [source_id] and prepared["resolved_input_sha256"] == step["resolved_input_sha256"]
-                    and record_equal(prepared["data"], effective["system"]) and runtime["state_unit_contexts"][prepared_id] == context,
+                    and record_equal(prepared["data"], expected_prepared) and runtime["state_unit_contexts"][prepared_id] == context,
                     "Prepared state identity or content differs")
             for state in (source, prepared):
                 require(all(state[name] == input_port[name] for name in ("representation", "representation_version", "data_schema_ref", "metadata_schema_ref")),
                         "Source representation is incompatible")
             seen_states.add(prepared_id)
             payload = step["payload"]
+            inner_report = None
+            if dynamics:
+                if key in solver_map:
+                    solver_row = solver_map[key]
+                    consumed_solver_rows.add(key)
+                    require(record_equal(solver_row["request"], solver_request(effective)),
+                            "Retained standalone request differs from its effective generic input")
+                    raw_solver_report = asset(solver_row["solver_report_sha256"])
+                    inner_report = parse_json(raw_solver_report, max_bytes=MAX_BUNDLE_BYTES)
+                    _check_dynamics_solver_record(solver_row["request"], inner_report, raw_solver_report,
+                        registry=registry, engine=dynamic_engine, implementation=implementation,
+                        dependency_files=dependency_files, lock=lock, observed=observed)
+                    require(step["diagnostics"].get("solver_report_sha256") == solver_row["solver_report_sha256"],
+                            "Step diagnostics do not reference its retained standalone report")
+                    control_error = solver_row["control_error"]
+                    if control_error is not None:
+                        require(isinstance(control_error, dict) and inner_report["execution_status"] == "CANCELLED"
+                                and step["outcome"] != "SUCCEEDED"
+                                and all(control_error.get(name) == step["diagnostics"]["error"].get(name)
+                                        for name in ("code", "message", "path", "details")),
+                                "Host control reason contradicts the cancelled inner solver")
+                        require(step["outcome"] == ("CANCELLED" if control_error["code"] == "CANCELLED" else "FAILED"),
+                                "Host control category differs from the outer step outcome")
+                    elif inner_report["execution_status"] == "CANCELLED":
+                        require(step["outcome"] == "CANCELLED",
+                                "Standalone cancellation was relabelled without a host control refusal")
+                    require(record_equal(payload, inner_report["payload"]),
+                            "Step trajectory differs from its retained standalone report")
+                    require(step["numerical_status"] == inner_report["numerical_status"]
+                            and step["resolution_status"] == inner_report["resolution_status"],
+                            "Step numerical axes differ from the retained solver assessment")
+                    require(step["outcome"] != "SUCCEEDED" or inner_report["execution_status"] == "SUCCEEDED",
+                            "A failed standalone solver became a successful workflow step")
+                    require(step["outcome"] != "CANCELLED" or inner_report["execution_status"] == "CANCELLED",
+                            "Cancellation retained an unpublished successful solver trajectory")
+                    require(len(step["artifacts"]) == (2 if payload is not None else 1),
+                            "Dynamics step does not retain its exact payload/report artifacts")
+                    report_artifact = step["artifacts"][-1]
+                    require(artifacts[report_artifact["artifact_id"]] == report_artifact
+                            and report_artifact.get("schema_ref") == "dynamics_report.schema.json"
+                            and report_artifact["sha256"] == solver_row["solver_report_sha256"]
+                            and report["artifact_contents"][report_artifact["artifact_id"]].encode("utf-8") == raw_solver_report,
+                            "Standalone report artifact does not preserve its captured transport")
+                else:
+                    require(payload is None and step["state_ref"] is None and not step["artifacts"]
+                            and step["outcome"] != "SUCCEEDED"
+                            and step["numerical_status"] == step["resolution_status"] == "not_checked",
+                            "Dynamics output has no retained standalone execution proof")
             if payload is not None:
                 registry.validator(step["payload_schema_ref"]).validate(payload)
-                if planned["operation"] in {"energy_forces", "relax"}:
+                if dynamics:
+                    pass  # Request-relative semantics were checked with the inner assessment above.
+                elif planned["operation"] in {"energy_forces", "relax"}:
                     from .pair import _check_payload
                     particles = effective["system"]["particles"]
                     _check_payload(payload, [p["position_m"] for p in particles], registry, module["payload_schema_ref"],
@@ -524,7 +763,7 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                     from .quantum import _check_payload
                     _check_payload(payload, registry=registry, schema_ref=module["payload_schema_ref"], definition=effective,
                                    completed_grids=len(payload["grid_results"]), max_bytes=MAX_BUNDLE_BYTES)
-                require(payload["operation"] == planned["operation"] and len(step["artifacts"]) == 1, "Step payload identity differs")
+                require(payload["operation"] == planned["operation"] and len(step["artifacts"]) == (2 if dynamics else 1), "Step payload identity differs")
                 if planned["operation"] == "relax":
                     require(step["numerical_status"] == ("pass" if payload["free_gradient_inf"] <= effective["numerics"]["gradient_tolerance"] else "not_converged")
                             and step["resolution_status"] == "not_applicable", "Relaxation axes contradict the preserved criterion")
@@ -536,19 +775,24 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                     for check_id, tolerance in (("weighted_normalization", 1e-10), ("weighted_orthogonality", 1e-10), ("eigen_residual", 1e-12)):
                         require(checks[check_id]["status"] == "pass" and checks[check_id]["tolerance"] == tolerance
                                 and 0 <= checks[check_id]["value"] <= tolerance, "Preserved quantum state failed a numerical criterion")
-                else:
+                elif not dynamics:
                     require(step["numerical_status"] == step["resolution_status"] == "not_applicable", "Single evaluation has an iterative status")
                 payload_artifact = step["artifacts"][0]
                 require(artifacts[payload_artifact["artifact_id"]] == payload_artifact
-                        and equal(parse_json(report["artifact_contents"][payload_artifact["artifact_id"]], max_bytes=MAX_BUNDLE_BYTES), payload),
+                        and (record_equal if dynamics else equal)(parse_json(report["artifact_contents"][payload_artifact["artifact_id"]], max_bytes=MAX_BUNDLE_BYTES), payload),
                         "Step artifact does not preserve its payload")
             else:
-                require(not step["artifacts"], "A step without payload has result artifacts")
+                require((dynamics and inner_report is not None and len(step["artifacts"]) == 1)
+                        or not step["artifacts"], "A step without payload has unexplained result artifacts")
             if step["outcome"] == "SUCCEEDED":
                 output = states[step["state_ref"]]
                 output_port = port(planned["operation"], "output")
                 expected_data = copy.deepcopy(effective["system"])
-                if planned["operation"] in {"energy_forces", "relax"}:
+                if dynamics:
+                    require(inner_report is not None and inner_report["execution_status"] == "SUCCEEDED",
+                            "Successful dynamics state has no successful solver proof")
+                    expected_data = inner_report["final_state"]["data"]
+                elif planned["operation"] in {"energy_forces", "relax"}:
                     for particle, position in zip(expected_data["particles"], payload["final_positions_m"]):
                         particle["position_m"] = copy.deepcopy(position)
                 else:
@@ -569,7 +813,8 @@ def validate_run_report(report: dict, *, registry: ContractRegistry | None = Non
                 completed[key] = step
             else:
                 require(step["state_ref"] is None and step["diagnostics"], "Incomplete output was admitted as a state")
-        require(consumed_inputs == set(input_map) and observed_bindings == runtime["port_bindings"] and seen_states == set(states),
+        require(consumed_inputs == set(input_map) and observed_bindings == runtime["port_bindings"] and seen_states == set(states)
+                and consumed_solver_rows == set(solver_map),
                 "Unreferenced or incomplete runtime evidence exists")
         if provenance["started_at"] is not None:
             for field in ("numerical_status", "resolution_status"):

@@ -1,0 +1,19 @@
+{
+  "contract_version": "0.4.0",
+  "status": "declared_scope_not_execution_evidence",
+  "physical_validation_status": "unvalidated",
+  "case_ids": [
+    "D01",
+    "D02",
+    "D03",
+    "D04",
+    "D05",
+    "D06",
+    "D07",
+    "D08",
+    "D09",
+    "D10",
+    "D11"
+  ],
+  "scope": "Standalone D01-D06 and drift-subcase historical evidence remain separate from generic workflow/service acceptance. Actual results are recorded in docs/verification records and commit-pinned CI."
+}

@@ -21,6 +21,8 @@ from .hashing import canonical_bytes
 from .parsing import parse_json
 from .planning import plan_experiment, prepare_step
 from .registry import ContractRegistry
+from .dynamics_workflow import (execute_dynamics, initial_phase_data, phase_metadata,
+                                solver_request, validate_solver_report)
 
 _ERROR_DETAIL_BYTES = 2048
 _TERMINAL_RESERVE_PER_STEP = 8192
@@ -132,6 +134,8 @@ def _locked_environment(plan: dict, assets: dict[str, str]) -> dict:
 
 
 def _metadata(module: dict, data: dict, *, output: bool) -> dict:
+    if module["module_id"] == "quanta.pair_dynamics":
+        return phase_metadata(data)
     precision = copy.deepcopy(module["precision_contract"])
     common = {"coordinate_system": "cartesian", "boundary": data.get("boundary", "dirichlet_zero"),
               "precision": precision}
@@ -158,9 +162,11 @@ def _port(module: dict, operation: str, direction: str) -> dict:
 
 def _state(module: dict, port: dict, data: dict, producer: dict, parents: list[str],
            resolved_sha: str, registry: ContractRegistry) -> dict:
-    state = {"contract_version": "0.2.0", "state_id": _id(), "module_id": module["module_id"],
+    evolving = module["module_id"] == "quanta.pair_dynamics"
+    state = {"contract_version": registry.data["contract_version"], "state_id": _id(), "module_id": module["module_id"],
              "module_version": module["module_version"], "representation": port["representation"],
-             "representation_version": port["representation_version"], "time_kind": "static", "physical_time": None,
+             "representation_version": port["representation_version"], "time_kind": "evolving" if evolving else "static",
+             "physical_time": {"value": data["time_s"], "unit": "s"} if evolving else None,
              "data_schema_ref": port["data_schema_ref"], "data": copy.deepcopy(data),
              "metadata_schema_ref": port["metadata_schema_ref"],
              "metadata": _metadata(module, data, output=port["direction"] == "output"),
@@ -181,7 +187,7 @@ def _state_projection(state: dict, definition: dict) -> dict:
 
 def _axes(operation: str, payload: dict | None = None, error: Exception | None = None) -> tuple[str, str]:
     numerical = "not_applicable" if operation == "energy_forces" else "not_checked"
-    resolution = "not_checked" if operation == "eigenstates" else "not_applicable"
+    resolution = "not_checked" if operation in {"eigenstates", "integrate"} else "not_applicable"
     if error is not None:
         return getattr(error, "numerical_status", numerical), getattr(error, "resolution_status", resolution)
     if payload is not None:
@@ -208,10 +214,17 @@ def _aggregate(values: list[str]) -> str:
 
 
 def _validate_payload(payload: dict, definition: dict, operation: str, module: dict,
-                      registry: ContractRegistry) -> None:
+                      registry: ContractRegistry, *, solver_report: dict | None = None) -> None:
     if payload.get("operation") != operation:
         raise CalculationError("The kernel returned another operation's payload", code="ENGINE_FAILURE", path="/payload/operation")
-    if operation in {"energy_forces", "relax"}:
+    if operation == "integrate":
+        if solver_report is None:
+            raise CalculationError("Dynamics payload has no bound standalone report", code="ENGINE_FAILURE")
+        from .dynamics_results import _same_tree
+        if not _same_tree(payload, solver_report["payload"]):
+            raise CalculationError("Dynamics payload differs from its standalone report", code="ENGINE_FAILURE")
+        validate_solver_report(definition, solver_report)
+    elif operation in {"energy_forces", "relax"}:
         from .pair import _check_payload
         particles = definition["system"]["particles"]
         _check_payload(payload, [p["position_m"] for p in particles], registry, module["payload_schema_ref"],
@@ -255,7 +268,9 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
         except (ValueError, AttributeError, TypeError):
             report["errors"].append(_issue("INPUT_SEMANTIC", f"{name} must reference a canonical version-4 run UUID"))
             return report
-    registry = registry or ContractRegistry()
+    from .registry import experiment_registry
+    registry = experiment_registry(plan["experiment"], registry)
+    contract_version = registry.data["contract_version"]
     frozen = plan["frozen_plan"]
     module_binding = frozen["frozen_bindings"]["module_bindings"][0]
     module = registry.get_module(module_binding["module_id"], module_binding["module_version"])
@@ -263,13 +278,15 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
     byte_limit = int(policy["max_artifact_bytes_per_run"])
     assets = report["captured_artifacts"]
 
-    def capture(value: dict) -> str:
-        raw = canonical_bytes(value).decode("utf-8")
+    def capture_raw(raw: str) -> str:
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()
         if digest in assets and assets[digest] != raw:
             raise CalculationError("Immutable captured content changed", code="ENGINE_FAILURE")
         assets[digest] = raw
         return digest
+
+    def capture(value: dict) -> str:
+        return capture_raw(canonical_bytes(value).decode("utf-8"))
 
     terminal_reserve = _TERMINAL_RESERVE_PER_RUN + _TERMINAL_RESERVE_PER_STEP * len(frozen["expanded_steps"])
 
@@ -286,7 +303,7 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
     try:
         observed = _locked_environment(plan, assets)
         environment_sha = capture(observed)
-        fingerprint_projection = {"contract_version": "0.2.0", "run_resolved_input_sha256": plan["resolved_input_sha256"],
+        fingerprint_projection = {"contract_version": contract_version, "run_resolved_input_sha256": plan["resolved_input_sha256"],
                                   **plan["execution_manifests"], "environment_manifest_sha256": environment_sha}
         fingerprint = capture(fingerprint_projection) if observed["valid"] else None
         budget()
@@ -296,7 +313,7 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
         return report
 
     run_id = run_id or _id()
-    result = {"schema_version": "0.2.0", "run_id": run_id, "revision_id": plan["experiment"]["revision_id"],
+    result = {"schema_version": contract_version, "run_id": run_id, "revision_id": plan["experiment"]["revision_id"],
               "input_sha256": plan["input_sha256"], "resolved_input_sha256": plan["resolved_input_sha256"],
               "execution_fingerprint": fingerprint, "execution_status": "FAILED", "numerical_status": "not_checked",
               "resolution_status": "not_checked", "physical_validation_status": "unvalidated", "steps": [], "states": [],
@@ -319,7 +336,9 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
     result["resolution_status"] = _aggregate([step["resolution_status"] for step in result["steps"]])
     runtime = {"effective_step_inputs": [], "typed_states": result["states"], "port_bindings": [],
                "state_content_hashes": report["state_content_hashes"], "initial_state_refs": [], "state_unit_contexts": {}}
-    record = {"contract_version": "0.2.0", "run_id": run_id, "revision_id": result["revision_id"],
+    if module["module_id"] == "quanta.pair_dynamics":
+        runtime["dynamics_solver_reports"] = []
+    record = {"contract_version": contract_version, "run_id": run_id, "revision_id": result["revision_id"],
               "input_sha256": result["input_sha256"], "resolved_input_sha256": result["resolved_input_sha256"],
               "registry_snapshot_sha256": result["provenance"]["registry_snapshot_sha256"], "frozen_plan": copy.deepcopy(frozen),
               "runtime_evidence": runtime, "engine_bindings": copy.deepcopy(frozen["frozen_bindings"]["engine_bindings"])}
@@ -328,7 +347,7 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
 
     def artifact(raw: str, *, schema_ref: str | None = None) -> dict:
         encoded = raw.encode("utf-8")
-        metadata = {"contract_version": "0.2.0", "artifact_id": _id(),
+        metadata = {"contract_version": contract_version, "artifact_id": _id(),
                     "kind": "config" if schema_ref else "text", "sha256": hashlib.sha256(encoded).hexdigest(),
                     "mime_type": "application/json" if schema_ref else "text/plain; charset=utf-8", "size_bytes": len(encoded)}
         metadata.update({"format": "json", "schema_ref": schema_ref} if schema_ref else {"encoding": "UTF-8"})
@@ -343,6 +362,18 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
                 artifact(raw)
                 registered_assets.add(sha)
 
+    def dynamics_evidence(definition: dict, expanded: dict, solver_report: dict,
+                          control_error: dict | None) -> dict:
+        from .dynamics_results import transport_bytes
+        raw = transport_bytes(solver_report).decode("utf-8")
+        digest = capture_raw(raw)
+        row = artifact(raw, schema_ref="dynamics_report.schema.json")
+        registered_assets.add(digest)
+        runtime["dynamics_solver_reports"].append({"branch_index": expanded["branch_index"],
+            "step_id": expanded["step_id"], "request": solver_request(definition),
+            "solver_report_sha256": digest, "control_error": copy.deepcopy(control_error)})
+        return row
+
     def publish_state(state: dict, definition: dict) -> None:
         state_id = state["state_id"]
         content_sha = capture(_state_projection(state, definition))
@@ -355,10 +386,11 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
     def snapshot() -> tuple:
         return (set(assets), set(report["artifact_contents"]), len(result["artifacts"]), len(result["states"]),
                 len(runtime["effective_step_inputs"]), len(runtime["port_bindings"]), len(runtime["initial_state_refs"]),
-                set(report["state_content_hashes"]), set(registered_assets))
+                set(report["state_content_hashes"]), set(registered_assets),
+                len(runtime.get("dynamics_solver_reports", [])))
 
     def rollback(saved: tuple) -> None:
-        a, ids, artifacts, states, inputs, bindings, initials, state_ids, registered = saved
+        a, ids, artifacts, states, inputs, bindings, initials, state_ids, registered, solver_reports = saved
         for sha in set(assets) - a:
             del assets[sha]
         for ident in set(report["artifact_contents"]) - ids:
@@ -373,6 +405,8 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
             del runtime["state_unit_contexts"][ident]
         registered_assets.clear()
         registered_assets.update(registered)
+        if "dynamics_solver_reports" in runtime:
+            del runtime["dynamics_solver_reports"][solver_reports:]
 
     try:
         sync_assets()
@@ -443,6 +477,8 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
 
         definition = None
         candidate_payload = None
+        solver_report = None
+        solver_control_error = None
         try:
             deadline()
             base = plan["branch_definitions"][branch]
@@ -450,7 +486,8 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
             if branch not in initial_states:
                 saved = snapshot()
                 try:
-                    initial = _state(module, input_port, base["system"], {"kind": "initial", "revision_id": result["revision_id"]},
+                    initial_data = initial_phase_data(base) if operation == "integrate" else base["system"]
+                    initial = _state(module, input_port, initial_data, {"kind": "initial", "revision_id": result["revision_id"]},
                                      [], plan["resolved_input_sha256"], registry)
                     publish_state(initial, base)
                     runtime["initial_state_refs"].append({"branch_index": branch, "state_ref": initial["state_id"]})
@@ -474,7 +511,8 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
                 digest = capture(prepared["step_projection"])
                 if digest != prepared["resolved_input_sha256"]:
                     raise CalculationError("The effective-input projection hash changed", code="ENGINE_FAILURE")
-                state = _state(module, input_port, definition["system"], {"kind": "prepared_input", "run_id": run_id,
+                prepared_data = initial_phase_data(definition) if operation == "integrate" else definition["system"]
+                state = _state(module, input_port, prepared_data, {"kind": "prepared_input", "run_id": run_id,
                     "branch_index": branch, "step_id": step_id}, [source["state_id"]], digest, registry)
                 publish_state(state, definition)
                 binding = {"branch_index": branch, "step_id": step_id, "source_alias": expanded["source_alias"],
@@ -494,10 +532,33 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
             except Exception:
                 rollback(saved)
                 raise
-            payload = _dispatch(definition, operation, registry, deadline)
-            _validate_payload(payload, definition, operation, module, registry)
+            if operation == "integrate":
+                try:
+                    solver_report = execute_dynamics(definition, deadline)
+                except Exception as exc:
+                    solver_report = getattr(exc, "dynamics_solver_report", None)
+                    control = getattr(exc, "dynamics_control_error", None)
+                    if control is not None:
+                        solver_control_error = _issue(control["code"], control["message"], path=control["path"],
+                            details=control["details"], branch_index=branch, step_id=step_id)
+                    raise
+                validate_solver_report(definition, solver_report)
+                if solver_report["execution_status"] != "SUCCEEDED":
+                    detail = solver_report["errors"][0]
+                    error = (WorkflowCancelled(detail["message"]) if solver_report["execution_status"] == "CANCELLED"
+                             else CalculationError(detail["message"], code=detail["code"], path=detail["path"],
+                                                   details=copy.deepcopy(detail["details"])))
+                    error.partial_payload = solver_report["payload"]
+                    error.numerical_status = solver_report["numerical_status"]
+                    error.resolution_status = solver_report["resolution_status"]
+                    raise error
+                payload = solver_report["payload"]
+            else:
+                payload = _dispatch(definition, operation, registry, deadline)
+            _validate_payload(payload, definition, operation, module, registry, solver_report=solver_report)
             candidate_payload = payload
-            numerical, resolution = _axes(operation, payload)
+            numerical, resolution = ((solver_report["numerical_status"], solver_report["resolution_status"])
+                                     if operation == "integrate" else _axes(operation, payload))
             if ((operation == "relax" and payload["free_gradient_inf"] > definition["numerics"]["gradient_tolerance"])
                     or resolution == "not_converged"):
                 raise CalculationError("The kernel returned a nonconverged success", code="ENGINE_FAILURE")
@@ -511,18 +572,32 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
                 if operation in {"energy_forces", "relax"}:
                     for particle, position in zip(output_data["particles"], payload["final_positions_m"]):
                         particle["position_m"] = copy.deepcopy(position)
+                elif operation == "integrate":
+                    output_data = copy.deepcopy(solver_report["final_state"]["data"])
                 else:
                     output_data = payload
                 output = _state(module, output_port, output_data, {"kind": "step", "run_id": run_id,
                     "branch_index": branch, "step_id": step_id, "output_port": output_port["port_id"]},
                     [state["state_id"]], digest, registry)
                 publish_state(output, definition)
-                payload_sha = capture(payload)
+                if operation == "integrate":
+                    from .dynamics_results import transport_bytes
+                    payload_sha = capture_raw(transport_bytes(payload).decode("utf-8"))
+                else:
+                    payload_sha = capture(payload)
                 payload_artifact = artifact(assets[payload_sha], schema_ref=module["payload_schema_ref"])
+                if operation == "integrate":
+                    registered_assets.add(payload_sha)
+                step_artifacts = [payload_artifact]
+                diagnostics = copy.deepcopy(payload.get("diagnostics", {}))
+                if operation == "integrate":
+                    proof_artifact = dynamics_evidence(definition, expanded, solver_report, solver_control_error)
+                    step_artifacts.append(proof_artifact)
+                    diagnostics = {"solver_report_sha256": proof_artifact["sha256"]}
                 sync_assets()
-                step.update(payload=copy.deepcopy(payload), artifacts=[payload_artifact], state_ref=output["state_id"],
+                step.update(payload=copy.deepcopy(payload), artifacts=step_artifacts, state_ref=output["state_id"],
                             outcome="SUCCEEDED", partial=False, numerical_status=numerical, resolution_status=resolution,
-                            diagnostics=copy.deepcopy(payload["diagnostics"]))
+                            diagnostics=diagnostics)
                 deadline()
                 budget()
                 completed[(branch, step_id)] = (copy.deepcopy(definition), output)
@@ -540,24 +615,50 @@ def run_experiment(data: bytes | str | dict, *, registry: ContractRegistry | Non
                 step_id=step_id, branch_index=branch, details=getattr(exc, "details", {}))
             result["errors"].append(error)
             partial_payload = getattr(exc, "partial_payload", None) or candidate_payload
+            if is_cancelled and operation == "integrate":
+                # An active protocol step has not published its solver output.
+                # Never retain a just-completed inner success through a cancel.
+                partial_payload = None
+                if solver_report is not None and solver_report["execution_status"] != "CANCELLED":
+                    solver_report = None
             numerical, resolution = (_axes(operation, partial_payload) if partial_payload is not None
                                      else _axes(operation, error=exc))
             if getattr(exc, "partial_payload", None) is not None:
                 numerical, resolution = _axes(operation, error=exc)
+            if operation == "integrate" and solver_report is not None:
+                numerical, resolution = solver_report["numerical_status"], solver_report["resolution_status"]
+            if is_cancelled and operation == "integrate":
+                numerical, resolution = "not_checked", "not_checked"
             step.update(numerical_status=numerical, resolution_status=resolution,
                         diagnostics={"error": copy.deepcopy(error)})
-            if partial_payload is not None and definition is not None and step["resolved_input_sha256"] is not None:
+            if (partial_payload is not None or solver_report is not None) and definition is not None and step["resolved_input_sha256"] is not None:
                 saved = snapshot()
                 try:
-                    _validate_payload(partial_payload, definition, operation, module, registry)
-                    payload_sha = capture(partial_payload)
-                    row = artifact(assets[payload_sha], schema_ref=module["payload_schema_ref"])
+                    rows = []
+                    if partial_payload is not None:
+                        _validate_payload(partial_payload, definition, operation, module, registry, solver_report=solver_report)
+                        if operation == "integrate":
+                            from .dynamics_results import transport_bytes
+                            payload_sha = capture_raw(transport_bytes(partial_payload).decode("utf-8"))
+                        else:
+                            payload_sha = capture(partial_payload)
+                        rows.append(artifact(assets[payload_sha], schema_ref=module["payload_schema_ref"]))
+                        if operation == "integrate":
+                            registered_assets.add(payload_sha)
+                    if solver_report is not None:
+                        validate_solver_report(definition, solver_report)
+                        rows.append(dynamics_evidence(definition, expanded, solver_report, solver_control_error))
                     sync_assets()
-                    step.update(payload=copy.deepcopy(partial_payload), artifacts=[row])
+                    step.update(payload=copy.deepcopy(partial_payload), artifacts=rows)
+                    if solver_report is not None:
+                        step["diagnostics"]["solver_report_sha256"] = rows[-1]["sha256"]
                     budget()
                 except Exception as partial_exc:
                     rollback(saved)
                     step.update(payload=None, artifacts=[])
+                    if operation == "integrate":
+                        step.update(numerical_status="not_checked", resolution_status="not_checked")
+                        step["diagnostics"].pop("solver_report_sha256", None)
                     if isinstance(partial_exc, _WorkflowLimit):
                         global_stop = "artifact_byte_limit"
                         result["errors"].append(_issue(partial_exc.code, str(partial_exc), step_id=step_id,

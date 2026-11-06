@@ -2,20 +2,21 @@
 
 검증 가능한 물리·화학 모형을 연결하고, 연구자가 실험을 직접 구성하는 연구 시뮬레이션 플랫폼을 개발합니다. 특정 활용 분야로 목표를 한정하지 않으며 모형의 적용 범위·근사·수치 오차·검증 근거를 함께 관리합니다.
 
-현재 개발 버전 `0.14.0`은 **브라우저 연구 작업 공간, 실험 정의 검증기, 에너지·힘 계산·정적 탐색·유한 1차원 양자 상태, 다단계 실행과 비동기 API**에 아키텍처별 실행 프로필·운영 인증·영속 저장 배포 구성과 SQLite 백업 복구를 제공합니다. 이메일을 인증한 계정의 아이디·비밀번호 로그인과 선택형 이메일 이중 인증을 추가하며 실제 배포·메일 발송 확인은 별도 검증 근거로 구분합니다. 브라우저에서 입력을 구성·검증·저장하고 계산 진행·실행 기록·수치 결과·산출물을 확인합니다. SQLite에 불변 입력과 결과를 보존하며 입력 검증·수치 및 해상도 수렴·실제 현상에 대한 물리적 검증을 구분합니다.
+현재 개발 버전 `0.15.0`은 **브라우저 연구 작업 공간, 실험 정의 검증기, 에너지·힘 계산·정적 탐색·유한 1차원 양자 상태, 다단계 실행과 비동기 API**에 아키텍처별 실행 프로필·운영 인증·영속 저장 배포 구성과 SQLite 백업 복구를 제공합니다. 이메일을 인증한 계정의 아이디·비밀번호 로그인과 선택형 이메일 이중 인증을 추가하며 실제 배포·메일 발송 확인은 별도 검증 근거로 구분합니다. 브라우저에서 입력을 구성·검증·저장하고 계산 진행·실행 기록·수치 결과·산출물을 확인합니다. SQLite에 불변 입력과 결과를 보존하며 입력 검증·수치 및 해상도 수렴·실제 현상에 대한 물리적 검증을 구분합니다.
 
 Cloudflare Access가 기본 운영 인증입니다. Cloudflare에 등록하지 않은 도메인은 [직접 HTTPS와 소유자 접속키](docs/direct-https.md)를 명시적으로 선택할 수 있습니다. 이 선택은 운영용 ASGI 경계·루프백·인증된 API를 유지하며 자동으로 활성화되지 않습니다. 공개 TLS·실제 로그인·OCI 앱 배포 확인은 코드 지원과 별도로 기록합니다.
 
 직접 HTTPS의 새 브라우저 인증은 [서버 계정과 Gmail 인증](docs/account-login.md)을 사용합니다. 이메일 인증 후 공개 가입, 아이디·비밀번호 로그인, 선택형 이메일 추가 인증과 재설정을 제공합니다. 최초 관리자만 기존 `local` 실험 기록을 이어받고 공개 가입자는 별도 자료·자원 한도를 사용합니다. 기존 소유자 키는 운영·비공개 초기 설정용으로 유지합니다. Gmail 자격 설정·실제 이메일 수신 확인 전에는 가입이 완료된 것으로 표시하지 않습니다.
 
-## 독립 동역학 시간적분
+## 동역학 실험 실행
 
-개발0.14.0은 [velocity-Verlet 독립 실행](docs/dynamics-integration.md)을 제공합니다. 명시적 질량·위치·속도와 쌍 퍼텐셜로 시간 궤적을 계산하고 전 스텝 보존량·h/h2/h4 해상도·부분 실패를 판정합니다. 실행용 계약은0.3.1이며 기존0.3.0은 [입력 검증 기반](docs/dynamics-foundation.md)으로 보존합니다. 기존 실험·웹/API·계산의 기본 계약은0.2.0입니다. 동역학의 다단계 실행·SQLite/API·웹 연결은 다음 단계이며 실제 OCI 배포 상태는 WORKPLAN에서 별도로 확인합니다.
+개발0.15.0은 [동역학 실험의 실행·저장·재실행](docs/dynamics-workflows.md)을 추가합니다. 명시적 실험 계약0.4.0에서 초기 조건의 단일 integrate를 기존 계획·SQLite·비동기 작업자·HTTP·산출물·번들 재실행에 연결합니다. 물리 시각과 질량·위치·속도를 가진 위상 상태를 보존합니다. 기존 실험 기본 계약0.2.0과 검증 전용0.3.0·[독립 solver0.3.1](docs/dynamics-integration.md)의 원본을 유지합니다. 현재 범용 입자 쌍 모형과 실제 분자 구조·결합 모형을 구분하며, 웹3D 화면과 실제 OCI 배포 상태는 WORKPLAN을 따릅니다.
 
 ```bash
-quanta check-contracts --contract-version 0.3.1
-quanta validate-dynamics contracts/v0.3.1/examples/harmonic.request.json
-quanta integrate-dynamics contracts/v0.3.1/examples/harmonic-refinement.request.json --format text
+quanta check-contracts --contract-version 0.4.0
+quanta plan contracts/v0.4.0/examples/free_revision.json --format text
+quanta run contracts/v0.4.0/examples/free_revision.json --output-dir .cache/dynamics-run --format text
+quanta replay .cache/dynamics-run --output-dir .cache/dynamics-replay --format text
 ```
 
 ## 시작하기

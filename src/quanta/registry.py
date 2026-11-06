@@ -17,9 +17,73 @@ from referencing.exceptions import NoSuchResource
 from .parsing import parse_json, pointer
 
 
+_DYNAMICS_ADAPTER_MAPPING = {
+    "adapter_id": "quanta.pair_dynamics.generic_adapter", "adapter_version": "0.1.0",
+    "generic_contract_version": "0.4.0", "solver_contract_version": "0.3.1",
+    "module_id": "quanta.pair_dynamics", "module_version": "0.1.0", "operation": "integrate",
+    "solver_entry_point": "quanta.dynamics.integrate_dynamics_request",
+    "fixed_request_members": {"contract_version": "0.3.1", "operation": "integrate", "initial_time_s": 0},
+    "definition_members_to_request": ["scales", "system", "numerics"], "required_unit_system": "SI",
+    "allowed_protocol": {"steps": 1, "source": "initial", "overrides": False, "sweep_axes": 0},
+}
+_DYNAMICS_PHASE_PORTS = [
+    {"port_id": name, "direction": direction, "representation": "particles_phase_space_3d",
+     "representation_version": "0.1.0", "data_schema_ref": "dynamics_state.schema.json",
+     "metadata_schema_ref": "dynamics_metadata.schema.json", "time_kind": "evolving", "required": True,
+     "operations": ["integrate"], "allowed_sources": sources}
+    for name, direction, sources in (("phase_in", "input", ["initial"]),
+                                      ("phase_out", "output", ["not_applicable"]))
+]
+_DYNAMICS_EXPRESSION_CAPABILITIES = {
+    "variables": ["rho"],
+    "allowed_ops": ["const", "var", "param", "add", "sub", "mul", "div", "neg", "pow", "exp", "log", "sqrt", "sin", "cos"],
+    "dimensionless": True, "max_depth": 16, "max_nodes": 128, "max_parameters": 32,
+    "integer_power_min": -12, "integer_power_max": 12,
+}
+_DYNAMICS_PROTOCOL_CAPABILITIES = {
+    "max_steps": 1, "max_sweep_axes": 0, "max_expanded_steps": 1,
+    "source_policy": "initial_only", "physical_coupling": False,
+}
+_DYNAMICS_IMPLEMENTED_LIMITS = {
+    "min_particles": 2, "max_particles": 128, "max_base_steps": 10000,
+    "max_total_force_evaluations": 10000, "max_pair_evaluations": 1000000,
+    "max_total_output_frames": 512, "max_ast_depth": 16, "max_ast_nodes": 128,
+    "max_parameters": 32, "max_protocol_steps": 1, "max_expanded_steps": 1, "max_sweep_axes": 0,
+}
+
+
 def _error(message: str, path: str | None = None, **details) -> dict:
     return {"code": "REGISTRY_SNAPSHOT_UNAVAILABLE", "category": "support", "message": message,
             "path": path, "step_id": None, "branch_index": None, "retryable": False, "details": details}
+
+
+def experiment_registry(value, registry: ContractRegistry | None = None) -> ContractRegistry:
+    """Select a generic bundle from an already parsed experiment envelope.
+
+    The default remains 0.2.0.  Unknown or malformed version markers are left
+    for the selected envelope schema to reject; they never opt into 0.4.0.
+    Standalone solver bundles cannot be supplied as generic registries.
+    """
+    marker = value.get("schema_version") if isinstance(value, dict) else None
+    known = isinstance(marker, str) and marker in {"0.2.0", "0.4.0"}
+    if registry is not None:
+        if not isinstance(registry, ContractRegistry) or registry.contract_version not in {"0.2.0", "0.4.0"}:
+            raise ValueError("A generic experiment requires its exact supported generic registry")
+        if known and marker != registry.contract_version:
+            raise ValueError("Experiment schema version differs from the supplied generic registry")
+        return registry
+    return ContractRegistry(contract_version="0.4.0" if marker == "0.4.0" else "0.2.0")
+
+
+def _same_snapshot(left, right) -> bool:
+    """Compare captured rules without Python's boolean/number equality alias."""
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(_same_snapshot(left[k], right[k]) for k in left)
+    if isinstance(left, list):
+        return len(left) == len(right) and all(_same_snapshot(a, b) for a, b in zip(left, right))
+    return left == right
 
 
 class ContractRegistry:
@@ -35,7 +99,7 @@ class ContractRegistry:
         # Version selection is explicit: merely installing a new bundle never
         # changes validation or replay of existing 0.2 inputs.
         if contract_version is not None and (not isinstance(contract_version, str)
-                                             or contract_version not in {"0.2.0", "0.3.0", "0.3.1"}):
+                                             or contract_version not in {"0.2.0", "0.3.0", "0.3.1", "0.4.0"}):
             raise ValueError("Unsupported bundled contract version")
         selected_version = contract_version or "0.2.0"
         enforce_selected_version = contract_dir is None or contract_version is not None
@@ -76,7 +140,7 @@ class ContractRegistry:
         self.contract_version = self.data.get("contract_version")
         if enforce_selected_version and self.contract_version != selected_version:
             raise ValueError("Selected contract version differs from the loaded registry")
-        if self.contract_version not in {"0.2.0", "0.3.0", "0.3.1"}:
+        if self.contract_version not in {"0.2.0", "0.3.0", "0.3.1", "0.4.0"}:
             self._load_errors.append(_error("Unsupported registry contract version", "registry.json"))
         self.resource_policy = self.documents.get("resource_policy.json", {})
         self.schema_ids: dict[str, str] = {}
@@ -166,9 +230,14 @@ class ContractRegistry:
         if not self.data:
             errors.append(_error("The frozen registry document is unavailable"))
             return errors
-        if self.contract_version in {"0.3.0", "0.3.1"}:
-            for name, schema in (("registry.json", "registry.schema.json"),
-                                 ("resource_policy.json", "resource_policy.schema.json")):
+        if self.contract_version == "0.4.0":
+            errors.extend(self._generic_dynamics_snapshot_errors())
+        if self.contract_version in {"0.3.0", "0.3.1", "0.4.0"}:
+            bindings = [("registry.json", "registry.schema.json"),
+                        ("resource_policy.json", "resource_policy.schema.json")]
+            if self.contract_version == "0.4.0":
+                bindings.append(("dynamics_adapter.json", "dynamics_adapter.schema.json"))
+            for name, schema in bindings:
                 try:
                     for error in itertools.islice(self.validator(schema).iter_errors(self.documents.get(name)), 100 - len(errors)):
                         errors.append(_error(error.message[:240], name + pointer(tuple(error.absolute_path))))
@@ -229,6 +298,79 @@ class ContractRegistry:
                 except Exception as exc:
                     errors.append(_error(str(exc)[:240], "/" + kind + "/" + str(i)))
         return errors
+
+    def _generic_dynamics_snapshot_errors(self) -> list[dict]:
+        """Bind executable generic rules and explicit science imports to bytes."""
+        try:
+            disk_manifest = parse_json(self._manifest_path.read_bytes())
+            if not _same_snapshot(disk_manifest, self.manifest) or set(self.raw_bytes) != set(self.manifest):
+                raise ValueError("Generic contract manifest changed after capture")
+            for name, raw in self.raw_bytes.items():
+                if hashlib.sha256(raw).hexdigest() != self.manifest[name] or self._allowed_path(name).read_bytes() != raw:
+                    raise ValueError("Generic contract bytes differ from their captured manifest: " + name)
+            documents = {name: parse_json(raw) for name, raw in self.raw_bytes.items() if name.endswith(".json")}
+            if (not _same_snapshot(documents, self.documents) or
+                    not _same_snapshot(self.data, documents["registry.json"]) or
+                    not _same_snapshot(self.resource_policy, documents["resource_policy.json"])):
+                raise ValueError("Active generic contract rules differ from captured bytes")
+            schema_ids = {doc["$id"]: name for name, doc in documents.items() if "$schema" in doc and "$id" in doc}
+            if self.schema_ids != schema_ids or documents["registry.json"]["schema_ids"] != schema_ids:
+                raise ValueError("Generic schema identity map differs from the captured allowlist")
+            for name, doc in documents.items():
+                if "$schema" not in doc:
+                    continue
+                aliases = (name, "https://quanta.invalid/contracts/v0.4.0/" + name, doc["$id"])
+                if any(not _same_snapshot(self.offline_registry.contents(alias), doc) for alias in aliases):
+                    raise ValueError("Active offline schema resource differs from captured bytes: " + name)
+            adapter = documents["dynamics_adapter.json"]
+            if not _same_snapshot({key: adapter.get(key) for key in _DYNAMICS_ADAPTER_MAPPING}, _DYNAMICS_ADAPTER_MAPPING):
+                raise ValueError("Registered dynamics adapter mapping differs from the compiled supported mapping")
+            imported = adapter["imported_scientific_schemas_sha256"]
+            names = {"dynamics_request.schema.json", "dynamics_payload.schema.json", "dynamics_state.schema.json",
+                     "dynamics_metadata.schema.json", "dynamics_report.schema.json"}
+            if set(imported) != names or any(hashlib.sha256(self.raw_bytes[name]).hexdigest() != imported[name] for name in names):
+                raise ValueError("Explicit standalone scientific schema imports differ from their frozen hashes")
+            source = ContractRegistry(contract_version="0.3.1")
+            if source._load_errors or any(source.raw_bytes[name] != self.raw_bytes[name] for name in names):
+                raise ValueError("Scientific imports are not the exact installed standalone 0.3.1 schemas")
+            modules = documents["registry.json"]["modules"]
+            if len(modules) != 1 or (modules[0]["module_id"], modules[0]["module_version"], modules[0]["operations"]) != ("quanta.pair_dynamics", "0.1.0", ["integrate"]):
+                raise ValueError("Generic dynamics bundle declares an unsupported module or operation")
+            if modules[0]["capabilities"].get("execution_adapter_ref") != "dynamics_adapter.json":
+                raise ValueError("Generic dynamics module is not bound to its registered adapter")
+            module = modules[0]
+            expected_refs = {"definition_schema_ref": "dynamics_definition.schema.json",
+                             "input_schema_ref": "dynamics_request.schema.json#/properties/system",
+                             "numerics_schema_ref": "dynamics_request.schema.json#/properties/numerics",
+                             "payload_schema_ref": "dynamics_payload.schema.json"}
+            if not _same_snapshot({key: module.get(key) for key in expected_refs}, expected_refs):
+                raise ValueError("Registered dynamics scientific schema bindings differ from the supported adapter")
+            if not _same_snapshot(module.get("precision_contract"), {"real_dtype": "float64", "complex_encoding": "none", "finite_only": True}):
+                raise ValueError("Registered dynamics precision differs from the compiled binary64 implementation")
+            if (module.get("unit_contract", {}).get("interchange_system") != "SI" or
+                    module.get("unit_contract", {}).get("scaling_quantities") != ["length", "energy", "time"]):
+                raise ValueError("Registered dynamics units differ from the compiled SI adapter")
+            if not _same_snapshot(module.get("ports"), _DYNAMICS_PHASE_PORTS):
+                raise ValueError("Registered dynamics phase ports differ from the compiled supported bindings")
+            if (module["capabilities"].get("time_kind") != "evolving" or
+                    module["capabilities"].get("spatial_dimensions") != [3] or
+                    module["capabilities"].get("boundaries") != ["nonperiodic"]):
+                raise ValueError("Registered dynamics geometry or time semantics differ from the compiled implementation")
+            if not _same_snapshot(module["capabilities"].get("expression"), _DYNAMICS_EXPRESSION_CAPABILITIES):
+                raise ValueError("Registered dynamics expression capabilities differ from the compiled implementation")
+            if not _same_snapshot(module["capabilities"].get("protocol"), _DYNAMICS_PROTOCOL_CAPABILITIES):
+                raise ValueError("Registered dynamics protocol capabilities differ from the compiled supported mapping")
+            if not _same_snapshot(module["capabilities"].get("limits"), _DYNAMICS_IMPLEMENTED_LIMITS):
+                raise ValueError("Registered dynamics implementation ceilings differ; tighten the resource policy instead")
+            if (module["capabilities"].get("resource_policy_ref") != "resource_policy.json" or
+                    module["capabilities"].get("resource_profile_pointer") != "/profiles/pair_dynamics_cpu" or
+                    not _same_snapshot(module["capabilities"].get("expression_formats"), [
+                        {"format_id": "quanta.scalar_ast", "format_version": "0.1.0",
+                         "schema_ref": "dynamics_request.schema.json#/$defs/expression"}])):
+                raise ValueError("Registered dynamics expression format or resource binding differs from the supported adapter")
+        except Exception as exc:
+            return [_error("Generic dynamics contract snapshot is unavailable", reason=str(exc)[:240])]
+        return []
 
     def _check_manifest_refs(self, manifest: dict) -> None:
         def walk(item):

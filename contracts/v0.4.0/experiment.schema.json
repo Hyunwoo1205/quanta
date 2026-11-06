@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:experiment:0.4.0",
+  "title": "Quanta generic experiment revision envelope",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.4.0"
+    },
+    "experiment_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "revision_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "definition": {
+      "$ref": "#/$defs/definition"
+    }
+  },
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "revision_id",
+    "title",
+    "created_at",
+    "definition"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "override": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "value": {
+          "description": "Typed JSON value; target type, field existence and authorization are enforced by the registered module contract."
+        }
+      },
+      "required": [
+        "path",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+        },
+        "operation": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "overrides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/override"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "step_id",
+        "operation",
+        "source",
+        "overrides"
+      ],
+      "additionalProperties": false
+    },
+    "axis": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "description": "Values are checked against the registered sweep target type and resource profile."
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "path",
+        "values"
+      ],
+      "additionalProperties": false
+    },
+    "protocol": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/step"
+          },
+          "minItems": 1
+        },
+        "sweep": {
+          "type": "object",
+          "properties": {
+            "axes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/axis"
+              },
+              "minItems": 0
+            }
+          },
+          "required": [
+            "axes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "steps",
+        "sweep"
+      ],
+      "additionalProperties": false
+    },
+    "definition": {
+      "type": "object",
+      "properties": {
+        "unit_system": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Optional at envelope level. Required values and interpretation come from the selected module definition schema."
+        },
+        "scales": {
+          "type": "object",
+          "description": "Optional at envelope level. Names, dimensions and requirements are entirely registered-module-specific."
+        },
+        "system": {
+          "type": "object",
+          "properties": {
+            "module_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$"
+            },
+            "module_version": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+            }
+          },
+          "required": [
+            "module_id",
+            "module_version"
+          ],
+          "additionalProperties": true,
+          "$comment": "Dynamic fields are accepted only provisionally. The registered system_schema and definition_schema must validate them before storage as a valid revision or execution."
+        },
+        "numerics": {
+          "type": "object",
+          "$comment": "Validate using the selected module numerics_schema and complete definition_schema; unknown fields cannot be ignored."
+        },
+        "protocol": {
+          "$ref": "#/$defs/protocol"
+        },
+        "observables": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "extensions": {
+          "type": "object",
+          "$comment": "Every namespace requires a registered schema, semantic validator and explicit activation. Unknown namespaces are rejected."
+        }
+      },
+      "required": [
+        "system",
+        "numerics",
+        "protocol",
+        "observables",
+        "extensions"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$comment": "Envelope validity alone never authorizes execution. Resolve module_id and module_version through the captured registry, then validate the entire definition against its registered definition_schema. Unknown module IDs, unregistered fields and extensions fail closed."
+}

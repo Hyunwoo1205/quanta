@@ -1,0 +1,662 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:state:0.4.0",
+  "title": "Quanta typed state envelope",
+  "$comment": "Generic evolving state envelope. Validate scientific data and metadata through the exact frozen module schemas. This bundle permits only a zero-time initial/prepared phase and a successful primary final phase; no continuation or implicit state conversion is enabled. State scientific hashes bind physical time and full inner 0.3.1 phase data/metadata.",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.4.0"
+    },
+    "state_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "module_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$"
+    },
+    "module_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "representation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "representation_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "time_kind": {
+      "enum": [
+        "static",
+        "evolving"
+      ]
+    },
+    "physical_time": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "number"
+            },
+            "unit": {
+              "const": "s"
+            }
+          },
+          "required": [
+            "value",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "data_schema_ref": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+    },
+    "data": {
+      "type": "object"
+    },
+    "metadata_schema_ref": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.json(?:#(?:/[A-Za-z0-9_~$.-]+)*)?$"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "producer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "initial"
+            },
+            "revision_id": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "kind",
+            "revision_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "step"
+            },
+            "run_id": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            "branch_index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "step_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            },
+            "output_port": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            }
+          },
+          "required": [
+            "kind",
+            "run_id",
+            "branch_index",
+            "step_id",
+            "output_port"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "prepared_input"
+            },
+            "run_id": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            "branch_index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "step_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            }
+          },
+          "required": [
+            "kind",
+            "run_id",
+            "branch_index",
+            "step_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "resolved_input_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "parent_state_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "contract_version",
+    "state_id",
+    "module_id",
+    "module_version",
+    "representation",
+    "representation_version",
+    "time_kind",
+    "physical_time",
+    "data_schema_ref",
+    "data",
+    "metadata_schema_ref",
+    "metadata",
+    "producer",
+    "resolved_input_sha256",
+    "parent_state_refs"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "time_kind": {
+            "const": "static"
+          }
+        },
+        "required": [
+          "time_kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "physical_time": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "physical_time": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "const": "s"
+              }
+            },
+            "required": [
+              "value",
+              "unit"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "producer": {
+            "properties": {
+              "kind": {
+                "const": "initial"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        },
+        "required": [
+          "producer"
+        ]
+      },
+      "then": {
+        "properties": {
+          "parent_state_refs": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "producer": {
+            "properties": {
+              "kind": {
+                "const": "prepared_input"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        },
+        "required": [
+          "producer"
+        ]
+      },
+      "then": {
+        "properties": {
+          "parent_state_refs": {
+            "minItems": 1,
+            "maxItems": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "portBinding": {
+      "type": "object",
+      "properties": {
+        "branch_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "step_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "source_alias": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "source_state_ref": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "source_output_port": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_input_port": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "representation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "representation_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "conversion_ref": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$"
+                },
+                "version": {
+                  "type": "string",
+                  "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+                },
+                "manifest_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "required": [
+                "id",
+                "version",
+                "manifest_sha256"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "effective_input_state_ref": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        }
+      },
+      "required": [
+        "branch_index",
+        "step_id",
+        "source_alias",
+        "source_state_ref",
+        "source_output_port",
+        "target_input_port",
+        "representation",
+        "representation_version",
+        "conversion_ref",
+        "effective_input_state_ref"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source_alias": {
+                "const": "initial"
+              }
+            },
+            "required": [
+              "source_alias"
+            ]
+          },
+          "then": {
+            "properties": {
+              "source_output_port": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "source_output_port": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "particleMetadata": {
+      "type": "object",
+      "properties": {
+        "state_role": {
+          "const": "configuration"
+        },
+        "spatial_dimension": {
+          "const": 3
+        },
+        "coordinate_system": {
+          "const": "cartesian"
+        },
+        "coordinate_labels": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "x"
+            },
+            {
+              "const": "y"
+            },
+            {
+              "const": "z"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "length_unit": {
+          "const": "m"
+        },
+        "position_shape": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 128
+            },
+            {
+              "const": 3
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "boundary": {
+          "const": "nonperiodic"
+        },
+        "precision": {
+          "type": "object",
+          "properties": {
+            "real_dtype": {
+              "type": "string",
+              "minLength": 1
+            },
+            "complex_encoding": {
+              "type": "string",
+              "minLength": 1
+            },
+            "finite_only": {
+              "const": true
+            }
+          },
+          "required": [
+            "real_dtype",
+            "complex_encoding",
+            "finite_only"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "state_role",
+        "spatial_dimension",
+        "coordinate_system",
+        "coordinate_labels",
+        "length_unit",
+        "position_shape",
+        "boundary",
+        "precision"
+      ],
+      "additionalProperties": false
+    },
+    "quantumConfigurationMetadata": {
+      "type": "object",
+      "properties": {
+        "state_role": {
+          "const": "configuration"
+        },
+        "spatial_dimension": {
+          "const": 1
+        },
+        "coordinate_system": {
+          "const": "cartesian"
+        },
+        "coordinate_label": {
+          "const": "x"
+        },
+        "coordinate_convention": {
+          "const": "absolute_SI"
+        },
+        "length_unit": {
+          "const": "m"
+        },
+        "boundary": {
+          "const": "dirichlet_zero"
+        },
+        "precision": {
+          "type": "object",
+          "properties": {
+            "real_dtype": {
+              "type": "string",
+              "minLength": 1
+            },
+            "complex_encoding": {
+              "type": "string",
+              "minLength": 1
+            },
+            "finite_only": {
+              "const": true
+            }
+          },
+          "required": [
+            "real_dtype",
+            "complex_encoding",
+            "finite_only"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "state_role",
+        "spatial_dimension",
+        "coordinate_system",
+        "coordinate_label",
+        "coordinate_convention",
+        "length_unit",
+        "boundary",
+        "precision"
+      ],
+      "additionalProperties": false
+    },
+    "quantumSolutionMetadata": {
+      "type": "object",
+      "properties": {
+        "state_role": {
+          "const": "stationary_solution"
+        },
+        "spatial_dimension": {
+          "const": 1
+        },
+        "coordinate_system": {
+          "const": "cartesian"
+        },
+        "grid_unit": {
+          "const": "m"
+        },
+        "state_unit": {
+          "const": "m^-1/2"
+        },
+        "density_unit": {
+          "const": "m^-1"
+        },
+        "grid_shape": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 33,
+              "maximum": 4097
+            }
+          ],
+          "items": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "state_shape": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            {
+              "type": "integer",
+              "minimum": 33,
+              "maximum": 4097
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "axis_order": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "state"
+            },
+            {
+              "const": "position"
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "integration_rule": {
+          "const": "uniform_interior_rectangle"
+        },
+        "boundary": {
+          "const": "dirichlet_zero"
+        },
+        "normalization": {
+          "const": "sum_delta_x_abs_psi_squared_equals_one"
+        },
+        "precision": {
+          "type": "object",
+          "properties": {
+            "real_dtype": {
+              "type": "string",
+              "minLength": 1
+            },
+            "complex_encoding": {
+              "type": "string",
+              "minLength": 1
+            },
+            "finite_only": {
+              "const": true
+            }
+          },
+          "required": [
+            "real_dtype",
+            "complex_encoding",
+            "finite_only"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "state_role",
+        "spatial_dimension",
+        "coordinate_system",
+        "grid_unit",
+        "state_unit",
+        "density_unit",
+        "grid_shape",
+        "state_shape",
+        "axis_order",
+        "integration_rule",
+        "boundary",
+        "normalization",
+        "precision"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

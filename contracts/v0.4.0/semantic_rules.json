@@ -1,0 +1,15 @@
+{
+  "contract_version": "0.4.0",
+  "rules": [
+    "Reject every unsupported module, operation, field, unit, continuation, override, sweep and conversion explicitly.",
+    "Only registered adapter mapping is permitted; original authored definition and derived solver input have separate hashes.",
+    "No semantic validation invokes a numerical force evaluation; execute the standalone solver only inside the numerical worker.",
+    "Initial and prepared state times are zero; successful output carries primary final time in data and envelope.",
+    "Failed, cancelled or unconverged solver reports never publish an accepted phase output.",
+    "Conservation maxima include every accepted full step independently of artifact sampling.",
+    "Immutable input/plan/phase/transport identities include exact declared units and explicit time.",
+    "Use the most restrictive captured generic/standalone/worker budgets; whole-run artifact cap includes all generic and standalone evidence.",
+    "Replay requires exact captured contracts, code, dependency and environment identities; captured source is never executed.",
+    "Physical validation remains unvalidated."
+  ]
+}

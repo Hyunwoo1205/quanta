@@ -11,10 +11,11 @@ from typing import Any
 from .autodiff import _fraction_float, _product, _ratio, _sum
 from .hashing import definition_sha256
 from .parsing import StrictJSONError, parse_json, pointer
-from .registry import ContractRegistry
+from .registry import ContractRegistry, experiment_registry
 
 _PAIR = "quanta.pair_static"
 _QUANTUM = "quanta.quantum_stationary"
+_DYNAMICS = "quanta.pair_dynamics"
 _HBAR = 6.62607015e-34 / (2 * math.pi)
 _MAX_ERRORS = 100
 
@@ -83,6 +84,8 @@ class _Validation:
     def definition(self, definition: dict, module: dict, *, operation: str | None = None,
                    skip_geometry: bool = False, **context) -> bool:
         initial = len(self.errors)
+        if module["module_id"] == _DYNAMICS:
+            return self.dynamics_definition(definition, module, operation=operation, **context)
         if module["module_id"] not in {_PAIR, _QUANTUM}:
             self.fail("MODEL_UNSUPPORTED", "No semantic implementation is available for this registered module", "/definition/system", **context)
             return False
@@ -198,6 +201,76 @@ class _Validation:
             self.fail("EXPRESSION_DOMAIN", "Potential is not finite and defined on an initial evaluation point", "/definition/system/potential/expression", details={"reason": str(exc)[:160]}, **context)
         return len(self.errors) == initial
 
+    def dynamics_definition(self, definition: dict, module: dict, *, operation: str | None = None,
+                            **context) -> bool:
+        """Admit a single registered dynamics input without running its engine."""
+        initial = len(self.errors)
+        if self.registry.contract_version != "0.4.0" or operation not in {None, "integrate"}:
+            self.fail("MODEL_UNSUPPORTED", "Dynamics requires its registered generic experiment contract", "/definition", **context)
+            return False
+        if (not isinstance(definition, dict) or set(definition) != {
+                "unit_system", "scales", "system", "numerics", "protocol", "observables", "extensions"}
+                or not isinstance(definition.get("extensions"), dict) or definition["extensions"]):
+            self.fail("MODEL_UNSUPPORTED", "Dynamics cannot ignore unregistered definition fields or extensions", "/definition", **context)
+            return False
+        try:
+            from .dynamics_validation import preflight_dynamics_request, _budgets, _Invalid
+            from .dynamics_workflow import solver_request
+            from .hashing import canonical_bytes
+            caps = module["capabilities"]
+            profile = self.registry.resolve_schema(caps["resource_policy_ref"]+"#"+caps["resource_profile_pointer"])
+            if not self.ast_preflight(definition, caps["expression"], profile, **context):
+                return False
+            if not self.schema(definition, module["definition_schema_ref"], "/definition", **context):
+                return False
+            for value, ref, path in ((definition["system"], module["input_schema_ref"], "/definition/system"),
+                                     (definition["numerics"], module["numerics_schema_ref"], "/definition/numerics")):
+                if not self.schema(value, ref, path, **context):
+                    return False
+            if _DYNAMICS+"@"+module["module_version"] not in profile["module_versions"]:
+                self.fail("REGISTRY_SNAPSHOT_UNAVAILABLE", "Dynamics is absent from its resource policy", "/definition", **context)
+                return False
+            if definition["unit_system"] != "SI":
+                self.fail("INPUT_SEMANTIC", "Dynamics requires explicit SI interchange units", "/definition/unit_system", **context)
+                return False
+            expression_caps = copy.deepcopy(caps["expression"])
+            for name,key in (("max_depth","max_ast_depth"),("max_nodes","max_ast_nodes"),("max_parameters","max_parameters")):
+                expression_caps[name] = min(expression_caps[name], profile[key])
+            if not self.ast(definition["system"]["potential"]["expression"],
+                            definition["system"]["potential"]["parameters"], expression_caps, **context):
+                return False
+            request = solver_request(definition)
+            checked = preflight_dynamics_request(request)
+            if not checked["valid"]:
+                for error in checked["errors"]:
+                    path = error.get("path")
+                    self.fail(error["code"], error["message"], "/definition"+path if path else "/definition",
+                              details=error.get("details", {}), **context)
+                return False
+            # Both contracts' ceilings apply; no authored field or model is
+            # clamped to make a request fit a lowered generic profile.
+            _budgets(request, profile, self.registry.resource_policy["common_execution"],
+                     len(canonical_bytes(definition)), canonical_bytes(request), self.registry)
+            particles = request["system"]["particles"]
+            minimum = Fraction(request["system"]["min_distance_m"])**2
+            for i, particle in enumerate(particles):
+                for j in range(i):
+                    square = sum((Fraction(a)-Fraction(b))**2 for a,b in zip(
+                        particle["position_m"], particles[j]["position_m"]))
+                    if square <= minimum:
+                        self.fail("INPUT_SEMANTIC", "Every initial pair distance must exceed the minimum distance",
+                                  "/definition/system/particles", details={"pair_indices":[j,i]}, **context)
+                        return False
+            self.warnings.append(_issue("INITIAL_DYNAMICS_CHECKS_DEFERRED",
+                "Initial force, derivatives and conservation diagnostics are checked in the bounded calculation step; input preflight does not run the force engine",
+                "/definition", category="support", **context))
+        except _Invalid as exc:
+            self.fail(exc.code, str(exc), "/definition"+(exc.path or ""), details=exc.details, **context)
+        except (KeyError, TypeError, ValueError, OSError) as exc:
+            self.fail("REGISTRY_SNAPSHOT_UNAVAILABLE", "Dynamics preflight could not resolve its frozen contracts",
+                      "/definition", details={"reason":str(exc)[:160]}, **context)
+        return len(self.errors) == initial
+
     def ast_preflight(self, definition: dict, caps: dict, profile: dict, **context) -> bool:
         """Bound AST traversal before recursive oneOf schema evaluation."""
         system = definition.get("system")
@@ -228,8 +301,23 @@ class _Validation:
 
     def protocol(self, definition: dict, module: dict) -> None:
         protocol = definition["protocol"]
+        if module["module_id"] == _DYNAMICS and (
+                not isinstance(protocol, dict) or set(protocol) != {"steps", "sweep"}
+                or not isinstance(protocol.get("steps"), list)
+                or not isinstance(protocol.get("sweep"), dict) or set(protocol["sweep"]) != {"axes"}
+                or not isinstance(protocol["sweep"]["axes"], list)
+                or any(not isinstance(step, dict) or set(step) != {"step_id", "operation", "source", "overrides"}
+                       for step in protocol["steps"])):
+            self.fail("MODEL_UNSUPPORTED", "Dynamics cannot ignore unregistered protocol fields", "/definition/protocol")
+            return
         steps, axes = protocol["steps"], protocol["sweep"]["axes"]
         caps = module["capabilities"]
+        if module["module_id"] == _DYNAMICS:
+            if (len(steps) != 1 or axes or steps[0]["operation"] != "integrate" or
+                    steps[0]["source"] != "initial" or steps[0]["overrides"]):
+                self.fail("MODEL_UNSUPPORTED", "Dynamics supports exactly one integrate step from initial with no overrides or sweep",
+                          "/definition/protocol")
+                return
         profile = self.registry.resolve_schema(caps["resource_policy_ref"] + "#" + caps["resource_profile_pointer"])
         ids = [s["step_id"] for s in steps]
         if len(ids) != len(set(ids)) or "initial" in ids:
@@ -424,7 +512,7 @@ def validate_experiment(data: bytes | str | dict, *, registry: ContractRegistry 
     if isinstance(experiment, dict):
         report["schema_version"] = experiment.get("schema_version")
     try:
-        registry = registry or ContractRegistry()
+        registry = experiment_registry(experiment, registry)
         integrity = registry.validate_integrity()
     except (OSError, ValueError, TypeError) as exc:
         report["errors"].append(_issue("REGISTRY_SNAPSHOT_UNAVAILABLE", "Frozen contract bundle could not be loaded", details={"reason": str(exc)[:200]}))
@@ -484,6 +572,7 @@ def validate_definition(data: dict, *, registry: ContractRegistry | None = None)
         return report
     try:
         registry = registry or ContractRegistry()
+        report["schema_version"] = registry.contract_version
         integrity = registry.validate_integrity()
         if integrity:
             report["errors"] = integrity[:_MAX_ERRORS]

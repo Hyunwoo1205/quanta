@@ -1,0 +1,452 @@
+{
+  "contract_version": "0.4.0",
+  "registry_version": "0.4.0",
+  "status": "generic_single_initial_dynamics",
+  "physics_module_versions": "0.1.0",
+  "schema_resolution": {
+    "mode": "fixed_offline_bundle_allowlist",
+    "remote_resolution": false,
+    "import_policy": "Only the five exact 0.3.1 scientific schema imports in dynamics_adapter.json; no implicit cross-bundle URL aliases.",
+    "validation_order": [
+      "common envelope",
+      "registered dynamics definition and zero-time adapter",
+      "scientific preflight and effective budgets",
+      "registered evolving states/payload/report",
+      "artifact and whole-run cross-field checks"
+    ]
+  },
+  "schema_ids": {
+    "urn:quanta:schema:artifact:0.4.0": "artifact.schema.json",
+    "urn:quanta:schema:dynamics-generic-adapter:0.4.0": "dynamics_adapter.schema.json",
+    "urn:quanta:schema:pair-dynamics-definition:0.4.0": "dynamics_definition.schema.json",
+    "urn:quanta:schema:pair-dynamics-metadata:0.3.1": "dynamics_metadata.schema.json",
+    "urn:quanta:schema:pair-dynamics-payload:0.3.1": "dynamics_payload.schema.json",
+    "urn:quanta:schema:pair-dynamics-report:0.3.1": "dynamics_report.schema.json",
+    "urn:quanta:schema:pair-dynamics-request:0.3.1": "dynamics_request.schema.json",
+    "urn:quanta:schema:pair-dynamics-state:0.3.1": "dynamics_state.schema.json",
+    "urn:quanta:schema:experiment:0.4.0": "experiment.schema.json",
+    "urn:quanta:schema:module-manifest:0.4.0": "module_manifest.schema.json",
+    "urn:quanta:schema:observable-manifest:0.4.0": "observable_manifest.schema.json",
+    "urn:quanta:schema:generic-dynamics-resource-policy:0.4.0": "resource_policy.schema.json",
+    "urn:quanta:schema:result:0.4.0": "result.schema.json",
+    "urn:quanta:schema:state:0.4.0": "state.schema.json",
+    "urn:quanta:schema:generic-dynamics-registry:0.4.0": "registry.schema.json"
+  },
+  "modules": [
+    {
+      "contract_version": "0.4.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "implementation_status": "implemented_unvalidated",
+      "description": "Single initial-source velocity-Verlet dynamics step, mapped explicitly to the immutable standalone 0.3.1 solver contract.",
+      "definition_schema_ref": "dynamics_definition.schema.json",
+      "input_schema_ref": "dynamics_request.schema.json#/properties/system",
+      "numerics_schema_ref": "dynamics_request.schema.json#/properties/numerics",
+      "payload_schema_ref": "dynamics_payload.schema.json",
+      "operations": [
+        "integrate"
+      ],
+      "ports": [
+        {
+          "port_id": "phase_in",
+          "direction": "input",
+          "representation": "particles_phase_space_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "dynamics_state.schema.json",
+          "metadata_schema_ref": "dynamics_metadata.schema.json",
+          "time_kind": "evolving",
+          "required": true,
+          "operations": [
+            "integrate"
+          ],
+          "allowed_sources": [
+            "initial"
+          ]
+        },
+        {
+          "port_id": "phase_out",
+          "direction": "output",
+          "representation": "particles_phase_space_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "dynamics_state.schema.json",
+          "metadata_schema_ref": "dynamics_metadata.schema.json",
+          "time_kind": "evolving",
+          "required": true,
+          "operations": [
+            "integrate"
+          ],
+          "allowed_sources": [
+            "not_applicable"
+          ]
+        }
+      ],
+      "observables": [
+        "trajectory",
+        "energy_components",
+        "linear_momentum",
+        "angular_momentum",
+        "conservation_diagnostics"
+      ],
+      "unit_contract": {
+        "interchange_system": "SI",
+        "scaling_quantities": [
+          "length",
+          "energy",
+          "time"
+        ],
+        "input_quantities": [
+          {
+            "path": "/particles/*/position_m",
+            "unit": "m",
+            "dimension": "length"
+          },
+          {
+            "path": "/particles/*/velocity_m_per_s",
+            "unit": "m/s",
+            "dimension": "velocity"
+          },
+          {
+            "path": "/particles/*/mass_kg",
+            "unit": "kg",
+            "dimension": "mass"
+          },
+          {
+            "path": "/min_distance_m",
+            "unit": "m",
+            "dimension": "length"
+          },
+          {
+            "path": "/potential/parameters/*",
+            "unit": "1",
+            "dimension": "dimensionless"
+          }
+        ]
+      },
+      "precision_contract": {
+        "real_dtype": "float64",
+        "complex_encoding": "none",
+        "finite_only": true
+      },
+      "capabilities": {
+        "time_kind": "evolving",
+        "spatial_dimensions": [
+          3
+        ],
+        "boundaries": [
+          "nonperiodic"
+        ],
+        "expression": {
+          "variables": [
+            "rho"
+          ],
+          "allowed_ops": [
+            "const",
+            "var",
+            "param",
+            "add",
+            "sub",
+            "mul",
+            "div",
+            "neg",
+            "pow",
+            "exp",
+            "log",
+            "sqrt",
+            "sin",
+            "cos"
+          ],
+          "dimensionless": true,
+          "max_depth": 16,
+          "max_nodes": 128,
+          "max_parameters": 32,
+          "integer_power_min": -12,
+          "integer_power_max": 12
+        },
+        "protocol": {
+          "max_steps": 1,
+          "max_sweep_axes": 0,
+          "max_expanded_steps": 1,
+          "source_policy": "initial_only",
+          "physical_coupling": false
+        },
+        "resource_policy_ref": "resource_policy.json",
+        "resource_profile_pointer": "/profiles/pair_dynamics_cpu",
+        "limits": {
+          "max_particles": 128,
+          "max_base_steps": 10000,
+          "max_total_force_evaluations": 10000,
+          "max_pair_evaluations": 1000000,
+          "max_total_output_frames": 512,
+          "max_ast_depth": 16,
+          "max_ast_nodes": 128,
+          "max_parameters": 32,
+          "max_protocol_steps": 1,
+          "max_expanded_steps": 1,
+          "max_sweep_axes": 0,
+          "min_particles": 2
+        },
+        "expression_formats": [
+          {
+            "format_id": "quanta.scalar_ast",
+            "format_version": "0.1.0",
+            "schema_ref": "dynamics_request.schema.json#/$defs/expression"
+          }
+        ],
+        "execution_adapter_ref": "dynamics_adapter.json"
+      },
+      "validation": {
+        "status": "not_executed",
+        "manifest_ref": "validation_manifest.json",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11"
+        ],
+        "evidence_artifact_ids": [],
+        "scope": "Bundle declaration only; independent measured solver and integration evidence are recorded separately. Physical validation remains unvalidated."
+      }
+    }
+  ],
+  "observables": [
+    {
+      "contract_version": "0.4.0",
+      "observable_id": "trajectory",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "description": "trajectory",
+      "meaning": "Synchronized SI positions, velocities and forces indexed by leg and retained full-step time.",
+      "source_ports": [
+        "phase_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/legs",
+      "output_schema_ref": "dynamics_payload.schema.json#/properties/legs",
+      "quantity": {
+        "value_kind": "table",
+        "unit": "SI phase-space arrays",
+        "dtype": "float64",
+        "shape": [
+          "L"
+        ],
+        "axis_order": [
+          "refinement_leg"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "integrate"
+      ]
+    },
+    {
+      "contract_version": "0.4.0",
+      "observable_id": "energy_components",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "description": "energy_components",
+      "meaning": "Per-frame SI potential, kinetic and total energies.",
+      "source_ports": [
+        "phase_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/legs",
+      "output_schema_ref": "dynamics_payload.schema.json#/properties/legs",
+      "quantity": {
+        "value_kind": "table",
+        "unit": "J",
+        "dtype": "float64",
+        "shape": [
+          "L"
+        ],
+        "axis_order": [
+          "refinement_leg"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "integrate"
+      ]
+    },
+    {
+      "contract_version": "0.4.0",
+      "observable_id": "linear_momentum",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "description": "linear_momentum",
+      "meaning": "Per-frame total linear momentum in SI.",
+      "source_ports": [
+        "phase_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/legs",
+      "output_schema_ref": "dynamics_payload.schema.json#/properties/legs",
+      "quantity": {
+        "value_kind": "table",
+        "unit": "kg m/s",
+        "dtype": "float64",
+        "shape": [
+          "L"
+        ],
+        "axis_order": [
+          "refinement_leg"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "integrate"
+      ]
+    },
+    {
+      "contract_version": "0.4.0",
+      "observable_id": "angular_momentum",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "description": "angular_momentum",
+      "meaning": "Per-frame total angular momentum about the declared origin in SI.",
+      "source_ports": [
+        "phase_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/legs",
+      "output_schema_ref": "dynamics_payload.schema.json#/properties/legs",
+      "quantity": {
+        "value_kind": "table",
+        "unit": "kg m^2/s",
+        "dtype": "float64",
+        "shape": [
+          "L"
+        ],
+        "axis_order": [
+          "refinement_leg"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "integrate"
+      ]
+    },
+    {
+      "contract_version": "0.4.0",
+      "observable_id": "conservation_diagnostics",
+      "observable_version": "0.1.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "description": "conservation_diagnostics",
+      "meaning": "All-accepted-step maxima E/P/L/COM per leg; independent of retained sampling.",
+      "source_ports": [
+        "phase_out"
+      ],
+      "evaluation_stage": "post_solve",
+      "payload_pointer": "/legs",
+      "output_schema_ref": "dynamics_payload.schema.json#/properties/legs",
+      "quantity": {
+        "value_kind": "table",
+        "unit": "1",
+        "dtype": "float64",
+        "shape": [
+          "L"
+        ],
+        "axis_order": [
+          "refinement_leg"
+        ],
+        "complex_encoding": "none",
+        "components": []
+      },
+      "computation_version": "0.1.0",
+      "validation": {
+        "status": "not_executed",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06"
+        ],
+        "evidence_artifact_ids": []
+      },
+      "eligible_operations": [
+        "integrate"
+      ]
+    }
+  ],
+  "invariants": [
+    "Default generic 0.2.0 and standalone 0.3.0/0.3.1 remain unchanged.",
+    "Only a single integrate operation with source initial, no sweep, no override and no conversion.",
+    "Imported phase data/metadata and solver request retain 0.3.1 identities.",
+    "Whole-run artifact, numerical, resolution and physical validation axes remain separate."
+  ],
+  "precision_and_units": {
+    "unit_system": "SI",
+    "real_dtype": "float64",
+    "canonicalization": "RFC8785",
+    "physical_validation_status": "unvalidated"
+  }
+}

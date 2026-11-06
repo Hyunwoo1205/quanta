@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:pair-dynamics-definition:0.4.0",
+  "title": "Single initial-source generic dynamics definition using the frozen 0.3.1 scientific input",
+  "type": "object",
+  "properties": {
+    "unit_system": {
+      "const": "SI"
+    },
+    "scales": {
+      "$ref": "dynamics_request.schema.json#/properties/scales"
+    },
+    "system": {
+      "$ref": "dynamics_request.schema.json#/properties/system"
+    },
+    "numerics": {
+      "$ref": "dynamics_request.schema.json#/properties/numerics"
+    },
+    "protocol": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "step_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+              },
+              "operation": {
+                "const": "integrate"
+              },
+              "source": {
+                "const": "initial"
+              },
+              "overrides": {
+                "type": "array",
+                "maxItems": 0
+              }
+            },
+            "required": [
+              "step_id",
+              "operation",
+              "source",
+              "overrides"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "sweep": {
+          "type": "object",
+          "properties": {
+            "axes": {
+              "type": "array",
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "axes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "steps",
+        "sweep"
+      ],
+      "additionalProperties": false
+    },
+    "observables": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "trajectory",
+          "energy_components",
+          "linear_momentum",
+          "angular_momentum",
+          "conservation_diagnostics"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "extensions": {
+      "type": "object",
+      "maxProperties": 0
+    }
+  },
+  "required": [
+    "unit_system",
+    "scales",
+    "system",
+    "numerics",
+    "protocol",
+    "observables",
+    "extensions"
+  ],
+  "additionalProperties": false,
+  "$comment": "Initial time is fixed at zero by the registered adapter, not inserted into the authored definition. Unsupported continuation, sweep and overrides fail closed."
+}

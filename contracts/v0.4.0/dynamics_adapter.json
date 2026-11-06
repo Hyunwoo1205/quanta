@@ -1,0 +1,37 @@
+{
+  "adapter_id": "quanta.pair_dynamics.generic_adapter",
+  "adapter_version": "0.1.0",
+  "generic_contract_version": "0.4.0",
+  "solver_contract_version": "0.3.1",
+  "module_id": "quanta.pair_dynamics",
+  "module_version": "0.1.0",
+  "operation": "integrate",
+  "solver_entry_point": "quanta.dynamics.integrate_dynamics_request",
+  "fixed_request_members": {
+    "contract_version": "0.3.1",
+    "operation": "integrate",
+    "initial_time_s": 0
+  },
+  "definition_members_to_request": [
+    "scales",
+    "system",
+    "numerics"
+  ],
+  "required_unit_system": "SI",
+  "allowed_protocol": {
+    "steps": 1,
+    "source": "initial",
+    "overrides": false,
+    "sweep_axes": 0
+  },
+  "imported_scientific_schemas_sha256": {
+    "dynamics_request.schema.json": "32074a727c1f2f99b11813f79e889983e99872b0eb4f926e0fd206685002555a",
+    "dynamics_payload.schema.json": "f14f1afa1dbf5365aabf955dbc5b37968cbb27c1482d4e259e9b85f090efd83f",
+    "dynamics_state.schema.json": "c1ffdbaf8e867701a63464ef61a1fd0d3f732dd88db7e73cc89105d4c930eb09",
+    "dynamics_metadata.schema.json": "35e82bd48a749bad0c9c166c122e081ca753b2874569b86681222bfe9d6242ae",
+    "dynamics_report.schema.json": "95fc2192f68a13edd129d3c7973bdb0295092d9d4d2fc8676a9172db6e9028bf"
+  },
+  "input_hash_semantics": "Preserve the authored generic definition hash. Derive and separately capture/hash the exact 0.3.1 request; never relabel either digest as the other.",
+  "state_semantics": "Generic 0.4.0 state envelope carries unchanged 0.3.1 phase data/metadata; initial time zero, successful primary final time only, no checkpoint continuation.",
+  "resource_semantics": "Every effective common/profile limit is the minimum of generic4, standalone3.1 and any tighter execution policy; no automatic increase, dt/sample/precision change or truncated successful result."
+}

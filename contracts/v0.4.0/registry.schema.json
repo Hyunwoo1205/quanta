@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:generic-dynamics-registry:0.4.0",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.4.0"
+    },
+    "registry_version": {
+      "const": "0.4.0"
+    },
+    "status": {
+      "const": "generic_single_initial_dynamics"
+    },
+    "physics_module_versions": {
+      "const": "0.1.0"
+    },
+    "schema_resolution": {
+      "type": "object"
+    },
+    "schema_ids": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "$ref": "module_manifest.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "observables": {
+      "type": "array",
+      "items": {
+        "$ref": "observable_manifest.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "precision_and_units": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "contract_version",
+    "registry_version",
+    "status",
+    "physics_module_versions",
+    "schema_resolution",
+    "schema_ids",
+    "modules",
+    "observables",
+    "invariants",
+    "precision_and_units"
+  ],
+  "additionalProperties": false
+}

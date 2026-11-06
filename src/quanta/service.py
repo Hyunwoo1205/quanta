@@ -94,11 +94,24 @@ class ExecutionService:
         registry = ContractRegistry()
         if registry.validate_integrity():
             raise ServiceError(409, "REGISTRY_SNAPSHOT_UNAVAILABLE", "The bundled registry failed integrity verification")
+        dynamics = ContractRegistry(contract_version="0.4.0")
+        if dynamics.validate_integrity():
+            raise ServiceError(409, "REGISTRY_SNAPSHOT_UNAVAILABLE", "The dynamics experiment registry failed integrity verification")
+        default_operations = {"quanta.pair_static@0.1.0": ["energy_forces", "relax"],
+                              "quanta.quantum_stationary@0.1.0": ["eigenstates"]}
         return {"service_version": "0.1.0", "package_version": __version__, "contract_version": "0.2.0",
             "scope": "single_host_owner_scoped_service", "physical_validation_status": "unvalidated",
-            "implemented_operations": {"quanta.pair_static@0.1.0": ["energy_forces", "relax"],
-                                       "quanta.quantum_stationary@0.1.0": ["eigenstates"]},
+            "implemented_operations": default_operations,
             "registry": deepcopy(registry.data), "resource_policy": deepcopy(registry.resource_policy),
+            "supported_experiment_versions": ["0.2.0", "0.4.0"],
+            "experiment_contracts": {
+                "0.2.0": {"schema_version": "0.2.0", "implemented_operations": deepcopy(default_operations),
+                          "registry": deepcopy(registry.data), "resource_policy": deepcopy(registry.resource_policy)},
+                "0.4.0": {"schema_version": "0.4.0", "implemented_operations": {"quanta.pair_dynamics@0.1.0": ["integrate"]},
+                          "registry": deepcopy(dynamics.data), "resource_policy": deepcopy(dynamics.resource_policy),
+                          "protocol": {"max_steps": 1, "allowed_sources": ["initial"], "sweep": False,
+                                       "overrides": False, "continuation": False,
+                                       "static_to_dynamics_conversion": False}}},
             "execution": {"workers": 1, "threads_per_worker": 1, "idempotency_seconds": 86400,
                           "checkpoint_resume": False, "authentication": "server_configured_bearer_principal",
                           "local_account_limits": public_account_limits()}}

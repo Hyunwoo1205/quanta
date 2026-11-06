@@ -1,6 +1,7 @@
 """Deterministic symbolic workflow plans and validated effective step inputs.
 
-Every digest follows the frozen 0.2.0 projections. Generated states, storage
+Existing digests retain the frozen 0.2.0 projections. Dynamics uses the explicit
+0.4.0 adapter and solver-contract bindings. Generated states, storage
 identifiers and calculation outputs are deliberately absent from a run plan.
 Captured manifest strings are the exact UTF-8 contents addressed by their keys.
 """
@@ -31,6 +32,7 @@ _IMPLEMENTATIONS = {
     ("quanta.pair_static", "0.1.0", "energy_forces"): "quanta.pair.evaluate_pair",
     ("quanta.pair_static", "0.1.0", "relax"): "quanta.relaxation.relax_pair",
     ("quanta.quantum_stationary", "0.1.0", "eigenstates"): "quanta.quantum.eigenstates",
+    ("quanta.pair_dynamics", "0.1.0", "integrate"): "quanta.dynamics_workflow.execute_dynamics",
 }
 
 
@@ -124,11 +126,65 @@ def _implementation_capture(contents: dict[str, str]) -> str:
                                      "source_files_sha256": sources})
 
 
-def _engine_manifest(module_id: str, module_version: str, operation: str, implementation_sha: str) -> dict:
-    return {"manifest_version": "1.0.0", "module_id": module_id,
+def _dynamics_bindings(registry: ContractRegistry, contents: dict[str, str] | None = None) -> tuple[dict, dict]:
+    """Bind the explicit adapter and the complete standalone solver bundle.
+
+    The generic contract never silently upgrades its embedded solver. Captured
+    bytes permit historical integrity checks; current execution also checks the
+    installed bundle through these exact identities.
+    """
+    if registry.contract_version != "0.4.0":
+        raise PlanningError("Dynamics requires its explicit generic contract", code="MODEL_UNSUPPORTED")
+    if registry.validate_integrity():
+        raise PlanningError("The generic dynamics contract snapshot changed", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
+    raw = registry.raw_bytes.get("dynamics_adapter.json")
+    if raw is None:
+        raise PlanningError("The dynamics adapter registration is unavailable", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
+    adapter = parse_json(raw)
+    expected = {"adapter_id": "quanta.pair_dynamics.generic_adapter", "adapter_version": "0.1.0",
+                "generic_contract_version": "0.4.0", "solver_contract_version": "0.3.1",
+                "module_id": "quanta.pair_dynamics", "module_version": "0.1.0", "operation": "integrate"}
+    if any(adapter.get(name) != value for name, value in expected.items()):
+        raise PlanningError("The dynamics adapter identity is unavailable", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
+    solver = ContractRegistry(contract_version="0.3.1")
+    errors = solver.validate_integrity()
+    if errors:
+        raise PlanningError("The standalone solver bundle is unavailable", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
+    manifest = solver._manifest_path.read_bytes()
+    files = {**solver.raw_bytes, "SHA256SUMS.json": manifest}
+    if parse_json(manifest) != solver.manifest:
+        raise PlanningError("Standalone solver digest manifest changed", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
+    for name, digest in adapter["imported_scientific_schemas_sha256"].items():
+        if name not in files or _digest_bytes(files[name]) != digest or registry.raw_bytes.get(name) != files[name]:
+            raise PlanningError("Imported scientific schema differs from the selected solver", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
+    if contents is not None:
+        _capture(contents, raw)
+        for file_raw in files.values():
+            _capture(contents, file_raw)
+    binding = {"adapter_id": adapter["adapter_id"], "adapter_version": adapter["adapter_version"],
+               "manifest_sha256": _digest_bytes(raw)}
+    solver_binding = {"contract_version": "0.3.1", "registry_snapshot_sha256": _digest_bytes(files["registry.json"]),
+                      "resource_policy_sha256": _digest_bytes(files["resource_policy.json"]),
+                      "digest_manifest_sha256": _digest_bytes(manifest),
+                      "files_sha256": {name: _digest_bytes(value) for name, value in sorted(files.items())}}
+    return binding, solver_binding
+
+
+def _digest_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _engine_manifest(module_id: str, module_version: str, operation: str, implementation_sha: str,
+                     *, registry: ContractRegistry | None = None) -> dict:
+    result = {"manifest_version": "1.0.0", "module_id": module_id,
             "module_version": module_version, "operation": operation,
             "entry_point": _IMPLEMENTATIONS[(module_id, module_version, operation)],
             "implementation_manifest_sha256": implementation_sha}
+    if module_id == "quanta.pair_dynamics":
+        if registry is None:
+            raise PlanningError("Dynamics engine requires a selected generic registry", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
+        result["adapter_binding"], result["solver_contract_binding"] = _dynamics_bindings(registry)
+    return result
 
 
 def _port(module: dict, direction: str, operation: str) -> dict:
@@ -163,6 +219,10 @@ def _build_plan(experiment: dict, registry: ContractRegistry, contents: dict[str
     # Preserve the original raw allowlist, including its normative hashing rules.
     for raw in registry.raw_bytes.values():
         _capture(contents, raw)
+    if module_id == "quanta.pair_dynamics":
+        _dynamics_bindings(registry, contents)
+        from .dynamics_workflow import solver_request
+        _capture_json(contents, solver_request(definition))
     implementation_sha = _implementation_capture(contents)
     locks = _lock_files()
     lock_refs = {name: _capture(contents, raw) for name, raw in locks.items()}
@@ -185,7 +245,7 @@ def _build_plan(experiment: dict, registry: ContractRegistry, contents: dict[str
     observable_refs = _sort_observables([_observable_ref(item, contents) for item in descriptors])
     engine_bindings = []
     for operation in operations:
-        sha = _capture_json(contents, _engine_manifest(module_id, module_version, operation, implementation_sha))
+        sha = _capture_json(contents, _engine_manifest(module_id, module_version, operation, implementation_sha, registry=registry))
         engine_bindings.append({"module_id": module_id, "module_version": module_version,
                                 "operation": operation, "implementation_manifest_sha256": sha})
     frozen_bindings = {
@@ -231,7 +291,7 @@ def _build_plan(experiment: dict, registry: ContractRegistry, contents: dict[str
                 "active_observable_refs": [copy.deepcopy(ref) for ref in observable_refs if ref["observable_id"] in eligible]})
             previous[step["step_id"]] = step
     input_sha = hashlib.sha256(canonical_bytes(definition)).hexdigest()
-    projection = {"contract_version": "0.2.0", "input_sha256": input_sha, "branch_bases": branches,
+    projection = {"contract_version": registry.contract_version, "input_sha256": input_sha, "branch_bases": branches,
                   "expanded_steps": expanded, "frozen_bindings": frozen_bindings}
     _capture_json(contents, definition)
     resolved_sha = _capture_json(contents, projection)
@@ -249,14 +309,15 @@ def plan_experiment(data: bytes | str | dict, *, registry: ContractRegistry | No
               "resolved_input_sha256": None, "frozen_plan": None, "branch_definitions": [],
               "experiment": None, "captured_artifacts": {}, "execution_manifests": {}}
     try:
-        registry = registry or ContractRegistry()
+        from .registry import experiment_registry
+        experiment = parse_json(data)
+        registry = experiment_registry(experiment, registry)
         validation = validate_experiment(data, registry=registry)
         result.update(errors=validation["errors"], warnings=[w for w in validation["warnings"]
                                                            if w["code"] != "CONTRACT_VALIDATION_ONLY"],
                       input_sha256=validation["input_sha256"])
         if not validation["valid"]:
             return result
-        experiment = parse_json(data)
         captured = {}
         result.update(_build_plan(experiment, registry, captured))
         result.update(valid=True, experiment=experiment, captured_artifacts=captured)
@@ -273,11 +334,21 @@ def plan_experiment(data: bytes | str | dict, *, registry: ContractRegistry | No
 
 def step_bindings(frozen_bindings: dict, expanded_step: dict, *, registry: ContractRegistry | None = None) -> dict:
     """Restrict captured bindings to the exact one-module operation and observables."""
-    registry = registry or ContractRegistry()
     modules = frozen_bindings["module_bindings"]
     if len(modules) != 1:
         raise PlanningError("This runner requires one registered module per definition", code="MODEL_UNSUPPORTED")
     binding = modules[0]
+    if registry is None and binding.get("module_id") == "quanta.pair_dynamics":
+        registry = ContractRegistry(contract_version="0.4.0")
+    registry = registry or ContractRegistry()
+    if binding.get("module_id") == "quanta.pair_dynamics":
+        fixed = {"operation": "integrate", "source_alias": "initial", "source_output_port": None,
+                 "target_input_port": "phase_in", "overrides": []}
+        if (any(expanded_step.get(key) != value for key, value in fixed.items()) or
+                type(expanded_step.get("branch_index")) is not int or expanded_step["branch_index"] != 0 or
+                type(expanded_step.get("step_index")) is not int or expanded_step["step_index"] != 0):
+            raise PlanningError("Dynamics bindings require one unchanged initial integrate step", code="MODEL_UNSUPPORTED",
+                                path="/definition/protocol/steps")
     module = registry.get_module(binding["module_id"], binding["module_version"])
     if module is None:
         raise PlanningError("Captured module registration is unavailable", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
@@ -307,7 +378,7 @@ def step_bindings(frozen_bindings: dict, expanded_step: dict, *, registry: Contr
         raise PlanningError("An operation or observable binding is unavailable", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
     ident = (binding["module_id"], binding["module_version"], expanded_step["operation"])
     expected_engine = {"module_id": ident[0], "module_version": ident[1], "operation": ident[2],
-                       "implementation_manifest_sha256": _digest(_engine_manifest(*ident, _implementation_capture({})))} if ident in _IMPLEMENTATIONS else None
+                       "implementation_manifest_sha256": _digest(_engine_manifest(*ident, _implementation_capture({}), registry=registry))} if ident in _IMPLEMENTATIONS else None
     if engines[0] != expected_engine:
         raise PlanningError("The selected implementation differs from its frozen binding", code="REGISTRY_SNAPSHOT_UNAVAILABLE")
     return {"registry_binding": copy.deepcopy(frozen_bindings["registry_binding"]),
@@ -324,7 +395,28 @@ def prepare_step(branch_base: dict, expanded_step: dict, *, source_definition: d
     carrier solely to satisfy the module's pre-existing definition schema.
     The active observable binding list remains empty in its scientific identity.
     """
+    if registry is None and branch_base.get("system", {}).get("module_id") == "quanta.pair_dynamics":
+        registry = ContractRegistry(contract_version="0.4.0")
     registry = registry or ContractRegistry()
+    if branch_base.get("system", {}).get("module_id") == "quanta.pair_dynamics":
+        if (expanded_step.get("operation") != "integrate" or expanded_step.get("overrides") != []):
+            raise PlanningError("Dynamics supports only integrate without overrides", code="MODEL_UNSUPPORTED",
+                                path="/definition/protocol/steps")
+        if (expanded_step.get("source_alias") != "initial" or
+                expanded_step.get("source_output_port") is not None or
+                expanded_step.get("target_input_port") != "phase_in"):
+            raise PlanningError("Dynamics requires its initial phase input", code="PORT_INCOMPATIBLE",
+                                path="/definition/protocol/steps")
+        initial_validation = validate_definition(branch_base, registry=registry)
+        if not initial_validation["valid"]:
+            error = initial_validation["errors"][0]
+            raise PlanningError(error["message"], code=error["code"], path=error["path"], details=error["details"])
+        authored_step = branch_base["protocol"]["steps"][0]
+        if (type(expanded_step.get("branch_index")) is not int or expanded_step["branch_index"] != 0 or
+                type(expanded_step.get("step_index")) is not int or expanded_step["step_index"] != 0 or
+                expanded_step.get("step_id") != authored_step["step_id"]):
+            raise PlanningError("Dynamics supports one authored initial step only", code="MODEL_UNSUPPORTED",
+                                path="/definition/protocol/steps")
     if not isinstance(source_content_sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", source_content_sha256):
         raise PlanningError("The original source content digest is unavailable", code="INPUT_SEMANTIC")
     if expanded_step["source_alias"] == "initial":
@@ -351,7 +443,8 @@ def prepare_step(branch_base: dict, expanded_step: dict, *, source_definition: d
     for patch in expanded_step["overrides"]:
         _assign(effective, patch["path"], patch["value"])
     names = [ref["observable_id"] for ref in expanded_step["active_observable_refs"]]
-    effective["observables"] = names or (["energy"] if effective["system"]["module_id"] == "quanta.pair_static" else ["energies"])
+    fallback = {"quanta.pair_static": ["energy"], "quanta.pair_dynamics": ["trajectory"]}
+    effective["observables"] = names or fallback.get(module_id, ["energies"])
     effective["protocol"] = {"steps": [{"step_id": expanded_step["step_id"], "operation": expanded_step["operation"],
         "source": "initial", "overrides": []}], "sweep": {"axes": []}}
     validation = validate_definition(effective, registry=registry)
@@ -359,8 +452,13 @@ def prepare_step(branch_base: dict, expanded_step: dict, *, source_definition: d
         error = validation["errors"][0]
         raise PlanningError(error["message"], code=error["code"], path=error["path"], details=error["details"])
     bindings = step_bindings(frozen_bindings, expanded_step, registry=registry)
-    projection = {"contract_version": "0.2.0", "effective_definition": definition_projection(effective),
+    projection = {"contract_version": registry.contract_version, "effective_definition": definition_projection(effective),
         "operation": expanded_step["operation"], "active_observable_refs": copy.deepcopy(expanded_step["active_observable_refs"]),
         "frozen_bindings": bindings, "source_scientific_content_sha256": source_content_sha256}
+    if module_id == "quanta.pair_dynamics":
+        from .dynamics_workflow import solver_request
+        request = solver_request(effective)
+        projection["solver_request_sha256"] = _digest(request)
+        projection["adapter_binding"] = _dynamics_bindings(registry)[0]
     return {"definition": effective, "step_projection": projection, "resolved_input_sha256": _digest(projection),
             "frozen_bindings": bindings}

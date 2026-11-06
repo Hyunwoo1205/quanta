@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 from copy import deepcopy
 import fcntl
+import hashlib
 import math
 import os
 from pathlib import Path
@@ -14,6 +15,46 @@ import threading
 import time
 
 from .job_store import JobStore, ServiceError, TERMINAL
+
+
+def _execution_policy(job: dict) -> dict:
+    """Bound a child by its selected contract and captured admitted policy.
+
+    Current operational protection may become stricter than admission, but a
+    changed installation cannot widen the frozen limits of a queued execution.
+    The legacy default constructor remains explicit for existing 0.2 jobs.
+    """
+    from .parsing import parse_json
+    from .registry import ContractRegistry, experiment_registry
+
+    try:
+        version = job["revision"]["schema_version"]
+        if version == "0.2.0":
+            registry = ContractRegistry()
+        elif version == "0.4.0":
+            registry = experiment_registry(job["revision"])
+            if registry.validate_integrity():
+                raise ValueError("Selected experiment registry failed integrity")
+        else:
+            raise ValueError("Unsupported accepted experiment version")
+        current = registry.resource_policy["common_execution"]
+        plan = job["plan"]
+        ref = plan["execution_manifests"]["effective_resource_profile_sha256"]
+        raw = plan["captured_artifacts"][ref].encode("utf-8")
+        if hashlib.sha256(raw).hexdigest() != ref:
+            raise ValueError("Captured execution policy failed its admitted digest")
+        captured = parse_json(raw)["common_execution"]
+        result = deepcopy(current)
+        for key, ceiling in (("wall_seconds_per_run", 120), ("memory_mib_per_run", 1024)):
+            values = (current[key], captured[key])
+            if any(isinstance(value, bool) or not isinstance(value, (int, float))
+                   or not math.isfinite(value) or value <= 0 for value in values):
+                raise ValueError("Invalid child execution ceiling")
+            result[key] = min(ceiling, *values)
+        return result
+    except (KeyError, TypeError, ValueError, OverflowError, OSError, AttributeError) as exc:
+        raise ServiceError(409, "REGISTRY_SNAPSHOT_UNAVAILABLE",
+                           "The accepted child resource policy is unavailable") from exc
 
 
 def _cancelled_report(report: dict) -> dict:
@@ -122,8 +163,11 @@ class JobWorker:
             self.error = type(exc).__name__
 
     def _run_child(self, job):
-        from .registry import ContractRegistry
-        policy = ContractRegistry().resource_policy["common_execution"]
+        try:
+            policy = _execution_policy(job)
+        except ServiceError as exc:
+            self.store.fail(job["run_id"], exc.code, str(exc))
+            return
         wall_limit = float(policy["wall_seconds_per_run"])
         environment = os.environ.copy()
         for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
@@ -192,14 +236,16 @@ def main(argv=None):
     parser.add_argument("--directory", required=True)
     parser.add_argument("--run-id", required=True)
     args = parser.parse_args(argv)
-    from .registry import ContractRegistry
-    policy = ContractRegistry().resource_policy["common_execution"]
-    memory = int(policy["memory_mib_per_run"]) * 1024 * 1024
-    cpu = math.ceil(policy["wall_seconds_per_run"])
-    resource.setrlimit(resource.RLIMIT_AS, (memory, memory))
-    resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu + 1))
     try:
+        policy = _execution_policy(JobStore(args.directory).get_job(args.run_id))
+        memory = int(policy["memory_mib_per_run"] * 1024 * 1024)
+        cpu = math.ceil(policy["wall_seconds_per_run"])
+        resource.setrlimit(resource.RLIMIT_AS, (memory, memory))
+        resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu + 1))
         execute_job(args.directory, args.run_id)
+    except ServiceError as exc:
+        JobStore(args.directory).fail(args.run_id, exc.code, str(exc))
+        return 2
     except Exception:
         JobStore(args.directory).fail(args.run_id, "ENGINE_FAILURE", "The numerical child failed before publication")
         return 2

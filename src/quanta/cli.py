@@ -134,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
     restore.add_argument("directory")
     restore.add_argument("--output", required=True)
     contracts = sub.add_parser("check-contracts", help="Check one explicitly selected bundled contract registry.")
-    contracts.add_argument("--contract-version", choices=("0.2.0", "0.3.0", "0.3.1"), default="0.2.0")
+    contracts.add_argument("--contract-version", choices=("0.2.0", "0.3.0", "0.3.1", "0.4.0"), default="0.2.0")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
 

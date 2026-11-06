@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:dynamics-generic-adapter:0.4.0",
+  "type": "object",
+  "properties": {
+    "adapter_id": {
+      "const": "quanta.pair_dynamics.generic_adapter"
+    },
+    "adapter_version": {
+      "const": "0.1.0"
+    },
+    "generic_contract_version": {
+      "const": "0.4.0"
+    },
+    "solver_contract_version": {
+      "const": "0.3.1"
+    },
+    "module_id": {
+      "const": "quanta.pair_dynamics"
+    },
+    "module_version": {
+      "const": "0.1.0"
+    },
+    "operation": {
+      "const": "integrate"
+    },
+    "solver_entry_point": {
+      "const": "quanta.dynamics.integrate_dynamics_request"
+    },
+    "fixed_request_members": {
+      "const": {
+        "contract_version": "0.3.1",
+        "operation": "integrate",
+        "initial_time_s": 0
+      }
+    },
+    "definition_members_to_request": {
+      "const": [
+        "scales",
+        "system",
+        "numerics"
+      ]
+    },
+    "required_unit_system": {
+      "const": "SI"
+    },
+    "allowed_protocol": {
+      "const": {
+        "steps": 1,
+        "source": "initial",
+        "overrides": false,
+        "sweep_axes": 0
+      }
+    },
+    "imported_scientific_schemas_sha256": {
+      "type": "object",
+      "properties": {
+        "dynamics_request.schema.json": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "dynamics_payload.schema.json": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "dynamics_state.schema.json": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "dynamics_metadata.schema.json": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "dynamics_report.schema.json": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "dynamics_request.schema.json",
+        "dynamics_payload.schema.json",
+        "dynamics_state.schema.json",
+        "dynamics_metadata.schema.json",
+        "dynamics_report.schema.json"
+      ],
+      "additionalProperties": false
+    },
+    "input_hash_semantics": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state_semantics": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resource_semantics": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "adapter_id",
+    "adapter_version",
+    "generic_contract_version",
+    "solver_contract_version",
+    "module_id",
+    "module_version",
+    "operation",
+    "solver_entry_point",
+    "fixed_request_members",
+    "definition_members_to_request",
+    "required_unit_system",
+    "allowed_protocol",
+    "imported_scientific_schemas_sha256",
+    "input_hash_semantics",
+    "state_semantics",
+    "resource_semantics"
+  ],
+  "additionalProperties": false
+}

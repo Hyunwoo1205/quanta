@@ -237,7 +237,8 @@ def _initial_diagnostics(request: dict, force_result: Any, scales: dict[str, flo
             "scope": "initial_feasibility_only_not_trajectory"}
 
 
-def _prepare_dynamics_request(value: bytes | str | dict, *, registry: ContractRegistry | None = None) -> tuple[dict, dict | None]:
+def _prepare_dynamics_request(value: bytes | str | dict, *, registry: ContractRegistry | None = None,
+                              evaluate_initial_force: bool = True) -> tuple[dict, dict | None]:
     """Admission plus private initial force snapshot, without duplicate force work.
 
     The public validator returns only the report.  A standalone integrator may
@@ -314,6 +315,15 @@ def _prepare_dynamics_request(value: bytes | str | dict, *, registry: ContractRe
             if time.monotonic() > deadline:
                 raise _Invalid("RESOURCE_LIMIT", "Initial dynamics validation exceeded its wall deadline", None)
         check_deadline()
+        if not evaluate_initial_force:
+            # Generic authored-input admission must not run an AD engine. The
+            # bounded calculation step performs and counts its own initial
+            # force and diagnostics exactly once.
+            report.update(scope="dynamics_structure_preflight", valid=True,
+                          input_sha256=hashlib.sha256(canonical).hexdigest(),
+                          budgets=budgets, derived_scales=scales, time_legs=legs,
+                          initial_state_checks_deferred=True)
+            return report, None
         # Import after cheap structure/resource checks; this performs initial force
         # evaluation, not a dynamics request translated into a static definition.
         from .pair_kernel import PairForceKernel
@@ -355,3 +365,13 @@ def _prepare_dynamics_request(value: bytes | str | dict, *, registry: ContractRe
 def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRegistry | None = None) -> dict:
     """Check admission only; no time integration or result state is created."""
     return _prepare_dynamics_request(value, registry=registry)[0]
+
+
+def preflight_dynamics_request(value: bytes | str | dict, *, registry: ContractRegistry | None = None) -> dict:
+    """Check structure, scales, time and budgets without evaluating any force.
+
+    This is not the standalone initial-force validation report. Generic
+    experiment admission uses this boundary and explicitly defers initial AD
+    and conserved-quantity feasibility checks to its bounded execution step.
+    """
+    return _prepare_dynamics_request(value, registry=registry, evaluate_initial_force=False)[0]
