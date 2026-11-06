@@ -50,7 +50,22 @@
       }
     },
     "full_suite": {
-      "status": "in_progress"
+      "status": "passed",
+      "passed": 1760,
+      "subtests_passed": 1474,
+      "seconds": 354.65
+    },
+    "installed_wheel_outside_source_tree": {
+      "status": "passed",
+      "package_version": "0.13.0",
+      "outside_source_tree": true,
+      "installed_bundle_manifest_entries": {
+        "0.2.0": 23,
+        "0.3.0": 16
+      },
+      "standalone_initial_validation": true,
+      "dynamics_simulation_executed": false,
+      "dependencies": "Existing exact locked .venv site-packages supplied via PYTHONPATH; imported quanta and contract roots asserted inside new wheel prefix."
     }
   },
   "exact_legacy_pair_comparison": {
@@ -91,7 +106,57 @@
     ]
   },
   "remote_ci": {
-    "status": "pending"
+    "status": "success",
+    "source_sha": "ec8200c33b9dddf14a09231c051f9f00bf569588",
+    "application_run_id": 42186576055,
+    "jobs": [
+      {
+        "job_id": 127788246851,
+        "architecture": "x86_64",
+        "status": "success",
+        "tests_passed": 1760,
+        "seconds": 425.52
+      },
+      {
+        "job_id": 127788247124,
+        "architecture": "aarch64",
+        "status": "success",
+        "tests_passed": 1760,
+        "seconds": 343.76
+      }
+    ],
+    "checks": [
+      "locked_native_environment",
+      "default0.2_and_explicit0.3_contract_integrity",
+      "three_standalone_dynamics_request_examples",
+      "full_pytest",
+      "Node_and_pinned_Caddy",
+      "A01_A04_and_SI_equivalence",
+      "B01_B06",
+      "WF01_WF06",
+      "service_web_production_operations",
+      "installed_nonroot_container_default_and0.3_integrity_and_standalone_initial_validation"
+    ],
+    "additional_controller_runs": [
+      {
+        "run_id": 42186575962,
+        "scope": "accounts_upgrade_control",
+        "status": "success",
+        "architectures": [
+          "x86_64",
+          "aarch64"
+        ]
+      },
+      {
+        "run_id": 42186576059,
+        "scope": "recovery_control",
+        "status": "success",
+        "architectures": [
+          "x86_64",
+          "aarch64"
+        ]
+      }
+    ]
   },
   "scope_limits": {
     "time_integrator_implemented": false,
@@ -104,5 +169,11 @@
     "credentials_accessed": false
   },
   "physical_validation_status": "unvalidated",
-  "next_work": "velocity-Verlet time integration, drift-segment guard, full-step diagnostics, sampling/refinement/partial payload semantics; then independent numerical and workflow integration before web visualization"
+  "next_work": "velocity-Verlet time integration, drift-segment guard, full-step diagnostics, sampling/refinement/partial payload semantics; then independent numerical and workflow integration before web visualization",
+  "source_sha": "ec8200c33b9dddf14a09231c051f9f00bf569588",
+  "old_contract_preservation": {
+    "old_contract_files": 24,
+    "byte_identical_to_base": true,
+    "mismatches": []
+  }
 }
