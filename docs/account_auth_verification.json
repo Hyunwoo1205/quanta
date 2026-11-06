@@ -119,7 +119,34 @@
     "actual_user_registration_verified": false,
     "actual_user_mfa_login_verified": false,
     "public_ui_forms_verified": true,
-    "remaining_private_user_action": "Configure existing Gmail app password in HTTPS owner setup, verify administrator email, complete username/password signup, and test optional email MFA."
+    "remaining_private_user_action": "Configure existing Gmail app password in HTTPS owner setup, verify administrator email, complete username/password signup, and test optional email MFA.",
+    "observed_phase": "immediately_after_upgrade_before_private_user_setup"
   },
-  "physical_validation_status": "unvalidated"
+  "physical_validation_status": "unvalidated",
+  "latest_user_verification": {
+    "observed_date_kst": "2026-11-06",
+    "deployed_source_sha": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+    "public_browser_observation": {
+      "origin": "https://quanta.kro.kr/",
+      "fresh_server_state_requested": true,
+      "initial_setup_warning_removed": true,
+      "owner_mail_recovery_label_visible": true,
+      "signup_email_request_enabled": true,
+      "interpretation": "Owner email reservation and mail configuration are saved; this public state alone does not prove email receipt or account creation."
+    },
+    "user_confirmation": {
+      "completed_step": "signup_and_login_completed",
+      "email_verification_signup_login": "passed_user_reported",
+      "original_answer": "가입·로그인까지 완료",
+      "personally_observed_by_agent": false,
+      "optional_email_mfa_login": "not_confirmed",
+      "refresh_session_logout_password_reset": "not_confirmed",
+      "existing_records_visible_in_new_account": "not_confirmed"
+    },
+    "credentials_or_codes_read_or_entered_by_agent": false,
+    "private_identifiers_persisted": false,
+    "server_source_or_services_changed": false,
+    "additional_ssh_operation_or_deployment": false,
+    "next_feature": "3d_particle_results_visualization"
+  }
 }
