@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "export-recovery",
+  "operation": "reboot-recovery",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "4344dd3c-af27-4581-9c56-0fb4ad572af3"
+  "request_id": "44958c64-1daf-40d9-bc5e-f2518e41857c"
 }

@@ -35,7 +35,7 @@ jobs:
           from pathlib import Path
           value = json.loads(Path('.github/oci/install-request.json').read_bytes())
           operation = value.get('operation') if isinstance(value, dict) else None
-          recovery = isinstance(operation, str) and operation in {'audit-recovery', 'prepare-recovery', 'export-recovery'}
+          recovery = isinstance(operation, str) and operation in {'audit-recovery', 'prepare-recovery', 'export-recovery', 'reboot-recovery', 'verify-reboot', 'post-reboot-compute'}
           with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
               stream.write('recovery=' + ('true' if recovery else 'false') + '\n')
           PY_REQUEST
@@ -43,15 +43,15 @@ jobs:
         if: steps.classify.outputs.recovery == 'true'
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: 4f63777003826073cd4bec3fe16969c8cc8c53eb
+          ref: dda5b9f56ee72ad466816266390427f50d1b6c04
           path: verified-control
           persist-credentials: false
       - name: Authorize app and recovery control CI pins
         if: steps.classify.outputs.recovery == 'true'
         id: authorize-recovery
         env:
-          QUANTA_CONTROL_SHA: '4f63777003826073cd4bec3fe16969c8cc8c53eb'
-          QUANTA_CONTROL_CI_RUN: '42157978228'
+          QUANTA_CONTROL_SHA: 'dda5b9f56ee72ad466816266390427f50d1b6c04'
+          QUANTA_CONTROL_CI_RUN: '42159722619'
           QUANTA_CI_READ_TOKEN: ${{ github.token }}
         run: python3 -I -B verified-control/deploy/oci/authorize_recovery.py
       - name: Authorize the fixed request and completed native CI
@@ -85,8 +85,8 @@ jobs:
         if: steps.classify.outputs.recovery == 'true'
         id: recovery
         env:
-          QUANTA_CONTROL_SHA: '4f63777003826073cd4bec3fe16969c8cc8c53eb'
-          QUANTA_CONTROL_CI_RUN: '42157978228'
+          QUANTA_CONTROL_SHA: 'dda5b9f56ee72ad466816266390427f50d1b6c04'
+          QUANTA_CONTROL_CI_RUN: '42159722619'
           QUANTA_OCI_AUTH_CONFIRMED: 'true'
           QUANTA_OCI_INSTALL_OPERATION: ${{ steps.authorize-recovery.outputs.operation }}
           QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
@@ -117,7 +117,7 @@ jobs:
         run: python3 -I deploy/oci/probe_install.py
   public:
     needs: install
-    if: ${{ !cancelled() && (needs.install.outputs.operation == 'install-https' || needs.install.outputs.operation == 'configure-web-firewall' || needs.install.outputs.operation == 'diagnose-https' || needs.install.outputs.operation == 'configure-acme') }}
+    if: ${{ !cancelled() && (needs.install.outputs.operation == 'install-https' || needs.install.outputs.operation == 'configure-web-firewall' || needs.install.outputs.operation == 'diagnose-https' || needs.install.outputs.operation == 'configure-acme' || needs.install.outputs.operation == 'verify-reboot' || needs.install.outputs.operation == 'post-reboot-compute') }}
     runs-on: ubuntu-24.04
     environment: oci-preflight
     timeout-minutes: 2
