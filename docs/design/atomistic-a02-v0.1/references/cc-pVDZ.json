@@ -1,0 +1,57 @@
+[
+    {
+        "reference_info": [
+            {
+                "reference_description": "The cc-pVDZ basis set",
+                "reference_data": [
+                    [
+                        "dunning1989a",
+                        {
+                            "_entry_type": "article",
+                            "authors": [
+                                "Dunning, Thom H."
+                            ],
+                            "title": "Gaussian basis sets for use in correlated molecular calculations. I. The atoms boron through neon and hydrogen",
+                            "journal": "J. Chem. Phys.",
+                            "volume": "90",
+                            "pages": "1007-1023",
+                            "year": "1989",
+                            "doi": "10.1063/1.456153"
+                        }
+                    ]
+                ]
+            }
+        ],
+        "elements": [
+            "1"
+        ]
+    },
+    {
+        "reference_info": [
+            {
+                "reference_description": "The cc-pVDZ basis set",
+                "reference_data": [
+                    [
+                        "woon1994a",
+                        {
+                            "_entry_type": "article",
+                            "authors": [
+                                "Woon, David E.",
+                                "Dunning, Thom H."
+                            ],
+                            "title": "Gaussian basis sets for use in correlated molecular calculations. IV. Calculation of static electrical response properties",
+                            "journal": "J. Chem. Phys.",
+                            "volume": "100",
+                            "pages": "2975-2988",
+                            "year": "1994",
+                            "doi": "10.1063/1.466439"
+                        }
+                    ]
+                ]
+            }
+        ],
+        "elements": [
+            "2"
+        ]
+    }
+]

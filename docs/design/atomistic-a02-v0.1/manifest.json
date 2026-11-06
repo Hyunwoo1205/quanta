@@ -1,0 +1,145 @@
+{
+  "document_kind": "inactive_A02_lock_manifest",
+  "version": "0.1.0",
+  "hash_scope": "exact_file_bytes_not_scientific_state_identity",
+  "files": [
+    {
+      "path": "docs/design/atomistic-a02-v0.1/README.md",
+      "size_bytes": 2257,
+      "sha256": "ea80addc031484a2b68b14620e0f10f40919c6b480fcafb4060fa17689e88819",
+      "git_blob_sha1": "45d18564bb1ec1f9625dbdcee6ff469174d2736c"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/assets/ALL_POTENTIALS",
+      "size_bytes": 2717,
+      "sha256": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79",
+      "git_blob_sha1": "19bdebe95ec4b93d80d93369975cea9c8862090c"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/assets/cc-pVDZ.cp2k",
+      "size_bytes": 1153,
+      "sha256": "34f9c543100787aa13763a9be00abc639243a3284aa7416091506949a14978bd",
+      "git_blob_sha1": "926c9876b104df864af03b813821f7eda817b25b"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/assets/cc-pVQZ.cp2k",
+      "size_bytes": 2928,
+      "sha256": "731dbb160f6f90fb7814e9a688ed6bf33aee82ed08b0f1418a0b6ce4b8a891ce",
+      "git_blob_sha1": "8dbf6edb48efacd5a43f6f3b290cdfccb4dee3b5"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/assets/cc-pVTZ.cp2k",
+      "size_bytes": 1893,
+      "sha256": "2582571d2471e0c4de438e737953c055c4af89d8516c9d63e1dae24160b9a279",
+      "git_blob_sha1": "4b9a7957b2d92eb3632fae2d206fa66b76001c65"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/authoring-requirements.json",
+      "size_bytes": 2010,
+      "sha256": "938329ac3fa3f983a5a6f7b22f4cf988d7daa70f60f479df5879b225adb79d68",
+      "git_blob_sha1": "8e6cbad8608c817163967eed19dc5523bc63a5f6"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/basis-json/cc-pVDZ.json",
+      "size_bytes": 3931,
+      "sha256": "22c2ff53fd189a81b0e1e4f913723e7c4e841eddeef46b69537415a7e2de03ff",
+      "git_blob_sha1": "54959229b46b2676b22cd86a100d54a872489e58"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/basis-json/cc-pVQZ.json",
+      "size_bytes": 9374,
+      "sha256": "654c5af72f576d83d485073186831e45112e38011c45271da46330b71c58f41e",
+      "git_blob_sha1": "15be7333b38864fd5e9c38c2ac576cd77eca738e"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/basis-json/cc-pVTZ.json",
+      "size_bytes": 6346,
+      "sha256": "1fa1bb5327d47357f90e83fd2b8509500033a5ab3e3cb00b38c53a4b8a0fc48e",
+      "git_blob_sha1": "a2324df2d7cdd44c6226234ee5d283ea63b17832"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/basis-source-selection.json",
+      "size_bytes": 15152,
+      "sha256": "7123815fd604662816859755b4532155ded7a11cccd2a463bfcf17585b542e09",
+      "git_blob_sha1": "c85bd28daaf2ac3231c0664b504317146f3ebaff"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/density-and-units.json",
+      "size_bytes": 2667,
+      "sha256": "2e711bfffa5ce8db27cb1b1a1c4faa329cf50b6a23f4775c4b26e24b18e05835",
+      "git_blob_sha1": "cda877f016fa6bfb9bf9740ad10186fe241b4c8c"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/engine-lock.json",
+      "size_bytes": 6218,
+      "sha256": "911d0f263bfa08f1932cdba28d6b4ca864f0b6ccc5d0cfd621dae4e3bf616429",
+      "git_blob_sha1": "95831482b7f269a42fe1e59ba0bb5838cf299f28"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/images/amd64.config.json",
+      "size_bytes": 7269,
+      "sha256": "f3d9dc68a19277908fa0656c79c7c3f80179b1e909116ae19266d4cd8d5adb0d",
+      "git_blob_sha1": "fa01e837e3ac1ef7023ecb27463270e4dd18cb0f"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/images/amd64.manifest.json",
+      "size_bytes": 2844,
+      "sha256": "28e35f63a5253b95cc0f50e786370669185ad9f58eacacf33170cb1257216f36",
+      "git_blob_sha1": "927ca754400f2bde310b56283aacc6eb9f658947"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/images/arm64.config.json",
+      "size_bytes": 7317,
+      "sha256": "882a6f30ac4d9e705b5b3a474f9085c19d7f820b1531a4526b320e3f1e164c95",
+      "git_blob_sha1": "95f5a99b8dd56e41e104a4580396e687e05aa3ed"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/images/arm64.manifest.json",
+      "size_bytes": 2842,
+      "sha256": "ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+      "git_blob_sha1": "c170b05551b5d9d70a3f62104ef475c551d12832"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/licenses/BSE-BSD-3-Clause.txt",
+      "size_bytes": 1505,
+      "sha256": "14b5a1c21a9e0966e295b9e3d66c0cee9475ffe5931e74d063c3713e2ae9a496",
+      "git_blob_sha1": "fd33457a8d405cf3f8b3ac3e31bae6e3328af3da"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/licenses/CP2K-GPL-2.0.txt",
+      "size_bytes": 18092,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "git_blob_sha1": "d159169d1050894d3ea3b98e1c965c4058208fe1"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/references/cc-pVDZ.json",
+      "size_bytes": 1984,
+      "sha256": "1390f4bbc3876bcb126660129d8bd97c55017c33029886e377778f0b3198b7ee",
+      "git_blob_sha1": "4529d35ea4f910d0ddac8caab00529474f24fbbd"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/references/cc-pVQZ.json",
+      "size_bytes": 1984,
+      "sha256": "78a53f95ad6b88a6a7da691249f4cb73eef84a3f20225b87dab02fb0330f46f1",
+      "git_blob_sha1": "f5ff0a3643a63edc34d9682dcb3bac49edab5b18"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/references/cc-pVTZ.json",
+      "size_bytes": 1984,
+      "sha256": "ed9e4125160714166b1dc4160b210655b5415df046e6ec54909f843f16847cf0",
+      "git_blob_sha1": "433ee6cdd8490b55129604653cc1aea512bb0283"
+    },
+    {
+      "path": "docs/design/atomistic-a02-v0.1/source-evidence.json",
+      "size_bytes": 5539,
+      "sha256": "fb1de6b9e94d27e4f84553d8cac5005a0df42a614337bccf363d6b742bb8342d",
+      "git_blob_sha1": "bcedd0c95317be010e1bac75ff9cf9bf5fa6ba2f"
+    },
+    {
+      "path": "scripts/check_atomistic_a02.py",
+      "size_bytes": 9229,
+      "sha256": "67e1818356eb78a4d50c9f021847dcd9fdc15c4a53155dba39b97c106807644b",
+      "git_blob_sha1": "c02a9c06d17c4c7516cf22f937ffb78c20c884d5"
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.1",
-  "updated_at": "2026-11-06",
+  "plan_version": "1.0.2",
+  "updated_at": "2026-11-07",
   "status": "planned_development",
   "executable": false,
   "runtime_contract_version": null,
-  "goal": "물리 계산에 근거한 입자·물리계의 운동·상호작용·구조 변화·반응을 같은3D 공간의 자연스러운 확대/축소로 미시부터 거시까지 관찰·분석하는 연구용 실험 플랫폼",
+  "goal": "사용자가 JSON으로 실험계·초기 상태·환경·상호작용/모형·절차·관측량을 자유롭게 설계하고 실행하는 연구 환경. 물리 계산의 운동·변화·반응을 같은3D 공간의 확대/축소로 미시~거시까지 관찰하며 시각 편집기도 같은 정의를 사용한다.",
   "baseline": {
     "repository": "Hyunwoo1205/quanta",
     "source_sha": "47e7f11e9feabade06d5a9a1abeae968607dcaf2",
@@ -122,7 +122,8 @@
       ],
       "exit_criteria": [
         "입력 변환·파서·유한차분 힘·전자 수 의미·SCF/기저/격자 수렴 확인",
-        "원자 좌표와 전자장·원본 산출물 대응; 정적 계산은 중간 이정표"
+        "원자 좌표와 전자장·원본 산출물 대응; 정적 계산은 중간 이정표",
+        "지원 모형 범위의 사용자 작성 JSON을 받고 fixture ID를 실행 선택기로 요구하지 않음"
       ],
       "implementation_completed": false,
       "physical_validation_status": "unvalidated"
@@ -161,7 +162,8 @@
       ],
       "exit_criteria": [
         "환경 변수와 열/일 유출입·계 크기·통계 의미를 검증",
-        "미지원 조합·자동 상태 변환 거부; 사용자 입력과 실행 단계 추적"
+        "미지원 조합·자동 상태 변환 거부; 사용자 입력과 실행 단계 추적",
+        "시각 편집기와 JSON이 같은 실험 정의를 왕복하며 기존 불변 revision/run을 변경하지 않음"
       ],
       "implementation_completed": false,
       "physical_validation_status": "unvalidated"
@@ -315,12 +317,18 @@
       "depends_on": [
         "A01"
       ],
-      "status": "planned",
+      "status": "completed_source_data_candidate_lock",
       "acceptance": [
         "CP2K 우선 후보의 안정 버전·아키텍처·라이선스·기저/유효핵 자료 해시 조사",
         "미지원/실측 실패일 때만 QE 등 대안을 같은 기준으로 비교"
       ],
-      "owner_role": "환경·계산"
+      "owner_role": "환경·계산",
+      "completion_evidence": {
+        "lock": "docs/design/atomistic-a02-v0.1/engine-lock.json",
+        "authoring_requirements": "docs/design/atomistic-a02-v0.1/authoring-requirements.json",
+        "verification": "docs/atomistic_a02_lock_verification.json",
+        "scope": "Source/data and image metadata only; no install/run/layer pull; image-release-source binding unverified."
+      }
     },
     {
       "id": "A03",
@@ -347,7 +355,8 @@
       "status": "planned",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
-        "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금"
+        "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
+        "사용자 작성 JSON의 계/조건/절차/관측량 규칙과 모델 적합성을 정의하고 내부fixture/기준계 허용목록을 제품 실행 메뉴로 쓰지 않음"
       ],
       "owner_role": "계약·과학"
     },
@@ -635,8 +644,8 @@
     "method": "의존성과 검증 완료 기준으로 단계 관리",
     "calendar_estimate": null,
     "estimate_gate": "A03 엔진 실측 및 M1 완료 후 실제 처리량·실패율로 범위별 일정 산정",
-    "first_execution": "A02",
-    "next_task": "A02"
+    "first_execution": "A03",
+    "next_task": "A03"
   },
   "risks": [
     {
@@ -788,5 +797,6 @@
       ],
       "gate": "검증된 기능 묶음별 독립 공개; 모든 법칙의 동시 지원을 완료 기준으로 삼지 않음"
     }
-  ]
+  ],
+  "authoring_requirements": "docs/design/atomistic-a02-v0.1/authoring-requirements.json"
 }

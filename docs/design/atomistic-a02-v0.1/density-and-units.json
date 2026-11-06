@@ -1,0 +1,64 @@
+{
+  "document_kind": "inactive_density_export_candidate",
+  "version": "0.1.0",
+  "source_commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "source_files": [
+    "src/qs_scf_post_gpw.F",
+    "src/input_cp2k_print_dft.F",
+    "src/pw/realspace_grid_cube.F",
+    "src/common/physcon.F"
+  ],
+  "candidate_settings": {
+    "QS_METHOD": "GAPW",
+    "POTENTIAL": "ALL",
+    "E_DENSITY_CUBE": "ON",
+    "DENSITY_INCLUDE": "TOTAL_DENSITY",
+    "STRIDE": [
+      1,
+      1,
+      1
+    ],
+    "XRD_INTERFACE": false,
+    "APPEND": false
+  },
+  "quantity": "electron_number_density_hard_plus_soft",
+  "not_substitutes": [
+    "SOFT_DENSITY",
+    "TOTAL_HARD_APPROX without explicit new approximation decision",
+    "TOT_DENSITY_CUBE signed net charge density"
+  ],
+  "density_output_stem": "TOTAL_ELECTRON_DENSITY",
+  "native_units": {
+    "positions": "bohr",
+    "grid_axes": "bohr",
+    "density": "electrons/bohr^3"
+  },
+  "cube_serialization": {
+    "header_coordinate_decimals": 6,
+    "density_significant_digits": 6,
+    "header_rounding_bound_bohr": 5e-07,
+    "not_binary64_lossless": true,
+    "authoritative_coordinates": "authored input/engine coordinate state, not rounded CUBE header",
+    "grid_policy": "Validate rounded metadata against source axes/origin with serialization error budget; do not apply A01 1e-25m input-equivalence threshold to CUBE metadata."
+  },
+  "engine_unit_profile": {
+    "source": "src/common/physcon.F",
+    "codata_edition": 2006,
+    "a_bohr_m": 5.2917720859e-11,
+    "h_planck_j_s": 6.62606896e-34,
+    "elementary_charge_c": 1.602176487e-19,
+    "atomic_mass_kg": 1.660538782e-27,
+    "rydberg_per_m": 10973731.568527,
+    "speed_of_light_m_per_s": 299792458,
+    "hartree_j_expression": "2 * rydberg_per_m * h_planck_j_s * speed_of_light_m_per_s",
+    "force_unit_n_expression": "hartree_j / a_bohr_m",
+    "density_per_m3_expression": "density_per_bohr3 / a_bohr_m**3"
+  },
+  "reference_constants_policy": {
+    "A01_codata_2022_references_unchanged": true,
+    "export_conversion_candidate": "Use explicit engine-native conversion to common SI; record edition/values for each engine profile. No hidden patch to engine constants. A04 must freeze actual binary profile and conversion policy.",
+    "nuclear_mass_policy": "Preserve explicit A01 CODATA2022 bare nuclear masses in kg; convert to engine mass units using pinned engine atomic_mass_kg instead of accepting default neutral atomic mass."
+  },
+  "actual_density_grid_or_integral_verified": false,
+  "acceptance": "A03/P2 compare full-density integrals and refine grids; report negative lobes/truncation error; never clip, smooth or normalize data just to pass."
+}

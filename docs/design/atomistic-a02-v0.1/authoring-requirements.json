@@ -1,0 +1,46 @@
+{
+  "document_kind": "experiment_authoring_design_requirements",
+  "version": "0.1.0",
+  "executable": false,
+  "goal": "Researcher-defined experiments with JSON as authored source; 3D is an editing/observation interface, not the product endpoint.",
+  "definition_domains": [
+    "system constituents and geometry",
+    "initial physical state",
+    "boundary and supported environment",
+    "physical model and approximations",
+    "numerics and resources",
+    "procedure/steps/repetition and explicit state transfers",
+    "observables and sampling",
+    "provenance and verification"
+  ],
+  "existing_contracts_unchanged": [
+    "0.2.0",
+    "0.3.0",
+    "0.3.1",
+    "0.4.0"
+  ],
+  "new_runtime_version": null,
+  "fixture_id_as_execution_selector": false,
+  "reference_compositions_as_runtime_menu": false,
+  "json_and_visual_editor_same_definition": true,
+  "execution_lifecycle": [
+    "user-authored editable JSON",
+    "validate semantic/model compatibility",
+    "new immutable revision",
+    "explicit plan and frozen execution inputs",
+    "engine execution",
+    "record results and uncertainty",
+    "replay or create new revision"
+  ],
+  "P2_requirements": [
+    "Within validated model capability rules users can author coordinates/settings in JSON; no required fixture IDs",
+    "Different valid user-authored configurations must produce corresponding inputs and records",
+    "Unsupported physics/units/combination errors are explicit; no substitute experiment"
+  ],
+  "P4_requirements": [
+    "Visual editing reads/writes the same definition and round-trips through JSON",
+    "No visual edit mutates existing revision/run/results",
+    "Steps/condition changes/repetitions/observables use declared state-transfer contracts"
+  ],
+  "freedom_boundary": "Support grows by declared models, not a fixed experiment catalogue. CP2K adapter does not execute arbitrary uploaded code or automatically support every equation. New user-defined physical modules follow validated extension contracts."
+}

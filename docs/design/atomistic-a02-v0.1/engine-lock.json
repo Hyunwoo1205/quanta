@@ -1,0 +1,154 @@
+{
+  "document_kind": "inactive_atomistic_engine_candidate_lock",
+  "version": "0.1.0",
+  "created_on": "2026-11-07",
+  "executable": false,
+  "status": "A02_source_data_and_image_candidates_locked",
+  "engine": "CP2K",
+  "release": "2026.2",
+  "source_commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "source_evidence": "source-evidence.json",
+  "license": "GPL-2.0-or-later",
+  "architecture_images": [
+    {
+      "platform": "linux/arm64",
+      "registry_repository": "docker.io/cp2k/cp2k",
+      "observed_tag": "2026.2_mpich_aarch64_psmp",
+      "digest": "sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+      "immutable_reference": "docker.io/cp2k/cp2k@sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+      "manifest_file": "images/arm64.manifest.json",
+      "config_file": "images/arm64.config.json",
+      "config_digest": "sha256:882a6f30ac4d9e705b5b3a474f9085c19d7f820b1531a4526b320e3f1e164c95",
+      "compressed_layer_bytes": 1627214095,
+      "layers_downloaded": false,
+      "runtime_executed": false,
+      "source_revision_attested": false,
+      "source_binding_gate": "A03 record actual version/revision and features. If not the selected release commit, explicitly pin/review the actual source before A04; never silently claim release-source identity.",
+      "entrypoint": [
+        "/opt/cp2k/install/bin/launch"
+      ],
+      "working_directory": "/mnt",
+      "source_metadata_url": "https://hub.docker.com/v2/repositories/cp2k/cp2k/tags/2026.2_mpich_aarch64_psmp"
+    },
+    {
+      "platform": "linux/amd64",
+      "registry_repository": "docker.io/cp2k/cp2k",
+      "observed_tag": "2026.2_mpich_generic_psmp",
+      "digest": "sha256:28e35f63a5253b95cc0f50e786370669185ad9f58eacacf33170cb1257216f36",
+      "immutable_reference": "docker.io/cp2k/cp2k@sha256:28e35f63a5253b95cc0f50e786370669185ad9f58eacacf33170cb1257216f36",
+      "manifest_file": "images/amd64.manifest.json",
+      "config_file": "images/amd64.config.json",
+      "config_digest": "sha256:f3d9dc68a19277908fa0656c79c7c3f80179b1e909116ae19266d4cd8d5adb0d",
+      "compressed_layer_bytes": 1432290667,
+      "layers_downloaded": false,
+      "runtime_executed": false,
+      "source_revision_attested": false,
+      "source_binding_gate": "A03 record actual version/revision and features. If not the selected release commit, explicitly pin/review the actual source before A04; never silently claim release-source identity.",
+      "entrypoint": [
+        "/opt/cp2k/install/bin/launch"
+      ],
+      "working_directory": "/mnt",
+      "source_metadata_url": "https://hub.docker.com/v2/repositories/cp2k/cp2k/tags/2026.2_mpich_generic_psmp"
+    }
+  ],
+  "initial_execution_candidate": {
+    "ranks": 1,
+    "omp_num_threads": 1,
+    "openblas_num_threads": 1,
+    "network": "none",
+    "runtime_user": "nonroot",
+    "host_work_path": "A03 controlled scratch only",
+    "deployment_authorized_here": false,
+    "resource_limits": "A03 must declare CPU/RAM/disk/timeout before pull/run and measure service responsiveness",
+    "data_policy": "Use supplied versioned basis and ALL_POTENTIALS via read-only mounts, not unverified image defaults"
+  },
+  "native_build_fallback": {
+    "source": "source-evidence.json",
+    "cmake_minimum": "3.24",
+    "languages": [
+      "C11",
+      "C++17",
+      "Fortran"
+    ],
+    "helper_paths": [
+      "make_cp2k.sh",
+      "tools/docker/scripts/build_cp2k.sh",
+      "tools/docker/scripts/cmake_cp2k.sh"
+    ],
+    "compiler_and_dependency_binary_lock": null,
+    "status": "not_built_not_a_reproducible_binary_recipe"
+  },
+  "basis": [
+    {
+      "name": "cc-pVDZ",
+      "basis_version": 1,
+      "elements": [
+        "H",
+        "He"
+      ],
+      "file": "assets/cc-pVDZ.cp2k",
+      "json_file": "basis-json/cc-pVDZ.json",
+      "references_file": "references/cc-pVDZ.json",
+      "exporter_reported_version": "0.12",
+      "retrieval_url": "https://www.basissetexchange.org/api/basis/cc-pvdz/format/cp2k/?elements=1,2&version=1",
+      "transformations": "none; exact API bytes; no deaugmentation/recontraction/normalization edits"
+    },
+    {
+      "name": "cc-pVTZ",
+      "basis_version": 1,
+      "elements": [
+        "H",
+        "He"
+      ],
+      "file": "assets/cc-pVTZ.cp2k",
+      "json_file": "basis-json/cc-pVTZ.json",
+      "references_file": "references/cc-pVTZ.json",
+      "exporter_reported_version": "0.12",
+      "retrieval_url": "https://www.basissetexchange.org/api/basis/cc-pvtz/format/cp2k/?elements=1,2&version=1",
+      "transformations": "none; exact API bytes; no deaugmentation/recontraction/normalization edits"
+    },
+    {
+      "name": "cc-pVQZ",
+      "basis_version": 1,
+      "elements": [
+        "H",
+        "He"
+      ],
+      "file": "assets/cc-pVQZ.cp2k",
+      "json_file": "basis-json/cc-pVQZ.json",
+      "references_file": "references/cc-pVQZ.json",
+      "exporter_reported_version": "0.12",
+      "retrieval_url": "https://www.basissetexchange.org/api/basis/cc-pvqz/format/cp2k/?elements=1,2&version=1",
+      "transformations": "none; exact API bytes; no deaugmentation/recontraction/normalization edits"
+    }
+  ],
+  "model": {
+    "PBE": true,
+    "GAPW": true,
+    "POTENTIAL": "ALL",
+    "dispersion": false,
+    "reference_profile": "../atomistic-a01-v0.1/profile.json",
+    "unchanged_A01_criteria": true
+  },
+  "science_state": {
+    "engine_installed": false,
+    "engine_executed": false,
+    "physical_validation_status": "unvalidated",
+    "runtime_contract_version": null
+  },
+  "remaining_gates": {
+    "A03": [
+      "Pull exact platform digest and validate manifest/layers",
+      "Run as nonroot with declared resource caps",
+      "Record binary version/revision and installed dependency inventory",
+      "Verify GAPW/PBE/nonperiodic/whole-density features and locked data use",
+      "Measure memory/time/output/cancel and child cleanup",
+      "Check actual density integral/ringing/precision without clipping or renormalization"
+    ],
+    "A04": [
+      "Resolve actual image-source association",
+      "Freeze numeric settings and units/conversions",
+      "Freeze supported authoring contract independent from fixture IDs"
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "verification_kind": "A02_source_data_and_image_metadata",
+  "checked_on": "2026-11-07",
+  "passed": true,
+  "locked_files_checked": 23,
+  "source_archive_bytes_verified": true,
+  "source_files_checked": 14,
+  "basis_full_source_files_checked": 3,
+  "basis": [
+    {
+      "name": "cc-pVDZ",
+      "elements": [
+        "H",
+        "He"
+      ],
+      "spherical_functions_per_atom": {
+        "H": 5,
+        "He": 5
+      },
+      "coefficients_match_fixed_source_and_api": true
+    },
+    {
+      "name": "cc-pVTZ",
+      "elements": [
+        "H",
+        "He"
+      ],
+      "spherical_functions_per_atom": {
+        "H": 14,
+        "He": 14
+      },
+      "coefficients_match_fixed_source_and_api": true
+    },
+    {
+      "name": "cc-pVQZ",
+      "elements": [
+        "H",
+        "He"
+      ],
+      "spherical_functions_per_atom": {
+        "H": 30,
+        "He": 30
+      },
+      "coefficients_match_fixed_source_and_api": true
+    }
+  ],
+  "images": [
+    {
+      "platform": "linux/arm64",
+      "digest": "sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+      "manifest_and_config_verified": true,
+      "layers_and_runtime_verified": false
+    },
+    {
+      "platform": "linux/amd64",
+      "digest": "sha256:28e35f63a5253b95cc0f50e786370669185ad9f58eacacf33170cb1257216f36",
+      "manifest_and_config_verified": true,
+      "layers_and_runtime_verified": false
+    }
+  ],
+  "authoring_requirements_checked": true,
+  "engine_installed": false,
+  "engine_executed": false,
+  "container_layers_pulled": false,
+  "image_release_source_identity_attested": false,
+  "physical_validation_status": "unvalidated",
+  "scientific_results": null,
+  "manifest_sha256": "aeebe962bf9f028960673dfb8394eb166e16d38390b1fa15f49b9ad3bc0fdf7d"
+}

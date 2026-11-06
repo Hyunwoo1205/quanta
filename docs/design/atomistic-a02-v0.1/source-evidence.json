@@ -1,0 +1,115 @@
+{
+  "repository": "cp2k/cp2k",
+  "tag": "v2026.2",
+  "annotated_tag_sha": "09496e055e132aa3dba53a7751ebdf432b4ebb78",
+  "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "tree": "2e4405ec65578a3d8205bc23adf69249798d98d3",
+  "source_archive": {
+    "url": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+    "size_bytes": 79898041,
+    "sha256": "f9bd86f580f57a53a0768c0045d1417f9f9a1d66d851ed7f662f496200043373",
+    "downloaded_and_digest_verified": true,
+    "vendored": false
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/LICENSE",
+      "size_bytes": 18092,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "git_blob_sha1": "d159169d1050894d3ea3b98e1c965c4058208fe1"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/CMakeLists.txt",
+      "size_bytes": 47269,
+      "sha256": "147aaf86596e26e39ce857b62b357f241b59b894b02c5f2dc47476ba58c860b5",
+      "git_blob_sha1": "075f91973c0813684ee791ecba2a95967b4a464d"
+    },
+    {
+      "path": "INSTALL.md",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/INSTALL.md",
+      "size_bytes": 3318,
+      "sha256": "04e0a979da22fa0cfd0b60d0ff235f45805d68fda50de8778a2d7c3625cfdd0f",
+      "git_blob_sha1": "01b2094da638b8ccf012c9640bc9b26d66506ec4"
+    },
+    {
+      "path": "data/ALL_POTENTIALS",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/data/ALL_POTENTIALS",
+      "size_bytes": 2717,
+      "sha256": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79",
+      "git_blob_sha1": "19bdebe95ec4b93d80d93369975cea9c8862090c"
+    },
+    {
+      "path": "src/input_cp2k_print_dft.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_print_dft.F",
+      "size_bytes": 208298,
+      "sha256": "2cef0bc8e85f0ec6c291a5c5101da55fea0658440c15647d42220f530c0aa2bc",
+      "git_blob_sha1": "304ca5399095e7a80b52df073e2a8ce5b69cc03a"
+    },
+    {
+      "path": "src/qs_scf_post_gpw.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_scf_post_gpw.F",
+      "size_bytes": 217795,
+      "sha256": "51c6456557b3cc5f95b2cfa2cee2b514739b80ccee7d32caa905f510d89e4fdc",
+      "git_blob_sha1": "16cd43613c69583a898c0ca4af26961f1041a2c2"
+    },
+    {
+      "path": "src/pw/realspace_grid_cube.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/pw/realspace_grid_cube.F",
+      "size_bytes": 46451,
+      "sha256": "c349dcfd603fd29fa738d90bafd2cc608251caa6466b1172dfa046da5ec1058a",
+      "git_blob_sha1": "c470d2ac7756ae5c23483e48d40b1858641ad6a6"
+    },
+    {
+      "path": "src/input_cp2k_qs.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_qs.F",
+      "size_bytes": 50122,
+      "sha256": "84817ccefcafe19f39c64c8af6a531a7bf9ae3aad0c7686ece21d3d3a56a6500",
+      "git_blob_sha1": "47b57966753b7c95d4753f2091cd5038835a2170"
+    },
+    {
+      "path": "src/input_cp2k_subsys.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_subsys.F",
+      "size_bytes": 146900,
+      "sha256": "ac2a47f03b781055efd43547b527788513811314fe5dd6a6c681776e54cce9e4",
+      "git_blob_sha1": "0a3fb1ad6f932041f79b159837da2931965f724f"
+    },
+    {
+      "path": "src/common/physcon.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/physcon.F",
+      "size_bytes": 11857,
+      "sha256": "b7c6a5d2c98ddc90652460059049919fc08512ecfcd32861790c6fd2a928cffb",
+      "git_blob_sha1": "5dfbeaa2ff8706eeb265ef3a06e3fb5a975ec007"
+    },
+    {
+      "path": "src/common/cp_units.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/cp_units.F",
+      "size_bytes": 59723,
+      "sha256": "e853a2e91a4949b81a034de949bb7a03d511da01e2753baac7e7ca8efaca7c3a",
+      "git_blob_sha1": "9677341fd43f1a6a1ce41e1c3221e1bd410ecfbf"
+    },
+    {
+      "path": "tools/docker/scripts/build_cp2k.sh",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/scripts/build_cp2k.sh",
+      "size_bytes": 915,
+      "sha256": "d5fc363db4ac004f0ecbdcde52178fd31b337075331ad5e718ea4f8eaf59577a",
+      "git_blob_sha1": "22b65d8fab6262a8aa85e057411a81910684a9b7"
+    },
+    {
+      "path": "tools/docker/scripts/cmake_cp2k.sh",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/scripts/cmake_cp2k.sh",
+      "size_bytes": 8297,
+      "sha256": "bce0fa9312ee63fd953aa299563ba7fbc935b22ce87b366f95e314bd798a0293",
+      "git_blob_sha1": "7db49af2c146d82370c265f717f5b414861c6bd2"
+    },
+    {
+      "path": "make_cp2k.sh",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/make_cp2k.sh",
+      "size_bytes": 62317,
+      "sha256": "ef6dc6b58c8448f06c35d6a64342cb7d4e2b4134c18308fa4d7ccd76e286d50a",
+      "git_blob_sha1": "d6bb56006c1f0e468b71b7bfe70739d8dfd28ffe"
+    }
+  ],
+  "source_read_scope": "Static source inspection, not build or scientific execution."
+}
