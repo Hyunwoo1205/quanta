@@ -68,7 +68,7 @@
   },
   "notes": [
     "Read-only inventory; no server settings changed.",
-    "Safe-to-reboot remains false until external copy and reboot-specific preparation.",
+    "At this initial audit, safe-to-reboot remained false under the then-planned external-copy prerequisite. The later user-reported OCI daily backup policy uses a quiescent live database baseline and does not require refreshing the external copy before reboot.",
     "Experiment/run counts include the additional mobile activity; earlier 5/8 desktop record remains historical."
   ]
 }

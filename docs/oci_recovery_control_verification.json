@@ -57,9 +57,9 @@
   "revised_backup_basis": "user_reported_oci_daily",
   "new_reboot_preservation_basis": "quiescent_current_live_database",
   "latest_local_standard_library_tests": {
-    "operations": 170,
+    "operations": 180,
     "caddy_readiness": 10,
-    "total": 180,
+    "total": 190,
     "python": "3.12.14"
   },
   "additional_external_refresh_or_export_performed_after_user_backup_report": false,
@@ -69,17 +69,17 @@
     "http_case_retries_added": false,
     "tls_verification_relaxed": false,
     "production_configuration_changed": false,
-    "actual_pinned_caddy_ci_reverification": "Both architecture framing steps passed in run42162923559; full repository run still in progress"
+    "actual_pinned_caddy_ci_reverification": "Both native architectures passed the full source e94 regression run42163707651, including actual pinned Caddy cases."
   },
-  "current_control_source": "e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f",
+  "current_control_source": "5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e",
   "current_control_ci": {
-    "id": 42163707530,
-    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42163707530",
+    "id": 42165696689,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42165696689",
     "architectures": [
       "x86_64",
       "aarch64"
     ],
-    "tests_each": 180,
+    "tests_each": 190,
     "conclusion": "success"
   },
   "predeployment_review_correction": {
@@ -87,5 +87,29 @@
     "found_before_remote_execution_of_revised_source": true,
     "correction": "Call actual audit database reader as root and let it perform its own single SQLite identity transition",
     "cross_module_actual_sqlite_regressions_added": 2
+  },
+  "latest_completed_full_regression_ci": {
+    "id": 42163707651,
+    "source": "e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f",
+    "conclusion": "success",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "pytest_each": 1503,
+    "node_each": 35,
+    "caddy_each": 9,
+    "scientific_application_deployed": false
+  },
+  "peer_diagnostic_verifier_relaxation_added": false,
+  "peer_diagnostic_source_full_ci": {
+    "id": 42165696700,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42165696700",
+    "source": "5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e",
+    "status": "in_progress",
+    "conclusion": null,
+    "x86_pytest_passed": 1513,
+    "arm_completion_not_yet_observed": true,
+    "required_dedicated_control_ci_completed_on_both_architectures": true
   }
 }

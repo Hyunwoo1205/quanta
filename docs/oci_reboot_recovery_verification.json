@@ -216,16 +216,19 @@
     "worker_exclusivity_verified": true,
     "existing_peer_running": true,
     "peer_configuration_preservation_verified": false,
-    "post_reboot_compute_verified": false
+    "post_reboot_compute_verified": true,
+    "quanta_settings_preserved": true,
+    "full_operating_recovery_verification_passed": false,
+    "peer_discrepancy_status": "unresolved_legacy_aggregate_fingerprint_no_raw_before_state"
   },
   "notes": [
-    "The comparison stopped before publishing a reboot baseline or scheduling an OS reboot.",
+    "The first attempt stopped before publishing a reboot baseline or scheduling an OS reboot; the second guarded attempt scheduled the only actual reboot.",
     "Later records are present in the live store; this confirms that the previous external snapshot is older, but the exact failure-time difference still needs the read-only diagnostic.",
     "The failed attempt remains evidence and must not be rewritten as a successful reboot.",
-    "No repeated reboot request has been made.",
+    "The first attempt did not reboot; a later revised request scheduled one actual OS reboot. No second actual reboot or peer mutation was performed.",
     "The revised reboot used the quiescent current live database, not equality with the older SQLite copy. OCI daily backups are user-reported; no extra refresh/export was run.",
     "Failed-stage count fields can remain zero because collection stops before populating those fields; the successful inventories and database preservation result establish the actual retained counts.",
-    "A new OS boot and application database preservation are verified; the peer aggregate configuration fingerprint is still under read-only diagnosis."
+    "New boot, Quanta services, database/artifact rows, operating settings and a new API calculation are verified separately. The existing peer is running with matching identity/image/restart policy; its legacy aggregate configuration fingerprint remains unresolved. Strict failure criteria were retained."
   ],
   "readonly_comparison": {
     "workflow_run": {
@@ -430,5 +433,22 @@
       "scope": "ssh_fixed_recovery",
       "status": "success"
     }
+  },
+  "peer_diagnosis": {
+    "record": "oci_peer_recovery_diagnostic.json",
+    "workflow_run": 42166172842,
+    "quanta_settings_preserved": true,
+    "existing_peer_id_image_name_running_restart_policy_match": true,
+    "full_peer_configuration_preservation_verified": false,
+    "array_order_explanation_supported": false,
+    "peer_or_baseline_modified": false
+  },
+  "post_reboot_compute": {
+    "record": "oci_post_reboot_compute_verification.json",
+    "workflow_run": 42166295756,
+    "run_id": "35531eeb-ffb7-4a8a-96a6-7af3cb3a67a9",
+    "success": true,
+    "source_and_independent_reference_match": true,
+    "adds_new_records_after_preservation_check": true
   }
 }

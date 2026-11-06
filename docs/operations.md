@@ -8,7 +8,7 @@
 
 앱 소스 `1738107301ef873bfe5e01f930866c2a74e4ec3f`의 OCI ARM 설치·서버 내부 준비 상태·일관된 SQLite 백업과 같은 부트 안의 분리 복원·앱 자동 시작·일일 백업 timer 활성화, 공개 HTTPS, 실제 소유자 데스크톱 계산을 확인했습니다. 실제 모바일은 2026-11-06 사용자가 모든 기능의 정상 작동을 보고했습니다. 각 범위는 [작업 현황](../WORKPLAN.md), [실제 백업](oci_backup_verification.json), [데스크톱](oci_owner_browser_verification.json), [모바일 사용자 확인](oci_mobile_verification.json)을 기준으로 구분합니다.
 
-운영 현황 읽기 전용 점검·활성 timer를 보존한 새 백업/분리 복원과 일회성 외부 SQLite 사본의 실제 다운로드/복호화/분리 복원을 확인했습니다. [외부 사본 검증](oci_off_host_backup_verification.json)은 자동 off-host 일정이나 전체 서버 복원을 뜻하지 않습니다. 실제 OS 재부팅과 OCI 관리형 볼륨 백업·전체 볼륨 복원은 아직 별도 미확인 범위입니다. 초기 설치용 `verify-backup` operation은 inactive timer를 요구하므로 활성 timer 상태에서 그대로 반복하지 않습니다. 배포 앱 소스와 새로운 운영 코드 소스·CI를 따로 고정하여 검증 후 사용합니다.
+운영 현황 읽기 전용 점검·활성 timer를 보존한 새 백업/분리 복원과 일회성 외부 SQLite 사본의 실제 다운로드/복호화/분리 복원을 확인했습니다. [외부 사본 검증](oci_off_host_backup_verification.json)은 자동 off-host 일정이나 전체 서버 복원을 뜻하지 않습니다. 실제 OS 재부팅 후 Quanta 서비스·단일 작업자·DB·산출물·운영 설정 보존과 새 API 계산은 확인했습니다([재부팅](oci_reboot_recovery_verification.json), [새 계산](oci_post_reboot_compute_verification.json)). 다른 컨테이너는 실행 중이고 ID·이미지·이름·재시작 정책은 같지만 전체 설정 지문은 달라 완전한 설정 보존은 미확인입니다([읽기 전용 진단](oci_peer_recovery_diagnostic.json)). OCI 일일 자동백업은 사용자 설정 보고를 기본으로 하며 콘솔 정책 직접 확인과 전체 볼륨 복원은 미확인입니다. 초기 설치용 `verify-backup` operation은 inactive timer를 요구하므로 활성 timer 상태에서 그대로 반복하지 않습니다. 배포 앱 소스와 새로운 운영 코드 소스·CI를 따로 고정하여 검증 후 사용합니다.
 
 확인된 호스트는 Ubuntu 26.04·ARM64·논리 CPU 2개·명목 메모리 12 GB와 부트 볼륨 200 GB 한 개이며 추가 블록 볼륨은 없습니다. 기존 PPK·고정 호스트 지문과 GitHub Actions 경로를 유지합니다. 정확한 CPython 3.12.14·의존성 27개는 고정 이미지와 아키텍처별 wheel 잠금을 사용하고 호스트 Python은 운영 도구의 표준 라이브러리만 실행합니다. 비밀값·원본 DB·정제하지 않은 원격 출력은 공개 저장소와 로그에 넣지 않습니다.
 
@@ -30,13 +30,15 @@
 
 `verify-reboot`는 실제 부트 ID 변경, 서비스/활성 timer/작업자 독점 잠금, 이전의 모든 DB 행·산출물 BLOB, 운영 설정, 기존 peer 컨테이너의 ID·이미지·정책·설정·실행 상태를 비교합니다. Quanta는 새 컨테이너가 생성될 수 있으므로 앱 컨테이너 ID의 동일성을 요구하지 않습니다. 서버가 외부 보관을 직접 검증한 것으로 표시하지 않습니다.
 
-`post-reboot-compute`는 보존 비교를 완료한 **다음** 서버 내부 루프백 API로 기존 입자 입력을 같은 revision/새 실행으로 재실행합니다. 부트와 원본 실행에 고정한 멱등성 키를 사용하고 원본 및 독립 에너지/힘 기준을 비교합니다. 키는 서버 내부 인증 헤더에만 사용하며 공개 probe/실행기에 공급하지 않습니다. 이 작업은 의도적으로 실행·event·산출물 기록을 추가하므로, 그 이후의 DB 전체 일치 비교는 재부팅 직후 보존 확인과 구분합니다. 물리 검증은 unvalidated입니다.
+`post-reboot-compute`는 Quanta DB·산출물 보존 비교를 완료한 **다음** 서버 내부 루프백 API로 기존 입자 입력을 같은 revision/새 실행으로 재실행합니다. 부트와 원본 실행에 고정한 멱등성 키를 사용하고 원본 및 독립 에너지/힘 기준을 비교합니다. 키는 서버 내부 인증 헤더에만 사용하며 공개 probe/실행기에 공급하지 않습니다. 이 작업은 의도적으로 실행·event·산출물 기록을 추가하므로, 그 이후의 DB 전체 일치 비교는 재부팅 직후 보존 확인과 구분합니다. 물리 검증은 unvalidated입니다.
 
 `compare-recovery`는 이전 SQLite 사본과 현재 live DB의 표별 행 수·의미 일치, 부트/서비스/임시 unit 상태를 읽기 전용으로 수집합니다. 서로 다른 세대의 사본이 불일치하는 것은 데이터 손실의 증거가 아닙니다. 수집 성공과 동일성 결과를 구분합니다.
 
 `refresh-recovery`는 선택적 명시 작업입니다. 새 백업/분리 복원 성공 후 기존 비공개 기준을 별도 불변 archive에 보존하고 기대한 원본 bytes/metadata가 같을 때만 현재 기준 파일을 원자 갱신합니다. 기존 사본·운영 DB는 바꾸지 않습니다. 사용자 OCI 일일백업 방침 이후 이 작업과 추가 export는 실제 실행하지 않았습니다.
 
-고정 여덟 작업 모두 기존 4필드 요청·고정 앱 소스를 유지하고, 새 운영 코드는 별도 main 커밋/성공한 두 아키텍처 CI에서 checkout한 bytes만 실행합니다. SSH 비밀값은 두 검증이 성공한 뒤에만 공급합니다. 새 작업은 지원된 operation만 받으며 자유 명령/임의 경로를 받지 않습니다. 새로운 수집/백업/내보내기를 실제 실행한 범위는 WORKPLAN과 정제한 검증 기록을 따릅니다.
+`diagnose-peer-recovery`는 기존 peer의 현재 관측을 반복 수집하고 비공개 재부팅 기준과 비교합니다. 허용된 세 배열의 제한된 순열로 과거 전체 지문과 정확히 일치하는지 정제된 상태만 보고하며, peer 설정·재부팅 기준·합격 조건을 변경하지 않습니다. 이번 실제 진단에서는 순열 일치가 없어 전체 peer 설정 보존을 확인하지 못했습니다.
+
+고정 아홉 작업 모두 기존 4필드 요청·고정 앱 소스를 유지하고, 새 운영 코드는 별도 main 커밋/성공한 두 아키텍처 CI에서 checkout한 bytes만 실행합니다. SSH 비밀값은 두 검증이 성공한 뒤에만 공급합니다. 새 작업은 지원된 operation만 받으며 자유 명령/임의 경로를 받지 않습니다. 새로운 수집/백업/내보내기를 실제 실행한 범위는 WORKPLAN과 정제한 검증 기록을 따릅니다.
 
 암호화 참고: [OpenSSL CMS](https://docs.openssl.org/3.5/man1/openssl-cms/). 복호화 환경은 알려진 CMS 보안 수정이 포함된 버전을 사용합니다([3.5.7 수정 기록](https://www.openssl-library.org/news/openssl-3.5-notes/index.html)).
 
@@ -130,7 +132,7 @@ timer는 매일 UTC 03:00, 최대 5분 분산 지연으로 실행하며 꺼져 �
 
 ## 호스트 밖 백업과 업데이트
 
-같은 볼륨의 DB 사본은 볼륨 손실에 대비한 사본이 아닙니다. SQLite 스냅샷 성공 뒤 OCI 관리형 볼륨 백업을 별도로 구성합니다. 관리형 백업은 부트·데이터 합계 5개 무료 한도와 기존 계정 사용량을 점검하며, 앱 내부 일일 timer가 OCI 관리형 백업까지 실행했다고 표시하지 않습니다.
+같은 볼륨의 DB 사본과 볼륨 외부 백업은 구분합니다. 일상 운영은 사용자가 이미 설정했다고 확인한 OCI 일일 자동백업을 기본으로 합니다. 현재 부트 볼륨의 정책 연결·최근 성공·보존기간은 직접 확인하지 않았으며 추가 정기 Drive/외부 백업이나 매 재부팅 전 외부 사본 갱신을 필수로 요구하지 않습니다. 검증한 일회성 외부 SQLite 사본은 기존 근거로 보존합니다. 앱 내부 timer와 OCI 관리형 백업은 별개입니다.
 
 부트 200 GB 단독 배치 또는 부트 50 GB·데이터 150 GB 배치에서 새 복원 볼륨을 동시에 추가하면 할당 200 GB를 넘습니다. 초기 시험은 현재 데이터 파일시스템의 새 디렉터리에 복구하고 전체 볼륨 복원과 구분합니다. RPO 24시간·RTO 1시간은 실제 OCI 복구 시험 전의 목표입니다.
 
@@ -138,8 +140,8 @@ timer는 매일 UTC 03:00, 최대 5분 분산 지연으로 실행하며 꺼져 �
 
 ## 확인 범위
 
-`scripts/verify_operations.py`는 실제 계산·SQLite·백업·분리 복구·원본 artifact 비교와 재시작 복구를 측정합니다. 기존 A·SI·B·WF·S·W·P와 물리 검증 `unvalidated`를 유지합니다. 실제 OCI에서는 볼륨 미장착 시작 거부, OS 재부팅 후 단일 서비스 복구, 감독자·자식 종료, 백업·복구·조회·다운로드 시간과 외부 인증 브라우저를 별도로 확인해야 파일럿 완료입니다.
+`scripts/verify_operations.py`는 실제 계산·SQLite·백업·분리 복구·원본 artifact 비교와 재시작 복구를 측정합니다. 기존 A·SI·B·WF·S·W·P와 물리 검증 `unvalidated`를 유지합니다. 실제 OCI에서는 볼륨 미장착 시작 거부, OS 재부팅 후 단일 서비스 복구, 감독자·자식 종료, 백업·복구·조회·다운로드 시간과 외부 인증 브라우저를 별도로 확인해야 파일럿 완료입니다. 이 중 실제 OS 재부팅 후 Quanta 서비스·단일 작업자·DB·산출물 보존과 실제 소유자 브라우저는 후속 OCI 기록에서 확인했습니다. 다른 컨테이너의 전체 설정 보존은 확인되지 않았으므로 전체 운영 복구를 일괄 합격으로 표시하지 않습니다.
 
-구현 commit `07e26a2`의 [네이티브 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509)에서 ARM·x86 각각 Python 621개·Node 33개, 여덟 측정·설치 패키지 컨테이너와 비 root 읽기 전용 복구 검사를 통과했습니다. 원본 20개 파일·ZIP 해시·450개 코드 해시 참조와 로컬 설치 wheel 근거는 [운영 검증 기록](operations_verification.json)에 있습니다. 전체 실행 API 표시 지연과 실제 단계별 합격을 구분하며, 이 문장의 원래 확인 범위는 해당 0.10.0 CI 시점입니다. 이후 OCI 설치·같은 부트 내 백업 복원·HTTPS·실제 소유자 계산과 모바일 사용자 확인은 위 최신 근거로 갱신됐으며, OS 재부팅·전체 볼륨 복원은 여전히 별도 미확인 범위입니다. 부트 단독 모드 보완은 별도의 [배포 검사](boot_storage_verification.json)에 기록하며 이전 네이티브 계산·컨테이너 근거와 구분합니다.
+구현 commit `07e26a2`의 [네이티브 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509)에서 ARM·x86 각각 Python 621개·Node 33개, 여덟 측정·설치 패키지 컨테이너와 비 root 읽기 전용 복구 검사를 통과했습니다. 원본 20개 파일·ZIP 해시·450개 코드 해시 참조와 로컬 설치 wheel 근거는 [운영 검증 기록](operations_verification.json)에 있습니다. 전체 실행 API 표시 지연과 실제 단계별 합격을 구분하며, 이 문장의 원래 확인 범위는 해당 0.10.0 CI 시점입니다. 이후 OCI 설치·같은 부트 내 백업 복원·HTTPS·실제 소유자 계산과 모바일 사용자 확인은 위 최신 근거로 갱신됐으며, 실제 OS 재부팅과 Quanta 서비스·DB·설정 보존 및 새 계산은 후속 근거에서 확인했습니다. 다른 컨테이너의 전체 설정 보존과 전체 볼륨 복원은 미확인 범위입니다. 부트 단독 모드 보완은 별도의 [배포 검사](boot_storage_verification.json)에 기록하며 이전 네이티브 계산·컨테이너 근거와 구분합니다.
 
 공식 참고: [SQLite online backup](https://www.sqlite.org/backup.html), [Python sqlite3 backup](https://docs.python.org/3.12/library/sqlite3.html#sqlite3.Connection.backup), [SQLite 검사](https://www.sqlite.org/pragma.html), [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html), [Docker bind mount](https://docs.docker.com/engine/storage/bind-mounts/), [Docker 재시작](https://docs.docker.com/engine/containers/start-containers-automatically/).

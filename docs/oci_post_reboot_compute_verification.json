@@ -1,0 +1,89 @@
+{
+  "verification_kind": "oci_post_reboot_authenticated_calculation",
+  "app_source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "control_source_commit": "5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e",
+  "control_ci": 42165696689,
+  "workflow_run": {
+    "id": 42166295756,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42166295756",
+    "head_sha": "64eac510245fd85a2a06287c01f07ce611eddc99",
+    "install_job_id": 127723441660,
+    "public_job_id": 127723591758,
+    "conclusion": "success"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "post-reboot-compute",
+    "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "request_id": "2d2baad9-5b69-4f06-915a-0fb11cf8c55e"
+  },
+  "result": {
+    "authentication_attempted": true,
+    "requested_operation": "post-reboot-compute",
+    "result": {
+      "boot_changed": true,
+      "energy_j": 3.999999999999998e-21,
+      "failure_reason": "none",
+      "forces_n": [
+        [
+          3.9999999999999985e-11,
+          0,
+          0
+        ],
+        [
+          -3.9999999999999985e-11,
+          0,
+          0
+        ]
+      ],
+      "independent_reference_matched": true,
+      "new_calculation_verified": true,
+      "new_run_completed": true,
+      "physical_validation_status": "unvalidated",
+      "physical_validation_unchanged": true,
+      "replay_link_verified": true,
+      "replay_submitted": true,
+      "run_id": "35531eeb-ffb7-4a8a-96a6-7af3cb3a67a9",
+      "same_revision": true,
+      "scope": "post_reboot_authenticated_calculation",
+      "source_run_selected": true,
+      "source_values_matched": true,
+      "stage": "complete",
+      "status": "success"
+    },
+    "scope": "ssh_fixed_recovery",
+    "status": "success"
+  },
+  "public_probe": {
+    "anonymous_api_denied": true,
+    "anonymous_api_status": 401,
+    "auth_discovery_status": 200,
+    "browser_verified": false,
+    "compute_verified": false,
+    "dns_a_matches_expected": true,
+    "dns_aaaa_present": false,
+    "dns_addresses_public": true,
+    "http_redirect_matches_origin": true,
+    "http_redirect_status": 308,
+    "https_shell_available": true,
+    "https_shell_status": 200,
+    "owner_authentication_verified": false,
+    "owner_token_mode": true,
+    "phase": "complete",
+    "scope": "public_deployment_smoke",
+    "status": "success",
+    "valid_owner_credential_used": false,
+    "wrong_token_api_denied": true,
+    "wrong_token_api_status": 401
+  },
+  "interpretation": {
+    "ran_after_exact_database_preservation_check": true,
+    "adds_one_replay_run_and_related_records": true,
+    "prior_database_preservation_baseline_not_rewritten": true,
+    "authenticated_calculation_via_server_loopback": true,
+    "owner_credential_exported_to_runner_or_public_probe": false,
+    "peer_configuration_not_changed": true,
+    "peer_full_configuration_preservation_still_unverified": true,
+    "physical_validation_status": "unvalidated"
+  }
+}
