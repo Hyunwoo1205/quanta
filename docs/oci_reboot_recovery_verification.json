@@ -450,5 +450,14 @@
     "success": true,
     "source_and_independent_reference_match": true,
     "adds_new_records_after_preservation_check": true
+  },
+  "later_user_topology_change": {
+    "record": "oci_personal_container_removal_verification.json",
+    "former_peer_personal_purpose": "user_confirmed",
+    "former_peer_deleted_by_user": true,
+    "current_peer_count_observed": 0,
+    "historical_peer_preservation_failure_retained": true,
+    "current_peer_preservation_investigation_retired": true,
+    "prior_private_baseline_overwritten": false
   }
 }

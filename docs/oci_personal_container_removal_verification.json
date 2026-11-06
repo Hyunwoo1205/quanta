@@ -1,0 +1,184 @@
+{
+  "verification_kind": "oci_after_user_removed_personal_container",
+  "checked_on": "2026-11-06",
+  "app_source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "app_version": "0.11.0",
+  "control_source_commit": "5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e",
+  "control_ci": 42165696689,
+  "user_report": {
+    "former_peer_was_personal_container": true,
+    "former_peer_deleted_by_user": true,
+    "server_reboot_reported_by_user": true,
+    "exact_time_or_boot_id_not_supplied": true
+  },
+  "audit": {
+    "workflow_run": {
+      "id": 42168162231,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42168162231",
+      "head_sha": "9423bbe4dbe44ae041c5389d5fbe63344cbeb4f9",
+      "job_id": 127729420807,
+      "conclusion": "success"
+    },
+    "request": {
+      "schema_version": 1,
+      "operation": "audit-recovery",
+      "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "request_id": "42af4a01-b49d-4d65-b90b-085a53a1a7b3"
+    },
+    "result": {
+      "authentication_attempted": true,
+      "requested_operation": "audit-recovery",
+      "result": {
+        "app_active": true,
+        "app_enabled": true,
+        "artifacts": 837,
+        "authenticated_ready": true,
+        "backup_services_idle": true,
+        "backup_snapshots": 3,
+        "backup_timer_active": true,
+        "backup_timer_enabled": true,
+        "boot_id_valid": true,
+        "database_checked": true,
+        "docker_active": true,
+        "docker_enabled": true,
+        "experiments": 8,
+        "failure_reason": "none",
+        "free_disk_mib": 191230,
+        "host_reboot_prerequisites_met": true,
+        "https_active": true,
+        "https_enabled": true,
+        "latest_backup_service_succeeded": false,
+        "latest_snapshot_age_seconds": 5946,
+        "latest_snapshot_present": true,
+        "no_pending_runs": true,
+        "nonterminal_runs": 0,
+        "off_host_backup_verified": false,
+        "peer_containers": 0,
+        "peer_restart_policies_safe": true,
+        "restartable_running_peers": 0,
+        "revisions": 10,
+        "running_peer_containers": 0,
+        "runs": 12,
+        "safe_to_reboot": false,
+        "scope": "recovery_audit",
+        "server_modified": false,
+        "single_app_container": true,
+        "source_verified": true,
+        "stage": "complete",
+        "status": "success",
+        "storage_verified": true,
+        "sufficient_disk_space": true,
+        "worker_exclusivity_verified": true
+      },
+      "scope": "ssh_fixed_recovery",
+      "status": "success"
+    }
+  },
+  "authenticated_api_check": {
+    "workflow_run": {
+      "id": 42168257444,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42168257444",
+      "head_sha": "5b69ab9a6235bef425bc495727d2dcce35087ced",
+      "install_job_id": 127729723546,
+      "public_job_id": 127729828297,
+      "conclusion": "success"
+    },
+    "request": {
+      "schema_version": 1,
+      "operation": "post-reboot-compute",
+      "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "request_id": "185ba7ee-5f2c-4b13-a148-b52fe62d5ac8"
+    },
+    "result": {
+      "authentication_attempted": true,
+      "requested_operation": "post-reboot-compute",
+      "result": {
+        "boot_changed": true,
+        "energy_j": 3.999999999999998e-21,
+        "failure_reason": "none",
+        "forces_n": [
+          [
+            3.9999999999999985e-11,
+            0,
+            0
+          ],
+          [
+            -3.9999999999999985e-11,
+            0,
+            0
+          ]
+        ],
+        "independent_reference_matched": true,
+        "new_calculation_verified": true,
+        "new_run_completed": true,
+        "physical_validation_status": "unvalidated",
+        "physical_validation_unchanged": true,
+        "replay_link_verified": true,
+        "replay_submitted": true,
+        "run_id": "35531eeb-ffb7-4a8a-96a6-7af3cb3a67a9",
+        "same_revision": true,
+        "scope": "post_reboot_authenticated_calculation",
+        "source_run_selected": true,
+        "source_values_matched": true,
+        "stage": "complete",
+        "status": "success"
+      },
+      "scope": "ssh_fixed_recovery",
+      "status": "success"
+    },
+    "public_probe": {
+      "anonymous_api_denied": true,
+      "anonymous_api_status": 401,
+      "auth_discovery_status": 200,
+      "browser_verified": false,
+      "compute_verified": false,
+      "dns_a_matches_expected": true,
+      "dns_aaaa_present": false,
+      "dns_addresses_public": true,
+      "http_redirect_matches_origin": true,
+      "http_redirect_status": 308,
+      "https_shell_available": true,
+      "https_shell_status": 200,
+      "owner_authentication_verified": false,
+      "owner_token_mode": true,
+      "phase": "complete",
+      "scope": "public_deployment_smoke",
+      "status": "success",
+      "valid_owner_credential_used": false,
+      "wrong_token_api_denied": true,
+      "wrong_token_api_status": 401
+    },
+    "interpretation": {
+      "previous_verification_run_id": "35531eeb-ffb7-4a8a-96a6-7af3cb3a67a9",
+      "returned_same_previously_verified_run": true,
+      "new_solver_execution_observed_during_this_recheck": false,
+      "existing_post_reboot_result_retrieved_and_independently_compared": true,
+      "module_success_booleans_do_not_prove_new_execution_when_idempotency_reuses_run": true,
+      "separate_new_boot_since_prior_verified_boot_independently_proved": false
+    }
+  },
+  "conclusion": {
+    "quanta_containers": 1,
+    "other_containers": 0,
+    "current_application_https_storage_worker_and_backup_schedule_healthy": true,
+    "current_sqlite_quick_check_passed": true,
+    "stored_experiments": 8,
+    "stored_revisions": 10,
+    "stored_runs": 12,
+    "stored_artifacts": 837,
+    "all_pre_reboot_row_bytes_recompared_in_this_recheck": false,
+    "current_authenticated_api_and_public_auth_boundaries_passed": true,
+    "current_full_feature_suite_reexecuted": false,
+    "old_peer_preservation_requirement_retired_after_user_removed_personal_container": true,
+    "historical_peer_difference_and_failed_verification_preserved": true,
+    "server_container_deletion_reboot_or_configuration_changes_by_agent_during_this_recheck": false,
+    "application_redeployed": false,
+    "physical_validation_status": "unvalidated"
+  },
+  "notes": [
+    "The user removed their own container; the agent only inspected the resulting topology and invoked the existing fixed authenticated verification endpoint.",
+    "The old peer-preservation failure is historical and is not rewritten as success. An intentionally removed personal peer is no longer a current preservation target.",
+    "The post-reboot endpoint returned the same idempotent replay UUID as run42166295756. This recheck confirms authenticated submission/retrieval and the existing result; it does not demonstrate an additional solver execution.",
+    "No new SSH key, backup, reboot, deployment, authentication method or handoff document was introduced."
+  ]
+}
