@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "diagnose-peer-recovery",
+  "operation": "post-reboot-compute",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "23540b56-9283-45dc-a3b7-2b5b738ea9bb"
+  "request_id": "2d2baad9-5b69-4f06-915a-0fb11cf8c55e"
 }
