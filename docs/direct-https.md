@@ -1,6 +1,6 @@
 # OCI 직접 HTTPS 선택 구성
 
-2026-11-06 · 선택 배포안 · 실제 공개 TLS 미검증
+2026-11-06 · 직접 HTTPS 구성 · 공개 TLS/인증 경계 확인, 소유자 전체 흐름 대기
 
 Cloudflare Access·Tunnel의 기본 구성은 유지합니다. 이 문서는 외부 DNS의 A/AAAA 레코드로 OCI에 직접 연결하고, Caddy가 HTTPS를 종료하며 Quanta가 단일 소유자 bearer 토큰을 검사하는 대안을 설명합니다. 이 파일과 예시는 서버 설치·방화벽 개방·인증 방식 전환을 실행하지 않습니다.
 
@@ -13,6 +13,12 @@ Cloudflare Access·Tunnel의 기본 구성은 유지합니다. 이 문서는 외
 브라우저에서는 HTTPS 화면의 토큰 입력으로 API 인증을 시작합니다. 정적 화면과 `/ui/auth`는 입력 전에도 열리지만 계산·기록·준비 상태 API에는 올바른 bearer 토큰이 필요합니다. API의 Host·Origin 검사는 유지되므로 Caddy가 Host나 Origin을 loopback 주소로 바꾸면 안 됩니다.
 
 이 방식에서는 토큰을 가진 사람이 같은 소유자로 인증됩니다. 이메일 계정의 신원 확인은 하지 않으며, 화면의 연결 해제는 해당 브라우저에서 토큰을 지울 뿐입니다. 기존 토큰을 폐기하려면 서버의 비공개 환경 파일에서 새 난수 토큰으로 교체하고 앱을 재시작합니다. 최초 토큰은 배포 단계에서 OCI 내부의 비공개 파일에 생성하고, 사용자가 기존의 신뢰한 PuTTY 세션으로 한 번 확인해 사용할 수 있습니다. 이를 위해 GitHub secret을 추가할 필요는 없습니다. 이 문서는 토큰 생성·조회·교체를 실행하지 않습니다.
+
+## 실제 배포 확인과 다음 단계
+
+[고정 전환 실행 42125582058](https://github.com/Hyunwoo1205/quanta/actions/runs/42125582058)은 2026-11-05 22:57:03 UTC에 성공했습니다. ZeroSSL 인증서 발급, DNS 일치, HTTP 308의 정확한 HTTPS 전환, HTTPS 화면 200, owner-token 인증 안내 200, 익명·잘못된 토큰의 API 401을 확인했습니다. 과거 이메일 누락·공유 등록 도메인 발급 한도는 이 성공 이전의 이력입니다. [ACME 실행 기록](oci_acme_configuration_verification.json)에 이전 실패와 후속 성공을 구분해 보존합니다.
+
+이 공개 검사는 올바른 소유자 접속키를 사용하지 않았습니다. 소유자 브라우저·계산 검증이나 실제 OS 재부팅·off-host 복구의 합격을 뜻하지 않습니다. 다음은 [소유자 브라우저 확인](owner-browser-check.md)의 비공개 입력 절차로 로그인한 뒤 저장·실행·결과·다운로드·재실행을 검증하는 단계입니다. 키를 Actions나 채팅으로 가져오거나 기존 설치·방화벽·인증서 작업을 반복하지 않습니다.
 
 ## Caddy 설정 준비
 
@@ -65,3 +71,4 @@ python3 scripts/verify_caddy.py --caddy /path/to/verified/caddy
 실제 운영 검증에는 외부 HTTPS 인증서 신뢰·HTTP→HTTPS 이동, 토큰 없는 API 401, 잘못된 토큰 401, 올바른 토큰의 준비 상태·계산·조회·다운로드, 다른 Host·Origin 거부, 재시작 후 단일 worker와 데이터 보존을 포함합니다. 브라우저에서 인증한 실제 동작과 단순한 TLS 연결 성공을 구분합니다.
 
 공식 참고: [Caddy reverse_proxy와 buffer·header·HTTP transport](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy), [요청 본문 상한](https://caddyserver.com/docs/caddyfile/directives/request_body), [요청 matcher](https://caddyserver.com/docs/caddyfile/matchers), [HTTP 프로토콜 설정](https://caddyserver.com/docs/caddyfile/options#protocols), [환경 변수 치환](https://caddyserver.com/docs/caddyfile/concepts#environment-variables), [설정 검사](https://caddyserver.com/docs/command-line#caddy-adapt), [자동 HTTPS 조건](https://caddyserver.com/docs/automatic-https).
+

@@ -108,6 +108,125 @@
       "wrong_token_api_status": null
     }
   },
-  "current_blocker": "acme_email_missing",
-  "diagnostic_test_count": 28
+  "current_blocker": "owner_browser_authentication_pending",
+  "diagnostic_test_count": 28,
+  "historical_record_scope": "The original workflow_run, request, configuration_result, public_result, scope, notes and diagnostic_retry describe the two unsuccessful attempts; successful_retry and current_state describe the later verified state.",
+  "successful_retry": {
+    "workflow_run": {
+      "id": 42125582058,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42125582058",
+      "head_sha": "5a79a787d49174aec06581f5377c2ea63cc1ed5c",
+      "head_branch": "ops/oci",
+      "event": "push",
+      "created_at_utc": "2026-11-05T22:55:55Z",
+      "updated_at_utc": "2026-11-05T22:57:03Z",
+      "status": "completed",
+      "conclusion": "success",
+      "configuration_job": {
+        "id": 127588786706,
+        "started_at_utc": "2026-11-05T22:55:58Z",
+        "completed_at_utc": "2026-11-05T22:56:51Z",
+        "conclusion": "success",
+        "report_at_utc": "2026-11-05T22:56:50.0008392Z"
+      },
+      "public_job": {
+        "id": 127589211078,
+        "started_at_utc": "2026-11-05T22:56:53Z",
+        "completed_at_utc": "2026-11-05T22:57:02Z",
+        "conclusion": "success",
+        "report_at_utc": "2026-11-05T22:57:01.1222685Z"
+      }
+    },
+    "request": {
+      "schema_version": 1,
+      "operation": "configure-acme",
+      "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "request_id": "5665c59e-d075-4840-bf25-22267e5aba15"
+    },
+    "required_native_ci_run_id": 42064056609,
+    "configuration_result": {
+      "authentication_attempted": true,
+      "requested_operation": "configure-acme",
+      "result": {
+        "backup_created": true,
+        "binary_trusted": true,
+        "changed": true,
+        "commit_started": true,
+        "config_replaced": true,
+        "configured": true,
+        "env_replaced": true,
+        "failure_reason": "none",
+        "failure_stage": "none",
+        "receipt_created": true,
+        "restart_attempted": true,
+        "rollback_attempted": false,
+        "rollback_complete": false,
+        "scope": "acme_configuration",
+        "scope_verified": true,
+        "service_active": true,
+        "state": "issued",
+        "status": "success",
+        "tls_issued": true
+      },
+      "scope": "ssh_fixed_installation",
+      "status": "success"
+    },
+    "public_result": {
+      "anonymous_api_denied": true,
+      "anonymous_api_status": 401,
+      "auth_discovery_status": 200,
+      "browser_verified": false,
+      "compute_verified": false,
+      "dns_a_matches_expected": true,
+      "dns_aaaa_present": false,
+      "dns_addresses_public": true,
+      "http_redirect_matches_origin": true,
+      "http_redirect_status": 308,
+      "https_shell_available": true,
+      "https_shell_status": 200,
+      "owner_authentication_verified": false,
+      "owner_token_mode": true,
+      "phase": "complete",
+      "scope": "public_deployment_smoke",
+      "status": "success",
+      "valid_owner_credential_used": false,
+      "wrong_token_api_denied": true,
+      "wrong_token_api_status": 401
+    },
+    "scope": {
+      "ssh_authentication_attempted": true,
+      "selected_acme_configuration_changed": true,
+      "public_tls_verified": true,
+      "anonymous_and_wrong_token_api_denial_verified": true,
+      "operational_origin_or_email_recorded": false,
+      "private_key_or_owner_token_value_collected": false,
+      "valid_owner_credential_used_in_public_probe": false,
+      "owner_authentication_verified": false,
+      "browser_verified": false,
+      "compute_verified": false,
+      "mobile_verified": false,
+      "application_reinstalled": false,
+      "ssh_key_replaced": false,
+      "physical_validation_status": "unvalidated"
+    },
+    "notes": [
+      "The explicitly supplied contact input allowed the existing guarded ZeroSSL ACME configuration to complete; the earlier missing-input failures remain historical evidence.",
+      "The fixed configuration and public reports are preserved as returned; the public job used no valid owner credential.",
+      "Public TLS, the HTTPS shell and API denial boundaries passed. No actual owner-browser authentication, numerical calculation in a browser or mobile-device workflow is established by these reports.",
+      "The contact input, origin, IP, SSH key and owner-token values are not included in this record.",
+      "No application installation, firewall setup, backup verification or ACME transition was repeated during this documentation reconciliation."
+    ]
+  },
+  "current_state": {
+    "latest_successful_run_id": 42125582058,
+    "acme_email_missing_resolved": true,
+    "registered_domain_rate_limit_is_historical": true,
+    "public_tls_verified": true,
+    "owner_authentication_verified": false,
+    "browser_verified": false,
+    "compute_verified": false,
+    "mobile_verified": false,
+    "physical_validation_status": "unvalidated",
+    "next": "Use the existing trusted SSH session to privately obtain the owner key and complete the actual HTTPS browser/mobile workflow; do not send the key through chat or public automatic checks."
+  }
 }

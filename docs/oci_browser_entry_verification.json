@@ -1,0 +1,40 @@
+{
+  "verification_kind": "unauthenticated_browser_entry_observation",
+  "checked_at_date": "2026-11-06",
+  "reference_main_sha": "3bdf2778f1c333d66255a0db9f2311125c8116ee",
+  "reference_deployed_source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "method": "live_cloud_browser_rendered_dom",
+  "viewport_scope": "desktop_unauthenticated_entry_only",
+  "observations": {
+    "https_page_loaded": true,
+    "research_workspace_rendered": true,
+    "private_owner_key_form_visible": true,
+    "owner_key_input_type": "password",
+    "owner_key_autocomplete": "off",
+    "connect_control_visible": true,
+    "connection_pending_visible": true,
+    "validate_control_disabled": true,
+    "save_revision_control_disabled": true,
+    "run_control_disabled": true,
+    "examples_loaded": false
+  },
+  "scope": {
+    "server_configuration_changed": false,
+    "operational_origin_recorded": false,
+    "owner_key_read_or_recorded": false,
+    "valid_owner_credential_used": false,
+    "owner_authentication_verified": false,
+    "authenticated_compute_verified": false,
+    "authenticated_browser_flow_verified": false,
+    "mobile_verified": false,
+    "physical_validation_status": "unvalidated"
+  },
+  "notes": [
+    "The live page rendered the owner-token connection form over HTTPS without an authenticated session.",
+    "This is a rendering observation, not a fresh HTTP status/CA diagnostic or an authenticated end-to-end test.",
+    "Examples are not loaded before owner authentication; no authenticated input or result was accessed.",
+    "The protected input, save, and run controls remain disabled before connection.",
+    "Authenticated browser and mobile work requires the owner to enter the existing key privately; do not export it through Actions or chat."
+  ],
+  "related_public_workflow_run": 42125582058
+}
