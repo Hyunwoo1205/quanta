@@ -20,13 +20,15 @@ and personal Drive result archive. Small measurements and provenance belong in
 GitHub. A successful installation or finite electron-density integral does not
 establish scientific convergence or physical validation.
 
-## Status before first execution
+## Measured native execution; OCI pending
 
-- Native x86/ARM execution: pending.
+- Native x86/ARM execution: passed at source b621e836af61d7b63933ab7802722fa1ee79f531, run42262528023; see `../../atomistic_a03_native_verification.json`.
 - OCI production headroom and responsiveness: pending.
-- Binary/source identity and actual dependencies: pending.
+- Actual binary hashes and installed dependency inventories: recorded in execution artifacts. Binary/source identity: unresolved (`revision unknown`); see [binding review](binary-source-binding-review.json).
 - Public atomistic enablement: no-go until contracts, quotas and scientific gates.
 - Physical validation: `unvalidated`.
 
 Resource-control reference: https://docs.docker.com/engine/containers/resource_constraints/
 Versioned density semantics: https://manual.cp2k.org/cp2k-2026_2-branch/CP2K_INPUT/FORCE_EVAL/DFT/PRINT/E_DENSITY_CUBE.html
+
+Actual CUBE data are fixed13-column E13.5E3 fields with five significant digits. This corrects the A02 six-digit description without rewriting historical locks. Actual negative lobes and rounded-axis integral errors remain in the data; no clipping or renormalization is permitted.

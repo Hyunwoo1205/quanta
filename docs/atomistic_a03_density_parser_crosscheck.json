@@ -1,0 +1,28 @@
+{
+  "verification_kind": "A03_actual_density_parser_independent_crosscheck",
+  "source_sha": "1fd012fbe3b716fd214e5d9dfa43c93c1a6495e1",
+  "workflow_run": 42261699936,
+  "artifact_id": 13524603874,
+  "cube": {
+    "file": "raw/he_dz-TOTAL_ELECTRON_DENSITY-1_0.cube",
+    "bytes": 44437758,
+    "sha256": "047adda8cb0e2f3a1c276200b74cf335815bc185ac516a190f1b4e1023d713a2"
+  },
+  "independent_method": "NumPy float64 sum and determinant, CP2K E13.5E3 fixed-width fields; no clipping, smoothing or renormalization",
+  "independent_electron_integral_rounded_axes": 1.9999961714030232,
+  "runner_compensated_integral_rounded_axes": 1.999996171403024,
+  "absolute_difference": 8.881784197001252e-16,
+  "comparison_tolerance": 1e-12,
+  "passed_parser_comparison": true,
+  "samples": 3375000,
+  "negative_samples": 1599969,
+  "minimum_electrons_per_bohr3": -0.0001289,
+  "negative_integral": -0.00011999657148618724,
+  "cube_header_decimals": 6,
+  "cube_density_significant_digits": 5,
+  "A02_precision_description_erratum": "A02 stated six significant digits; actual E13.5E3 values have five. Historical A02 lock files are preserved; A03 supersedes this description.",
+  "engine_scientific_acceptance": false,
+  "physical_validation_status": "unvalidated",
+  "python": "3.12.14",
+  "numpy_version": "2.3.5"
+}

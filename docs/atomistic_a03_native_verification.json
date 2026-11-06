@@ -1,0 +1,30 @@
+{
+  "verification_kind": "A03_native_installation_resource_and_cancellation",
+  "source_sha": "b621e836af61d7b63933ab7802722fa1ee79f531",
+  "workflow_run": 42262528023,
+  "status": "native_execution_gates_passed",
+  "reports": [
+    {
+      "architecture": "x86_64",
+      "report": "docs/atomistic_a03_native_x86_64.json",
+      "bytes": 70441,
+      "sha256": "c7fc02fb7bd9ecc021f728f70b05f5c918c554126b066eb93f637ef7c896f897",
+      "artifact_id": 13526315878,
+      "passed": true
+    },
+    {
+      "architecture": "aarch64",
+      "report": "docs/atomistic_a03_native_aarch64.json",
+      "bytes": 70475,
+      "sha256": "22f7262b0d3dde1d0951531884be2a7568bcd6fa685da12f011c02d58a55ccc7",
+      "artifact_id": 13525546771,
+      "passed": true
+    }
+  ],
+  "OCI_measurement": "pending",
+  "physical_validation_status": "unvalidated",
+  "source_binding_gate": "actual binary reports 2026.2 with unknown revision; A04 freeze blocked until explicit binding or traceable rebuild",
+  "cancellation_scope": "actual CP2K initialization before SCF, process cleanup and fresh completed calculation; no claim of every solver/output phase",
+  "public_atomistic_runtime_enabled": false,
+  "archive_drive_file_id": "1N3ZEcq9Bufn9yNicmeqxCcqCOByZ-QKw"
+}

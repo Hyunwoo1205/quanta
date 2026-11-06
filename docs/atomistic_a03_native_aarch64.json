@@ -1,0 +1,1988 @@
+{
+  "schema_version": 1,
+  "probe": "quanta.atomistic-a03",
+  "started_at": "2026-11-06T17:32:40.170098+00:00",
+  "host": {
+    "machine": "aarch64",
+    "platform": "Linux-7.0.0-1017-azure-aarch64-with-glibc2.39",
+    "uid": 1001,
+    "gid": 1001
+  },
+  "limits": {
+    "cpus": 1,
+    "memory_bytes": 2147483648,
+    "memory_swap_bytes": 2147483648,
+    "pids": 128,
+    "work_tmpfs_bytes": 268435456,
+    "tmp_tmpfs_bytes": 134217728,
+    "native_only": true,
+    "network": "none",
+    "rootfs_read_only": true,
+    "cap_drop": [
+      "ALL"
+    ],
+    "no_new_privileges": true,
+    "supplementary_groups": [
+      0
+    ],
+    "case_timeout_seconds": 180
+  },
+  "physical_validation_status": "unvalidated",
+  "runtime_contract_implemented": false,
+  "production_deployment_changed": false,
+  "cases": [
+    {
+      "case": "he-dz",
+      "input_sha256": "6c91137086d77321edc954e4f316a2a837078b088260f7b3ae00c73691df8bc8",
+      "input_metadata": {
+        "document_kind": "internal_atomistic_a03_probe",
+        "status": "exploratory_settings_not_A04_frozen_not_scientific_acceptance",
+        "public_runtime_contract": false,
+        "fixture_as_product_execution_selector": false,
+        "physical_validation_status": "unvalidated",
+        "system": "he",
+        "source_fixture": "C01-He",
+        "project": "he_dz",
+        "operation": "ENERGY_FORCE",
+        "basis": "cc-pVDZ",
+        "data_dir": "/quanta-data",
+        "model": {
+          "method": "GAPW",
+          "functional": "PBE",
+          "potential": "ALL",
+          "charge_e": 0,
+          "multiplicity": 1,
+          "electron_count": 2,
+          "uks": false,
+          "dispersion": false,
+          "periodic": "NONE"
+        },
+        "numerics": {
+          "cell_angstrom": 12,
+          "cutoff_ry": 400,
+          "rel_cutoff_ry": 40,
+          "ngrids": 4,
+          "eps_scf": 1e-08,
+          "max_scf": 80,
+          "poisson_solver": "MT",
+          "scf_guess": "ATOMIC",
+          "scf_method": "OT/DIIS/FULL_ALL",
+          "eps_default": 1e-12,
+          "eps_pgf_orb": 1e-10,
+          "epsfit": 0.0001,
+          "epsiso": 1e-12,
+          "epssvd": 1e-08,
+          "epsrho0": 1e-08,
+          "lmaxn0": 2,
+          "lmaxn1": 6,
+          "quadrature": "GC_LOG",
+          "radial_grid": 100,
+          "lebedev_grid": 110
+        },
+        "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
+        "density": {
+          "enabled": true,
+          "quantity": "electron_number_density_hard_plus_soft",
+          "density_include": "TOTAL_DENSITY",
+          "stride": [
+            1,
+            1,
+            1
+          ],
+          "xrd_interface": false,
+          "append": false,
+          "clipping_or_renormalization": false
+        },
+        "energy_output": {
+          "unit": "hartree",
+          "scope": "electronic plus nuclear repulsion; no ZPE/rest/thermal terms"
+        },
+        "forces_output": {
+          "file": "forces.xyz",
+          "format": "CP2K ATOMIC FORCES table, not XYZ despite filename suffix",
+          "unit": "hartree/bohr",
+          "ndigits": 15
+        },
+        "coordinate_translation_angstrom": [
+          6.0,
+          6.0,
+          6.0
+        ],
+        "atoms": [
+          {
+            "id": "he1",
+            "element": "He",
+            "source_position_m": [
+              0,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "6",
+              "6",
+              "6"
+            ],
+            "bare_nuclear_mass_kg": "6.644657345E-27",
+            "engine_mass_amu": "4.001506870557389968866141182362340032357",
+            "mass_reference": "NIST-CODATA-2022:alpha_particle_mass_kg"
+          }
+        ],
+        "engine_mass_unit_kg": "1.660538782e-27",
+        "engine_unit_codata_edition": 2006,
+        "data_sha256": {
+          "cc-pVDZ.cp2k": "34f9c543100787aa13763a9be00abc639243a3284aa7416091506949a14978bd",
+          "ALL_POTENTIALS": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79"
+        },
+        "source_files_sha256": {
+          "docs/design/atomistic-a01-v0.1/fixtures.json": "ecffd8eb16fb80bedb7276fcade57e6a0a75e9f8022beceb82beb98dfc5a436c",
+          "docs/design/atomistic-a01-v0.1/profile.json": "0c802bfe15568a12d29af6d80741c0fda57e1dd62940614cea43dd8f1bfcdeb0",
+          "docs/design/atomistic-a01-v0.1/reference-data.json": "1d3e5666a70cdf208d70ddf47a1bee5e4afbae48f5215b1e74004e1deac222ea",
+          "docs/design/atomistic-a02-v0.1/density-and-units.json": "2e711bfffa5ce8db27cb1b1a1c4faa329cf50b6a23f4775c4b26e24b18e05835",
+          "docs/design/atomistic-a02-v0.1/engine-lock.json": "911d0f263bfa08f1932cdba28d6b4ca864f0b6ccc5d0cfd621dae4e3bf616429"
+        },
+        "unselected_version_locked_defaults": "Remaining engine defaults are tied to the actually measured binary; this is not a complete frozen numerical profile."
+      },
+      "limits": {
+        "cpus": 1,
+        "memory_bytes": 2147483648,
+        "memory_swap_bytes": 2147483648,
+        "pids": 128,
+        "work_tmpfs_bytes": 268435456,
+        "tmp_tmpfs_bytes": 134217728,
+        "native_only": true,
+        "network": "none",
+        "rootfs_read_only": true,
+        "cap_drop": [
+          "ALL"
+        ],
+        "no_new_privileges": true,
+        "supplementary_groups": [
+          0
+        ],
+        "case_timeout_seconds": 180
+      },
+      "cancel_requested": false,
+      "metrics": {
+        "sampled_process_rss_sum_peak_kib": 2011852,
+        "samples": 34,
+        "observed_cgroup_memory_peak_bytes": 1980039168,
+        "rss_metric": "Sampled sum of docker-top per-process resident pages; shared pages may be counted more than once; not exact peak RSS.",
+        "cgroup_path": "/sys/fs/cgroup/system.slice/docker-5eb7d435911475e208002fa64fa3ff53d3f8ac674a364eccf7d56689f0513e56.scope"
+      },
+      "container_controls": {
+        "NetworkMode": "none",
+        "ReadonlyRootfs": true,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "NanoCpus": 1000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "PidsLimit": 128,
+        "Tmpfs": {
+          "/tmp": "rw,nosuid,nodev,noexec,size=134217728,mode=1777",
+          "/work": "rw,nosuid,nodev,noexec,size=268435456,mode=1777"
+        },
+        "GroupAdd": [
+          "0"
+        ]
+      },
+      "container_user": "1001:1001",
+      "engine_returncode": 0,
+      "artifact_transport": {
+        "transport": "fixed docker exec tar from live tmpfs",
+        "archive_bytes": 44492800,
+        "archive_sha256": "bfccc1c607b802197f50c5a5fae9751e89b5411ced9cbdeac62c65f63c9395af",
+        "regular_file_bytes": 44486805,
+        "entries": 5,
+        "links_special_files_pax_and_escaping_paths_allowed": false
+      },
+      "container_returncode": 0,
+      "wall_seconds": 19.81352173800002,
+      "output": {
+        "program_ended": true,
+        "scf_converged": true,
+        "energy_hartree": -2.884463653290686,
+        "energy_j_candidate_engine2006": -1.2575522930768814e-17,
+        "forces_hartree_per_bohr": [
+          [
+            6.3e-14,
+            6.4e-14,
+            6.3e-14
+          ]
+        ],
+        "forces_n_candidate_engine2006": [
+          [
+            5.190394894598592e-21,
+            5.272782115147776e-21,
+            5.190394894598592e-21
+          ]
+        ],
+        "source_claims_from_output": {
+          "reported_version": "2026.2",
+          "reported_revision": "unknown",
+          "release_source_prefix_matches": false,
+          "source_identity_attested": false,
+          "attestation_note": "Binary self-report is evidence, not a reproducible-build/source attestation."
+        },
+        "physical_validation_status": "unvalidated",
+        "force_artifact": "forces.xyz",
+        "force_units_policy": "CP2K native PRINT FORCES default atomic units; A04 actual-source binding remains required."
+      },
+      "files": [
+        {
+          "file": "raw/cp2k.out",
+          "bytes": 48383,
+          "sha256": "a1a220aaef214087aac0b4b2e2e6d33ea70fd8c3ad1dd4a8ebd1f0c456f31227"
+        },
+        {
+          "file": "raw/engine-resource.json",
+          "bytes": 345,
+          "sha256": "2e72afbf95da54bb0e37c1fb890a679feda9132397382958cec7afaf747afb5f"
+        },
+        {
+          "file": "raw/forces.xyz",
+          "bytes": 317,
+          "sha256": "d9d69fbc79268eec1d9a964f67f7f42298ebc9604d8779db340f2e2299e2a9be"
+        },
+        {
+          "file": "raw/he_dz-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437758,
+          "sha256": "047adda8cb0e2f3a1c276200b74cf335815bc185ac516a190f1b4e1023d713a2"
+        },
+        {
+          "file": "raw/quanta_exit_code",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        }
+      ],
+      "output_bytes": 44486805,
+      "density": [
+        {
+          "file": "he_dz-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437758,
+          "sha256": "047adda8cb0e2f3a1c276200b74cf335815bc185ac516a190f1b4e1023d713a2",
+          "comments": [
+            "-Quickstep-",
+            " TOTAL ELECTRON DENSITY"
+          ],
+          "atom_count": 1,
+          "atoms_bohr_rounded": [
+            [
+              2.0,
+              2.0,
+              11.338357,
+              11.338357,
+              11.338357
+            ]
+          ],
+          "origin_bohr_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "grid_axes_bohr_rounded": [
+            [
+              0.151178,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.151178,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.151178
+            ]
+          ],
+          "origin_m_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_axes_m_rounded": [
+            [
+              7.999995204021903e-12,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              7.999995204021903e-12,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              7.999995204021903e-12
+            ]
+          ],
+          "samples": 3375000,
+          "voxel_volume_bohr3_from_rounded_header": 0.0034551410924917522,
+          "electron_integral": 1.999996171403024,
+          "electron_count_error_from_2": -3.828596975896659e-06,
+          "minimum_electrons_per_bohr3": -0.0001289,
+          "maximum_electrons_per_bohr3": 2.8307,
+          "negative_samples": 1599969,
+          "negative_integral": -0.0001199965714858403,
+          "density_multiplier_per_m3": 6.748334583089999e+30,
+          "engine_constants_edition_candidate": 2006,
+          "header_rounding_bound_bohr": 5e-07,
+          "field_significant_digits": 5,
+          "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+          "clipped_smoothed_or_renormalized": false,
+          "physical_validation_status": "unvalidated",
+          "convergence_status": "not_tested",
+          "geometry_check": {
+            "atoms_and_composition_match": true,
+            "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+            "absolute_budget_bohr": 5.01e-07,
+            "unit_constants_candidate": "CP2K source CODATA2006"
+          }
+        }
+      ],
+      "engine_resource": {
+        "engine_returncode": 0,
+        "engine_wall_seconds": 18.798421117000032,
+        "engine_children_peak_rss_kib": 1997208,
+        "user_cpu_seconds": 17.996781,
+        "system_cpu_seconds": 0.418367,
+        "rss_semantics": "Linux wait4 ru_maxrss; maximum resident set of completed direct engine child and its reaped descendants, not simultaneous aggregate RSS or cgroup memory."
+      },
+      "observed_feature_lines": [
+        "GLOBAL| Basis set file name                           /quanta-data/cc-pVDZ.cp2k",
+        "GLOBAL| Potential file name                         /quanta-data/ALL_POTENTIALS",
+        "GLOBAL| MM Potential file name                                     MM_POTENTIAL",
+        "FUNCTIONAL| PBE:",
+        "QS| Method:                                                                GAPW",
+        "QS| GAPW|      One center basis from orbital basis primitives",
+        "QS| GAPW|                   eps_fit:                                    1.0E-04",
+        "QS| GAPW|                   eps_iso:                                    1.0E-12",
+        "QS| GAPW|                   eps_svd:                                    1.0E-08",
+        "QS| GAPW|                   eps_cpc:                                    1.0E-12",
+        "QS| GAPW|   atom-r-grid: quadrature:                                     GC_LOG",
+        "QS| GAPW|      atom-s-grid:  max l :                                          6",
+        "QS| GAPW|      max_l_rho0 :                                                   2",
+        "The atoms of this atomic kind are PAW atoms (GAPW):",
+        "GAPW Soft Basis Set                                            cc-pVDZ_soft",
+        "GAPW| Exc from hard and soft atomic rho1:                    -0.34255216025276",
+        "GAPW| local Eh = 1 center integrals:                          0.76026103020554"
+      ],
+      "passed_execution_gate": true,
+      "container_removed": true,
+      "tracked_processes_remaining_after_remove": []
+    },
+    {
+      "case": "h2-dz",
+      "input_sha256": "ce719dd7706b0d2723152bf90e46b3ff94e5f13e634cae17ac72c388356129ac",
+      "input_metadata": {
+        "document_kind": "internal_atomistic_a03_probe",
+        "status": "exploratory_settings_not_A04_frozen_not_scientific_acceptance",
+        "public_runtime_contract": false,
+        "fixture_as_product_execution_selector": false,
+        "physical_validation_status": "unvalidated",
+        "system": "h2",
+        "source_fixture": "C03-H2-stretched",
+        "project": "h2_dz",
+        "operation": "ENERGY_FORCE",
+        "basis": "cc-pVDZ",
+        "data_dir": "/quanta-data",
+        "model": {
+          "method": "GAPW",
+          "functional": "PBE",
+          "potential": "ALL",
+          "charge_e": 0,
+          "multiplicity": 1,
+          "electron_count": 2,
+          "uks": false,
+          "dispersion": false,
+          "periodic": "NONE"
+        },
+        "numerics": {
+          "cell_angstrom": 12,
+          "cutoff_ry": 400,
+          "rel_cutoff_ry": 40,
+          "ngrids": 4,
+          "eps_scf": 1e-08,
+          "max_scf": 80,
+          "poisson_solver": "MT",
+          "scf_guess": "ATOMIC",
+          "scf_method": "OT/DIIS/FULL_ALL",
+          "eps_default": 1e-12,
+          "eps_pgf_orb": 1e-10,
+          "epsfit": 0.0001,
+          "epsiso": 1e-12,
+          "epssvd": 1e-08,
+          "epsrho0": 1e-08,
+          "lmaxn0": 2,
+          "lmaxn1": 6,
+          "quadrature": "GC_LOG",
+          "radial_grid": 100,
+          "lebedev_grid": 110
+        },
+        "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
+        "density": {
+          "enabled": true,
+          "quantity": "electron_number_density_hard_plus_soft",
+          "density_include": "TOTAL_DENSITY",
+          "stride": [
+            1,
+            1,
+            1
+          ],
+          "xrd_interface": false,
+          "append": false,
+          "clipping_or_renormalization": false
+        },
+        "energy_output": {
+          "unit": "hartree",
+          "scope": "electronic plus nuclear repulsion; no ZPE/rest/thermal terms"
+        },
+        "forces_output": {
+          "file": "forces.xyz",
+          "format": "CP2K ATOMIC FORCES table, not XYZ despite filename suffix",
+          "unit": "hartree/bohr",
+          "ndigits": 15
+        },
+        "coordinate_translation_angstrom": [
+          6.0,
+          6.0,
+          6.0
+        ],
+        "atoms": [
+          {
+            "id": "h1",
+            "element": "H",
+            "source_position_m": [
+              -4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "5.6",
+              "6",
+              "6"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          },
+          {
+            "id": "h2",
+            "element": "H",
+            "source_position_m": [
+              4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "6.4",
+              "6",
+              "6"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          }
+        ],
+        "engine_mass_unit_kg": "1.660538782e-27",
+        "engine_unit_codata_edition": 2006,
+        "data_sha256": {
+          "cc-pVDZ.cp2k": "34f9c543100787aa13763a9be00abc639243a3284aa7416091506949a14978bd",
+          "ALL_POTENTIALS": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79"
+        },
+        "source_files_sha256": {
+          "docs/design/atomistic-a01-v0.1/fixtures.json": "ecffd8eb16fb80bedb7276fcade57e6a0a75e9f8022beceb82beb98dfc5a436c",
+          "docs/design/atomistic-a01-v0.1/profile.json": "0c802bfe15568a12d29af6d80741c0fda57e1dd62940614cea43dd8f1bfcdeb0",
+          "docs/design/atomistic-a01-v0.1/reference-data.json": "1d3e5666a70cdf208d70ddf47a1bee5e4afbae48f5215b1e74004e1deac222ea",
+          "docs/design/atomistic-a02-v0.1/density-and-units.json": "2e711bfffa5ce8db27cb1b1a1c4faa329cf50b6a23f4775c4b26e24b18e05835",
+          "docs/design/atomistic-a02-v0.1/engine-lock.json": "911d0f263bfa08f1932cdba28d6b4ca864f0b6ccc5d0cfd621dae4e3bf616429"
+        },
+        "unselected_version_locked_defaults": "Remaining engine defaults are tied to the actually measured binary; this is not a complete frozen numerical profile."
+      },
+      "limits": {
+        "cpus": 1,
+        "memory_bytes": 2147483648,
+        "memory_swap_bytes": 2147483648,
+        "pids": 128,
+        "work_tmpfs_bytes": 268435456,
+        "tmp_tmpfs_bytes": 134217728,
+        "native_only": true,
+        "network": "none",
+        "rootfs_read_only": true,
+        "cap_drop": [
+          "ALL"
+        ],
+        "no_new_privileges": true,
+        "supplementary_groups": [
+          0
+        ],
+        "case_timeout_seconds": 180
+      },
+      "cancel_requested": false,
+      "metrics": {
+        "sampled_process_rss_sum_peak_kib": 2014892,
+        "samples": 37,
+        "observed_cgroup_memory_peak_bytes": 1984413696,
+        "rss_metric": "Sampled sum of docker-top per-process resident pages; shared pages may be counted more than once; not exact peak RSS.",
+        "cgroup_path": "/sys/fs/cgroup/system.slice/docker-8a4018c8a0e94b732214dc66881faf080960ac9147e5bc8b538b5d714ad0c749.scope"
+      },
+      "container_controls": {
+        "NetworkMode": "none",
+        "ReadonlyRootfs": true,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "NanoCpus": 1000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "PidsLimit": 128,
+        "Tmpfs": {
+          "/tmp": "rw,nosuid,nodev,noexec,size=134217728,mode=1777",
+          "/work": "rw,nosuid,nodev,noexec,size=268435456,mode=1777"
+        },
+        "GroupAdd": [
+          "0"
+        ]
+      },
+      "container_user": "1001:1001",
+      "engine_returncode": 0,
+      "artifact_transport": {
+        "transport": "fixed docker exec tar from live tmpfs",
+        "archive_bytes": 44492800,
+        "archive_sha256": "f2b1eef9ea206e093ee6c6fa6c1343621ced815acc59b838d44ddb5cf318145c",
+        "regular_file_bytes": 44487046,
+        "entries": 5,
+        "links_special_files_pax_and_escaping_paths_allowed": false
+      },
+      "container_returncode": 0,
+      "wall_seconds": 21.504824002999953,
+      "output": {
+        "program_ended": true,
+        "scf_converged": true,
+        "energy_hartree": -1.159847078649375,
+        "energy_j_candidate_engine2006": -5.056636271738294e-18,
+        "forces_hartree_per_bohr": [
+          [
+            0.018445083935305,
+            4.9e-14,
+            4.9e-14
+          ],
+          [
+            -0.018445083935179,
+            5.9e-14,
+            5.9e-14
+          ]
+        ],
+        "forces_n_candidate_engine2006": [
+          [
+            1.5196391982261839e-09,
+            4.036973806910016e-21,
+            4.036973806910016e-21
+          ],
+          [
+            -1.5196391982158032e-09,
+            4.8608460124018565e-21,
+            4.8608460124018565e-21
+          ]
+        ],
+        "source_claims_from_output": {
+          "reported_version": "2026.2",
+          "reported_revision": "unknown",
+          "release_source_prefix_matches": false,
+          "source_identity_attested": false,
+          "attestation_note": "Binary self-report is evidence, not a reproducible-build/source attestation."
+        },
+        "physical_validation_status": "unvalidated",
+        "force_artifact": "forces.xyz",
+        "force_units_policy": "CP2K native PRINT FORCES default atomic units; A04 actual-source binding remains required."
+      },
+      "files": [
+        {
+          "file": "raw/cp2k.out",
+          "bytes": 48466,
+          "sha256": "1085c8018928fc12ee0be8029462cd89e06dbaaa594cab9988834b172f367eb9"
+        },
+        {
+          "file": "raw/engine-resource.json",
+          "bytes": 355,
+          "sha256": "3658523b40b992e6d6d78b0c93795663e12376acdaef6ee7bb6bedb8d64d1c4a"
+        },
+        {
+          "file": "raw/forces.xyz",
+          "bytes": 411,
+          "sha256": "ef03a2eab878f9537148e6e23dfc00600049a902cc54e6323efcb61b651943c8"
+        },
+        {
+          "file": "raw/h2_dz-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437812,
+          "sha256": "0aff26f6af5ea4974b4a09abe90e7c47c442af46fb92be11087a342e26b6b271"
+        },
+        {
+          "file": "raw/quanta_exit_code",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        }
+      ],
+      "output_bytes": 44487046,
+      "density": [
+        {
+          "file": "h2_dz-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437812,
+          "sha256": "0aff26f6af5ea4974b4a09abe90e7c47c442af46fb92be11087a342e26b6b271",
+          "comments": [
+            "-Quickstep-",
+            " TOTAL ELECTRON DENSITY"
+          ],
+          "atom_count": 2,
+          "atoms_bohr_rounded": [
+            [
+              1.0,
+              1.0,
+              10.582466,
+              11.338357,
+              11.338357
+            ],
+            [
+              1.0,
+              1.0,
+              12.094247,
+              11.338357,
+              11.338357
+            ]
+          ],
+          "origin_bohr_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "grid_axes_bohr_rounded": [
+            [
+              0.151178,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.151178,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.151178
+            ]
+          ],
+          "origin_m_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_axes_m_rounded": [
+            [
+              7.999995204021903e-12,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              7.999995204021903e-12,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              7.999995204021903e-12
+            ]
+          ],
+          "samples": 3375000,
+          "voxel_volume_bohr3_from_rounded_header": 0.0034551410924917522,
+          "electron_integral": 1.9999968833696185,
+          "electron_count_error_from_2": -3.1166303815499674e-06,
+          "minimum_electrons_per_bohr3": -4.6765e-07,
+          "maximum_electrons_per_bohr3": 0.32671,
+          "negative_samples": 1113228,
+          "negative_integral": -9.425397982901777e-07,
+          "density_multiplier_per_m3": 6.748334583089999e+30,
+          "engine_constants_edition_candidate": 2006,
+          "header_rounding_bound_bohr": 5e-07,
+          "field_significant_digits": 5,
+          "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+          "clipped_smoothed_or_renormalized": false,
+          "physical_validation_status": "unvalidated",
+          "convergence_status": "not_tested",
+          "geometry_check": {
+            "atoms_and_composition_match": true,
+            "maximum_coordinate_difference_bohr": 3.4415960215028463e-07,
+            "absolute_budget_bohr": 5.01e-07,
+            "unit_constants_candidate": "CP2K source CODATA2006"
+          }
+        }
+      ],
+      "engine_resource": {
+        "engine_returncode": 0,
+        "engine_wall_seconds": 20.63732921299993,
+        "engine_children_peak_rss_kib": 2001060,
+        "user_cpu_seconds": 19.798151,
+        "system_cpu_seconds": 0.41013299999999997,
+        "rss_semantics": "Linux wait4 ru_maxrss; maximum resident set of completed direct engine child and its reaped descendants, not simultaneous aggregate RSS or cgroup memory."
+      },
+      "observed_feature_lines": [
+        "GLOBAL| Basis set file name                           /quanta-data/cc-pVDZ.cp2k",
+        "GLOBAL| Potential file name                         /quanta-data/ALL_POTENTIALS",
+        "GLOBAL| MM Potential file name                                     MM_POTENTIAL",
+        "FUNCTIONAL| PBE:",
+        "QS| Method:                                                                GAPW",
+        "QS| GAPW|      One center basis from orbital basis primitives",
+        "QS| GAPW|                   eps_fit:                                    1.0E-04",
+        "QS| GAPW|                   eps_iso:                                    1.0E-12",
+        "QS| GAPW|                   eps_svd:                                    1.0E-08",
+        "QS| GAPW|                   eps_cpc:                                    1.0E-12",
+        "QS| GAPW|   atom-r-grid: quadrature:                                     GC_LOG",
+        "QS| GAPW|      atom-s-grid:  max l :                                          6",
+        "QS| GAPW|      max_l_rho0 :                                                   2",
+        "The atoms of this atomic kind are PAW atoms (GAPW):",
+        "GAPW Soft Basis Set                                            cc-pVDZ_soft",
+        "GAPW| Exc from hard and soft atomic rho1:                    -0.01404555600971",
+        "GAPW| local Eh = 1 center integrals:                         -0.06267589725312"
+      ],
+      "passed_execution_gate": true,
+      "container_removed": true,
+      "tracked_processes_remaining_after_remove": []
+    },
+    {
+      "case": "h2-tz",
+      "input_sha256": "80cd05926a0798dc7261951a84b811ab83a49a4228539f31ed4f512d62891621",
+      "input_metadata": {
+        "document_kind": "internal_atomistic_a03_probe",
+        "status": "exploratory_settings_not_A04_frozen_not_scientific_acceptance",
+        "public_runtime_contract": false,
+        "fixture_as_product_execution_selector": false,
+        "physical_validation_status": "unvalidated",
+        "system": "h2",
+        "source_fixture": "C03-H2-stretched",
+        "project": "h2_tz",
+        "operation": "ENERGY_FORCE",
+        "basis": "cc-pVTZ",
+        "data_dir": "/quanta-data",
+        "model": {
+          "method": "GAPW",
+          "functional": "PBE",
+          "potential": "ALL",
+          "charge_e": 0,
+          "multiplicity": 1,
+          "electron_count": 2,
+          "uks": false,
+          "dispersion": false,
+          "periodic": "NONE"
+        },
+        "numerics": {
+          "cell_angstrom": 12,
+          "cutoff_ry": 400,
+          "rel_cutoff_ry": 40,
+          "ngrids": 4,
+          "eps_scf": 1e-08,
+          "max_scf": 80,
+          "poisson_solver": "MT",
+          "scf_guess": "ATOMIC",
+          "scf_method": "OT/DIIS/FULL_ALL",
+          "eps_default": 1e-12,
+          "eps_pgf_orb": 1e-10,
+          "epsfit": 0.0001,
+          "epsiso": 1e-12,
+          "epssvd": 1e-08,
+          "epsrho0": 1e-08,
+          "lmaxn0": 2,
+          "lmaxn1": 6,
+          "quadrature": "GC_LOG",
+          "radial_grid": 100,
+          "lebedev_grid": 110
+        },
+        "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
+        "density": {
+          "enabled": true,
+          "quantity": "electron_number_density_hard_plus_soft",
+          "density_include": "TOTAL_DENSITY",
+          "stride": [
+            1,
+            1,
+            1
+          ],
+          "xrd_interface": false,
+          "append": false,
+          "clipping_or_renormalization": false
+        },
+        "energy_output": {
+          "unit": "hartree",
+          "scope": "electronic plus nuclear repulsion; no ZPE/rest/thermal terms"
+        },
+        "forces_output": {
+          "file": "forces.xyz",
+          "format": "CP2K ATOMIC FORCES table, not XYZ despite filename suffix",
+          "unit": "hartree/bohr",
+          "ndigits": 15
+        },
+        "coordinate_translation_angstrom": [
+          6.0,
+          6.0,
+          6.0
+        ],
+        "atoms": [
+          {
+            "id": "h1",
+            "element": "H",
+            "source_position_m": [
+              -4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "5.6",
+              "6",
+              "6"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          },
+          {
+            "id": "h2",
+            "element": "H",
+            "source_position_m": [
+              4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "6.4",
+              "6",
+              "6"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          }
+        ],
+        "engine_mass_unit_kg": "1.660538782e-27",
+        "engine_unit_codata_edition": 2006,
+        "data_sha256": {
+          "cc-pVTZ.cp2k": "2582571d2471e0c4de438e737953c055c4af89d8516c9d63e1dae24160b9a279",
+          "ALL_POTENTIALS": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79"
+        },
+        "source_files_sha256": {
+          "docs/design/atomistic-a01-v0.1/fixtures.json": "ecffd8eb16fb80bedb7276fcade57e6a0a75e9f8022beceb82beb98dfc5a436c",
+          "docs/design/atomistic-a01-v0.1/profile.json": "0c802bfe15568a12d29af6d80741c0fda57e1dd62940614cea43dd8f1bfcdeb0",
+          "docs/design/atomistic-a01-v0.1/reference-data.json": "1d3e5666a70cdf208d70ddf47a1bee5e4afbae48f5215b1e74004e1deac222ea",
+          "docs/design/atomistic-a02-v0.1/density-and-units.json": "2e711bfffa5ce8db27cb1b1a1c4faa329cf50b6a23f4775c4b26e24b18e05835",
+          "docs/design/atomistic-a02-v0.1/engine-lock.json": "911d0f263bfa08f1932cdba28d6b4ca864f0b6ccc5d0cfd621dae4e3bf616429"
+        },
+        "unselected_version_locked_defaults": "Remaining engine defaults are tied to the actually measured binary; this is not a complete frozen numerical profile."
+      },
+      "limits": {
+        "cpus": 1,
+        "memory_bytes": 2147483648,
+        "memory_swap_bytes": 2147483648,
+        "pids": 128,
+        "work_tmpfs_bytes": 268435456,
+        "tmp_tmpfs_bytes": 134217728,
+        "native_only": true,
+        "network": "none",
+        "rootfs_read_only": true,
+        "cap_drop": [
+          "ALL"
+        ],
+        "no_new_privileges": true,
+        "supplementary_groups": [
+          0
+        ],
+        "case_timeout_seconds": 180
+      },
+      "cancel_requested": false,
+      "metrics": {
+        "sampled_process_rss_sum_peak_kib": 2018760,
+        "samples": 38,
+        "observed_cgroup_memory_peak_bytes": 1987121152,
+        "rss_metric": "Sampled sum of docker-top per-process resident pages; shared pages may be counted more than once; not exact peak RSS.",
+        "cgroup_path": "/sys/fs/cgroup/system.slice/docker-d533fc143baa2c0d1ee0fbf4adf45c1fe3ce6039f99b7b82623a3849eafdeb54.scope"
+      },
+      "container_controls": {
+        "NetworkMode": "none",
+        "ReadonlyRootfs": true,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "NanoCpus": 1000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "PidsLimit": 128,
+        "Tmpfs": {
+          "/tmp": "rw,nosuid,nodev,noexec,size=134217728,mode=1777",
+          "/work": "rw,nosuid,nodev,noexec,size=268435456,mode=1777"
+        },
+        "GroupAdd": [
+          "0"
+        ]
+      },
+      "container_user": "1001:1001",
+      "engine_returncode": 0,
+      "artifact_transport": {
+        "transport": "fixed docker exec tar from live tmpfs",
+        "archive_bytes": 44503040,
+        "archive_sha256": "e1c1576d9a32cd50531588b6e61fb1bb42f5a0e78b0cb0d2645c3d7dce33db1e",
+        "regular_file_bytes": 44491091,
+        "entries": 5,
+        "links_special_files_pax_and_escaping_paths_allowed": false
+      },
+      "container_returncode": 0,
+      "wall_seconds": 22.07919667200008,
+      "output": {
+        "program_ended": true,
+        "scf_converged": true,
+        "energy_hartree": -1.164763555097057,
+        "energy_j_candidate_engine2006": -5.078070850134134e-18,
+        "forces_hartree_per_bohr": [
+          [
+            0.02833134710144,
+            1.91e-13,
+            1.91e-13
+          ],
+          [
+            -0.028331347101048,
+            2.15e-13,
+            2.14e-13
+          ]
+        ],
+        "forces_n_candidate_engine2006": [
+          [
+            2.334140942101822e-09,
+            1.5735959124894143e-20,
+            1.5735959124894143e-20
+          ],
+          [
+            -2.3341409420695265e-09,
+            1.7713252418074558e-20,
+            1.7630865197525376e-20
+          ]
+        ],
+        "source_claims_from_output": {
+          "reported_version": "2026.2",
+          "reported_revision": "unknown",
+          "release_source_prefix_matches": false,
+          "source_identity_attested": false,
+          "attestation_note": "Binary self-report is evidence, not a reproducible-build/source attestation."
+        },
+        "physical_validation_status": "unvalidated",
+        "force_artifact": "forces.xyz",
+        "force_units_policy": "CP2K native PRINT FORCES default atomic units; A04 actual-source binding remains required."
+      },
+      "files": [
+        {
+          "file": "raw/cp2k.out",
+          "bytes": 52522,
+          "sha256": "709a3868259ed9bc44109cc70fa95ca1c70586e6579374e76ede3c3f18be64c3"
+        },
+        {
+          "file": "raw/engine-resource.json",
+          "bytes": 344,
+          "sha256": "d1191d4662d95727227350d5e8ef95363c79c4f7a71666ccb7327ecb3551d587"
+        },
+        {
+          "file": "raw/forces.xyz",
+          "bytes": 411,
+          "sha256": "1b2292855e938717737f0f0e783f53db7d7fa51437b4f184d3788ba8f35744a0"
+        },
+        {
+          "file": "raw/h2_tz-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437812,
+          "sha256": "07c769aee5274159958e8be961811245638ccfa4371ae685145a9d936883570d"
+        },
+        {
+          "file": "raw/quanta_exit_code",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        }
+      ],
+      "output_bytes": 44491091,
+      "density": [
+        {
+          "file": "h2_tz-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437812,
+          "sha256": "07c769aee5274159958e8be961811245638ccfa4371ae685145a9d936883570d",
+          "comments": [
+            "-Quickstep-",
+            " TOTAL ELECTRON DENSITY"
+          ],
+          "atom_count": 2,
+          "atoms_bohr_rounded": [
+            [
+              1.0,
+              1.0,
+              10.582466,
+              11.338357,
+              11.338357
+            ],
+            [
+              1.0,
+              1.0,
+              12.094247,
+              11.338357,
+              11.338357
+            ]
+          ],
+          "origin_bohr_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "grid_axes_bohr_rounded": [
+            [
+              0.151178,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.151178,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.151178
+            ]
+          ],
+          "origin_m_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_axes_m_rounded": [
+            [
+              7.999995204021903e-12,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              7.999995204021903e-12,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              7.999995204021903e-12
+            ]
+          ],
+          "samples": 3375000,
+          "voxel_volume_bohr3_from_rounded_header": 0.0034551410924917522,
+          "electron_integral": 1.9999975710244695,
+          "electron_count_error_from_2": -2.4289755304884864e-06,
+          "minimum_electrons_per_bohr3": -4.7129e-06,
+          "maximum_electrons_per_bohr3": 0.38436,
+          "negative_samples": 1212052,
+          "negative_integral": -6.457742256832498e-06,
+          "density_multiplier_per_m3": 6.748334583089999e+30,
+          "engine_constants_edition_candidate": 2006,
+          "header_rounding_bound_bohr": 5e-07,
+          "field_significant_digits": 5,
+          "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+          "clipped_smoothed_or_renormalized": false,
+          "physical_validation_status": "unvalidated",
+          "convergence_status": "not_tested",
+          "geometry_check": {
+            "atoms_and_composition_match": true,
+            "maximum_coordinate_difference_bohr": 3.4415960215028463e-07,
+            "absolute_budget_bohr": 5.01e-07,
+            "unit_constants_candidate": "CP2K source CODATA2006"
+          }
+        }
+      ],
+      "engine_resource": {
+        "engine_returncode": 0,
+        "engine_wall_seconds": 21.21177787900001,
+        "engine_children_peak_rss_kib": 2003696,
+        "user_cpu_seconds": 20.357307,
+        "system_cpu_seconds": 0.408981,
+        "rss_semantics": "Linux wait4 ru_maxrss; maximum resident set of completed direct engine child and its reaped descendants, not simultaneous aggregate RSS or cgroup memory."
+      },
+      "observed_feature_lines": [
+        "GLOBAL| Basis set file name                           /quanta-data/cc-pVTZ.cp2k",
+        "GLOBAL| Potential file name                         /quanta-data/ALL_POTENTIALS",
+        "GLOBAL| MM Potential file name                                     MM_POTENTIAL",
+        "FUNCTIONAL| PBE:",
+        "QS| Method:                                                                GAPW",
+        "QS| GAPW|      One center basis from orbital basis primitives",
+        "QS| GAPW|                   eps_fit:                                    1.0E-04",
+        "QS| GAPW|                   eps_iso:                                    1.0E-12",
+        "QS| GAPW|                   eps_svd:                                    1.0E-08",
+        "QS| GAPW|                   eps_cpc:                                    1.0E-12",
+        "QS| GAPW|   atom-r-grid: quadrature:                                     GC_LOG",
+        "QS| GAPW|      atom-s-grid:  max l :                                          6",
+        "QS| GAPW|      max_l_rho0 :                                                   2",
+        "The atoms of this atomic kind are PAW atoms (GAPW):",
+        "GAPW Soft Basis Set                                            cc-pVTZ_soft",
+        "GAPW| Exc from hard and soft atomic rho1:                    -0.00332003585062",
+        "GAPW| local Eh = 1 center integrals:                         -0.06369524579392"
+      ],
+      "passed_execution_gate": true,
+      "container_removed": true,
+      "tracked_processes_remaining_after_remove": []
+    },
+    {
+      "case": "h2-cancel",
+      "input_sha256": "0ca52d486b74a446cda24aadd6f0f112925a192027e8b1e8f51b8927ea51ed9e",
+      "input_metadata": {
+        "document_kind": "internal_atomistic_a03_probe",
+        "status": "exploratory_settings_not_A04_frozen_not_scientific_acceptance",
+        "public_runtime_contract": false,
+        "fixture_as_product_execution_selector": false,
+        "physical_validation_status": "unvalidated",
+        "system": "h2",
+        "source_fixture": "C03-H2-stretched",
+        "project": "h2_cancel",
+        "operation": "ENERGY_FORCE",
+        "basis": "cc-pVQZ",
+        "data_dir": "/quanta-data",
+        "model": {
+          "method": "GAPW",
+          "functional": "PBE",
+          "potential": "ALL",
+          "charge_e": 0,
+          "multiplicity": 1,
+          "electron_count": 2,
+          "uks": false,
+          "dispersion": false,
+          "periodic": "NONE"
+        },
+        "numerics": {
+          "cell_angstrom": 20,
+          "cutoff_ry": 800,
+          "rel_cutoff_ry": 80,
+          "ngrids": 4,
+          "eps_scf": 1e-08,
+          "max_scf": 80,
+          "poisson_solver": "MT",
+          "scf_guess": "ATOMIC",
+          "scf_method": "OT/DIIS/FULL_ALL",
+          "eps_default": 1e-12,
+          "eps_pgf_orb": 1e-10,
+          "epsfit": 0.0001,
+          "epsiso": 1e-12,
+          "epssvd": 1e-08,
+          "epsrho0": 1e-08,
+          "lmaxn0": 2,
+          "lmaxn1": 6,
+          "quadrature": "GC_LOG",
+          "radial_grid": 100,
+          "lebedev_grid": 110
+        },
+        "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
+        "density": {
+          "enabled": true,
+          "quantity": "electron_number_density_hard_plus_soft",
+          "density_include": "TOTAL_DENSITY",
+          "stride": [
+            1,
+            1,
+            1
+          ],
+          "xrd_interface": false,
+          "append": false,
+          "clipping_or_renormalization": false
+        },
+        "energy_output": {
+          "unit": "hartree",
+          "scope": "electronic plus nuclear repulsion; no ZPE/rest/thermal terms"
+        },
+        "forces_output": {
+          "file": "forces.xyz",
+          "format": "CP2K ATOMIC FORCES table, not XYZ despite filename suffix",
+          "unit": "hartree/bohr",
+          "ndigits": 15
+        },
+        "coordinate_translation_angstrom": [
+          10.0,
+          10.0,
+          10.0
+        ],
+        "atoms": [
+          {
+            "id": "h1",
+            "element": "H",
+            "source_position_m": [
+              -4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "9.6",
+              "10",
+              "10"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          },
+          {
+            "id": "h2",
+            "element": "H",
+            "source_position_m": [
+              4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "10.4",
+              "10",
+              "10"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          }
+        ],
+        "engine_mass_unit_kg": "1.660538782e-27",
+        "engine_unit_codata_edition": 2006,
+        "data_sha256": {
+          "cc-pVQZ.cp2k": "731dbb160f6f90fb7814e9a688ed6bf33aee82ed08b0f1418a0b6ce4b8a891ce",
+          "ALL_POTENTIALS": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79"
+        },
+        "source_files_sha256": {
+          "docs/design/atomistic-a01-v0.1/fixtures.json": "ecffd8eb16fb80bedb7276fcade57e6a0a75e9f8022beceb82beb98dfc5a436c",
+          "docs/design/atomistic-a01-v0.1/profile.json": "0c802bfe15568a12d29af6d80741c0fda57e1dd62940614cea43dd8f1bfcdeb0",
+          "docs/design/atomistic-a01-v0.1/reference-data.json": "1d3e5666a70cdf208d70ddf47a1bee5e4afbae48f5215b1e74004e1deac222ea",
+          "docs/design/atomistic-a02-v0.1/density-and-units.json": "2e711bfffa5ce8db27cb1b1a1c4faa329cf50b6a23f4775c4b26e24b18e05835",
+          "docs/design/atomistic-a02-v0.1/engine-lock.json": "911d0f263bfa08f1932cdba28d6b4ca864f0b6ccc5d0cfd621dae4e3bf616429"
+        },
+        "unselected_version_locked_defaults": "Remaining engine defaults are tied to the actually measured binary; this is not a complete frozen numerical profile."
+      },
+      "limits": {
+        "cpus": 1,
+        "memory_bytes": 2147483648,
+        "memory_swap_bytes": 2147483648,
+        "pids": 128,
+        "work_tmpfs_bytes": 268435456,
+        "tmp_tmpfs_bytes": 134217728,
+        "native_only": true,
+        "network": "none",
+        "rootfs_read_only": true,
+        "cap_drop": [
+          "ALL"
+        ],
+        "no_new_privileges": true,
+        "supplementary_groups": [
+          0
+        ],
+        "case_timeout_seconds": 180
+      },
+      "cancel_requested": true,
+      "metrics": {
+        "sampled_process_rss_sum_peak_kib": 559284,
+        "samples": 2,
+        "observed_cgroup_memory_peak_bytes": 588914688,
+        "rss_metric": "Sampled sum of docker-top per-process resident pages; shared pages may be counted more than once; not exact peak RSS.",
+        "cgroup_path": "/sys/fs/cgroup/system.slice/docker-93f555f33135bfbf38c6a620c6d069adbdab076cc945fdbb9847ab5acac2898c.scope"
+      },
+      "container_controls": {
+        "NetworkMode": "none",
+        "ReadonlyRootfs": true,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "NanoCpus": 1000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "PidsLimit": 128,
+        "Tmpfs": {
+          "/tmp": "rw,nosuid,nodev,noexec,size=134217728,mode=1777",
+          "/work": "rw,nosuid,nodev,noexec,size=268435456,mode=1777"
+        },
+        "GroupAdd": [
+          "0"
+        ]
+      },
+      "container_user": "1001:1001",
+      "cancellation": {
+        "active_cp2k_processes_before_stop": [
+          {
+            "pid": 10157,
+            "rss_kib": 544616,
+            "comm": "cp2k",
+            "start_ticks": "57816"
+          }
+        ],
+        "partial_output_contains_cp2k_banner": true,
+        "program_had_ended_before_cancel": false,
+        "interruption_phase": "initialization_before_scf",
+        "cancel_to_exit_seconds": 1.0761225760001025,
+        "container_running_after": false,
+        "container_pid_after": 0,
+        "tracked_processes_remaining": [],
+        "cleaned": true
+      },
+      "wall_seconds": 1.980595816999994,
+      "passed_execution_gate": true,
+      "container_removed": true,
+      "tracked_processes_remaining_after_remove": []
+    },
+    {
+      "case": "h2-after-cancel",
+      "input_sha256": "8e8c6acdaacce754bf8a7a0aace807ccb0a98f8a9c9e565f154bc0db59e8ec80",
+      "input_metadata": {
+        "document_kind": "internal_atomistic_a03_probe",
+        "status": "exploratory_settings_not_A04_frozen_not_scientific_acceptance",
+        "public_runtime_contract": false,
+        "fixture_as_product_execution_selector": false,
+        "physical_validation_status": "unvalidated",
+        "system": "h2",
+        "source_fixture": "C03-H2-stretched",
+        "project": "h2_after_cancel",
+        "operation": "ENERGY_FORCE",
+        "basis": "cc-pVDZ",
+        "data_dir": "/quanta-data",
+        "model": {
+          "method": "GAPW",
+          "functional": "PBE",
+          "potential": "ALL",
+          "charge_e": 0,
+          "multiplicity": 1,
+          "electron_count": 2,
+          "uks": false,
+          "dispersion": false,
+          "periodic": "NONE"
+        },
+        "numerics": {
+          "cell_angstrom": 12,
+          "cutoff_ry": 400,
+          "rel_cutoff_ry": 40,
+          "ngrids": 4,
+          "eps_scf": 1e-08,
+          "max_scf": 80,
+          "poisson_solver": "MT",
+          "scf_guess": "ATOMIC",
+          "scf_method": "OT/DIIS/FULL_ALL",
+          "eps_default": 1e-12,
+          "eps_pgf_orb": 1e-10,
+          "epsfit": 0.0001,
+          "epsiso": 1e-12,
+          "epssvd": 1e-08,
+          "epsrho0": 1e-08,
+          "lmaxn0": 2,
+          "lmaxn1": 6,
+          "quadrature": "GC_LOG",
+          "radial_grid": 100,
+          "lebedev_grid": 110
+        },
+        "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
+        "density": {
+          "enabled": true,
+          "quantity": "electron_number_density_hard_plus_soft",
+          "density_include": "TOTAL_DENSITY",
+          "stride": [
+            1,
+            1,
+            1
+          ],
+          "xrd_interface": false,
+          "append": false,
+          "clipping_or_renormalization": false
+        },
+        "energy_output": {
+          "unit": "hartree",
+          "scope": "electronic plus nuclear repulsion; no ZPE/rest/thermal terms"
+        },
+        "forces_output": {
+          "file": "forces.xyz",
+          "format": "CP2K ATOMIC FORCES table, not XYZ despite filename suffix",
+          "unit": "hartree/bohr",
+          "ndigits": 15
+        },
+        "coordinate_translation_angstrom": [
+          6.0,
+          6.0,
+          6.0
+        ],
+        "atoms": [
+          {
+            "id": "h1",
+            "element": "H",
+            "source_position_m": [
+              -4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "5.6",
+              "6",
+              "6"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          },
+          {
+            "id": "h2",
+            "element": "H",
+            "source_position_m": [
+              4e-11,
+              0,
+              0
+            ],
+            "engine_position_angstrom": [
+              "6.4",
+              "6",
+              "6"
+            ],
+            "bare_nuclear_mass_kg": "1.67262192595E-27",
+            "engine_mass_amu": "1.007276640618683243737694287708602279426",
+            "mass_reference": "NIST-CODATA-2022:proton_mass_kg"
+          }
+        ],
+        "engine_mass_unit_kg": "1.660538782e-27",
+        "engine_unit_codata_edition": 2006,
+        "data_sha256": {
+          "cc-pVDZ.cp2k": "34f9c543100787aa13763a9be00abc639243a3284aa7416091506949a14978bd",
+          "ALL_POTENTIALS": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79"
+        },
+        "source_files_sha256": {
+          "docs/design/atomistic-a01-v0.1/fixtures.json": "ecffd8eb16fb80bedb7276fcade57e6a0a75e9f8022beceb82beb98dfc5a436c",
+          "docs/design/atomistic-a01-v0.1/profile.json": "0c802bfe15568a12d29af6d80741c0fda57e1dd62940614cea43dd8f1bfcdeb0",
+          "docs/design/atomistic-a01-v0.1/reference-data.json": "1d3e5666a70cdf208d70ddf47a1bee5e4afbae48f5215b1e74004e1deac222ea",
+          "docs/design/atomistic-a02-v0.1/density-and-units.json": "2e711bfffa5ce8db27cb1b1a1c4faa329cf50b6a23f4775c4b26e24b18e05835",
+          "docs/design/atomistic-a02-v0.1/engine-lock.json": "911d0f263bfa08f1932cdba28d6b4ca864f0b6ccc5d0cfd621dae4e3bf616429"
+        },
+        "unselected_version_locked_defaults": "Remaining engine defaults are tied to the actually measured binary; this is not a complete frozen numerical profile."
+      },
+      "limits": {
+        "cpus": 1,
+        "memory_bytes": 2147483648,
+        "memory_swap_bytes": 2147483648,
+        "pids": 128,
+        "work_tmpfs_bytes": 268435456,
+        "tmp_tmpfs_bytes": 134217728,
+        "native_only": true,
+        "network": "none",
+        "rootfs_read_only": true,
+        "cap_drop": [
+          "ALL"
+        ],
+        "no_new_privileges": true,
+        "supplementary_groups": [
+          0
+        ],
+        "case_timeout_seconds": 180
+      },
+      "cancel_requested": false,
+      "metrics": {
+        "sampled_process_rss_sum_peak_kib": 2015540,
+        "samples": 37,
+        "observed_cgroup_memory_peak_bytes": 1983725568,
+        "rss_metric": "Sampled sum of docker-top per-process resident pages; shared pages may be counted more than once; not exact peak RSS.",
+        "cgroup_path": "/sys/fs/cgroup/system.slice/docker-f53983c1effc1008e0b68cd2698beee49be38f7679fab68799eee4c75cb82bf1.scope"
+      },
+      "container_controls": {
+        "NetworkMode": "none",
+        "ReadonlyRootfs": true,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "NanoCpus": 1000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "PidsLimit": 128,
+        "Tmpfs": {
+          "/tmp": "rw,nosuid,nodev,noexec,size=134217728,mode=1777",
+          "/work": "rw,nosuid,nodev,noexec,size=268435456,mode=1777"
+        },
+        "GroupAdd": [
+          "0"
+        ]
+      },
+      "container_user": "1001:1001",
+      "engine_returncode": 0,
+      "artifact_transport": {
+        "transport": "fixed docker exec tar from live tmpfs",
+        "archive_bytes": 44492800,
+        "archive_sha256": "4b957db3fed0502b03634a0a4fb0d3a6acddd75ce30bd3b85f806bc2780ce320",
+        "regular_file_bytes": 44487057,
+        "entries": 5,
+        "links_special_files_pax_and_escaping_paths_allowed": false
+      },
+      "container_returncode": 0,
+      "wall_seconds": 21.444775140999923,
+      "output": {
+        "program_ended": true,
+        "scf_converged": true,
+        "energy_hartree": -1.159847078649375,
+        "energy_j_candidate_engine2006": -5.056636271738294e-18,
+        "forces_hartree_per_bohr": [
+          [
+            0.018445083935305,
+            4.9e-14,
+            4.9e-14
+          ],
+          [
+            -0.018445083935179,
+            5.9e-14,
+            5.9e-14
+          ]
+        ],
+        "forces_n_candidate_engine2006": [
+          [
+            1.5196391982261839e-09,
+            4.036973806910016e-21,
+            4.036973806910016e-21
+          ],
+          [
+            -1.5196391982158032e-09,
+            4.8608460124018565e-21,
+            4.8608460124018565e-21
+          ]
+        ],
+        "source_claims_from_output": {
+          "reported_version": "2026.2",
+          "reported_revision": "unknown",
+          "release_source_prefix_matches": false,
+          "source_identity_attested": false,
+          "attestation_note": "Binary self-report is evidence, not a reproducible-build/source attestation."
+        },
+        "physical_validation_status": "unvalidated",
+        "force_artifact": "forces.xyz",
+        "force_units_policy": "CP2K native PRINT FORCES default atomic units; A04 actual-source binding remains required."
+      },
+      "files": [
+        {
+          "file": "raw/cp2k.out",
+          "bytes": 48476,
+          "sha256": "5469206cf1cb41470fa1860356af84d4b6cab4f09c19d911ed4a4ed69b38c449"
+        },
+        {
+          "file": "raw/engine-resource.json",
+          "bytes": 356,
+          "sha256": "5f42acb301c31eeca2a8731b03c9ec517a470f736575419c28951ea45fbd810d"
+        },
+        {
+          "file": "raw/forces.xyz",
+          "bytes": 411,
+          "sha256": "ef03a2eab878f9537148e6e23dfc00600049a902cc54e6323efcb61b651943c8"
+        },
+        {
+          "file": "raw/h2_after_cancel-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437812,
+          "sha256": "0aff26f6af5ea4974b4a09abe90e7c47c442af46fb92be11087a342e26b6b271"
+        },
+        {
+          "file": "raw/quanta_exit_code",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        }
+      ],
+      "output_bytes": 44487057,
+      "density": [
+        {
+          "file": "h2_after_cancel-TOTAL_ELECTRON_DENSITY-1_0.cube",
+          "bytes": 44437812,
+          "sha256": "0aff26f6af5ea4974b4a09abe90e7c47c442af46fb92be11087a342e26b6b271",
+          "comments": [
+            "-Quickstep-",
+            " TOTAL ELECTRON DENSITY"
+          ],
+          "atom_count": 2,
+          "atoms_bohr_rounded": [
+            [
+              1.0,
+              1.0,
+              10.582466,
+              11.338357,
+              11.338357
+            ],
+            [
+              1.0,
+              1.0,
+              12.094247,
+              11.338357,
+              11.338357
+            ]
+          ],
+          "origin_bohr_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "grid_axes_bohr_rounded": [
+            [
+              0.151178,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.151178,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.151178
+            ]
+          ],
+          "origin_m_rounded": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "grid_axes_m_rounded": [
+            [
+              7.999995204021903e-12,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              7.999995204021903e-12,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              7.999995204021903e-12
+            ]
+          ],
+          "samples": 3375000,
+          "voxel_volume_bohr3_from_rounded_header": 0.0034551410924917522,
+          "electron_integral": 1.9999968833696185,
+          "electron_count_error_from_2": -3.1166303815499674e-06,
+          "minimum_electrons_per_bohr3": -4.6765e-07,
+          "maximum_electrons_per_bohr3": 0.32671,
+          "negative_samples": 1113228,
+          "negative_integral": -9.425397982901777e-07,
+          "density_multiplier_per_m3": 6.748334583089999e+30,
+          "engine_constants_edition_candidate": 2006,
+          "header_rounding_bound_bohr": 5e-07,
+          "field_significant_digits": 5,
+          "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+          "clipped_smoothed_or_renormalized": false,
+          "physical_validation_status": "unvalidated",
+          "convergence_status": "not_tested",
+          "geometry_check": {
+            "atoms_and_composition_match": true,
+            "maximum_coordinate_difference_bohr": 3.4415960215028463e-07,
+            "absolute_budget_bohr": 5.01e-07,
+            "unit_constants_candidate": "CP2K source CODATA2006"
+          }
+        }
+      ],
+      "engine_resource": {
+        "engine_returncode": 0,
+        "engine_wall_seconds": 20.576428354999962,
+        "engine_children_peak_rss_kib": 2000976,
+        "user_cpu_seconds": 19.732236,
+        "system_cpu_seconds": 0.42383299999999996,
+        "rss_semantics": "Linux wait4 ru_maxrss; maximum resident set of completed direct engine child and its reaped descendants, not simultaneous aggregate RSS or cgroup memory."
+      },
+      "observed_feature_lines": [
+        "GLOBAL| Basis set file name                           /quanta-data/cc-pVDZ.cp2k",
+        "GLOBAL| Potential file name                         /quanta-data/ALL_POTENTIALS",
+        "GLOBAL| MM Potential file name                                     MM_POTENTIAL",
+        "FUNCTIONAL| PBE:",
+        "QS| Method:                                                                GAPW",
+        "QS| GAPW|      One center basis from orbital basis primitives",
+        "QS| GAPW|                   eps_fit:                                    1.0E-04",
+        "QS| GAPW|                   eps_iso:                                    1.0E-12",
+        "QS| GAPW|                   eps_svd:                                    1.0E-08",
+        "QS| GAPW|                   eps_cpc:                                    1.0E-12",
+        "QS| GAPW|   atom-r-grid: quadrature:                                     GC_LOG",
+        "QS| GAPW|      atom-s-grid:  max l :                                          6",
+        "QS| GAPW|      max_l_rho0 :                                                   2",
+        "The atoms of this atomic kind are PAW atoms (GAPW):",
+        "GAPW Soft Basis Set                                            cc-pVDZ_soft",
+        "GAPW| Exc from hard and soft atomic rho1:                    -0.01404555600971",
+        "GAPW| local Eh = 1 center integrals:                         -0.06267589725312"
+      ],
+      "passed_execution_gate": true,
+      "container_removed": true,
+      "tracked_processes_remaining_after_remove": []
+    }
+  ],
+  "source_sha": "b621e836af61d7b63933ab7802722fa1ee79f531",
+  "a02_lock_check": {
+    "verification_kind": "A02_source_data_and_image_metadata",
+    "checked_on": "2026-11-07",
+    "passed": true,
+    "locked_files_checked": 23,
+    "source_archive_bytes_verified": false,
+    "source_files_checked": 0,
+    "basis_full_source_files_checked": 0,
+    "basis": [
+      {
+        "name": "cc-pVDZ",
+        "elements": [
+          "H",
+          "He"
+        ],
+        "spherical_functions_per_atom": {
+          "H": 5,
+          "He": 5
+        },
+        "coefficients_match_fixed_source_and_api": true
+      },
+      {
+        "name": "cc-pVTZ",
+        "elements": [
+          "H",
+          "He"
+        ],
+        "spherical_functions_per_atom": {
+          "H": 14,
+          "He": 14
+        },
+        "coefficients_match_fixed_source_and_api": true
+      },
+      {
+        "name": "cc-pVQZ",
+        "elements": [
+          "H",
+          "He"
+        ],
+        "spherical_functions_per_atom": {
+          "H": 30,
+          "He": 30
+        },
+        "coefficients_match_fixed_source_and_api": true
+      }
+    ],
+    "images": [
+      {
+        "platform": "linux/arm64",
+        "digest": "sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+        "manifest_and_config_verified": true,
+        "layers_and_runtime_verified": false
+      },
+      {
+        "platform": "linux/amd64",
+        "digest": "sha256:28e35f63a5253b95cc0f50e786370669185ad9f58eacacf33170cb1257216f36",
+        "manifest_and_config_verified": true,
+        "layers_and_runtime_verified": false
+      }
+    ],
+    "authoring_requirements_checked": true,
+    "engine_installed": false,
+    "engine_executed": false,
+    "container_layers_pulled": false,
+    "image_release_source_identity_attested": false,
+    "physical_validation_status": "unvalidated",
+    "scientific_results": null,
+    "manifest_sha256": "aeebe962bf9f028960673dfb8394eb166e16d38390b1fa15f49b9ad3bc0fdf7d"
+  },
+  "image_candidate": {
+    "platform": "linux/arm64",
+    "registry_repository": "docker.io/cp2k/cp2k",
+    "observed_tag": "2026.2_mpich_aarch64_psmp",
+    "digest": "sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+    "immutable_reference": "docker.io/cp2k/cp2k@sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+    "manifest_file": "images/arm64.manifest.json",
+    "config_file": "images/arm64.config.json",
+    "config_digest": "sha256:882a6f30ac4d9e705b5b3a474f9085c19d7f820b1531a4526b320e3f1e164c95",
+    "compressed_layer_bytes": 1627214095,
+    "layers_downloaded": false,
+    "runtime_executed": false,
+    "source_revision_attested": false,
+    "source_binding_gate": "A03 record actual version/revision and features. If not the selected release commit, explicitly pin/review the actual source before A04; never silently claim release-source identity.",
+    "entrypoint": [
+      "/opt/cp2k/install/bin/launch"
+    ],
+    "working_directory": "/mnt",
+    "source_metadata_url": "https://hub.docker.com/v2/repositories/cp2k/cp2k/tags/2026.2_mpich_aarch64_psmp"
+  },
+  "pull_wall_seconds": 62.74490806899996,
+  "image_observed": {
+    "Id": "sha256:882a6f30ac4d9e705b5b3a474f9085c19d7f820b1531a4526b320e3f1e164c95",
+    "RepoDigests": [
+      "cp2k/cp2k@sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade"
+    ],
+    "Architecture": "arm64",
+    "Os": "linux",
+    "Size": 4555398423,
+    "RootFS": {
+      "Type": "layers",
+      "Layers": [
+        "sha256:27df0d1341823cd47a776b3b6dd109273560e03b7e97d771621bfa43623fa39b",
+        "sha256:777d3c203fe3b8bf18121a65c1387256ab12ce9dc54c714e379c3feec611f034",
+        "sha256:ed9622a99fe395f978bf377af24d186c662f693095c95959019a6cad858b69f6",
+        "sha256:2cafe43488894390ad5c4fd72719832382c31a5757d300e4e809eb4e79410053",
+        "sha256:74b22c4eccb835c544428d91a2155e7a2aea8874b06a8048b1c6a37855de3adc",
+        "sha256:b2d6db9f6dd46c86a1fa3a76df38d5df2f58452c1c41dc4e3bb1bc7d170e90a9",
+        "sha256:c19a01037d7de6eb4198b28909ea6a09d08d099f04c887e1327c10d1102823a2",
+        "sha256:6c203612df8853d9d59417416a479273214e6367f486297f949571f5ff8500f9",
+        "sha256:44cdb7f8905e02377716e64ee7f29a787b3cf55c9eb4dd2b0caeafb1a56c8ca7",
+        "sha256:afc865b9f7c6212b46b885d390370328aa8c866eaec88b19987230ea2df848bd",
+        "sha256:12d276d6134ef85d1472fcb31ef6805157b02a6f9ffc9f993ff56a13406052cd"
+      ]
+    }
+  },
+  "binary": {
+    "reported_version": "2026.2",
+    "reported_revision": "unknown",
+    "release_source_prefix_matches": false,
+    "source_identity_attested": false,
+    "attestation_note": "Binary self-report is evidence, not a reproducible-build/source attestation.",
+    "binary_sha256": "aa8cb64079e94aac831588d359c7e7c008a693701de6e3bcdd58491f850ceb7c",
+    "binary_path": "/opt/cp2k/install/bin/cp2k",
+    "inventory_file": "inventory.txt",
+    "inventory_sha256": "44793e9e928bde6279898e5e94143caa95da1025213347a83602dca519c0751e"
+  },
+  "locked_data": [
+    {
+      "file": "ALL_POTENTIALS",
+      "sha256": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79",
+      "bytes": 2717
+    },
+    {
+      "file": "cc-pVDZ.cp2k",
+      "sha256": "34f9c543100787aa13763a9be00abc639243a3284aa7416091506949a14978bd",
+      "bytes": 1153
+    },
+    {
+      "file": "cc-pVQZ.cp2k",
+      "sha256": "731dbb160f6f90fb7814e9a688ed6bf33aee82ed08b0f1418a0b6ce4b8a891ce",
+      "bytes": 2928
+    },
+    {
+      "file": "cc-pVTZ.cp2k",
+      "sha256": "2582571d2471e0c4de438e737953c055c4af89d8516c9d63e1dae24160b9a279",
+      "bytes": 1893
+    }
+  ],
+  "passed_execution_gates": true,
+  "web_responsiveness": {
+    "configured": true,
+    "origin": "http://127.0.0.1:8765",
+    "fixed_production_boundary_headers": false,
+    "authentication": "anonymous only; no key read or sent",
+    "summary": {
+      "baseline": {
+        "samples": 130,
+        "max_latency_seconds": 0.02299441600001728,
+        "unexpected_statuses": 0
+      },
+      "during": {
+        "samples": 180,
+        "max_latency_seconds": 1.4440893970000843,
+        "unexpected_statuses": 0
+      },
+      "after": {
+        "samples": 2,
+        "max_latency_seconds": 0.0009676480000280208,
+        "unexpected_statuses": 0
+      }
+    },
+    "samples": [
+      {
+        "phase": "baseline",
+        "path": "/",
+        "status": 200,
+        "expected_status": 200,
+        "wall_seconds": 0.02299441600001728,
+        "error": null
+      },
+      {
+        "phase": "baseline",
+        "path": "/v1/capabilities",
+        "status": 401,
+        "expected_status": 401,
+        "wall_seconds": 0.0008093540000118082,
+        "error": null
+      },
+      {
+        "phase": "baseline",
+        "path": "/",
+        "status": 200,
+        "expected_status": 200,
+        "wall_seconds": 0.0013567560000069534,
+        "error": null
+      },
+      {
+        "phase": "baseline",
+        "path": "/v1/capabilities",
+        "status": 401,
+        "expected_status": 401,
+        "wall_seconds": 0.0007851219999679415,
+        "error": null
+      },
+      {
+        "phase": "during",
+        "path": "/",
+        "status": 200,
+        "expected_status": 200,
+        "wall_seconds": 1.4440893970000843,
+        "error": null
+      },
+      {
+        "phase": "during",
+        "path": "/v1/capabilities",
+        "status": 401,
+        "expected_status": 401,
+        "wall_seconds": 0.0007553039999947941,
+        "error": null
+      },
+      {
+        "phase": "after",
+        "path": "/",
+        "status": 200,
+        "expected_status": 200,
+        "wall_seconds": 0.0009676480000280208,
+        "error": null
+      },
+      {
+        "phase": "after",
+        "path": "/v1/capabilities",
+        "status": 401,
+        "expected_status": 401,
+        "wall_seconds": 0.0006621969999969224,
+        "error": null
+      }
+    ],
+    "raw_samples_file": "web-samples.json",
+    "raw_samples_sha256": "26a8ca1aa454dadc7378109c12e034f7b6ad7de1686499435ed8506b0b6dd970",
+    "report_samples_are_excerpt": true
+  },
+  "finished_at": "2026-11-06T17:35:21.727384+00:00"
+}
