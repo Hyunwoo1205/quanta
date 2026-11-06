@@ -106,10 +106,15 @@
     "id": 42165696700,
     "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42165696700",
     "source": "5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e",
-    "status": "in_progress",
-    "conclusion": null,
-    "x86_pytest_passed": 1513,
-    "arm_completion_not_yet_observed": true,
+    "status": "completed",
+    "conclusion": "success",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "pytest_each": 1513,
+    "node_each": 35,
+    "caddy_each": 9,
     "required_dedicated_control_ci_completed_on_both_architectures": true
   }
 }
