@@ -1,7 +1,7 @@
-import {terminalStatuses,statusLabel,formatNumber,rawMember,formatJSONPreservingNumbers,parseDefinition,buildRevisionBody,buildValidationBody,summarizeDefinition,chartPoints,quantumSeries,authConfiguration,authRequestOptions,isJSONResponse,accessResponseNeedsLogin} from './view-model.mjs';
+import {terminalStatuses,runExecutionRequest,replayCompatibilityMessage,statusLabel,formatNumber,rawMember,formatJSONPreservingNumbers,parseDefinition,buildRevisionBody,buildValidationBody,summarizeDefinition,chartPoints,quantumSeries,authConfiguration,authRequestOptions,accountRequestOptions,accountChallenge,isJSONResponse,accessResponseNeedsLogin} from './view-model.mjs';
 
 const $ = id => document.getElementById(id);
-const S = {authMode:'unknown',authentication:null,authState:'checking',principal:null,authCheck:0,token:null,connected:false,session:0,selection:0,draftVersion:0,busy:0,experiment:null,revision:null,savedDefinition:null,savedTitle:null,examples:[],experimentCursor:null,runsCursor:null,runs:[],run:null,result:null,resultRaw:null,runSelection:0,pollTimer:null,pendingSubmission:null,pendingReplay:null,artifactExpanded:false,pollRequest:null,runsRequest:0,experimentsRequest:0};
+const S = {authMode:'unknown',authentication:null,authState:'checking',principal:null,authCheck:0,token:null,csrfToken:null,accountConfig:null,accountView:'login',accountBusy:false,accountChallenges:{},settingsOpen:false,mfaTarget:null,connected:false,session:0,selection:0,draftVersion:0,busy:0,experiment:null,revision:null,savedDefinition:null,savedTitle:null,examples:[],experimentCursor:null,runsCursor:null,runs:[],run:null,result:null,resultRaw:null,runSelection:0,pollTimer:null,pendingSubmission:null,pendingReplay:null,pendingCurrent:null,artifactExpanded:false,pollRequest:null,runsRequest:0,experimentsRequest:0};
 const axisNames = [['execution_status','작업 실행'],['numerical_status','수치 수렴'],['resolution_status','해상도 수렴'],['physical_validation_status','물리적 검증']];
 const operationNames = {energy_forces:'에너지·힘 계산',relax:'정적 상태 탐색',eigenstates:'양자 정적 상태'};
 function node(tag, className, text) { const element=document.createElement(tag); if(className) element.className=className; if(text!==undefined) element.textContent=String(text); return element; }
@@ -21,12 +21,12 @@ function showError(error) {
 }
 function responseInfo(response){return {status:response.status,redirected:response.redirected,type:response.type,contentType:response.headers.get('Content-Type')};}
 function connectionLost(session,{loginRequired=false}={}){
-  if(session!==S.session||S.authMode!=='access')return;
+  if(session!==S.session||!['access','account'].includes(S.authMode))return;
   disconnect(false);S.authState=loginRequired?'required':'uncertain';renderAuthentication();
   notice(loginRequired?'로그인이 만료되었거나 접근을 확인할 수 없습니다. 작성 중 입력은 유지했습니다. 다시 로그인하기 전에 JSON으로 내보내세요.':'연결 또는 로그인 상태를 확인하지 못했습니다. 작성 중 입력은 유지했습니다. 로그인 상태를 확인한 뒤 실행 기록을 먼저 확인하세요.');
 }
 async function api(method,path,body=null,options={}) {
-  const token=S.token,session=S.session,mode=S.authMode,settings=authRequestOptions(mode,token);
+  const token=S.token,session=S.session,mode=S.authMode,settings=authRequestOptions(mode,token,{csrfToken:S.csrfToken,method});
   if(options.key)settings.headers['Idempotency-Key']=options.key;
   let response;
   try {response=await fetch(path,{...settings,method,body:body===null?undefined:typeof body==='string'?body:JSON.stringify(body)});}
@@ -46,13 +46,15 @@ function syncControls() {
   $('refresh-runs').disabled=!ready;$('refresh-result').disabled=!ready||!S.run;
   $('cancel-run').disabled=!ready||!S.run||!['RUNNING','QUEUED'].includes(S.run.execution_status);
   $('replay-run').disabled=!ready||!S.run||!terminalStatuses.has(S.run.execution_status);
-  $('replay-run').textContent=S.pendingReplay?'같은 재실행 요청 재시도':'같은 입력으로 재실행';
+  $('replay-run').textContent=S.pendingReplay?'같은 재실행 요청 재시도':'같은 환경 재실행';
+  $('current-run').disabled=!ready||!S.run||!terminalStatuses.has(S.run.execution_status)||!S.run.revision_id;
+  $('current-run').textContent=S.pendingCurrent?'같은 새 실행 요청 재시도':'현재 버전으로 새 실행';
   $('download-result').disabled=!S.resultRaw;
   const state=$('draft-state');state.textContent=saved()?'저장된 입력':S.revision?'저장하지 않은 수정':'새 입력';state.className='badge '+(saved()?'success':S.revision?'warning':'neutral');
 }
 async function action(task){const session=S.session;clearError();S.busy++;syncControls();try{await task();}catch(error){if(session===S.session)showError(error);}finally{S.busy--;syncControls();}}
 function setTab(tab){for(const name of ['editor','runs','results'])$(name+'-view').hidden=name!==tab;document.querySelectorAll('.side-nav-item').forEach(item=>{const active=item.dataset.tab===tab;item.classList.toggle('active',active);if(active)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');});}
-function invalidateRun(){S.runSelection++;clearTimeout(S.pollTimer);S.pollTimer=null;S.run=null;S.result=null;S.resultRaw=null;S.pendingReplay=null;renderRun();}
+function invalidateRun(){S.runSelection++;clearTimeout(S.pollTimer);S.pollTimer=null;S.run=null;S.result=null;S.resultRaw=null;S.pendingReplay=null;S.pendingCurrent=null;renderRun();}
 function discardOkay(){return !S.revision||saved()||window.confirm('저장하지 않은 수정이 있습니다. 다른 입력을 불러올까요?');}
 function scientificJSON(value){if(typeof value==='number')return Object.is(value,-0)?'-0.0':JSON.stringify(value);if(Array.isArray(value))return '['+value.map(scientificJSON).join(',')+']';if(value&&typeof value==='object')return '{'+Object.entries(value).map(([k,v])=>JSON.stringify(k)+':'+scientificJSON(v)).join(',')+'}';return JSON.stringify(value);}
 function setDraft(title,text,{revision=null,experiment=null}={}){
@@ -72,34 +74,38 @@ function updateSummary(){
 }
 function renderRevision(){clear($('saved-revision-info'));if(!S.revision)return;for(const [label,value]of [['저장한 입력 버전',S.revision.revision_id],['저장 시각',date(S.revision.created_at)]])$('saved-revision-info').append(node('dt','',label),node('dd','',value));}
 function date(value){if(!value)return '—';const parsed=new Date(value);return Number.isFinite(parsed.getTime())?parsed.toLocaleString('ko-KR'):value;}
-async function loadExamples(){const version=S.draftVersion,session=S.session;try{const response=await fetch('/ui/examples',authRequestOptions(S.authMode,S.token,{json:false}));if(accessResponseNeedsLogin(S.authMode,responseInfo(response))){connectionLost(session,{loginRequired:true});throw new Error();}if(!response.ok||!isJSONResponse(response.headers.get('Content-Type')))throw new Error();const data=await response.json();if(session!==S.session)return;S.examples=Array.isArray(data)?data:data.examples??[];clear($('sample-select'));for(const example of S.examples){const option=node('option','',example.title??example.id);option.value=example.id;$('sample-select').append(option);}if(S.examples.length&&version===S.draftVersion&&!$('definition-editor').value.trim()){const example=S.examples[0];setDraft(example.title,formatJSONPreservingNumbers(example.definition_json??scientificJSON(example.definition)));}else if(!S.examples.length){$('sample-select').append(node('option','','등록된 예제가 없습니다.'));}}catch{if(session!==S.session)return;if(S.authMode==='access'&&S.connected)connectionLost(session);$('sample-select').replaceChildren(node('option','','예제를 불러올 수 없습니다.'));$('definition-editor').placeholder='실험 definition JSON을 붙여넣거나 파일을 가져오세요.';}}
+async function loadExamples(){const version=S.draftVersion,session=S.session;try{const response=await fetch('/ui/examples',authRequestOptions(S.authMode,S.token,{json:false}));if(accessResponseNeedsLogin(S.authMode,responseInfo(response))){connectionLost(session,{loginRequired:true});throw new Error();}if(!response.ok||!isJSONResponse(response.headers.get('Content-Type')))throw new Error();const data=await response.json();if(session!==S.session)return;S.examples=Array.isArray(data)?data:data.examples??[];clear($('sample-select'));for(const example of S.examples){const option=node('option','',example.title??example.id);option.value=example.id;$('sample-select').append(option);}if(S.examples.length&&version===S.draftVersion&&!$('definition-editor').value.trim()){const example=S.examples[0];setDraft(example.title,formatJSONPreservingNumbers(example.definition_json??scientificJSON(example.definition)));}else if(!S.examples.length){$('sample-select').append(node('option','','등록된 예제가 없습니다.'));}}catch{if(session!==S.session)return;if(['access','account'].includes(S.authMode)&&S.connected)connectionLost(session);$('sample-select').replaceChildren(node('option','','예제를 불러올 수 없습니다.'));$('definition-editor').placeholder='실험 definition JSON을 붙여넣거나 파일을 가져오세요.';}}
 function renderAuthentication(){
-  const access=S.authMode==='access',ownerKey=S.authMode==='bearer'&&S.authentication==='owner_token',known=S.authMode!=='unknown';
-  $('connection-form').hidden=!known||access;$('access-actions').hidden=!access;$('check-session').hidden=!access&&!(!known&&S.authState==='uncertain');
-  $('access-login').hidden=!access;$('connection-description').textContent=access?(S.authState==='uncertain'?'연결 또는 로그인 상태를 다시 확인하세요. 작성 중 입력은 이 화면에 유지됩니다.':'허용된 이메일로 로그인하면 저장한 실험과 계산 결과를 확인할 수 있어요.'):(ownerKey?'본인용 접근 키를 입력하세요. 키는 현재 화면의 메모리에만 보관하며 연결을 해제하면 지웁니다.':known?'서버 실행 시 설정한 API 토큰을 입력하세요. 토큰은 이 페이지가 열려 있는 동안만 메모리에 보관합니다.':'연결 방식을 확인하고 있습니다.');
-  $('connection-heading').textContent=access?(S.authState==='required'?'로그인을 확인해주세요.':'연구 작업 공간에 연결하세요.'):ownerKey?'내 작업 공간에 연결하세요.':'계산 환경에 연결하세요.';
+  const access=S.authMode==='access',account=S.authMode==='account',ownerKey=S.authMode==='bearer'&&S.authentication==='owner_token',known=S.authMode!=='unknown';
+  $('connection-panel').classList.toggle('account-mode',account);$('connection-form').hidden=!known||access||account;$('account-auth').hidden=!account;$('access-actions').hidden=!access;$('check-session').hidden=!(access||account||!known&&S.authState==='uncertain');
+  $('access-login').hidden=!access;
+  $('connection-description').textContent=account?(S.accountConfig?.configured?'아이디와 비밀번호로 로그인하세요. 이메일 이중 인증을 켠 계정은 인증번호도 확인합니다.':'최초 관리자 설정 후 이메일을 인증하고 계정을 만들 수 있습니다.'):access?(S.authState==='uncertain'?'연결 또는 로그인 상태를 다시 확인하세요. 작성 중 입력은 이 화면에 유지됩니다.':'허용된 이메일로 로그인하면 저장한 실험과 계산 결과를 확인할 수 있어요.'):(ownerKey?'본인용 접근 키를 입력하세요. 키는 현재 화면의 메모리에만 보관하며 연결을 해제하면 지웁니다.':known?'서버 실행 시 설정한 API 토큰을 입력하세요. 토큰은 이 페이지가 열려 있는 동안만 메모리에 보관합니다.':'연결 방식을 확인하고 있습니다.');
+  $('connection-heading').textContent=account?'연구 작업 공간에 로그인':access?(S.authState==='required'?'로그인을 확인해주세요.':'연구 작업 공간에 연결하세요.'):ownerKey?'내 작업 공간에 연결하세요.':'계산 환경에 연결하세요.';
   $('api-token-label').textContent=ownerKey?'소유자 접근 키':'API 토큰';$('api-token').placeholder=ownerKey?'본인용 접근 키':'서버의 QUANTA_API_TOKEN';
-  $('environment-label').textContent=access||ownerKey?'PRIVATE RESEARCH WORKSPACE':'LOCAL RESEARCH ENVIRONMENT';$('workspace-location').textContent=access||ownerKey?'비공개 작업 공간':'로컬 작업 공간';
-  $('disconnect').title=access?'로그아웃':'연결 해제';$('disconnect').setAttribute('aria-label',access?'작업 공간 로그아웃':'서버 연결 해제');
+  $('environment-label').textContent=access||ownerKey||account?'PRIVATE RESEARCH WORKSPACE':'LOCAL RESEARCH ENVIRONMENT';$('workspace-location').textContent=access||ownerKey||account?'비공개 작업 공간':'로컬 작업 공간';
+  $('disconnect').title=access||account?'로그아웃':'연결 해제';$('disconnect').setAttribute('aria-label',access||account?'작업 공간 로그아웃':'서버 연결 해제');
   $('access-login').textContent=S.authState==='required'?'다시 로그인':'로그인';
+  $('account-settings-open').hidden=!account||!S.connected;
+  if(account){renderAccountForms();renderAccountSettings();}
+  else $('account-settings').hidden=true;
 }
 async function finishConnection(session){
   const capability=await api('GET','/v1/capabilities');if(session!==S.session)return;
-  S.connected=true;S.authState='connected';$('connection-panel').hidden=true;$('connection-state').textContent=S.authMode==='access'?(S.principal?.email??'로그인됨'):'계산 환경 연결됨';$('environment-dot').classList.add('connected');$('disconnect').hidden=false;$('package-version').textContent='v'+capability.package_version;notice('계산 환경에 연결되었습니다. 입력을 검증하고 저장한 뒤 실행하세요.');syncControls();await Promise.all([loadExperiments(),loadRuns(),...(S.authentication==='owner_token'&&!S.examples.length?[loadExamples()]:[])]);
+  S.connected=true;S.authState='connected';$('connection-panel').hidden=true;$('connection-state').textContent=['access','account'].includes(S.authMode)?(S.principal?.username??S.principal?.email??'로그인됨'):'계산 환경 연결됨';$('environment-dot').classList.add('connected');$('disconnect').hidden=false;$('package-version').textContent='v'+capability.package_version;notice('계산 환경에 연결되었습니다. 입력을 검증하고 저장한 뒤 실행하세요.');renderAuthentication();syncControls();await Promise.all([loadExperiments(),loadRuns(),...((S.authentication==='owner_token'||S.authMode==='account')&&!S.examples.length?[loadExamples()]:[])]);
 }
 async function connect(event){event.preventDefault();if(S.authMode!=='bearer')return;const token=$('api-token').value;$('api-token').value='';const session=++S.session;S.token=token;clearError();$('connect-button').disabled=true;try{await finishConnection(session);}catch(error){if(session===S.session){S.token=null;S.connected=false;showError(error);}}finally{$('connect-button').disabled=false;syncControls();}}
-function disconnect(showNotice=true){S.authCheck++;$('check-session').disabled=false;S.session++;S.selection++;S.experimentsRequest++;S.runsRequest++;S.token=null;S.connected=false;S.principal=null;invalidateRun();S.experiment=null;S.revision=null;S.savedDefinition=null;S.savedTitle=null;S.pendingSubmission=null;S.runs=[];S.experimentCursor=null;S.runsCursor=null;$('api-token').value='';$('connection-panel').hidden=false;$('disconnect').hidden=true;$('connection-state').textContent='연결 대기';$('environment-dot').classList.remove('connected');$('experiment-list').replaceChildren(node('p','sidebar-empty','다시 연결하면 저장한 실험을 확인할 수 있어요.'));$('more-experiments').hidden=true;$('more-runs').hidden=true;$('run-count').textContent='0';$('breadcrumb-title').textContent='작성 중 입력';for(const id of ['result-metrics','result-visualization','result-tables','artifact-list','run-identity','result-axes','run-diagnostics','step-select'])clear($(id));renderRuns();renderRevision();resetValidation();renderAuthentication();syncControls();if(showNotice)notice(S.authentication==='owner_token'?'연결을 해제하고 메모리의 접근 키와 실행 결과를 지웠습니다. 작성 중 입력은 유지됩니다.':'연결을 해제하고 메모리의 토큰과 실행 결과를 지웠습니다. 작성 중 입력은 유지됩니다.');}
+function disconnect(showNotice=true){S.authCheck++;$('check-session').disabled=false;S.session++;S.selection++;S.experimentsRequest++;S.runsRequest++;S.token=null;S.csrfToken=null;S.connected=false;S.principal=null;S.accountChallenges={};S.settingsOpen=false;S.mfaTarget=null;clearAccountSecrets();$('account-settings').hidden=true;invalidateRun();S.experiment=null;S.revision=null;S.savedDefinition=null;S.savedTitle=null;S.pendingSubmission=null;S.runs=[];S.experimentCursor=null;S.runsCursor=null;$('api-token').value='';$('connection-panel').hidden=false;$('disconnect').hidden=true;$('connection-state').textContent='연결 대기';$('environment-dot').classList.remove('connected');$('experiment-list').replaceChildren(node('p','sidebar-empty','다시 연결하면 저장한 실험을 확인할 수 있어요.'));$('more-experiments').hidden=true;$('more-runs').hidden=true;$('run-count').textContent='0';$('breadcrumb-title').textContent='작성 중 입력';for(const id of ['result-metrics','result-visualization','result-tables','artifact-list','run-identity','result-axes','run-diagnostics','step-select'])clear($(id));renderRuns();renderRevision();resetValidation();renderAuthentication();syncControls();if(showNotice)notice(S.authMode==='account'?'로그아웃했습니다. 작성 중 입력은 유지됩니다.':S.authentication==='owner_token'?'연결을 해제하고 메모리의 접근 키와 실행 결과를 지웠습니다. 작성 중 입력은 유지됩니다.':'연결을 해제하고 메모리의 토큰과 실행 결과를 지웠습니다. 작성 중 입력은 유지됩니다.');}
 async function discoverAuthentication(){
   const request=++S.authCheck;$('check-session').disabled=true;clearError();
   try{
     const response=await fetch('/ui/auth',{credentials:'same-origin',redirect:'error',cache:'no-store',referrerPolicy:'no-referrer'});
     if(!isJSONResponse(response.headers.get('Content-Type')))throw new Error('로그인 상태를 확인하지 못했습니다.');
     const data=await response.json();if(request!==S.authCheck)return;
-    const config=authConfiguration(data);S.authMode=config.mode;S.authentication=config.authentication??null;S.principal=config.principal??null;S.authState=config.authenticated?'checking':'required';renderAuthentication();
+    const config=authConfiguration(data);if(config.mode==='account'&&!config.authenticated&&S.connected){disconnect(false);S.authMode='account';S.accountConfig=config;S.authState='required';renderAuthentication();return;}S.authMode=config.mode;S.authentication=config.authentication??null;S.principal=config.principal??null;S.csrfToken=config.csrf_token??null;S.accountConfig=config.mode==='account'?config:null;S.authState=config.authenticated?'checking':'required';renderAuthentication();
     if(!response.ok&&!(config.mode==='access'&&[401,403].includes(response.status)))throw new Error(data?.errors?.[0]?.message??'연결 상태를 확인하지 못했습니다.');
-    if(config.mode==='access'&&config.authenticated){const session=++S.session;await finishConnection(session);}
+    if(['access','account'].includes(config.mode)&&config.authenticated){const session=++S.session;await finishConnection(session);}
     if(request!==S.authCheck)return;
-    if(!S.examples.length)await loadExamples();
+    if(!S.examples.length&&(config.mode!=='account'||config.authenticated))await loadExamples();
   }catch(error){if(request!==S.authCheck)return;S.authState='uncertain';renderAuthentication();notice('연결 또는 로그인 상태를 확인하지 못했습니다. 작성 중 입력을 유지한 채 상태를 다시 확인할 수 있어요.');showError(error);}finally{if(request===S.authCheck){$('check-session').disabled=false;syncControls();}}
 }
 function navigateAuthentication(logout=false){
@@ -107,6 +113,118 @@ function navigateAuthentication(logout=false){
   if($('definition-editor').value.trim()&&!window.confirm('이동하면 이 화면의 작성 중 입력이 사라집니다. 필요한 입력은 JSON으로 내보낸 뒤 이동하세요. 계속할까요?'))return;
   const target=logout?'/cdn-cgi/access/logout':'/';disconnect(false);location.assign(target);
 }
+const accountPaths=new Set(['/auth/login','/auth/login/verify','/auth/signup/request','/auth/signup/complete','/auth/logout','/auth/mfa/request','/auth/mfa/confirm','/auth/password/reset/request','/auth/password/reset/complete','/auth/admin/configure']);
+const accountErrorMessages={UNAUTHORIZED:'아이디·비밀번호 또는 인증번호를 확인하세요.',AUTH_INPUT:'아이디·이메일·비밀번호·인증번호의 입력 형식을 확인하세요.',AUTH_RATE_LIMIT:'인증 요청이 많거나 재요청 간격이 짧습니다. 잠시 후 다시 시도하세요.',AUTH_BUSY:'비밀번호를 확인 중입니다. 잠시 후 다시 시도하세요.',MAIL_UNAVAILABLE:'인증메일을 보내지 못했습니다. 잠시 후 다시 요청하거나 관리자에게 문의하세요.',AUTH_UNAVAILABLE:'계정 확인을 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도하세요.',OWNER_REQUIRED:'최초 설정에는 기존 소유자 접근 키가 필요합니다.',OWNER_CONFIGURED:'이미 등록한 관리자 이메일과 같은 주소를 입력하세요. 관리자 이메일은 이 화면에서 변경할 수 없습니다.',OWNER_SETUP_REQUIRED:'최초 관리자와 인증메일 설정을 먼저 완료해야 합니다.',ACCOUNT_UNAVAILABLE:'이 아이디 또는 이메일로 가입할 수 없습니다. 입력을 확인하세요.',ACCOUNT_CAPACITY:'현재 새 계정을 등록할 수 없습니다. 관리자에게 문의하세요.'};
+const accountForms={'login':'account-login-form','login-code':'account-login-code-form','signup':'account-signup-request-form','signup-complete':'account-signup-complete-form','reset':'account-reset-request-form','reset-complete':'account-reset-complete-form'};
+function clearAccountSecrets(){for(const input of document.querySelectorAll('#account-auth input[type="password"],#account-settings input[type="password"],#account-auth input[autocomplete="one-time-code"],#account-settings input[autocomplete="one-time-code"]'))input.value='';}
+function accountMessage(message,settings=false){$(settings?'account-settings-message':'account-message').textContent=message;}
+function renderAccountForms(){
+  for(const [view,id]of Object.entries(accountForms))$(id).hidden=S.accountView!==view;
+  for(const item of document.querySelectorAll('.account-tab')){const active=S.accountView.startsWith(item.dataset.authView);item.classList.toggle('active',active);if(active)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');}
+  $('account-mail-note').hidden=S.accountConfig?.mail_configured===true;
+  $('account-bootstrap').hidden=false;$('account-bootstrap-summary').textContent=S.accountConfig?.bootstrap_required?'최초 관리자 설정':'소유자 메일 설정 · 복구';
+  for(const id of ['account-signup-request-form','account-reset-request-form'])$(id).querySelector('button[type="submit"]').disabled=S.accountBusy||!S.accountConfig?.configured;
+}
+function setAccountView(view){
+  if(!Object.hasOwn(accountForms,view)||S.accountBusy)return;
+  clearAccountSecrets();S.accountView=view;
+  if(view==='login')delete S.accountChallenges.login;
+  if(view==='signup')delete S.accountChallenges.signup;
+  if(view==='reset')delete S.accountChallenges.reset;
+  accountMessage('');renderAccountForms();$(accountForms[view]).querySelector('input')?.focus();
+}
+function renderAccountSettings(){
+  const available=S.authMode==='account'&&S.connected&&S.principal;
+  $('account-settings').hidden=!available||!S.settingsOpen;
+  if(!available)return;
+  $('account-identity').textContent=S.principal.username+' · '+S.principal.email;
+  $('account-mfa-state').textContent=S.principal.mfa_enabled?'이메일 이중 인증이 켜져 있습니다. 로그인할 때 비밀번호와 이메일 인증번호를 확인합니다.':'이메일 이중 인증이 꺼져 있습니다. 설정하면 로그인할 때 이메일 인증번호를 한 번 더 확인합니다.';
+  $('account-mfa-request-button').textContent=S.principal.mfa_enabled?'이메일 이중 인증 끄기':'이메일 이중 인증 켜기';
+  $('account-mfa-request-form').hidden=!!S.accountChallenges.mfa;
+  $('account-mfa-confirm-form').hidden=!S.accountChallenges.mfa;
+}
+async function accountPost(path,body,{csrf=false,ownerKey=null}={}){
+  if(!accountPaths.has(path))throw new Error('지원하지 않는 계정 요청입니다.');
+  const response=await fetch(path,{...accountRequestOptions(csrf?S.csrfToken:null,ownerKey),method:'POST',body:JSON.stringify(body)});
+  if(response.redirected||response.type==='opaqueredirect'||!isJSONResponse(response.headers.get('Content-Type')))throw new Error('계정 응답을 확인하지 못했습니다. 상태를 다시 확인하세요.');
+  const data=await response.json();
+  if(!response.ok){const code=data?.errors?.[0]?.code,message=ownerKey!==null&&response.status===401?'기존 소유자 접근 키를 확인하세요.':accountErrorMessages[code]??data?.errors?.[0]?.message??'계정 요청을 처리하지 못했습니다.';const error=new Error(message);error.status=response.status;error.data={errors:[{code:code??'ACCOUNT_REQUEST',message}]};throw error;}
+  return data;
+}
+async function accountAction(task){
+  if(S.accountBusy)return;
+  const viewBefore=S.accountView,hadMfa=!!S.accountChallenges.mfa;
+  S.accountBusy=true;clearError();
+  for(const item of document.querySelectorAll('#account-auth input,#account-auth button,#account-settings input,#account-settings button'))item.disabled=true;
+  $('disconnect').disabled=true;$('account-settings-open').disabled=true;
+  try{await task();}catch(error){showError(error);}finally{
+    S.accountBusy=false;
+    for(const item of document.querySelectorAll('#account-auth input,#account-auth button,#account-settings input,#account-settings button'))item.disabled=false;
+    $('disconnect').disabled=false;$('account-settings-open').disabled=false;
+    if(S.authMode==='account'){renderAccountForms();renderAccountSettings();if(!S.connected&&S.accountView!==viewBefore)$(accountForms[S.accountView]).querySelector('input')?.focus();else if(S.settingsOpen&&!!S.accountChallenges.mfa!==hadMfa)$(S.accountChallenges.mfa?'mfa-code':'mfa-password').focus();}
+  }
+}
+function newAccountPassword(id,confirmation){
+  const value=$(id).value,repeat=$(confirmation).value;
+  $(id).value='';$(confirmation).value='';
+  if(value!==repeat)throw new Error('비밀번호 확인이 일치하지 않습니다. 다시 입력하세요.');
+  if(Array.from(value).length<15||Array.from(value).length>256)throw new Error('비밀번호는 15~256자로 입력하세요.');
+  return value;
+}
+async function acceptAccountLogin(data){
+  if(data?.authenticated!==true)throw new Error('로그인 완료를 확인하지 못했습니다. 로그인 상태를 다시 확인하세요.');
+  clearAccountSecrets();S.accountChallenges={};S.accountView='login';accountMessage('');
+  await discoverAuthentication();
+}
+async function logoutAccount(){await accountPost('/auth/logout',{}, {csrf:true});disconnect(false);S.accountView='login';renderAuthentication();notice('로그아웃했습니다. 작성 중 입력은 유지됩니다.');}
+function resetMfaChallenge(){delete S.accountChallenges.mfa;S.mfaTarget=null;$('mfa-password').value='';$('mfa-code').value='';accountMessage('',true);renderAccountSettings();}
+function listenAccountForm(id,task){$(id).addEventListener('submit',event=>{event.preventDefault();accountAction(task);});}
+function bindAccountForms(){
+  document.querySelectorAll('[data-auth-view]').forEach(button=>button.addEventListener('click',()=>setAccountView(button.dataset.authView)));
+  listenAccountForm('account-login-form',async()=>{
+    const username=$('login-username').value,password=$('login-password').value;$('login-password').value='';
+    const data=await accountPost('/auth/login',{username,password});
+    if(data?.mfa_required===true){S.accountChallenges.login=accountChallenge(data);S.accountView='login-code';accountMessage('등록한 이메일로 인증번호를 보냈습니다. 10분 안에 입력하세요.');renderAccountForms();$('login-code').focus();}
+    else await acceptAccountLogin(data);
+  });
+  listenAccountForm('account-login-code-form',async()=>{
+    const challenge=S.accountChallenges.login,code=$('login-code').value;$('login-code').value='';if(!challenge)throw new Error('로그인을 처음부터 다시 시작해주세요.');
+    await acceptAccountLogin(await accountPost('/auth/login/verify',{challenge_id:challenge.challenge_id,code}));
+  });
+  listenAccountForm('account-signup-request-form',async()=>{
+    const email=$('signup-email').value;
+    S.accountChallenges.signup=accountChallenge(await accountPost('/auth/signup/request',{email}));S.accountView='signup-complete';$('signup-email-summary').textContent=email+' · 이메일 인증 후 가입이 완료됩니다.';accountMessage('인증번호를 받을 수 있는 주소라면 메일이 발송됩니다. 10분 안에 입력하세요.');renderAccountForms();$('signup-code').focus();
+  });
+  listenAccountForm('account-signup-complete-form',async()=>{
+    const challenge=S.accountChallenges.signup,code=$('signup-code').value,username=$('signup-username').value;$('signup-code').value='';const password=newAccountPassword('signup-password','signup-password-confirm');if(!challenge)throw new Error('가입 인증번호를 다시 요청해주세요.');
+    await acceptAccountLogin(await accountPost('/auth/signup/complete',{challenge_id:challenge.challenge_id,code,username,password}));
+  });
+  listenAccountForm('account-reset-request-form',async()=>{
+    S.accountChallenges.reset=accountChallenge(await accountPost('/auth/password/reset/request',{email:$('reset-email').value}));S.accountView='reset-complete';accountMessage('등록된 주소라면 인증메일이 발송됩니다. 10분 안에 입력하세요.');renderAccountForms();$('reset-code').focus();
+  });
+  listenAccountForm('account-reset-complete-form',async()=>{
+    const challenge=S.accountChallenges.reset,code=$('reset-code').value;$('reset-code').value='';const new_password=newAccountPassword('reset-password','reset-password-confirm');if(!challenge)throw new Error('재설정 인증번호를 다시 요청해주세요.');
+    await accountPost('/auth/password/reset/complete',{challenge_id:challenge.challenge_id,code,new_password});clearAccountSecrets();S.accountChallenges={};S.accountView='login';accountMessage('비밀번호를 재설정했습니다. 새 비밀번호로 로그인하세요.');renderAccountForms();
+  });
+  listenAccountForm('account-bootstrap-form',async()=>{
+    const ownerKey=$('bootstrap-owner-key').value,smtp_password=$('bootstrap-gmail-password').value,initial=S.accountConfig?.bootstrap_required===true;
+    const body={smtp_username:$('bootstrap-gmail-username').value,smtp_password,owner_email:$('bootstrap-owner-email').value};
+    $('bootstrap-owner-key').value='';$('bootstrap-gmail-password').value='';
+    await accountPost('/auth/admin/configure',body,{ownerKey});await discoverAuthentication();S.accountView=initial?'signup':'login';if(initial)$('signup-email').value=body.owner_email;accountMessage(initial?'설정을 저장했습니다. 관리자 이메일을 인증하고 계정을 만드세요.':'메일 설정을 저장했습니다. 기존 계정으로 로그인하거나 이메일 인증을 다시 요청하세요.');$('account-bootstrap').open=false;renderAccountForms();
+  });
+  $('account-settings-open').addEventListener('click',()=>{S.settingsOpen=!S.settingsOpen;resetMfaChallenge();renderAccountSettings();if(S.settingsOpen)$('mfa-password').focus();});
+  $('account-settings-close').addEventListener('click',()=>{S.settingsOpen=false;resetMfaChallenge();renderAccountSettings();});
+  $('account-mfa-cancel').addEventListener('click',resetMfaChallenge);
+  listenAccountForm('account-mfa-request-form',async()=>{
+    const password=$('mfa-password').value,enabled=!S.principal?.mfa_enabled;$('mfa-password').value='';
+    S.accountChallenges.mfa=accountChallenge(await accountPost('/auth/mfa/request',{password,enabled},{csrf:true}));S.mfaTarget=enabled;accountMessage('등록한 이메일로 보낸 인증번호를 입력하면 이중 인증 설정이 변경됩니다.',true);renderAccountSettings();$('mfa-code').focus();
+  });
+  listenAccountForm('account-mfa-confirm-form',async()=>{
+    const challenge=S.accountChallenges.mfa,code=$('mfa-code').value,enabled=S.mfaTarget;$('mfa-code').value='';if(!challenge)throw new Error('이중 인증 설정을 처음부터 다시 시작해주세요.');
+    await acceptAccountLogin(await accountPost('/auth/mfa/confirm',{challenge_id:challenge.challenge_id,code},{csrf:true}));S.settingsOpen=true;accountMessage(enabled?'이메일 이중 인증을 켰습니다.':'이메일 이중 인증을 껐습니다.',true);renderAccountSettings();
+  });
+}
+
 async function loadExperiments(append=false){if(!S.connected)return;const session=S.session,request=++S.experimentsRequest,cursor=append?S.experimentCursor:null;const page=await api('GET','/v1/experiments?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''));if(session!==S.session||request!==S.experimentsRequest)return;if(!append)clear($('experiment-list'));for(const experiment of page.items){const button=node('button','experiment-item'+(S.experiment?.experiment_id===experiment.experiment_id?' active':''),experiment.title);button.type='button';button.dataset.experimentId=experiment.experiment_id;button.addEventListener('click',()=>action(()=>selectExperiment(experiment.experiment_id)));$('experiment-list').append(button);}if(!page.items.length&&!append)$('experiment-list').append(node('p','sidebar-empty','첫 실험을 저장해보세요.'));S.experimentCursor=page.next_cursor;$('more-experiments').hidden=!S.experimentCursor;}
 async function selectExperiment(id){if(!discardOkay())return;const session=S.session,selection=++S.selection,version=S.draftVersion;const experiment=await api('GET','/v1/experiments/'+encodeURIComponent(id));if(session!==S.session||selection!==S.selection||version!==S.draftVersion)return;invalidateRun();if(experiment.revision_ids.length){await loadRevision(experiment.revision_ids.at(-1),experiment,selection,session);}else{setDraft(experiment.title,$('definition-editor').value,{experiment});}if(session!==S.session)return;await Promise.all([loadExperiments(),loadRuns()]);setTab('editor');}
 async function loadRevision(id,experiment,selection=S.selection,session=S.session){const version=S.draftVersion;const revision=await api('GET','/v1/revisions/'+encodeURIComponent(id),null,{raw:true});if(session!==S.session||selection!==S.selection||version!==S.draftVersion)return;setDraft(revision.data.title,formatJSONPreservingNumbers(rawMember(revision.text,'definition')),{revision:revision.data,experiment});const select=node('select','revision-selector');select.setAttribute('aria-label','저장한 입력 버전');for(const revId of experiment.revision_ids){const option=node('option','','입력 버전 · '+short(revId));option.value=revId;option.selected=revId===id;select.append(option);}select.addEventListener('change',()=>action(async()=>{if(!discardOkay()){select.value=S.revision.revision_id;return;}const nextSelection=++S.selection;await loadRevision(select.value,S.experiment,nextSelection,S.session);}));$('saved-revision-info').append(select);}
@@ -116,7 +234,7 @@ async function saveRevision(){const snapshot={version:S.draftVersion,text:$('def
 async function submitRun(){if(!saved())throw new Error('현재 입력을 새 버전으로 저장한 뒤 실행하세요.');const session=S.session,selection=S.selection,revision=S.revision.revision_id;if(!S.pendingSubmission||S.pendingSubmission.revision!==revision)S.pendingSubmission={revision,key:crypto.randomUUID()};const pending=S.pendingSubmission;try{const run=await api('POST','/v1/runs',{revision_id:revision},{key:pending.key});if(session!==S.session||selection!==S.selection)return;S.pendingSubmission=null;notice('실행 요청을 저장했습니다. 진행 상태는 실제 계산 단계에 따라 갱신됩니다.');await selectRun(run);await loadRuns();}catch(error){if(error.network&&session===S.session)notice('실행 요청의 응답을 확인하지 못했습니다. 다시 누르면 같은 키로 동일한 실행을 확인합니다.');throw error;}}
 async function loadRuns(append=false){if(!S.connected)return;const session=S.session,selection=S.selection,request=++S.runsRequest,experiment=S.experiment?.experiment_id,cursor=append?S.runsCursor:null;const params=new URLSearchParams({limit:'50'});if(experiment)params.set('experiment_id',experiment);if(cursor)params.set('cursor',cursor);const page=await api('GET','/v1/runs?'+params.toString());if(session!==S.session||selection!==S.selection||request!==S.runsRequest)return;S.runs=append?[...S.runs,...page.items]:page.items;S.runsCursor=page.next_cursor;$('more-runs').hidden=!S.runsCursor;$('run-count').textContent=String(S.runs.length)+(S.runsCursor?'+':'');renderRuns();}
 function renderRuns(){clear($('run-list'));if(!S.runs.length){const empty=node('div','empty-state card');empty.append(node('span','empty-symbol','◷'),node('h2','','아직 실행 기록이 없어요.'),node('p','','실험을 저장하고 실행하면 이곳에 표시됩니다.'));$('run-list').append(empty);return;}for(const run of S.runs){const button=node('button','run-row'+(S.run?.run_id===run.run_id?' active':''));const label=node('div');label.append(node('span','run-row-name',(run.replay_of?'재실행':'실행')+' · '+short(run.run_id)),node('span','run-row-id','입력 버전 '+run.revision_id));const meta=node('div','run-row-meta');meta.append(badge(run.execution_status),node('div','',date(run.created_at)),node('div','',(run.progress?.completed_steps??0)+' / '+(run.progress?.total_steps??0)+' 단계'));button.append(label,meta,node('span','run-row-arrow','→'));button.addEventListener('click',()=>action(()=>selectRun(run)));$('run-list').append(button);}}
-async function selectRun(run){const sequence=++S.runSelection;clearTimeout(S.pollTimer);S.run=run;S.result=null;S.resultRaw=null;S.pendingReplay=null;S.artifactExpanded=false;renderRun();renderRuns();setTab('results');await refreshRun(sequence);}
+async function selectRun(run){const sequence=++S.runSelection;clearTimeout(S.pollTimer);S.run=run;S.result=null;S.resultRaw=null;S.pendingReplay=null;S.pendingCurrent=null;S.artifactExpanded=false;renderRun();renderRuns();setTab('results');await refreshRun(sequence);}
 async function refreshRun(sequence=S.runSelection){const key=String(sequence)+':'+S.run?.run_id;if(S.pollRequest?.key===key)return S.pollRequest.promise;clearTimeout(S.pollTimer);const promise=refreshRunInner(sequence).finally(()=>{if(S.pollRequest?.key===key)S.pollRequest=null;});S.pollRequest={key,promise};return promise;}
 async function refreshRunInner(sequence=S.runSelection){if(!S.connected||!S.run)return;const session=S.session,id=S.run.run_id;try{const run=await api('GET','/v1/runs/'+encodeURIComponent(id));if(session!==S.session||sequence!==S.runSelection)return;S.run=run;renderRun();if(terminalStatuses.has(run.execution_status)){try{const result=await api('GET','/v1/runs/'+encodeURIComponent(id)+'/result',null,{raw:true});if(session!==S.session||sequence!==S.runSelection)return;S.result=result.data;S.resultRaw=result.text;renderResult();}catch(error){if(session!==S.session||sequence!==S.runSelection)return;if(error.status!==409)throw error;S.result=null;S.resultRaw=null;renderResult();}await loadRuns();}else{clearTimeout(S.pollTimer);S.pollTimer=setTimeout(()=>refreshRun(sequence),1000);}}catch(error){if(session===S.session&&sequence===S.runSelection){showError(error);if(S.connected){clearTimeout(S.pollTimer);S.pollTimer=setTimeout(()=>refreshRun(sequence),2500);}}}syncControls();}
 function renderRun(){$('result-empty').hidden=!!S.run;$('result-content').hidden=!S.run;if(!S.run){syncControls();return;}$('active-run-title').textContent=statusLabel(S.run.execution_status);$('run-identity').textContent='RUN '+S.run.run_id+' · 입력 '+S.run.revision_id;clear($('result-axes'));for(const [field,label]of axisNames){const card=node('div','axis-card');card.append(node('p','',label),node('strong','',statusLabel(S.run[field]??'not_checked')));$('result-axes').append(card);}const progress=S.run.progress??{};$('run-progress').max=Math.max(progress.total_steps??1,1);$('run-progress').value=progress.completed_steps??0;$('progress-label').textContent=(progress.completed_steps??0)+' / '+(progress.total_steps??0)+' 단계 처리';$('active-step-label').textContent=progress.active_step?'현재 '+progress.active_step+' · 분기 '+(progress.active_branch??0):terminalStatuses.has(S.run.execution_status)?'실행 종료':'계산 준비 중';clear($('run-diagnostics'));for(const error of S.run.diagnostics??[])$('run-diagnostics').append(node('div','',(error.code?error.code+' · ':'')+(error.message??'')));renderArtifacts();renderResult();syncControls();}
@@ -135,9 +253,10 @@ function renderArtifacts(){clear($('artifact-list'));const artifacts=S.run?.arti
 async function downloadArtifact(artifact){const session=S.session,mode=S.authMode;let response;try{response=await fetch('/v1/artifacts/'+encodeURIComponent(artifact.artifact_id),authRequestOptions(mode,S.token,{json:false}));}catch(cause){connectionLost(session);const error=new Error('산출물의 응답을 확인하지 못했습니다. 연결 또는 로그인 상태를 확인하세요.');error.network=true;error.cause=cause;throw error;}if(accessResponseNeedsLogin(mode,responseInfo(response))){connectionLost(session,{loginRequired:true});throw new Error('로그인을 확인한 뒤 산출물을 다시 내려받으세요.');}if(!response.ok){if(response.status===401&&session===S.session){disconnect(false);notice('인증을 확인하고 다시 연결해주세요.');}throw new Error('산출물을 다운로드할 수 없습니다.');}if(/^text\/html/i.test(response.headers.get('Content-Type')??''))throw new Error('산출물 대신 다른 응답을 받았습니다.');let bytes;try{bytes=await response.arrayBuffer();}catch(cause){connectionLost(session);const error=new Error('산출물을 끝까지 내려받지 못했습니다. 연결 상태를 확인하세요.');error.network=true;error.cause=cause;throw error;}if(session!==S.session)return;const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');if(session!==S.session)return;if(digest!==artifact.sha256||bytes.byteLength!==artifact.size_bytes)throw new Error('산출물 크기 또는 SHA-256이 기록과 다릅니다.');download(new Blob([bytes],{type:artifact.mime_type}),'quanta-'+artifact.artifact_id+(artifact.mime_type?.startsWith('application/json')?'.json':'.txt'));}
 function download(blob,filename){const href=URL.createObjectURL(blob),a=node('a');a.href=href;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),1000);}
 
+bindAccountForms();
 $('connection-origin').textContent='연결 주소 · '+location.origin;
 $('connection-form').addEventListener('submit',connect);
-$('disconnect').addEventListener('click',()=>S.authMode==='access'?navigateAuthentication(true):disconnect());
+$('disconnect').addEventListener('click',()=>S.authMode==='account'?accountAction(logoutAccount):S.authMode==='access'?navigateAuthentication(true):disconnect());
 $('access-login').addEventListener('click',()=>navigateAuthentication());
 $('check-session').addEventListener('click',discoverAuthentication);
 $('dismiss-error').addEventListener('click',clearError);
@@ -156,7 +275,20 @@ $('more-runs').addEventListener('click',()=>action(()=>loadRuns(true)));
 $('more-experiments').addEventListener('click',()=>action(()=>loadExperiments(true)));
 $('refresh-result').addEventListener('click',()=>action(()=>refreshRun()));
 $('cancel-run').addEventListener('click',()=>action(async()=>{const id=S.run?.run_id,session=S.session,sequence=S.runSelection;if(!id)return;const run=await api('POST','/v1/runs/'+encodeURIComponent(id)+'/cancel',{});if(session!==S.session||sequence!==S.runSelection)return;S.run=run;notice('취소 요청을 확인했습니다. 완료 여부는 서버가 확정한 실행 상태를 따릅니다.');await refreshRun(sequence);}));
-$('replay-run').addEventListener('click',()=>action(async()=>{const id=S.run?.run_id,session=S.session,sequence=S.runSelection;if(!id)return;if(!S.pendingReplay||S.pendingReplay.source!==id)S.pendingReplay={source:id,key:crypto.randomUUID()};try{const run=await api('POST','/v1/runs/'+encodeURIComponent(id)+'/replay',{}, {key:S.pendingReplay.key});if(session!==S.session||sequence!==S.runSelection)return;S.pendingReplay=null;notice('같은 불변 입력에서 새 실행을 시작했습니다.');await selectRun(run);await loadRuns();}catch(error){if(error.network&&session===S.session)notice('재실행 응답을 확인하지 못했습니다. 다시 누르면 같은 요청 키를 유지합니다.');throw error;}}));
+$('replay-run').addEventListener('click',()=>action(async()=>{
+  const source=S.run,session=S.session,sequence=S.runSelection;if(!source)return;
+  const request=runExecutionRequest(source,'replay');
+  if(!S.pendingReplay||S.pendingReplay.source!==source.run_id)S.pendingReplay={source:source.run_id,key:crypto.randomUUID()};
+  try{const run=await api('POST',request.path,request.body,{key:S.pendingReplay.key});if(session!==S.session||sequence!==S.runSelection)return;S.pendingReplay=null;notice('같은 입력과 환경의 재실행을 시작했습니다.');await selectRun(run);await loadRuns();}
+  catch(error){const compatibility=replayCompatibilityMessage(error);if(compatibility&&session===S.session){notice(compatibility);error.message=compatibility;error.data={errors:[{code:'REGISTRY_SNAPSHOT_UNAVAILABLE',message:compatibility}]};}else if(error.network&&session===S.session)notice('재실행 응답을 확인하지 못했습니다. 다시 누르면 같은 요청 키를 유지합니다.');throw error;}
+}));
+$('current-run').addEventListener('click',()=>action(async()=>{
+  const source=S.run,session=S.session,sequence=S.runSelection;if(!source)return;
+  const request=runExecutionRequest(source,'current');
+  if(!S.pendingCurrent||S.pendingCurrent.source!==source.run_id||S.pendingCurrent.revision!==source.revision_id)S.pendingCurrent={source:source.run_id,revision:source.revision_id,key:crypto.randomUUID()};
+  try{const run=await api('POST',request.path,request.body,{key:S.pendingCurrent.key});if(session!==S.session||sequence!==S.runSelection)return;if(run.revision_id!==source.revision_id||run.run_id===source.run_id||run.replay_of)throw new Error('새 실행의 입력 연결을 확인하지 못했습니다. 실행 기록을 확인하세요.');S.pendingCurrent=null;notice('저장한 입력을 현재 계산 버전으로 새 실행했습니다. 이전 실행은 그대로 보존됩니다.');await selectRun(run);await loadRuns();}
+  catch(error){if(error.network&&session===S.session)notice('새 실행 응답을 확인하지 못했습니다. 다시 누르면 같은 요청 키를 유지합니다.');throw error;}
+}));
 $('step-select').addEventListener('change',renderStep);
 $('download-result').addEventListener('click',()=>{if(S.resultRaw)download(new Blob([S.resultRaw],{type:'application/json'}),'quanta-result-'+S.run.run_id+'.json');});
 window.addEventListener('beforeunload',event=>{if(S.revision&&!saved()){event.preventDefault();event.returnValue='';}});

@@ -30,13 +30,69 @@
     </aside>
 
     <main id="main" class="main-content">
-      <header class="topbar"><div class="breadcrumb">WORKSPACE <span>/</span> <strong id="breadcrumb-title">새 실험</strong></div><div class="topbar-meta"><span id="package-version" class="version-badge">QUANTA</span><span class="local-label"><span class="tiny-dot"></span> <span id="workspace-location">로컬 작업 공간</span></span></div></header>
+      <header class="topbar"><div class="breadcrumb">WORKSPACE <span>/</span> <strong id="breadcrumb-title">새 실험</strong></div><div class="topbar-meta"><button id="account-settings-open" class="button secondary small" type="button" hidden>계정 설정</button><span id="package-version" class="version-badge">QUANTA</span><span class="local-label"><span class="tiny-dot"></span> <span id="workspace-location">로컬 작업 공간</span></span></div></header>
 
       <section id="connection-panel" class="connection-panel" aria-labelledby="connection-heading">
         <div><span class="eyebrow">CONNECT YOUR ENVIRONMENT</span><h2 id="connection-heading">계산 환경에 연결하세요.</h2><p id="connection-description">연결 방식을 확인하고 있습니다.</p></div>
         <form id="connection-form" class="connection-form" hidden><label id="api-token-label" for="api-token">API 토큰</label><div class="connection-input-row"><input id="api-token" type="password" autocomplete="off" spellcheck="false" placeholder="서버의 QUANTA_API_TOKEN" required minlength="32"><button class="button primary" id="connect-button" type="submit">연결하기 <span aria-hidden="true">→</span></button></div><span id="connection-origin" class="microcopy"></span></form>
         <div id="access-actions" class="access-actions" hidden><button id="access-login" class="button primary" type="button">로그인</button><span class="microcopy">이동 전 필요한 입력은 아래의 JSON 내보내기로 보관하세요.</span></div>
         <button id="check-session" class="button secondary session-check" type="button" hidden>로그인 상태 확인</button>
+        <div id="account-auth" class="account-auth" hidden>
+          <nav class="account-tabs" aria-label="계정 메뉴"><button class="account-tab active" data-auth-view="login" type="button" aria-current="page">로그인</button><button class="account-tab" data-auth-view="signup" type="button">회원가입</button><button class="account-tab" data-auth-view="reset" type="button">비밀번호 찾기</button></nav>
+          <p id="account-message" class="account-message" role="status" aria-live="polite"></p>
+          <p id="account-mail-note" class="account-hint" hidden>인증메일 발송 설정이 준비되면 회원가입과 이메일 인증을 이용할 수 있습니다.</p>
+          <form id="account-login-form" class="account-form">
+            <div class="account-field"><label for="login-username">아이디</label><input id="login-username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64"></div>
+            <div class="account-field"><label for="login-password">비밀번호</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
+            <button class="button primary" type="submit">로그인 <span aria-hidden="true">→</span></button>
+          </form>
+          <form id="account-login-code-form" class="account-form" hidden>
+            <div class="account-field"><label for="login-code">이메일 인증번호</label><input id="login-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="6자리 인증번호" required></div>
+            <p class="account-hint">등록한 이메일로 보낸 인증번호를 입력하면 로그인이 완료됩니다.</p>
+            <div class="account-actions"><button class="button primary" type="submit">인증하고 로그인</button><button class="button secondary" type="button" data-auth-view="login">처음부터 다시</button></div>
+          </form>
+          <form id="account-signup-request-form" class="account-form" hidden>
+            <div class="account-field"><label for="signup-email">이메일</label><input id="signup-email" name="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" required maxlength="254" placeholder="인증메일을 받을 주소"></div>
+            <p class="account-hint">이메일을 인증한 뒤 아이디와 비밀번호를 설정합니다.</p>
+            <button class="button primary" type="submit">가입 인증번호 받기</button>
+          </form>
+          <form id="account-signup-complete-form" class="account-form" hidden>
+            <p id="signup-email-summary" class="account-hint"></p>
+            <div class="account-field"><label for="signup-code">이메일 인증번호</label><input id="signup-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="6자리 인증번호" required></div>
+            <div class="account-field"><label for="signup-username">아이디</label><input id="signup-username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" pattern="[A-Za-z0-9][A-Za-z0-9_.-]{2,63}" minlength="3" maxlength="64" aria-describedby="signup-id-help" required><span id="signup-id-help" class="account-hint">영문·숫자로 시작하는 3~64자. 밑줄·마침표·하이픈을 사용할 수 있습니다.</span></div>
+            <div class="account-field"><label for="signup-password">비밀번호</label><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="15" aria-describedby="signup-password-help" required><span id="signup-password-help" class="account-hint">15자 이상으로 설정하세요.</span></div>
+            <div class="account-field"><label for="signup-password-confirm">비밀번호 확인</label><input id="signup-password-confirm" name="password-confirm" type="password" autocomplete="new-password" minlength="15" required></div>
+            <div class="account-actions"><button class="button primary" type="submit">인증하고 가입</button><button class="button secondary" type="button" data-auth-view="signup">인증번호 다시 받기</button></div>
+          </form>
+          <form id="account-reset-request-form" class="account-form" hidden>
+            <div class="account-field"><label for="reset-email">가입한 이메일</label><input id="reset-email" name="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" required></div>
+            <button class="button primary" type="submit">재설정 인증번호 받기</button>
+          </form>
+          <form id="account-reset-complete-form" class="account-form" hidden>
+            <div class="account-field"><label for="reset-code">이메일 인증번호</label><input id="reset-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required></div>
+            <div class="account-field"><label for="reset-password">새 비밀번호</label><input id="reset-password" name="password" type="password" autocomplete="new-password" minlength="15" required></div>
+            <div class="account-field"><label for="reset-password-confirm">새 비밀번호 확인</label><input id="reset-password-confirm" name="password-confirm" type="password" autocomplete="new-password" minlength="15" required></div>
+            <div class="account-actions"><button class="button primary" type="submit">비밀번호 재설정</button><button class="button secondary" type="button" data-auth-view="reset">인증번호 다시 받기</button></div>
+          </form>
+          <details id="account-bootstrap" class="account-bootstrap" hidden><summary id="account-bootstrap-summary">소유자 메일 설정 · 복구</summary>
+            <p class="account-hint">기존 소유자 접근 키로 관리자 이메일과 Gmail 발송 계정을 등록하거나 메일 설정을 복구할 수 있습니다. 관리자 계정을 만든 이후에는 같은 관리자 이메일을 입력하세요. Gmail에는 일반 비밀번호 대신 <a href="https://support.google.com/accounts/answer/185833" target="_blank" rel="noopener noreferrer">앱 비밀번호</a>를 사용합니다.</p>
+            <form id="account-bootstrap-form" class="account-form" autocomplete="off">
+              <div class="account-field"><label for="bootstrap-owner-key">기존 소유자 접근 키</label><input id="bootstrap-owner-key" name="owner-key" type="password" autocomplete="off" spellcheck="false" minlength="64" maxlength="64" required></div>
+              <div class="account-field"><label for="bootstrap-owner-email">관리자 이메일</label><input id="bootstrap-owner-email" name="owner-email" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="254" required><span class="account-hint">이 주소로 인증해 가입하는 관리자에게 기존 실험이 연결됩니다.</span></div>
+              <div class="account-field"><label for="bootstrap-gmail-username">발송용 Gmail 주소</label><input id="bootstrap-gmail-username" name="smtp-username" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="254" required></div>
+              <div class="account-field"><label for="bootstrap-gmail-password">Gmail 앱 비밀번호</label><input id="bootstrap-gmail-password" name="smtp-password" type="password" autocomplete="off" spellcheck="false" minlength="16" maxlength="256" required></div>
+              <button class="button secondary" type="submit">설정 저장</button>
+            </form>
+          </details>
+        </div>
+      </section>
+
+      <section id="account-settings" class="card account-settings" aria-labelledby="account-settings-heading" hidden>
+        <div class="section-row"><div><span class="eyebrow">ACCOUNT SECURITY</span><h2 id="account-settings-heading">계정 보안</h2></div><button id="account-settings-close" class="text-button" type="button">닫기</button></div>
+        <p id="account-identity" class="account-identity"></p><p id="account-mfa-state" class="account-hint"></p>
+        <p id="account-settings-message" class="account-message" role="status" aria-live="polite"></p>
+        <form id="account-mfa-request-form" class="account-form"><div class="account-field"><label for="mfa-password">현재 비밀번호</label><input id="mfa-password" name="password" type="password" autocomplete="current-password" required></div><button id="account-mfa-request-button" class="button secondary" type="submit">이메일 이중 인증 켜기</button></form>
+        <form id="account-mfa-confirm-form" class="account-form" hidden><div class="account-field"><label for="mfa-code">이메일 인증번호</label><input id="mfa-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required></div><div class="account-actions"><button class="button primary" type="submit">인증하고 설정 변경</button><button id="account-mfa-cancel" class="button secondary" type="button">취소</button></div></form>
       </section>
 
       <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
@@ -66,7 +122,7 @@
 
       <section id="results-view" class="view" aria-labelledby="results-heading" hidden><div class="page-heading"><div><span class="eyebrow">RESULT EXPLORER</span><h1 id="results-heading">계산의 다음은, 이해.</h1><p>실제 계산 결과와 수렴 기준, 저장한 근거를 함께 살펴보세요.</p></div><button id="refresh-result" class="button secondary" disabled>결과 새로고침</button></div><div id="result-empty" class="empty-state card"><span class="empty-symbol" aria-hidden="true">⌁</span><h2>확인할 실행을 선택하세요.</h2><p>실험을 실행하거나 실행 기록에서 결과를 열 수 있어요.</p><button class="button secondary" data-tab="runs">실행 기록 열기</button></div>
         <div id="result-content" hidden>
-          <section class="card execution-card"><div class="section-row"><div><span class="eyebrow">EXECUTION</span><h2 id="active-run-title">실행 상태</h2></div><div class="run-actions"><button id="cancel-run" class="button danger small" disabled>실행 취소</button><button id="replay-run" class="button secondary small" disabled>같은 입력으로 재실행</button></div></div><div id="run-identity" class="run-identity"></div><div id="result-axes" class="result-axes"></div><div class="progress-header"><span id="progress-label">단계 확인 중</span><span id="active-step-label"></span></div><progress id="run-progress" value="0" max="1" aria-label="처리한 실험 단계"></progress><div id="run-diagnostics" class="run-diagnostics"></div></section>
+          <section class="card execution-card"><div class="section-row"><div><span class="eyebrow">EXECUTION</span><h2 id="active-run-title">실행 상태</h2></div><div class="run-actions"><button id="cancel-run" class="button danger small" disabled>실행 취소</button><button id="replay-run" class="button secondary small" title="저장된 실행과 같은 코드·모형·환경이 필요합니다." disabled>같은 환경 재실행</button><button id="current-run" class="button secondary small" title="저장한 입력을 유지하고 현재 계산 버전으로 새 실행을 만듭니다." disabled>현재 버전으로 새 실행</button></div></div><div id="run-identity" class="run-identity"></div><div id="result-axes" class="result-axes"></div><div class="progress-header"><span id="progress-label">단계 확인 중</span><span id="active-step-label"></span></div><progress id="run-progress" value="0" max="1" aria-label="처리한 실험 단계"></progress><div id="run-diagnostics" class="run-diagnostics"></div></section>
           <section id="numerical-content" hidden><div class="result-step-toolbar"><label for="step-select">계산 단계 <select id="step-select"></select></label><span id="step-outcome" class="badge neutral"></span></div><div id="result-metrics" class="metric-grid"></div><div id="result-visualization" class="card visualization-card"></div><div id="result-tables" class="card data-card"></div></section>
           <div id="result-unavailable" class="empty-state card" hidden><h2>아직 계산 결과가 없습니다.</h2><p id="result-unavailable-text">실행이 끝나면 검증된 결과를 이곳에서 확인할 수 있어요.</p></div>
           <section class="card artifact-card"><div class="section-row"><div><h2>결과와 근거 다운로드</h2><p class="muted">원본 bytes와 SHA-256이 기록된 산출물입니다.</p></div><button id="download-result" class="button secondary small" disabled>전체 결과 JSON</button></div><div id="artifact-list" class="artifact-list"></div></section>

@@ -12,6 +12,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 import sqlite3
 import time
 import uuid
@@ -19,6 +20,36 @@ import uuid
 from .hashing import canonical_bytes
 
 TERMINAL = frozenset({"SUCCEEDED", "FAILED", "CANCELLED"})
+
+# Public, email-verified accounts share one small host. The legacy owner and
+# explicitly configured Access principals retain their existing resource policy.
+_PUBLIC_ACCOUNT = re.compile(r"account-[0-9a-f]{32}\Z")
+_PUBLIC_SQL = "(length(owner)=40 AND substr(owner,1,8)='account-' AND substr(owner,9) NOT GLOB '*[^0-9a-f]*')"
+_PUBLIC_RUN_SQL = _PUBLIC_SQL.replace("owner", "r.owner")
+ACCOUNT_EXPERIMENT_LIMIT = 100
+ACCOUNT_REVISION_LIMIT = 500
+ACCOUNT_RUNS_PER_DAY = 20
+ACCOUNT_ACTIVE_RUN_LIMIT = 1
+ACCOUNT_ARTIFACT_BYTES = 256 * 1024**2
+PUBLIC_ACTIVE_RUN_LIMIT = 10
+PUBLIC_ARTIFACT_BYTES = 2 * 1024**3
+PUBLIC_RECORD_LIMIT = 10_000
+RUN_ARTIFACT_RESERVATION_BYTES = 32 * 1024**2
+
+
+def public_account_limits() -> dict:
+    """Admission limits, distinct from the per-run scientific resource profile."""
+    return {"owner_format": "account-<32 lowercase hexadecimal characters>",
+            "experiments": ACCOUNT_EXPERIMENT_LIMIT, "revisions": ACCOUNT_REVISION_LIMIT,
+            "new_runs_per_rolling_24_hours": ACCOUNT_RUNS_PER_DAY,
+            "active_runs": ACCOUNT_ACTIVE_RUN_LIMIT, "artifact_bytes": ACCOUNT_ARTIFACT_BYTES,
+            "shared_active_runs": PUBLIC_ACTIVE_RUN_LIMIT,
+            "shared_artifact_bytes": PUBLIC_ARTIFACT_BYTES, "shared_scientific_records": PUBLIC_RECORD_LIMIT,
+            "artifact_reservation_bytes_per_active_run": RUN_ARTIFACT_RESERVATION_BYTES}
+
+
+def _public_account(owner: str) -> bool:
+    return isinstance(owner, str) and _PUBLIC_ACCOUNT.fullmatch(owner) is not None
 
 
 class ServiceError(ValueError):
@@ -144,9 +175,70 @@ class JobStore:
             raise ServiceError(404, "NOT_FOUND", "The requested record does not exist")
         return row
 
+    @staticmethod
+    def _quota(resource: str, limit: int, requested: int) -> None:
+        if requested > limit:
+            raise ServiceError(429, "RESOURCE_LIMIT", "The public account resource limit has been reached",
+                               {"resource": resource, "limit": limit, "requested": requested})
+
+    def _public_record_admission(self, db, owner: str, table: str) -> None:
+        """Called only under the same write transaction as the proposed insert."""
+        if not _public_account(owner):
+            return
+        if table not in {"experiments", "revisions", "runs"}:
+            raise ValueError("Unknown scientific record quota")
+        per_account = {"experiments": ACCOUNT_EXPERIMENT_LIMIT, "revisions": ACCOUNT_REVISION_LIMIT}
+        if table in per_account:
+            count = db.execute("SELECT count(*) FROM " + table + " WHERE owner=?", (owner,)).fetchone()[0]
+            self._quota(table, per_account[table], count + 1)
+        total = sum(db.execute("SELECT count(*) FROM " + name + " WHERE " + _PUBLIC_SQL).fetchone()[0]
+                    for name in ("experiments", "revisions", "runs"))
+        self._quota("shared_scientific_records", PUBLIC_RECORD_LIMIT, total + 1)
+
+    def _public_run_admission(self, db, owner: str, now: float) -> None:
+        if not _public_account(owner):
+            return
+        self._public_record_admission(db, owner, "runs")
+        daily = db.execute("SELECT count(*) FROM runs WHERE owner=? AND created_at>?",
+                           (owner, now - 86400)).fetchone()[0]
+        self._quota("new_runs_per_rolling_24_hours", ACCOUNT_RUNS_PER_DAY, daily + 1)
+        active = db.execute("SELECT count(*) FROM runs WHERE owner=? AND status IN ('QUEUED','RUNNING','CANCEL_REQUESTED')",
+                            (owner,)).fetchone()[0]
+        self._quota("active_runs", ACCOUNT_ACTIVE_RUN_LIMIT, active + 1)
+        shared_active = db.execute("SELECT count(*) FROM runs WHERE " + _PUBLIC_SQL
+            + " AND status IN ('QUEUED','RUNNING','CANCEL_REQUESTED')").fetchone()[0]
+        self._quota("shared_active_runs", PUBLIC_ACTIVE_RUN_LIMIT, shared_active + 1)
+        used = db.execute("SELECT coalesce(sum(length(a.data)),0) FROM artifacts a JOIN runs r ON r.run_id=a.run_id WHERE r.owner=?",
+                          (owner,)).fetchone()[0]
+        shared_used = db.execute("SELECT coalesce(sum(length(a.data)),0) FROM artifacts a JOIN runs r ON r.run_id=a.run_id WHERE "
+                                 + _PUBLIC_RUN_SQL).fetchone()[0]
+        self._quota("artifact_bytes", ACCOUNT_ARTIFACT_BYTES, used + (active + 1) * RUN_ARTIFACT_RESERVATION_BYTES)
+        self._quota("shared_artifact_bytes", PUBLIC_ARTIFACT_BYTES,
+                    shared_used + (shared_active + 1) * RUN_ARTIFACT_RESERVATION_BYTES)
+
+    def _public_artifact_publication(self, db, owner: str, added_bytes: int) -> None:
+        if not _public_account(owner):
+            return
+        # A trusted worker still cannot publish beyond its admitted reservation.
+        # Nothing is truncated, and all checks precede the result/BLOB writes.
+        self._quota("run_artifact_bytes", RUN_ARTIFACT_RESERVATION_BYTES, added_bytes)
+        active = db.execute("SELECT count(*) FROM runs WHERE owner=? AND status IN ('QUEUED','RUNNING','CANCEL_REQUESTED')",
+                            (owner,)).fetchone()[0]
+        shared_active = db.execute("SELECT count(*) FROM runs WHERE " + _PUBLIC_SQL
+            + " AND status IN ('QUEUED','RUNNING','CANCEL_REQUESTED')").fetchone()[0]
+        used = db.execute("SELECT coalesce(sum(length(a.data)),0) FROM artifacts a JOIN runs r ON r.run_id=a.run_id WHERE r.owner=?",
+                          (owner,)).fetchone()[0]
+        shared_used = db.execute("SELECT coalesce(sum(length(a.data)),0) FROM artifacts a JOIN runs r ON r.run_id=a.run_id WHERE "
+                                 + _PUBLIC_RUN_SQL).fetchone()[0]
+        self._quota("artifact_bytes", ACCOUNT_ARTIFACT_BYTES,
+                    used + added_bytes + (active - 1) * RUN_ARTIFACT_RESERVATION_BYTES)
+        self._quota("shared_artifact_bytes", PUBLIC_ARTIFACT_BYTES,
+                    shared_used + added_bytes + (shared_active - 1) * RUN_ARTIFACT_RESERVATION_BYTES)
+
     def create_experiment(self, owner: str, title: str) -> dict:
         ident, now = str(uuid.uuid4()), self.clock()
         with self._transaction() as db:
+            self._public_record_admission(db, owner, "experiments")
             db.execute("INSERT INTO experiments(experiment_id,owner,title,created_at) VALUES(?,?,?,?)",
                        (ident, owner, title, now))
         return {"experiment_id": ident, "title": title, "created_at": _date(now), "revision_ids": []}
@@ -176,6 +268,7 @@ class JobStore:
         encoded = _json(envelope)
         with self._transaction() as db:
             self._owned(db, "experiments", "experiment_id", owner, experiment_id)
+            self._public_record_admission(db, owner, "revisions")
             db.execute("INSERT INTO revisions VALUES(?,?,?,?)", (envelope["revision_id"], experiment_id, owner, encoded))
         return json.loads(encoded)
 
@@ -230,6 +323,7 @@ class JobStore:
             if previous:
                 db.execute("DELETE FROM idempotency WHERE owner=? AND endpoint=? AND key=?", (owner, endpoint, idempotency_key))
             self._expire_queue(db, now)
+            self._public_run_admission(db, owner, now)
             count = db.execute("SELECT count(*) FROM runs WHERE owner=? AND status='QUEUED'", (owner,)).fetchone()[0]
             if count >= self.max_queued:
                 raise ServiceError(429, "RESOURCE_LIMIT", "The owner queue is full", {"limit": self.max_queued, "requested": count+1})
@@ -399,6 +493,7 @@ class JobStore:
                 raise ServiceError(409, "STATE_CONFLICT", "Cancellation was not committed before the result")
             if row["status"] != "RUNNING" and status != "CANCELLED":
                 raise ServiceError(409, "STATE_CONFLICT", "Only a running job may publish a result")
+            self._public_artifact_publication(db, row["owner"], sum(len(artifact[3]) for artifact in artifacts))
             progress = json.loads(row["progress"])
             progress.update(completed_steps=max(progress["completed_steps"], sum(s["outcome"] != "CANCELLED" for s in result.get("steps", []))), active_step=None, active_branch=None)
             db.execute("UPDATE runs SET status=?,updated_at=?,report=?,progress=?,diagnostics=? WHERE run_id=?",

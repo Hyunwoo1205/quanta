@@ -1,5 +1,7 @@
 # 외부 로그인과 운영용 HTTP
 
+앱 0.12.0은 명시적으로 선택한 직접 HTTPS 경로에 [서버 계정·Gmail 인증](account-login.md)을 추가합니다. 이 문서의 Cloudflare Access 어댑터는 그대로 지원하며, 현재 OCI에 선택한 인증과 실제 확인 범위는 WORKPLAN을 따릅니다. 계정 데이터는 기존 과학 기록과 별도 저장하고 최초 소유자만 기존 `local` 기록에 연결합니다.
+
 2026-11-06 · 패키지 0.11.0 · 입력 계약 0.2.0
 
 Cloudflare Access로 본인 한 명만 인증한 뒤 named Tunnel을 통해 OCI의 루프백 ASGI 서버에 연결하는 기본 운영 어댑터입니다. 화면·API·계산·SQLite는 같은 OCI 호스트에서 실행합니다. 개발용 `quanta serve`의 메모리 bearer 인증은 계속 사용할 수 있습니다. Cloudflare에 등록하지 않은 도메인을 사용할 때는 [직접 HTTPS와 소유자 접속키](direct-https.md)를 별도로 선택합니다. 아래 Access 설정이 없다고 다른 인증으로 자동 전환하지 않습니다.

@@ -57,7 +57,7 @@ async def running(app):
 
 def application(tmp_path):
     return create_app(ExecutionService(tmp_path / "service"), OwnerTokenConfig(ORIGIN, TOKEN),
-                      worker=RecordingWorker())
+                      worker=RecordingWorker(), account_store=False)
 
 
 async def request(app, path="/v1/experiments", *, method="GET", raw=b"", authorization=AUTHORIZATION,

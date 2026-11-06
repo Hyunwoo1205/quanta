@@ -1,0 +1,81 @@
+{
+  "verification_kind": "server_accounts_gmail_implementation",
+  "app_version": "0.12.0",
+  "scientific_contract_version": "0.2.0",
+  "development_base": "2ca193c89ff14a09b9cc6f6b33f283e416e2a09b",
+  "deployed_app_source_before_upgrade": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "user_requirements": {
+    "login": "username_password",
+    "registration": "any_email_after_verification",
+    "optional_additional_login_verification": "email_code",
+    "delivery_provider": "existing_gmail",
+    "priority": "authentication_before_3d_visualization"
+  },
+  "local_verification": {
+    "python": "3.12.14",
+    "architecture": "x86_64",
+    "dependency_lock_enforced": true,
+    "dependency_count": 27,
+    "pip_check": "passed",
+    "environment_validation": "passed_with_single_thread_environment",
+    "full_suite": {
+      "passed": 1634,
+      "subtests_passed": 1468,
+      "seconds": 333.4
+    },
+    "controller_after_independent_review": {
+      "passed": 49
+    },
+    "node": {
+      "version": "24.22.1",
+      "passed": 48
+    },
+    "real_cookie_to_numerical_worker_test": {
+      "passed": true,
+      "email_fixture": true,
+      "public_tls_used": false,
+      "reference_energy_j": 4e-21,
+      "reference_force_component_n": 4e-11,
+      "artifact_hash_verified": true
+    },
+    "earlier_full_suite": {
+      "passed": 1578,
+      "failed": 55,
+      "subtests_passed": 1468,
+      "seconds": 220.08,
+      "interpretation": "Required numerical thread environment was omitted; guards correctly refused execution. One account bootstrap expectation was also stale. Environment and expectation were corrected without weakening scientific criteria."
+    }
+  },
+  "independent_review": {
+    "account_privilege_mfa_cookie_and_mail_boundaries": "no_remaining_concrete_blocker_in_reviewed_scope",
+    "fixed_unknown_username_rate_storage_growth": true,
+    "controller_blockers_corrected": [
+      "atomic_private_journal_publication_and_interrupted_link_window",
+      "preserve_operator_configuration_changes_during_stop",
+      "pin_legacy_builder_only_for_resource_bounded_build"
+    ],
+    "fixed_complete_marker_fsync_failure_interpretation": true
+  },
+  "compatibility": {
+    "scientific_model_constants_numerics_or_contract_changed": false,
+    "existing_local_records_retained_by_owner_mapping": true,
+    "public_users_separate_owner_ids": true,
+    "existing_bearer_api_kept_for_operations_and_private_setup": true,
+    "older_strict_replay_requires_matching_implementation": true,
+    "explicit_current_version_execution_is_separate": true,
+    "auth_data_in_original_two_file_sqlite_backup": false,
+    "extra_scheduled_external_backup_required": false,
+    "production_credentials_committed": false
+  },
+  "remote_ci": {
+    "status": "pending"
+  },
+  "deployment": {
+    "status": "not_yet_performed",
+    "actual_gmail_smtp_authentication_verified": false,
+    "actual_email_delivery_verified": false,
+    "actual_user_registration_verified": false,
+    "actual_user_mfa_login_verified": false
+  },
+  "physical_validation_status": "unvalidated"
+}

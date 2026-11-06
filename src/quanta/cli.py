@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
     serve = sub.add_parser("serve", help="Start the authenticated loopback API and one durable numerical worker.")
     serve.add_argument("--store", required=True, help="Private local directory for SQLite service records.")
     serve.add_argument("--port", type=int, default=8765)
-    production = sub.add_parser("serve-production", help="Run one loopback ASGI process behind configured Access and Tunnel.")
+    production = sub.add_parser("serve-production", help="Run one loopback ASGI process behind a configured authenticated HTTPS origin.")
     production.add_argument("--store", required=True, help="Private persistent directory for SQLite service records.")
     production.add_argument("--port", type=int, default=8765)
     backup = sub.add_parser("backup-store", help="Create a checked SQLite snapshot in a new directory.")

@@ -11,7 +11,7 @@ import uuid
 
 from . import __version__
 from .hashing import canonical_bytes
-from .job_store import JobStore, ServiceError
+from .job_store import JobStore, ServiceError, public_account_limits
 from .parsing import ensure_json_value
 from .planning import plan_experiment
 from .registry import ContractRegistry
@@ -95,12 +95,13 @@ class ExecutionService:
         if registry.validate_integrity():
             raise ServiceError(409, "REGISTRY_SNAPSHOT_UNAVAILABLE", "The bundled registry failed integrity verification")
         return {"service_version": "0.1.0", "package_version": __version__, "contract_version": "0.2.0",
-            "scope": "single_host_single_owner_prototype", "physical_validation_status": "unvalidated",
+            "scope": "single_host_owner_scoped_service", "physical_validation_status": "unvalidated",
             "implemented_operations": {"quanta.pair_static@0.1.0": ["energy_forces", "relax"],
                                        "quanta.quantum_stationary@0.1.0": ["eigenstates"]},
             "registry": deepcopy(registry.data), "resource_policy": deepcopy(registry.resource_policy),
             "execution": {"workers": 1, "threads_per_worker": 1, "idempotency_seconds": 86400,
-                          "checkpoint_resume": False, "authentication": "server_configured_bearer_principal"}}
+                          "checkpoint_resume": False, "authentication": "server_configured_bearer_principal",
+                          "local_account_limits": public_account_limits()}}
 
     def request(self, owner: str, method: str, path: str, body: object = None,
                 idempotency_key: str | None = None) -> tuple[int, dict | bytes]:

@@ -2,10 +2,48 @@
 
 export const terminalStatuses = new Set(["SUCCEEDED", "FAILED", "CANCELLED"]);
 
+/** Strict replay and a new execution on the current implementation are distinct actions. */
+export function runExecutionRequest(run, mode) {
+  const identifier = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  if (!run || !terminalStatuses.has(run.execution_status)
+      || typeof run.run_id !== "string" || !identifier.test(run.run_id)
+      || typeof run.revision_id !== "string" || !identifier.test(run.revision_id)) {
+    throw new TypeError("완료된 실행과 저장한 입력 버전을 먼저 선택하세요.");
+  }
+  if (mode === "replay") return { path: "/v1/runs/" + run.run_id + "/replay", body: {} };
+  if (mode === "current") return { path: "/v1/runs", body: { revision_id: run.revision_id } };
+  throw new TypeError("실행 방식을 확인하세요.");
+}
+
+export function replayCompatibilityMessage(error) {
+  return error?.status === 409 && error?.data?.errors?.some(item => item.code === "REGISTRY_SNAPSHOT_UNAVAILABLE")
+    ? "저장된 실행과 현재 버전이 다릅니다. 현재 버전으로 새 실행할 수 있습니다." : null;
+}
+
 /** Only the fixed same-origin Access navigation routes are accepted. */
 export function authConfiguration(value) {
   if (value?.mode === "bearer") return { mode: "bearer", authenticated: false,
     ...(value.authentication === "owner_token" ? { authentication: "owner_token" } : {}) };
+  if (value?.mode === "account") {
+    if (["authenticated", "configured", "bootstrap_required", "mail_configured"].some(key => typeof value[key] !== "boolean")
+        || value.registration !== "open") throw new TypeError("계정 연결 방식을 확인할 수 없습니다.");
+    let principal = null;
+    let csrfToken = null;
+    if (value.authenticated) {
+      const account = value.principal;
+      if (!account || ["id", "owner", "username", "email"].some(key => typeof account[key] !== "string"
+          || !account[key] || account[key].length > 320 || /[\u0000-\u001f\u007f]/.test(account[key]))
+          || typeof account.mfa_enabled !== "boolean" || typeof account.is_admin !== "boolean"
+          || typeof value.csrf_token !== "string" || !/^[0-9a-f]{64}$/.test(value.csrf_token)) {
+        throw new TypeError("로그인 정보를 확인할 수 없습니다.");
+      }
+      principal = Object.fromEntries(["id", "owner", "username", "email", "mfa_enabled", "is_admin"].map(key => [key, account[key]]));
+      csrfToken = value.csrf_token;
+    }
+    return { mode: "account", authenticated: value.authenticated, configured: value.configured,
+      bootstrap_required: value.bootstrap_required, mail_configured: value.mail_configured,
+      registration: "open", principal, csrf_token: csrfToken };
+  }
   if (value?.mode !== "access" || typeof value.authenticated !== "boolean"
       || value.login_url !== "/" || value.logout_url !== "/cdn-cgi/access/logout") {
     throw new TypeError("연결 방식을 확인할 수 없습니다.");
@@ -20,12 +58,39 @@ export function authConfiguration(value) {
 }
 
 /** Session cookies are sent only to this origin; bearer tokens stay in memory. */
-export function authRequestOptions(mode, token, { json = true } = {}) {
-  if (mode !== "bearer" && mode !== "access") throw new TypeError("연결 방식을 먼저 확인하세요.");
+export function authRequestOptions(mode, token, { json = true, csrfToken = null, method = "GET" } = {}) {
+  if (!["bearer", "access", "account"].includes(mode)) throw new TypeError("연결 방식을 먼저 확인하세요.");
   const headers = json ? { "Content-Type": "application/json" } : {};
   if (mode === "bearer") headers.Authorization = "Bearer " + token;
-  return { headers, credentials: mode === "access" ? "same-origin" : "omit",
+  if (mode === "account" && !["GET", "HEAD"].includes(method.toUpperCase())) {
+    if (typeof csrfToken !== "string" || !/^[0-9a-f]{64}$/.test(csrfToken)) throw new TypeError("로그인 상태를 다시 확인하세요.");
+    headers["X-Quanta-CSRF"] = csrfToken;
+  }
+  return { headers, credentials: mode === "access" || mode === "account" ? "same-origin" : "omit",
     redirect: "error", cache: "no-store", referrerPolicy: "no-referrer" };
+}
+
+/** Authentication forms use fixed same-origin JSON routes, never URL credentials. */
+export function accountRequestOptions(csrfToken = null, ownerKey = null) {
+  const headers = { "Content-Type": "application/json", "X-Quanta-Auth": "1" };
+  if (csrfToken !== null) {
+    if (typeof csrfToken !== "string" || !/^[0-9a-f]{64}$/.test(csrfToken)) throw new TypeError("로그인 상태를 다시 확인하세요.");
+    headers["X-Quanta-CSRF"] = csrfToken;
+  }
+  if (ownerKey !== null) {
+    if (typeof ownerKey !== "string" || !/^[0-9a-f]{64}$/.test(ownerKey)) throw new TypeError("소유자 접근 키를 확인하세요.");
+    headers.Authorization = "Bearer " + ownerKey;
+  }
+  return { headers, credentials: ownerKey === null ? "same-origin" : "omit", redirect: "error",
+    cache: "no-store", referrerPolicy: "no-referrer" };
+}
+
+/** A pending email challenge is never an authenticated account/session. */
+export function accountChallenge(value) {
+  if (!value || value.authenticated === true || typeof value.challenge_id !== "string"
+      || !/^[0-9a-f]{64}$/.test(value.challenge_id) || !Number.isInteger(value.expires_in)
+      || value.expires_in < 1 || value.expires_in > 600) throw new TypeError("인증 요청을 다시 시작해주세요.");
+  return { challenge_id: value.challenge_id, expires_in: value.expires_in };
 }
 
 export function isJSONResponse(contentType) {
@@ -35,8 +100,8 @@ export function isJSONResponse(contentType) {
 
 /** A failed fetch alone cannot distinguish a redirect rejection from offline. */
 export function accessResponseNeedsLogin(mode, response) {
-  if (mode !== "access") return false;
-  return response?.status === 401 || response?.status === 403 || response?.redirected === true
+  if (mode !== "access" && mode !== "account") return false;
+  return response?.status === 401 || (mode === "access" && response?.status === 403) || response?.redirected === true
     || response?.type === "opaqueredirect"
     || /^text\/html(?:\s*;|\s*$)/i.test(response?.contentType?.trim() ?? "");
 }
