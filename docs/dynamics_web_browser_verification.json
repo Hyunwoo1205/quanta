@@ -1,0 +1,143 @@
+{
+  "verification_kind": "actual_browser_dynamics_ui",
+  "app_source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+  "app_version": "0.16.0",
+  "tested_at_utc": "2026-11-06T12:13:24.187792+00:00",
+  "scope": "isolated synthetic preview, actual HTTP SQLite and numerical child; default orthographic rendering",
+  "synthetic_authentication_adapter": true,
+  "production_user_authentication_tested": false,
+  "mobile_device_tested": false,
+  "touch_events_tested": false,
+  "physical_validation_status": "unvalidated",
+  "cases": {
+    "web_input_save_run_reopen": {
+      "passed": true,
+      "contract_version": "0.4.0",
+      "legacy_default_preserved": "0.2.0",
+      "source_bytes_sha_payload_checked_before_display": true
+    },
+    "sparse_free_frames": {
+      "passed": true,
+      "steps": [
+        0,
+        3,
+        6,
+        8
+      ],
+      "times_s": [
+        0,
+        0.375,
+        0.75,
+        1
+      ],
+      "particle": "p2",
+      "exact_positions_m": [
+        [
+          1,
+          -0.25,
+          0.75
+        ],
+        [
+          1.046875,
+          -0.1328125,
+          0.73828125
+        ],
+        [
+          1.09375,
+          -0.015625,
+          0.7265625
+        ],
+        [
+          1.125,
+          0.0625,
+          0.71875
+        ]
+      ],
+      "selected_mass_velocities_forces_and_graph_cursor_match": true
+    },
+    "physical_time_playback": {
+      "passed": true,
+      "screen_seconds_at_2x": 4,
+      "last_time_s": 1,
+      "stops_at_end": true
+    },
+    "refinement_download_parity": {
+      "passed": true,
+      "frames_per_leg": [
+        101,
+        101,
+        101
+      ],
+      "explicit_selected_factor": 4,
+      "last_step": 4000,
+      "last_time_s": 1,
+      "all_selected_particle_fields_equal_downloaded_result": true
+    },
+    "partial_failure": {
+      "passed": true,
+      "execution_status": "FAILED",
+      "failure_code": "EXPRESSION_DOMAIN",
+      "selected_leg_stop_reason": "domain_error",
+      "last_step": 1,
+      "last_time_s": 0.5,
+      "successful_final_state_not_implied": true
+    },
+    "maximum_particles": {
+      "passed": true,
+      "particles": 128,
+      "selected_id": "p127",
+      "last_time_s": 0.25,
+      "exact_position_m": [
+        7.03125,
+        3,
+        3
+      ]
+    },
+    "narrow_layout": {
+      "passed": true,
+      "method": "desktop Chrome zoom, not physical mobile",
+      "css_widths": [
+        539,
+        337
+      ],
+      "document_scroll_width_at_337": 337,
+      "frame_navigation_works": true,
+      "browser_zoom_shortcuts_preserved": true
+    },
+    "raster_projection": {
+      "scope": "independent_rotation_matrix_vs_native_browser_raster_selected_ring",
+      "particle_id": "p127",
+      "time_s": 0.25,
+      "position_m": [
+        7.03125,
+        3,
+        3
+      ],
+      "expected_center_px": [
+        891.92285508951,
+        538.9659600370404
+      ],
+      "observed_circle_fit_center_px": [
+        891.4880541648031,
+        537.9670937733994
+      ],
+      "edge_pixels": 36,
+      "error_px": 1.089396923424244,
+      "tolerance_px": 1.5,
+      "passed": true,
+      "method": "Known orthographic rotation matrices and physical bounding sphere versus antialiased selected-ring pixels; circle least-squares fit; Chrome viewport origin from observed1023px window minus936px innerHeight. No production or physical-model claim."
+    }
+  },
+  "preview_image": {
+    "google_drive_file_id": "11ih2h0yI6SfqBhnmnMXhpuqWggImByYY",
+    "url": "https://drive.google.com/file/d/11ih2h0yI6SfqBhnmnMXhpuqWggImByYY/view?usp=drivesdk",
+    "size_bytes": 65874,
+    "sha256": "6111549e5c5853a896a09300ed878f032998179c80c4b90ba18d3d22b4defcd5",
+    "contains_production_data": false
+  },
+  "limitations": [
+    "Named synthetic browser cases only; not blanket completion of every D11 scenario.",
+    "Independent pixel comparison is one known camera/particle/frame, with1.5px raster tolerance.",
+    "Actual production desktop login/MFA and physical mobile/touch behavior were not retested in this preview."
+  ]
+}
