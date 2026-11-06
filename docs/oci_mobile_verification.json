@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "scope": "owner_mobile_functionality",
+  "reported_on": "2026-11-06",
+  "timezone": "Asia/Seoul",
+  "evidence_type": "user_attestation",
+  "user_report": "실제 모바일에서 모든 기능이 정상적으로 작동함을 확인",
+  "reported_result": "passed",
+  "agent_directly_observed": false,
+  "device_model": null,
+  "browser": null,
+  "individual_run_ids": null,
+  "application_version_basis": "0.11.0 existing deployment record; not independently re-observed on mobile",
+  "physical_validation_status": "unvalidated",
+  "limitations": [
+    "No device/browser or individual mobile run identifiers were supplied.",
+    "User report does not verify OS reboot, off-host backup, or whole-volume recovery."
+  ]
+}

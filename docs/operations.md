@@ -2,13 +2,27 @@
 
 2026-11-06 · 패키지 0.11.0 · 입력 계약 0.2.0
 
-화면·API·계산·DB를 OCI 한 대에서 운영하는 파일럿 구성입니다. 배포 파일은 `deploy/oci/`에 있습니다. 실제 인스턴스의 OS·접속·볼륨 UUID와 Access 설정은 현장에서 확인해야 합니다. 자동 시험의 로컬 파일시스템·컨테이너 검증을 OCI 재부팅·볼륨 복원·외부 로그인 합격으로 표시하지 않습니다.
+화면·API·계산·DB를 OCI 한 대에서 운영하는 파일럿 구성입니다. 배포 파일은 `deploy/oci/`에 있습니다. 현재 실제 배포는 부트 200 GB 단독 저장소, Caddy 직접 HTTPS, 명시적 owner-token 모드입니다. 아래 설치 명령은 최초 구성의 예시이며 이미 운영 중인 서버에 재실행하는 절차가 아닙니다.
 
-## 먼저 확인할 상태
+## 현재 확인된 상태와 다음 점검
 
-OCI 콘솔에서 부트 볼륨 200 GB 한 개·추가 블록 볼륨 없음 구성을 확인했고, GitHub 실행기에서 기존 PPK와 고정된 서버 지문으로 실제 로그인했습니다. [로그인 기록](oci_login_verification.json)과 [읽기 전용 점검](oci_host_inventory_verification.json)에서 Ubuntu 26.04·ARM64·논리 CPU 2개·메모리 11.65 GiB와 루트 파일시스템 192.69 GiB·여유 187.66 GiB를 확인했습니다. Docker CLI·Git·systemctl이 있고 Quanta 관련 unit은 비활성이며 `/srv/quanta`는 없습니다. Docker 엔진·sudo·파일시스템 UUID·기존 다른 작업과의 자원 공존·설치·재부팅은 아직 확인하지 않았습니다. 비밀키 내용을 채팅·저장소에 넣지 않습니다. 기존 디스크 포맷·데이터 삭제·새 유료 자원 생성은 이 배포 파일에 포함하지 않습니다.
+앱 소스 `1738107301ef873bfe5e01f930866c2a74e4ec3f`의 OCI ARM 설치·서버 내부 준비 상태·일관된 SQLite 백업과 같은 부트 안의 분리 복원·앱 자동 시작·일일 백업 timer 활성화, 공개 HTTPS, 실제 소유자 데스크톱 계산을 확인했습니다. 실제 모바일은 2026-11-06 사용자가 모든 기능의 정상 작동을 보고했습니다. 각 범위는 [작업 현황](../WORKPLAN.md), [실제 백업](oci_backup_verification.json), [데스크톱](oci_owner_browser_verification.json), [모바일 사용자 확인](oci_mobile_verification.json)을 기준으로 구분합니다.
 
-구성은 Linux ARM64 A1, systemd, Docker Engine, `findmnt`를 대상으로 합니다. 정확한 CPython 3.12.14·의존성 27개는 digest 고정 기반 이미지와 두 CPU별 기존 wheel 잠금을 사용합니다. 호스트 Python은 배포 wrapper의 표준 라이브러리만 실행합니다. 실제 OS에 맞는 Docker 설치와 데이터 볼륨 연결·fstab은 점검 후 수행합니다.
+실제 OS 재부팅, 서버 외부 사본, OCI 관리형 볼륨 백업·전체 볼륨 복원은 아직 완료 근거가 없습니다. 다음은 기존 서비스·활성 backup timer·다른 컨테이너를 유지하면서 운영 현황을 읽기 전용으로 점검하고 최신 백업·분리 복원과 복구 접근 경로를 준비하는 단계입니다. 초기 설치용 `verify-backup` operation은 inactive timer를 요구하므로 활성 timer 상태에서 그대로 반복하지 않습니다. 배포 앱 소스와 새로운 운영 코드 소스·CI를 따로 고정하여 검증 후 사용합니다.
+
+확인된 호스트는 Ubuntu 26.04·ARM64·논리 CPU 2개·명목 메모리 12 GB와 부트 볼륨 200 GB 한 개이며 추가 블록 볼륨은 없습니다. 기존 PPK·고정 호스트 지문과 GitHub Actions 경로를 유지합니다. 정확한 CPython 3.12.14·의존성 27개는 고정 이미지와 아키텍처별 wheel 잠금을 사용하고 호스트 Python은 운영 도구의 표준 라이브러리만 실행합니다. 비밀값·원본 DB·정제하지 않은 원격 출력은 공개 저장소와 로그에 넣지 않습니다.
+
+## 운영 중 복구 점검의 고정 작업
+
+`audit-recovery`는 설치·서비스·백업 일정·단일 작업자 잠금·DB 현황·다른 컨테이너 재시작 정책을 읽기 전용으로 수집합니다. 수집 성공과 재부팅 준비를 구분하고, 이 작업은 외부 백업이나 실제 재부팅 성공을 주장하지 않습니다.
+
+`prepare-recovery`는 활성 timer를 유지한 채 기존 `quanta-backup-boot.service`를 시작합니다. 새 스냅샷을 검증하고 운영 DB를 마운트하지 않는 별도 컨테이너/새 경로에 복원해 bytes를 대조한 뒤, root0600 `/etc/quanta/recovery-backup.json`에 복구 기준을 최초 저장합니다. 기존 기준 파일이 있으면 덮어쓰지 않고 거부합니다.
+
+`export-recovery`는 그 기준의 같은 부트·24시간 이내·DB 크기/해시를 확인하고 스냅샷의 DB와 manifest 두 파일만 암호화합니다. 서버 환경·접속키·SSH 키는 내보내지 않습니다. 고정 수신자 공개 인증서와 OpenSSL CMS AES-256-GCM/RSA-OAEP SHA256을 사용하며 개인키는 서버·실행기·공개 저장소에 공급하지 않습니다. 공개 Actions 산출물에는 암호화된 CMS만 허용합니다. 복호화·manifest/DB 검증과 비공개 외부 보관 확인까지 끝나기 전에는 off-host 복구 성공으로 기록하지 않습니다. 전송은 최대128MiB, DB는 암호화 여유를 뺀124MiB로 명시적으로 제한합니다.
+
+세 작업 모두 기존 4필드 요청·고정 앱 소스를 유지하고, 새 운영 코드는 별도 main 커밋/성공한 두 아키텍처 CI에서 checkout한 bytes만 실행합니다. SSH 비밀값은 두 검증이 성공한 뒤에만 공급합니다. 실제 OS 재부팅 operation과 실패 복구는 별도 준비해야 하며 자유 명령 요청으로 대체하지 않습니다. 새로운 수집/백업/내보내기를 실제 실행한 범위는 WORKPLAN과 정제한 검증 기록을 따릅니다.
+
+암호화 참고: [OpenSSL CMS](https://docs.openssl.org/3.5/man1/openssl-cms/). 복호화 환경은 알려진 CMS 보안 수정이 포함된 버전을 사용합니다([3.5.7 수정 기록](https://www.openssl-library.org/news/openssl-3.5-notes/index.html)).
 
 ## 데이터 배치와 컨테이너
 
@@ -27,7 +41,7 @@ sudo docker build --file Dockerfile.aarch64 --tag quanta:0.11.0 .
 sudo docker image inspect --format '{{.Id}}' quanta:0.11.0
 ```
 
-앱은 host network의 `127.0.0.1:8765`에서만 듣습니다. 이 고정 loopback listener에는 일반 포트 publish 대신 host network를 사용합니다. host의 cloudflared가 연결하며 OCI 방화벽에 앱 HTTP 포트를 공개하지 않습니다. 읽기 전용 이미지, private `/tmp` tmpfs, capabilities 제거, `no-new-privileges`, 2 CPU·2 GiB·PID 제한을 적용합니다. 전체 2 GiB 제한은 초기 구성값이며 A1 실측 후 조정할 수 있습니다. 계산 자식의 1,024 MiB·120초·단일 수치 스레드 정책은 별개로 유지합니다.
+앱은 host network의 `127.0.0.1:8765`에서만 듣습니다. 이 고정 loopback listener에는 일반 포트 publish 대신 host network를 사용합니다. 현재 배포에서는 host의 Caddy가 HTTPS를 전달하며 OCI 방화벽에 앱 HTTP 포트를 공개하지 않습니다. Cloudflare Tunnel은 대체 지원 구성입니다. 읽기 전용 이미지, private `/tmp` tmpfs, capabilities 제거, `no-new-privileges`, 2 CPU·2 GiB·PID 제한을 적용합니다. 전체 2 GiB 제한은 초기 구성값이며 A1 실측 후 조정할 수 있습니다. 계산 자식의 1,024 MiB·120초·단일 수치 스레드 정책은 별개로 유지합니다.
 
 ## 설정 설치와 시작
 
@@ -110,6 +124,6 @@ timer는 매일 UTC 03:00, 최대 5분 분산 지연으로 실행하며 꺼져 �
 
 `scripts/verify_operations.py`는 실제 계산·SQLite·백업·분리 복구·원본 artifact 비교와 재시작 복구를 측정합니다. 기존 A·SI·B·WF·S·W·P와 물리 검증 `unvalidated`를 유지합니다. 실제 OCI에서는 볼륨 미장착 시작 거부, OS 재부팅 후 단일 서비스 복구, 감독자·자식 종료, 백업·복구·조회·다운로드 시간과 외부 인증 브라우저를 별도로 확인해야 파일럿 완료입니다.
 
-구현 commit `07e26a2`의 [네이티브 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509)에서 ARM·x86 각각 Python 621개·Node 33개, 여덟 측정·설치 패키지 컨테이너와 비 root 읽기 전용 복구 검사를 통과했습니다. 원본 20개 파일·ZIP 해시·450개 코드 해시 참조와 로컬 설치 wheel 근거는 [운영 검증 기록](operations_verification.json)에 있습니다. 전체 실행 API 표시 지연과 실제 단계별 합격을 구분하며, 실제 OCI의 콘솔 구성과 Cloud Shell의 SSH 도달은 확인했지만, 인증된 서버 내부 작업·마운트·재부팅·외부 로그인은 아직 확인하지 않았습니다. 부트 단독 모드 보완은 별도의 [배포 검사](boot_storage_verification.json)에 기록하며 이전 네이티브 계산·컨테이너 근거와 구분합니다.
+구현 commit `07e26a2`의 [네이티브 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/41874725509)에서 ARM·x86 각각 Python 621개·Node 33개, 여덟 측정·설치 패키지 컨테이너와 비 root 읽기 전용 복구 검사를 통과했습니다. 원본 20개 파일·ZIP 해시·450개 코드 해시 참조와 로컬 설치 wheel 근거는 [운영 검증 기록](operations_verification.json)에 있습니다. 전체 실행 API 표시 지연과 실제 단계별 합격을 구분하며, 이 문장의 원래 확인 범위는 해당 0.10.0 CI 시점입니다. 이후 OCI 설치·같은 부트 내 백업 복원·HTTPS·실제 소유자 계산과 모바일 사용자 확인은 위 최신 근거로 갱신됐으며, OS 재부팅·전체 볼륨 복원은 여전히 별도 미확인 범위입니다. 부트 단독 모드 보완은 별도의 [배포 검사](boot_storage_verification.json)에 기록하며 이전 네이티브 계산·컨테이너 근거와 구분합니다.
 
 공식 참고: [SQLite online backup](https://www.sqlite.org/backup.html), [Python sqlite3 backup](https://docs.python.org/3.12/library/sqlite3.html#sqlite3.Connection.backup), [SQLite 검사](https://www.sqlite.org/pragma.html), [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html), [Docker bind mount](https://docs.docker.com/engine/storage/bind-mounts/), [Docker 재시작](https://docs.docker.com/engine/containers/start-containers-automatically/).
