@@ -63,6 +63,73 @@
         "full_fallback_cleanup_was_reported_failed": true,
         "exact_compare_failure_not_yet_diagnosed": true
       }
+    },
+    {
+      "control_source_commit": "e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f",
+      "control_ci": 42163707530,
+      "workflow_run": {
+        "id": 42164061718,
+        "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42164061718",
+        "head_sha": "3061539dcfb778d7dabf1ed1aff2a712d2c02afb",
+        "job_id": 127716265353,
+        "conclusion": "success"
+      },
+      "request": {
+        "schema_version": 1,
+        "operation": "reboot-recovery",
+        "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+        "request_id": "630225fa-f044-4e67-a97d-a82705d08442"
+      },
+      "result": {
+        "authentication_attempted": true,
+        "requested_operation": "reboot-recovery",
+        "result": {
+          "action": "reboot-recovery",
+          "admission_paused": true,
+          "application_stopped": true,
+          "artifacts": 767,
+          "audit_prerequisites_met": true,
+          "backup_baseline_verified": false,
+          "backup_policy_basis": "user_reported_oci_daily",
+          "backup_policy_console_verified": false,
+          "backup_timer_paused": true,
+          "baseline_schema_version": 2,
+          "boot_changed": false,
+          "cleanup_detail": "not_required",
+          "comparison_detail": "live_baseline_verified",
+          "database_preserved": false,
+          "events": 34,
+          "experiments": 8,
+          "failure_reason": "none",
+          "fallback_recovery_verified": false,
+          "idempotency": 11,
+          "new_calculation_verified": false,
+          "no_pending_runs": true,
+          "off_host_backup_verified_by_server": false,
+          "peer_containers": 1,
+          "peer_containers_preserved": false,
+          "prerequisite_basis": "host_checks_without_snapshot_or_off_host_requirement",
+          "private_baseline_saved": true,
+          "quiescent_live_baseline_verified": true,
+          "reboot_scheduled": true,
+          "revisions": 10,
+          "runs": 11,
+          "scope": "os_reboot_recovery",
+          "services_restored": false,
+          "settings_preserved": false,
+          "snapshot_semantics_matched": false,
+          "stage": "complete",
+          "status": "success",
+          "worker_exclusivity_verified": false
+        },
+        "scope": "ssh_fixed_recovery",
+        "status": "success"
+      },
+      "interpretation": {
+        "current_live_database_baseline_saved": true,
+        "reboot_scheduled": true,
+        "backup_not_created_or_refreshed_by_this_operation": true
+      }
     }
   ],
   "restored_service_readonly_audit": {
@@ -143,15 +210,225 @@
     }
   },
   "current_state": {
-    "os_reboot_verified": false,
-    "post_reboot_compute_verified": false,
+    "os_reboot_verified": true,
+    "application_database_and_artifact_rows_preserved": true,
     "live_service_restored_and_ready": true,
-    "fresh_snapshot_required": true
+    "worker_exclusivity_verified": true,
+    "existing_peer_running": true,
+    "peer_configuration_preservation_verified": false,
+    "post_reboot_compute_verified": false
   },
   "notes": [
     "The comparison stopped before publishing a reboot baseline or scheduling an OS reboot.",
     "Later records are present in the live store; this confirms that the previous external snapshot is older, but the exact failure-time difference still needs the read-only diagnostic.",
     "The failed attempt remains evidence and must not be rewritten as a successful reboot.",
-    "No repeated reboot request has been made."
-  ]
+    "No repeated reboot request has been made.",
+    "The revised reboot used the quiescent current live database, not equality with the older SQLite copy. OCI daily backups are user-reported; no extra refresh/export was run.",
+    "Failed-stage count fields can remain zero because collection stops before populating those fields; the successful inventories and database preservation result establish the actual retained counts.",
+    "A new OS boot and application database preservation are verified; the peer aggregate configuration fingerprint is still under read-only diagnosis."
+  ],
+  "readonly_comparison": {
+    "workflow_run": {
+      "id": 42163932881,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42163932881",
+      "head_sha": "e475c32884920f6e7df28baaabee0336f7bf92f0",
+      "conclusion": "success"
+    },
+    "request": {
+      "schema_version": 1,
+      "operation": "compare-recovery",
+      "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "request_id": "b84fad0c-0ead-4066-b289-e5b2bf234edc"
+    },
+    "result": {
+      "authentication_attempted": true,
+      "requested_operation": "compare-recovery",
+      "result": {
+        "action": "compare-recovery",
+        "all_tables_match": false,
+        "app_active": true,
+        "artifacts_matches": false,
+        "backup_baseline_verified": true,
+        "backup_timer_active_enabled": true,
+        "boot_id_matches": true,
+        "events_matches": false,
+        "experiments_matches": false,
+        "failure_reason": "none",
+        "https_active": true,
+        "idempotency_matches": false,
+        "live_artifacts_rows": 767,
+        "live_checked": true,
+        "live_events_rows": 34,
+        "live_experiments_rows": 8,
+        "live_idempotency_rows": 11,
+        "live_no_pending_runs": true,
+        "live_nonterminal_runs": 0,
+        "live_revisions_rows": 10,
+        "live_runs_rows": 11,
+        "reboot_service_active": false,
+        "reboot_service_present": false,
+        "reboot_timer_active": false,
+        "reboot_timer_present": false,
+        "resume_service_active": false,
+        "resume_service_present": false,
+        "resume_timer_active": false,
+        "resume_timer_present": false,
+        "revisions_matches": false,
+        "runs_matches": false,
+        "schemas_match": true,
+        "scope": "recovery_comparison_diagnostic",
+        "server_modified": false,
+        "services_state_checked": true,
+        "settings_currently_readable": true,
+        "snapshot_artifacts_rows": 678,
+        "snapshot_checked": true,
+        "snapshot_events_rows": 31,
+        "snapshot_experiments_rows": 7,
+        "snapshot_idempotency_rows": 10,
+        "snapshot_no_pending_runs": true,
+        "snapshot_nonterminal_runs": 0,
+        "snapshot_revisions_rows": 7,
+        "snapshot_runs_rows": 10,
+        "source_verified": true,
+        "stage": "complete",
+        "status": "success",
+        "transient_state_checked": true
+      },
+      "scope": "ssh_fixed_recovery",
+      "status": "success"
+    }
+  },
+  "verification_attempts": [
+    {
+      "control_source_commit": "e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f",
+      "control_ci": 42163707530,
+      "workflow_run": {
+        "id": 42164202232,
+        "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42164202232",
+        "head_sha": "a1ddff2257f2645e1df257a2d79c5dfdcda660b5",
+        "job_id": 127716720842,
+        "conclusion": "failure"
+      },
+      "request": {
+        "schema_version": 1,
+        "operation": "verify-reboot",
+        "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+        "request_id": "0b2a7f3f-9d78-434e-804f-cbc29d689607"
+      },
+      "result": {
+        "authentication_attempted": true,
+        "requested_operation": "verify-reboot",
+        "result": {
+          "action": "verify-reboot",
+          "admission_paused": false,
+          "application_stopped": false,
+          "artifacts": 0,
+          "audit_prerequisites_met": true,
+          "backup_baseline_verified": false,
+          "backup_policy_basis": "user_reported_oci_daily",
+          "backup_policy_console_verified": false,
+          "backup_timer_paused": false,
+          "baseline_schema_version": 2,
+          "boot_changed": true,
+          "cleanup_detail": "not_required",
+          "comparison_detail": "not_checked",
+          "database_preserved": true,
+          "events": 0,
+          "experiments": 0,
+          "failure_reason": "peer_containers_changed",
+          "fallback_recovery_verified": false,
+          "idempotency": 0,
+          "new_calculation_verified": false,
+          "no_pending_runs": true,
+          "off_host_backup_verified_by_server": false,
+          "peer_containers": 0,
+          "peer_containers_preserved": false,
+          "prerequisite_basis": "host_checks_without_snapshot_or_off_host_requirement",
+          "private_baseline_saved": true,
+          "quiescent_live_baseline_verified": true,
+          "reboot_scheduled": false,
+          "revisions": 0,
+          "runs": 0,
+          "scope": "os_reboot_recovery",
+          "services_restored": true,
+          "settings_preserved": false,
+          "snapshot_semantics_matched": false,
+          "stage": "peers",
+          "status": "failed",
+          "worker_exclusivity_verified": true
+        },
+        "scope": "ssh_fixed_recovery",
+        "status": "remote_failed"
+      },
+      "interpretation": {
+        "actual_boot_changed": true,
+        "current_application_database_preserved_before_any_new_smoke_run": true,
+        "application_worker_and_services_restored": true,
+        "peer_configuration_fingerprint_difference_under_diagnosis": true
+      }
+    }
+  ],
+  "postboot_readonly_inventory": {
+    "workflow_run": {
+      "id": 42164922068,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42164922068",
+      "head_sha": "6dfcbf1f562bd9571045835abacab97c8b09a08d",
+      "job_id": 127719040463,
+      "conclusion": "success"
+    },
+    "request": {
+      "schema_version": 1,
+      "operation": "audit-recovery",
+      "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+      "request_id": "1d773076-5071-42d5-b28e-0a72e510922a"
+    },
+    "result": {
+      "authentication_attempted": true,
+      "requested_operation": "audit-recovery",
+      "result": {
+        "app_active": true,
+        "app_enabled": true,
+        "artifacts": 767,
+        "authenticated_ready": true,
+        "backup_services_idle": true,
+        "backup_snapshots": 3,
+        "backup_timer_active": true,
+        "backup_timer_enabled": true,
+        "boot_id_valid": true,
+        "database_checked": true,
+        "docker_active": true,
+        "docker_enabled": true,
+        "experiments": 8,
+        "failure_reason": "none",
+        "free_disk_mib": 191233,
+        "host_reboot_prerequisites_met": true,
+        "https_active": true,
+        "https_enabled": true,
+        "latest_backup_service_succeeded": false,
+        "latest_snapshot_age_seconds": 3979,
+        "latest_snapshot_present": true,
+        "no_pending_runs": true,
+        "nonterminal_runs": 0,
+        "off_host_backup_verified": false,
+        "peer_containers": 1,
+        "peer_restart_policies_safe": true,
+        "restartable_running_peers": 1,
+        "revisions": 10,
+        "running_peer_containers": 1,
+        "runs": 11,
+        "safe_to_reboot": false,
+        "scope": "recovery_audit",
+        "server_modified": false,
+        "single_app_container": true,
+        "source_verified": true,
+        "stage": "complete",
+        "status": "success",
+        "storage_verified": true,
+        "sufficient_disk_space": true,
+        "worker_exclusivity_verified": true
+      },
+      "scope": "ssh_fixed_recovery",
+      "status": "success"
+    }
+  }
 }

@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import base64
 import contextlib
+from copy import deepcopy
+import hashlib
 import http.server
 import importlib.util
 import io
@@ -124,6 +126,53 @@ def fake_root_identity(fail_enter=None):
             patch.object(operation.os, "seteuid", side_effect=set_uid), \
             patch.object(operation.os, "setegid", side_effect=set_gid):
         yield state, events
+
+
+def peer_configuration():
+    return {"config": {"Image": "synthetic-peer:latest", "Env": ["SYNTHETIC_PRIVATE_ENV=never-public"]},
+            "host_config": {"RestartPolicy": {"Name": "always", "MaximumRetryCount": 0}, "Memory": 1024,
+                "Links": ["/synthetic-left:/peer/left", "/synthetic-right:/peer/right"],
+                "Ulimits": [{"Name": "nofile", "Soft": 1024, "Hard": 2048}, {"Name": "nproc", "Soft": 64, "Hard": 128}]},
+            "mounts": [{"Destination": "/synthetic/a", "Source": "/private/synthetic/a", "RW": True},
+                       {"Destination": "/synthetic/b", "Source": "/private/synthetic/b", "RW": False}]}
+
+
+def inventory_for(configuration):
+    identity = "c" * 64
+    states = {identity: {"name": "/synthetic-peer", "image": "sha256:" + "d" * 64, "running": True,
+                        "restart": {"Name": "always", "MaximumRetryCount": 0},
+                        "configuration_sha256": operation._configuration_digest(configuration)}}
+    return states, {identity: configuration}, True, 0
+
+
+@contextlib.contextmanager
+def fake_peer_diagnosis(configurations=None, *, inventories=None, reference_configuration=None):
+    reference_configuration = peer_configuration() if reference_configuration is None else reference_configuration
+    reference = inventory_for(reference_configuration)[0]
+    saved = {**baseline(), "peers": reference}
+    if inventories is None:
+        configurations = configurations or [deepcopy(reference_configuration) for _ in range(3)]
+        inventories = [inventory_for(item) for item in configurations]
+    def installation(config, report):
+        report.update(source_verified=True, storage_verified=True)
+        return "sha256:" + "a" * 64, 1, TOKEN
+    def version(report):
+        report.update(docker_version_checked=True, docker_server_version="29.9.1", docker_server_git_commit="abcdef0")
+    with contextlib.ExitStack() as stack:
+        mocks = {}
+        mocks["installation"] = stack.enter_context(patch.object(audit, "_installation", side_effect=installation))
+        for name, kwargs in (("_read_reboot_baseline", {"return_value": saved}),
+                             ("_boot_id", {"return_value": NEW_BOOT}),
+                             ("_peer_inventory", {"side_effect": inventories}),
+                             ("_settings", {"return_value": saved["settings"]}),
+                             ("_docker_version", {"side_effect": version})):
+            mocks[name] = stack.enter_context(patch.object(operation, name, **kwargs))
+        for name in ("_operation_lock", "_publish_baseline", "_semantic_database"):
+            mocks[name] = stack.enter_context(patch.object(operation, name))
+        mocks["_quiet"] = stack.enter_context(patch.object(helper, "_quiet"))
+        stack.enter_context(patch.object(helper, "_deadline", side_effect=lambda seconds: contextlib.nullcontext()))
+        stack.enter_context(patch.object(operation.time, "sleep"))
+        yield mocks
 
 
 class RebootRecoveryTests(unittest.TestCase):
@@ -749,6 +798,132 @@ class RebootRecoveryTests(unittest.TestCase):
         self.assertEqual(result["failure_reason"], "auxiliary_metadata_refused")
         self.assertNotIn("PRIVATE", json.dumps(result))
         self.assertIsNotNone(operation.sanitize_report(json.dumps(result).encode()))
+
+    def test_peer_inventory_keeps_original_digest_recipe_and_does_not_return_environment(self):
+        configuration = peer_configuration()
+        def raw(identity, name, policy, config):
+            return {"id": identity, "name": name, "image": "sha256:" + "d" * 64, "running": True,
+                    "restart": {"Name": policy, "MaximumRetryCount": 0}, "paused": False, "restarting": False, "dead": False,
+                    **config}
+        app = raw("a" * 64, "/quanta", "no", {"config": {}, "host_config": {}, "mounts": []})
+        peer = raw("c" * 64, "/synthetic-peer", "always", configuration)
+        output = [("a" * 64 + "\n" + "c" * 64 + "\n").encode(), json.dumps(app).encode(), json.dumps(peer).encode()]
+        with patch.object(audit, "_capture", side_effect=output):
+            states = operation._peer_state()
+        expected = hashlib.sha256(json.dumps(configuration, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()).hexdigest()
+        self.assertEqual(states["c" * 64]["configuration_sha256"], expected)
+        self.assertEqual(set(states["c" * 64]), {"name", "image", "running", "restart", "configuration_sha256"})
+        self.assertNotIn("never-public", json.dumps(states))
+
+    def test_peer_diagnostic_proves_each_fixed_list_reordering_against_exact_legacy_hash(self):
+        for dimension in ("mounts", "Links", "Ulimits"):
+            changed = peer_configuration()
+            if dimension == "mounts":
+                changed["mounts"].reverse()
+            else:
+                changed["host_config"][dimension].reverse()
+            with self.subTest(dimension=dimension), fake_peer_diagnosis([deepcopy(changed) for _ in range(3)]) as mocks:
+                result = operation.run(config(), "diagnose-peer-recovery")
+            self.assertEqual(result["status"], "success")
+            self.assertFalse(result["configuration_digests_match"])
+            self.assertTrue(result["order_only_equivalence"])
+            self.assertTrue(result["canonical_three_list_digests_stable"])
+            self.assertTrue(result["matching_candidate_reorders_" + {"mounts": "mounts", "Links": "links", "Ulimits": "ulimits"}[dimension]])
+            self.assertTrue(result["settings_preserved"])
+            self.assertLessEqual(result["legacy_permutation_candidates_tested"], 8)
+            for method in ("_quiet", "_publish_baseline", "_operation_lock", "_semantic_database"):
+                mocks[method].assert_not_called()
+            self.assertFalse(result["peer_preservation_verified"])
+            self.assertFalse(result["verification_criteria_changed"])
+            self.assertEqual(operation.sanitize_report(json.dumps(result).encode()), result)
+            public = json.dumps(result)
+            for private in ("never-public", "/private/synthetic", "c" * 64, "d" * 64):
+                self.assertNotIn(private, public)
+
+    def test_peer_diagnostic_tracks_three_sample_order_instability_without_changing_criterion(self):
+        samples = [peer_configuration() for _ in range(3)]
+        samples[1]["host_config"]["Links"].reverse(); samples[2]["host_config"]["Ulimits"].reverse()
+        with fake_peer_diagnosis(samples):
+            result = operation.run(config(), "diagnose-peer-recovery")
+        self.assertEqual(result["samples_collected"], 3)
+        self.assertFalse(result["current_configuration_digests_stable"])
+        self.assertFalse(result["links_order_stable"])
+        self.assertFalse(result["ulimits_order_stable"])
+        self.assertTrue(result["canonical_three_list_digests_stable"])
+        self.assertTrue(result["order_only_equivalence"])
+        self.assertFalse(result["verification_criteria_changed"])
+
+    def test_non_order_configuration_change_is_not_reclassified_as_order_equivalence(self):
+        changed = peer_configuration(); changed["host_config"]["Memory"] += 1
+        with fake_peer_diagnosis([deepcopy(changed) for _ in range(3)]):
+            result = operation.run(config(), "diagnose-peer-recovery")
+        self.assertEqual(result["status"], "success")
+        self.assertTrue(result["permutation_search_complete"])
+        self.assertFalse(result["order_only_equivalence"])
+        self.assertEqual(result["legacy_permutation_candidates_tested"], 8)
+
+    def test_duplicate_semantic_list_keys_and_over_six_elements_are_not_accepted_as_order_equivalence(self):
+        cases = []
+        for dimension in ("mounts", "Links", "Ulimits"):
+            value = peer_configuration()
+            target = value["mounts"] if dimension == "mounts" else value["host_config"][dimension]
+            target.append(deepcopy(target[0])); cases.append(value)
+        oversized = peer_configuration(); oversized["host_config"]["Links"] = ["/synthetic/" + str(index) for index in range(7)]; cases.append(oversized)
+        for changed in cases:
+            with fake_peer_diagnosis([deepcopy(changed) for _ in range(3)]):
+                result = operation.run(config(), "diagnose-peer-recovery")
+            self.assertEqual(result["status"], "success")
+            self.assertFalse(result["order_only_equivalence"])
+            self.assertFalse(result["permutation_search_complete"])
+
+    def test_peer_permutation_budget_bounds_work_and_reports_inconclusive_search(self):
+        changed = peer_configuration(); changed["mounts"].reverse(); changed["host_config"]["Links"].reverse(); changed["host_config"]["Ulimits"].reverse()
+        with fake_peer_diagnosis([deepcopy(changed) for _ in range(3)]), patch.object(operation, "PEER_PERMUTATION_LIMIT", 1):
+            result = operation.run(config(), "diagnose-peer-recovery")
+            self.assertTrue(result["permutation_budget_exhausted"])
+            self.assertFalse(result["permutation_search_complete"])
+            self.assertFalse(result["order_only_equivalence"])
+            self.assertEqual(result["legacy_permutation_candidates_tested"], 1)
+
+    def test_peer_identity_runtime_and_policy_changes_are_separate_and_cannot_pass_order_equivalence(self):
+        for field, changed, output in (("name", "/renamed-peer", "names_match"), ("image", "sha256:" + "e" * 64, "images_match"),
+                ("running", False, "running_states_match"), ("restart", {"Name": "on-failure", "MaximumRetryCount": 1}, "restart_policies_match")):
+            item = inventory_for(peer_configuration())
+            item[0]["c" * 64][field] = changed
+            with self.subTest(field=field), fake_peer_diagnosis(inventories=[deepcopy(item) for _ in range(3)]):
+                result = operation.run(config(), "diagnose-peer-recovery")
+            self.assertFalse(result[output])
+            self.assertFalse(result["order_only_equivalence"])
+            self.assertEqual(result["status"], "success")
+
+    def test_peer_diagnostic_refuses_secret_fields_wrong_types_and_preservation_inflation(self):
+        with fake_peer_diagnosis():
+            valid = operation.run(config(), "diagnose-peer-recovery")
+        for changes in ({"peer_preservation_verified": True}, {"server_modified": True}, {"reboot_requested": True},
+                        {"database_rechecked": True}, {"verification_criteria_changed": True},
+                        {"raw_configuration": "PRIVATE"}, {"samples_collected": True}, {"settings_preserved": 1},
+                        {"docker_server_version": "PRIVATE HOST INFORMATION"}, {"legacy_permutation_candidates_tested": 4097}):
+            with self.assertRaises(ValueError):
+                operation.validate_report({**valid, **changes})
+
+    def test_peer_diagnostic_current_settings_difference_is_observed_without_writing(self):
+        with fake_peer_diagnosis() as mocks:
+            mocks["_settings"].return_value = {}
+            result = operation.run(config(), "diagnose-peer-recovery")
+        self.assertTrue(result["settings_checked"])
+        self.assertFalse(result["settings_preserved"])
+        self.assertEqual(result["status"], "success")
+        mocks["_quiet"].assert_not_called()
+
+    def test_docker_version_diagnostic_accepts_only_bounded_public_version_and_commit(self):
+        report = operation._peer_diagnostic_initial()
+        with patch.object(audit, "_capture", return_value=b'{"version":"29.9.1","git_commit":"abcdef0"}'):
+            operation._docker_version(report)
+        self.assertTrue(report["docker_version_checked"])
+        for raw in (b'{"version":"PRIVATE ADDRESS","git_commit":"abcdef0"}', b'{"version":"29.9.1","git_commit":"PRIVATE"}',
+                    b'{"version":"29.9.1","git_commit":"abcdef0","extra":"PRIVATE"}'):
+            with patch.object(audit, "_capture", return_value=raw), self.assertRaises(operation.RebootError):
+                operation._docker_version(operation._peer_diagnostic_initial())
 
     def test_real_live_generation_can_exceed_old_snapshot_but_postboot_remains_exact(self):
         real_semantic = operation._semantic_database

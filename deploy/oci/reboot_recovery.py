@@ -14,6 +14,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 import fcntl
 import hashlib
+import itertools
 import json
 import math
 import os
@@ -46,7 +47,7 @@ BACKUP_POLICY_BASIS = "user_reported_oci_daily"
 DATABASE_BASIS = "quiescent_live_store_before_os_reboot"
 TABLES = ("artifacts", "events", "experiments", "idempotency", "revisions", "runs")
 BOOT_ACTIONS = frozenset({"reboot-recovery", "verify-reboot"})
-ACTIONS = BOOT_ACTIONS | {"compare-recovery"}
+ACTIONS = BOOT_ACTIONS | {"compare-recovery", "diagnose-peer-recovery"}
 MAX_ROWS = 1_000_000
 MAX_VALUE_BYTES = 64 * 1024**2
 MAX_OUTPUT_BYTES = 8192
@@ -324,7 +325,14 @@ def _read_semantics(path):
     return result
 
 
-def _peer_state():
+def _configuration_digest(configuration):
+    # Preserve the legacy byte recipe exactly; this diagnostic does not change
+    # the criterion used by a previously stored reboot baseline or verification.
+    return hashlib.sha256(json.dumps(configuration, sort_keys=True, separators=(",", ":"),
+                                    ensure_ascii=True, allow_nan=False).encode()).hexdigest()
+
+
+def _peer_inventory(*, require_safe=True):
     raw = audit._capture(audit.DOCKER + ["container", "ls", "--all", "--no-trunc", "--format", "{{.ID}}"], limit=65536)
     ids = raw.decode("ascii").splitlines()
     if not 1 <= len(ids) <= 256 or len(set(ids)) != len(ids) or any(not re.fullmatch(r"[0-9a-f]{64}", i) for i in ids):
@@ -333,7 +341,8 @@ def _peer_state():
         '"running":{{json .State.Running}},"restart":{{json .HostConfig.RestartPolicy}},'
         '"paused":{{json .State.Paused}},"restarting":{{json .State.Restarting}},"dead":{{json .State.Dead}},'
         '"config":{{json .Config}},"host_config":{{json .HostConfig}},"mounts":{{json .Mounts}}}')
-    peers, app_count = {}, 0
+    peers, configurations, app_count, auxiliary_count = {}, {}, 0, 0
+    runtime_safe = True
     for identity in sorted(ids):
         value = helper._json(audit._capture(audit.DOCKER + ["container", "inspect", "--format", template, identity], limit=256 * 1024))
         fields = {"id", "name", "image", "running", "restart", "paused", "restarting", "dead", "config", "host_config", "mounts"}
@@ -341,7 +350,6 @@ def _peer_state():
                 or not isinstance(value["name"], str) or not re.fullmatch(r"/[A-Za-z0-9][A-Za-z0-9_.-]{0,254}", value["name"])
                 or not isinstance(value["image"], str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", value["image"])
                 or any(type(value[field]) is not bool for field in ("running", "paused", "restarting", "dead"))
-                or any(value[field] for field in ("paused", "restarting", "dead"))
                 or not isinstance(value["restart"], dict) or set(value["restart"]) != {"Name", "MaximumRetryCount"}
                 or value["restart"]["Name"] not in {"no", "always", "unless-stopped", "on-failure"}
                 or type(value["restart"]["MaximumRetryCount"]) is not int
@@ -349,21 +357,36 @@ def _peer_state():
                 or not isinstance(value["config"], dict) or not isinstance(value["host_config"], dict)
                 or not isinstance(value["mounts"], list)):
             raise RebootError()
+        healthy = not any(value[field] for field in ("paused", "restarting", "dead"))
+        if require_safe and not healthy:
+            raise RebootError()
+        runtime_safe = runtime_safe and healthy
         if value["name"] == "/quanta":
             app_count += 1
             continue
         if value["name"] in {"/quanta-backup", "/quanta-operations-check"}:
-            raise RebootError()
+            if require_safe:
+                raise RebootError()
+            auxiliary_count += 1
+            continue
         policy = value["restart"]["Name"]
-        if value["running"] and policy not in {"always", "unless-stopped"} or not value["running"] and policy == "always":
+        safe_policy = not (value["running"] and policy not in {"always", "unless-stopped"}
+                           or not value["running"] and policy == "always")
+        if require_safe and not safe_policy:
             raise RebootError()
-        config_digest = hashlib.sha256(json.dumps({key: value[key] for key in ("config", "host_config", "mounts")},
-            sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()).hexdigest()
+        runtime_safe = runtime_safe and safe_policy
+        configuration = {key: value[key] for key in ("config", "host_config", "mounts")}
+        config_digest = _configuration_digest(configuration)
         peers[identity] = {"name": value["name"], "image": value["image"], "running": value["running"],
                            "restart": value["restart"], "configuration_sha256": config_digest}
+        configurations[identity] = configuration
     if app_count != 1:
         raise RebootError()
-    return peers
+    return peers, configurations, runtime_safe, auxiliary_count
+
+
+def _peer_state():
+    return _peer_inventory()[0]
 
 
 def _settings():
@@ -816,7 +839,233 @@ def _validate_comparison(value):
     return dict(value)
 
 
+PEER_SAMPLES = 3
+PEER_PERMUTATION_LIMIT = 4096
+PEER_DIAGNOSTIC_BOOLS = (
+    "installation_verified", "baseline_checked", "boot_changed", "id_sets_match", "names_match", "images_match",
+    "running_states_match", "restart_policies_match", "configuration_digests_match", "current_identity_fields_stable",
+    "current_configuration_digests_stable", "current_runtime_states_safe", "canonical_three_lists_checked",
+    "canonical_three_list_digests_stable", "mount_order_stable", "links_order_stable", "ulimits_order_stable",
+    "permutation_search_complete", "permutation_budget_exhausted", "order_only_equivalence",
+    "matching_candidate_reorders_mounts", "matching_candidate_reorders_links", "matching_candidate_reorders_ulimits",
+    "settings_checked", "settings_preserved", "docker_version_checked", "server_modified", "reboot_requested",
+    "database_rechecked", "peer_preservation_verified", "verification_criteria_changed",
+)
+PEER_DIAGNOSTIC_COUNTS = ("samples_collected", "baseline_peer_count", "current_peer_count", "common_peer_count",
+    "configuration_digest_mismatch_count", "current_max_mounts", "current_max_links", "current_max_ulimits",
+    "legacy_permutation_candidates_tested", "auxiliary_containers_observed")
+PEER_DIAGNOSTIC_FIELDS = frozenset(("scope", "action", "status", "stage", "failure_reason", "docker_server_version",
+    "docker_server_git_commit", *PEER_DIAGNOSTIC_BOOLS, *PEER_DIAGNOSTIC_COUNTS))
+PEER_DIAGNOSTIC_STAGES = frozenset({"configuration", "installation", "baseline", "inspection", "comparison", "settings", "complete"})
+
+
+def _peer_diagnostic_initial():
+    return {"scope": "peer_recovery_diagnostic", "action": "diagnose-peer-recovery", "status": "failed",
+        "stage": "configuration", "failure_reason": "invalid_configuration", "docker_server_version": "unobserved",
+        "docker_server_git_commit": "unobserved", **dict.fromkeys(PEER_DIAGNOSTIC_BOOLS, False),
+        **dict.fromkeys(PEER_DIAGNOSTIC_COUNTS, 0)}
+
+
+def _peer_reference(peers):
+    if not isinstance(peers, dict) or len(peers) > 256:
+        raise RebootError()
+    for identity, item in peers.items():
+        if (not isinstance(identity, str) or not re.fullmatch(r"[0-9a-f]{64}", identity)
+                or not isinstance(item, dict) or set(item) != {"name", "image", "running", "restart", "configuration_sha256"}
+                or not isinstance(item["name"], str) or not re.fullmatch(r"/[A-Za-z0-9][A-Za-z0-9_.-]{0,254}", item["name"])
+                or not isinstance(item["image"], str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", item["image"])
+                or type(item["running"]) is not bool or not isinstance(item["restart"], dict)
+                or set(item["restart"]) != {"Name", "MaximumRetryCount"}
+                or item["restart"]["Name"] not in {"no", "always", "unless-stopped", "on-failure"}
+                or type(item["restart"]["MaximumRetryCount"]) is not int
+                or not 0 <= item["restart"]["MaximumRetryCount"] <= 2**31 - 1
+                or not isinstance(item["configuration_sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", item["configuration_sha256"])):
+            raise RebootError()
+
+
+def _order_lists(configuration):
+    """Only three fixed arrays with unique semantic keys may be permuted."""
+    host = configuration["host_config"]
+    mounts, links, limits = configuration["mounts"], host.get("Links"), host.get("Ulimits")
+    if (not isinstance(mounts, list) or any(not isinstance(item, dict) or not isinstance(item.get("Destination"), str) for item in mounts)
+            or len({item["Destination"] for item in mounts}) != len(mounts)):
+        raise RebootError()
+    if links is not None and (not isinstance(links, list) or any(not isinstance(item, str) for item in links) or len(set(links)) != len(links)):
+        raise RebootError()
+    if limits is not None and (not isinstance(limits, list)
+            or any(not isinstance(item, dict) or not isinstance(item.get("Name"), str) for item in limits)
+            or len({item["Name"] for item in limits}) != len(limits)):
+        raise RebootError()
+    return mounts, links, limits
+
+
+def _reordered(configuration, mounts, links, limits):
+    host = dict(configuration["host_config"])
+    if isinstance(host.get("Links"), list):
+        host["Links"] = list(links)
+    if isinstance(host.get("Ulimits"), list):
+        host["Ulimits"] = list(limits)
+    return {"config": configuration["config"], "host_config": host, "mounts": list(mounts)}
+
+
+def _canonical_order_digest(configuration):
+    mounts, links, limits = _order_lists(configuration)
+    return _configuration_digest(_reordered(configuration, sorted(mounts, key=lambda item: item["Destination"]),
+        sorted(links) if links is not None else None,
+        sorted(limits, key=lambda item: item["Name"]) if limits is not None else None))
+
+
+def _legacy_order_search(reference, current, configurations):
+    result = {"equivalent": True, "complete": True, "exhausted": False, "tested": 0,
+              "mounts": False, "links": False, "ulimits": False}
+    if set(reference) != set(current) or set(configurations) != set(current):
+        result.update(equivalent=False, complete=False)
+        return result
+    for identity in sorted(current):
+        expected, configuration = reference[identity]["configuration_sha256"], configurations[identity]
+        if _configuration_digest(configuration) == expected:
+            continue
+        try:
+            mounts, links, limits = _order_lists(configuration)
+            if max(len(mounts), len(links or []), len(limits or [])) > 6:
+                raise RebootError()
+        except Exception:
+            result.update(equivalent=False, complete=False)
+            continue
+        options = (itertools.permutations(mounts), itertools.permutations(links) if links is not None else (None,),
+                   itertools.permutations(limits) if limits is not None else (None,))
+        matched = False
+        for mount_order, link_order, limit_order in itertools.product(*options):
+            if result["tested"] >= PEER_PERMUTATION_LIMIT:
+                result.update(complete=False, exhausted=True)
+                break
+            result["tested"] += 1
+            candidate = _reordered(configuration, mount_order, link_order, limit_order)
+            if _configuration_digest(candidate) == expected:
+                matched = True
+                result["mounts"] |= candidate["mounts"] != mounts
+                result["links"] |= candidate["host_config"].get("Links") != links
+                result["ulimits"] |= candidate["host_config"].get("Ulimits") != limits
+                break
+        result["equivalent"] = result["equivalent"] and matched
+    return result
+
+
+def _docker_version(report):
+    raw = audit._capture(audit.DOCKER + ["version", "--format",
+        '{"version":{{json .Server.Version}},"git_commit":{{json .Server.GitCommit}}}'], limit=512)
+    value = helper._json(raw)
+    if (not isinstance(value, dict) or set(value) != {"version", "git_commit"}
+            or not isinstance(value["version"], str) or not re.fullmatch(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?:[-+][A-Za-z0-9][A-Za-z0-9._-]{0,63})?", value["version"])
+            or not isinstance(value["git_commit"], str) or not re.fullmatch(r"[0-9a-f]{7,64}", value["git_commit"])):
+        raise RebootError()
+    report.update(docker_version_checked=True, docker_server_version=value["version"], docker_server_git_commit=value["git_commit"])
+
+
+def _diagnose_peers(config):
+    report = _peer_diagnostic_initial()
+    try:
+        config = validate_config(config)
+    except Exception:
+        return report
+    try:
+        with helper._deadline(120):
+            report["stage"] = "installation"
+            installation = audit._initial_report()
+            audit._installation(config, installation)
+            if not installation["source_verified"] or not installation["storage_verified"]:
+                raise RebootError()
+            report["installation_verified"] = True
+            try:
+                _docker_version(report)
+            except Exception:
+                pass
+            report["stage"] = "baseline"
+            baseline = _read_reboot_baseline()
+            reference = baseline["peers"]
+            _peer_reference(reference)
+            report["baseline_checked"] = True
+            report["baseline_peer_count"] = len(reference)
+            report["boot_changed"] = _boot_id() != baseline["old_boot_id"]
+            report["stage"] = "inspection"
+            samples = []
+            for index in range(PEER_SAMPLES):
+                if index:
+                    time.sleep(0.1)
+                samples.append(_peer_inventory(require_safe=False))
+                report["samples_collected"] = len(samples)
+            states, configurations, _safe, _auxiliary = samples[0]
+            report["current_peer_count"] = len(states)
+            report["common_peer_count"] = len(set(reference) & set(states))
+            report["id_sets_match"] = all(set(item[0]) == set(reference) for item in samples)
+            for output, field in (("names_match", "name"), ("images_match", "image"), ("running_states_match", "running"),
+                                  ("restart_policies_match", "restart"), ("configuration_digests_match", "configuration_sha256")):
+                report[output] = report["id_sets_match"] and all(
+                    item[0][identity][field] == reference[identity][field] for item in samples for identity in reference)
+            report["configuration_digest_mismatch_count"] = sum(identity not in reference or item["configuration_sha256"] != reference[identity]["configuration_sha256"] for identity, item in states.items())
+            identity_fields = lambda peers: {identity: {key: item[key] for key in ("name", "image", "running", "restart")} for identity, item in peers.items()}
+            report["current_identity_fields_stable"] = all(identity_fields(item[0]) == identity_fields(states) for item in samples)
+            report["current_configuration_digests_stable"] = all(
+                {identity: value["configuration_sha256"] for identity, value in item[0].items()} ==
+                {identity: value["configuration_sha256"] for identity, value in states.items()} for item in samples)
+            report["current_runtime_states_safe"] = all(item[2] for item in samples)
+            report["auxiliary_containers_observed"] = max(item[3] for item in samples)
+            report["stage"] = "comparison"
+            try:
+                canonical = [{identity: _canonical_order_digest(value) for identity, value in item[1].items()} for item in samples]
+                report["canonical_three_lists_checked"] = True
+                report["canonical_three_list_digests_stable"] = all(item == canonical[0] for item in canonical)
+            except Exception:
+                pass
+            for output, projection in (("mount_order_stable", lambda value: value["mounts"]),
+                                       ("links_order_stable", lambda value: value["host_config"].get("Links")),
+                                       ("ulimits_order_stable", lambda value: value["host_config"].get("Ulimits"))):
+                first = {identity: projection(value) for identity, value in configurations.items()}
+                report[output] = all({identity: projection(value) for identity, value in item[1].items()} == first for item in samples)
+            report["current_max_mounts"] = max((len(value["mounts"]) for value in configurations.values()), default=0)
+            report["current_max_links"] = max((len(value["host_config"].get("Links") or []) for value in configurations.values()), default=0)
+            report["current_max_ulimits"] = max((len(value["host_config"].get("Ulimits") or []) for value in configurations.values()), default=0)
+            search = _legacy_order_search(reference, states, configurations)
+            report.update(permutation_search_complete=search["complete"], permutation_budget_exhausted=search["exhausted"],
+                legacy_permutation_candidates_tested=search["tested"], matching_candidate_reorders_mounts=search["mounts"],
+                matching_candidate_reorders_links=search["links"], matching_candidate_reorders_ulimits=search["ulimits"])
+            report["order_only_equivalence"] = (report["id_sets_match"] and report["current_identity_fields_stable"]
+                and all(report[field] for field in ("names_match", "images_match", "running_states_match", "restart_policies_match", "current_runtime_states_safe"))
+                and report["canonical_three_list_digests_stable"] and search["complete"] and search["equivalent"])
+            report["stage"] = "settings"
+            report["settings_preserved"] = _settings() == baseline["settings"]
+            report["settings_checked"] = True
+            report.update(status="success", stage="complete", failure_reason="none")
+    except Exception:
+        report["failure_reason"] = "inspection_failed"
+    return report
+
+
+def _validate_peer_diagnostic(value):
+    if (not isinstance(value, dict) or set(value) != PEER_DIAGNOSTIC_FIELDS or value["scope"] != "peer_recovery_diagnostic"
+            or value["action"] != "diagnose-peer-recovery" or not isinstance(value["status"], str) or value["status"] not in {"success", "failed"}
+            or not isinstance(value["stage"], str) or value["stage"] not in PEER_DIAGNOSTIC_STAGES
+            or not isinstance(value["failure_reason"], str) or value["failure_reason"] not in {"none", "invalid_configuration", "inspection_failed"}
+            or any(type(value[field]) is not bool for field in PEER_DIAGNOSTIC_BOOLS)
+            or any(type(value[field]) is not int or not 0 <= value[field] <= MAX_ROWS for field in PEER_DIAGNOSTIC_COUNTS)
+            or value["samples_collected"] > PEER_SAMPLES or value["legacy_permutation_candidates_tested"] > PEER_PERMUTATION_LIMIT
+            or any(value[field] for field in ("server_modified", "reboot_requested", "database_rechecked", "peer_preservation_verified", "verification_criteria_changed"))
+            or (value["status"] == "success") != (value["stage"] == "complete") or (value["status"] == "success") != (value["failure_reason"] == "none")):
+        raise ValueError("invalid peer recovery diagnostic")
+    for field, pattern in (("docker_server_version", r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?:[-+][A-Za-z0-9][A-Za-z0-9._-]{0,63})?"),
+                           ("docker_server_git_commit", r"[0-9a-f]{7,64}")):
+        if not isinstance(value[field], str) or (not re.fullmatch(pattern, value[field]) if value["docker_version_checked"] else value[field] != "unobserved"):
+            raise ValueError("invalid peer recovery diagnostic")
+    if value["status"] == "success" and (value["samples_collected"] != PEER_SAMPLES or not all(value[field] for field in ("installation_verified", "baseline_checked", "settings_checked"))):
+        raise ValueError("invalid peer recovery diagnostic")
+    if value["order_only_equivalence"] and not all(value[field] for field in ("id_sets_match", "names_match", "images_match", "running_states_match", "restart_policies_match", "current_runtime_states_safe", "current_identity_fields_stable", "canonical_three_list_digests_stable", "permutation_search_complete")):
+        raise ValueError("invalid peer recovery diagnostic")
+    return dict(value)
+
+
 def _initial_report(action):
+    if action == "diagnose-peer-recovery":
+        return _peer_diagnostic_initial()
     if action == "compare-recovery":
         return _comparison_initial()
     return {"scope": "os_reboot_recovery", "action": action if isinstance(action, str) and action in BOOT_ACTIONS else "reboot-recovery",
@@ -828,6 +1077,8 @@ def _initial_report(action):
 
 
 def run(config, action="reboot-recovery"):
+    if action == "diagnose-peer-recovery":
+        return _diagnose_peers(config)
     if action == "compare-recovery":
         return _compare_recovery(config)
     report = _initial_report(action)
@@ -854,6 +1105,8 @@ def run(config, action="reboot-recovery"):
 
 
 def validate_report(value):
+    if isinstance(value, dict) and value.get("scope") == "peer_recovery_diagnostic":
+        return _validate_peer_diagnostic(value)
     if isinstance(value, dict) and value.get("scope") == "recovery_comparison_diagnostic":
         return _validate_comparison(value)
     if (not isinstance(value, dict) or set(value) != FIELDS or value["scope"] != "os_reboot_recovery"

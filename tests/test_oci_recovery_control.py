@@ -389,7 +389,7 @@ class TransportTests(unittest.TestCase):
         for operation, timeout in [("audit-recovery", 120), ("prepare-recovery", 600),
                                    ("reboot-recovery", 300), ("verify-reboot", 300),
                                    ("post-reboot-compute", 180), ("compare-recovery", 300),
-                                   ("refresh-recovery", 600)]:
+                                   ("refresh-recovery", 600), ("diagnose-peer-recovery", 300)]:
             with self.modules(action=operation if operation in probe.BOOT_OPERATIONS else None) as (_, _, _, _, transport, _):
                 self.assertEqual(probe.probe(credentials(operation))["status"], "success")
                 self.assertEqual(transport._capture.call_args.kwargs, {"timeout": timeout, "limit": 8192})
@@ -441,10 +441,11 @@ class TransportTests(unittest.TestCase):
 
     def test_boot_response_action_must_match_requested_fixed_action(self):
         wrong = {"scope": "fixture", "status": "success", "action": "verify-reboot", "boot_changed": True}
-        with self.modules(sanitizer=lambda raw: wrong):
-            value = probe.probe(credentials("reboot-recovery"), runner=lambda *args: ("success", b"{}", True))
-        self.assertEqual(value["status"], "invalid_output")
-        self.assertNotIn("result", value)
+        for operation in ["reboot-recovery", "diagnose-peer-recovery"]:
+            with self.modules(sanitizer=lambda raw: wrong):
+                value = probe.probe(credentials(operation), runner=lambda *args: ("success", b"{}", True))
+            self.assertEqual(value["status"], "invalid_output")
+            self.assertNotIn("result", value)
 
     def test_reboot_disconnect_or_timeout_is_failure_and_never_triggers_a_retry(self):
         for status, expected in [("failed", "remote_failed"), ("timeout", "timeout"),

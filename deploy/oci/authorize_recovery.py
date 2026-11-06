@@ -22,7 +22,7 @@ REPOSITORY = "Hyunwoo1205/quanta"
 API_ROOT = "https://api.github.com/repos/" + REPOSITORY + "/actions/runs/"
 OPERATIONS = frozenset({"audit-recovery", "prepare-recovery", "export-recovery",
                         "reboot-recovery", "verify-reboot", "post-reboot-compute",
-                        "compare-recovery", "refresh-recovery"})
+                        "compare-recovery", "refresh-recovery", "diagnose-peer-recovery"})
 REQUEST = Path(".github/oci/install-request.json")
 CONTROL_ROOT = Path(__file__).resolve().parents[2]
 CONTROL_WORKFLOW = ".github/workflows/oci-recovery-tests.yml"

@@ -326,6 +326,16 @@ ACME job `127588786706`은 기존 설치·Caddy·설정 범위를 확인한 뒤 
 
 수정 소스 `e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f`의 [전용CI42163707530](https://github.com/Hyunwoo1205/quanta/actions/runs/42163707530)가 ARM/x86 각각180개 시험과 종료 단계까지 성공했습니다. 코드와 앱소스를 새로 바꾸지 않는 workflow핀·검증기록 커밋은 이 실제 source/CI와 local11개분류시험을 사용하며, 같은 수치 전체검사를 중복 시작하지 않습니다. 현재 source를고정하여 read-onlycompare부터 실제서버점검을수행합니다. 추가백업갱신은실행하지않았습니다.
 
+## 실제 OS 재부팅과 보존 검증의 현재 결과
+
+새현재live기준 [재부팅42164061718](https://github.com/Hyunwoo1205/quanta/actions/runs/42164061718)이schema2 기준(실험8/revision10/실행11/산출물767)을저장하고재부팅을예약했습니다. 이어 [검증42164202232](https://github.com/Hyunwoo1205/quanta/actions/runs/42164202232)에서 실제boot변경·앱/HTTPS/timer자동복구·단일worker·재부팅전DB6표/모든산출물BLOB의정확한보존을확인했습니다. peer설정aggregate지문차이로전체job은failure로보존하고, 그뒤settings검사·후속계산은완료로쓰지않습니다. publicjob은실제HTTPS200/HTTP308/익명·오류키401을통과했습니다.
+
+[추가읽기전용audit42164922068](https://github.com/Hyunwoo1205/quanta/actions/runs/42164922068)에서현재8/10/11/767·무대기계산·정상서비스·타이머active/enabled·기존peer1개running/재시작정책을직접재확인했습니다. 새부트의backup oneshot실행시각은아직없어latest_backup_service_succeeded=false이며백업오류를관측했다는뜻은아닙니다. 기존스냅샷3개를보존합니다.
+
+peer는설정값을변경하거나다시재부팅하지않고추가정제진단을준비합니다. Dockerinspect의Mounts/Links/Ulimits 일부배열순서가능성을공식버전별소스와대조했고, 현재구조의허용된순열중옛전체SHA와정확일치하는증거가있어야순서차이로판정합니다. 정렬해서무조건합격으로바꾸지않습니다. source63개reboot관련회귀를포함한운영180개+Caddy10개=190개가local통과했습니다. 아직peer구성보존과새API계산은미확인입니다.
+
+수정원본e94의전체 [CI42163707651](https://github.com/Hyunwoo1205/quanta/actions/runs/42163707651)은실제ARM1,503개(322.74초),x861,503개(467.19초),Node/Caddy·여덟측정·설치container를포함한두job전체가성공했습니다. 이는저장소/설치image CI이며OCI에서모든수치기준을새로측정했다는뜻은아닙니다.
+
 ## 다음 작업
 
 OCI 단독 A1의 기존 2 OCPU·12 GB·부트 200 GB를 유지한 앱 0.11.0 설치, 실제 ARM 계산 smoke·인증·검증 API, 영속 데이터·백업 및 격리 복원, 앱 자동 시작·일일 SQLite 백업을 완료했습니다. 기존 컨테이너·데이터를 보존했고 새 SSH 키·상시 PC·Tailscale을 추가하지 않았습니다. 관리형 OCI 볼륨 백업과 off-host 복구는 별도 미설정 범위입니다.

@@ -29,12 +29,13 @@ SOURCE_SHA = "1738107301ef873bfe5e01f930866c2a74e4ec3f"
 OPERATIONS = {"audit-recovery": "audit_recovery", "prepare-recovery": "recovery_backup",
               "export-recovery": "export_recovery", "reboot-recovery": "reboot_recovery",
               "verify-reboot": "reboot_recovery", "post-reboot-compute": "recovery_smoke",
-              "compare-recovery": "reboot_recovery", "refresh-recovery": "recovery_backup"}
-BOOT_OPERATIONS = frozenset({"reboot-recovery", "verify-reboot", "compare-recovery"})
+              "compare-recovery": "reboot_recovery", "refresh-recovery": "recovery_backup",
+              "diagnose-peer-recovery": "reboot_recovery"}
+BOOT_OPERATIONS = frozenset({"reboot-recovery", "verify-reboot", "compare-recovery", "diagnose-peer-recovery"})
 ACTION_OPERATIONS = BOOT_OPERATIONS | {"refresh-recovery"}
 TIMEOUTS = {"audit-recovery": 120, "prepare-recovery": 600, "export-recovery": 600,
             "reboot-recovery": 300, "verify-reboot": 300, "post-reboot-compute": 180,
-            "compare-recovery": 300, "refresh-recovery": 600}
+            "compare-recovery": 300, "refresh-recovery": 600, "diagnose-peer-recovery": 300}
 FAILURES = frozenset({"control_checkout_invalid", "audit_module_invalid", "configuration_invalid"})
 MAX_EXPORT = 128 * 1024**2
 EXPORT_PATH = Path(".cache/recovery-backup.cms")
