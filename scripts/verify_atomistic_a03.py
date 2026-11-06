@@ -176,7 +176,7 @@ def assert_image_identity(inspected: dict, selected: dict) -> None:
 
 def parse_version(text: str, release_commit: str) -> dict:
     version = re.search(r"CP2K\s+version\s+([^\r\n]+)", text, re.I)
-    revision = re.search(r"(?:source code revision|git\s+(?:revision|commit))\s*[:=]?\s*([^\s]+)", text, re.I)
+    revision = re.search(r"(?:source code revision(?:\s+number)?|git\s+(?:revision|commit))\s*[:=]?\s*([^\s]+)", text, re.I)
     if not revision:
         revision = re.search(r"\b(?:git:|git-sha:)\s*([0-9a-f]{7,40})\b", text, re.I)
     rev = revision.group(1).strip() if revision else None
@@ -194,6 +194,19 @@ def parse_cube(path: Path) -> dict:
     """Stream an ordinary single-field positive-atom CP2K CUBE, without edits."""
     def values(line: str) -> list[float]:
         return [float(s.replace("D", "E").replace("d", "e")) for s in line.split()]
+
+    def field_values(line: str) -> list[float]:
+        # CP2K's E13.5E3 writer does not insert a separator between fields.
+        # A negative field can therefore immediately follow the preceding exponent.
+        raw = line.rstrip("\r\n")
+        if raw and len(raw) % 13 == 0:
+            fields = [raw[i:i+13] for i in range(0, len(raw), 13)]
+            try:
+                return [float(s.replace("D", "E").replace("d", "e")) for s in fields]
+            except ValueError:
+                pass
+        # Also accept ordinary whitespace-separated CUBE for independent fixtures.
+        return values(raw)
 
     with path.open(encoding="ascii") as f:
         comments = [f.readline().rstrip(), f.readline().rstrip()]
@@ -225,7 +238,7 @@ def parse_cube(path: Path) -> dict:
         total = correction = negative_sum = 0.0
         expected = math.prod(counts)
         for line in f:
-            for v in values(line):
+            for v in field_values(line):
                 if not math.isfinite(v):
                     raise ValueError("Nonfinite CUBE sample")
                 n += 1
@@ -251,13 +264,14 @@ def parse_cube(path: Path) -> dict:
             "negative_samples": negative, "negative_integral": negative_sum*abs(determinant),
             "density_multiplier_per_m3": bohr_m**-3,
             "engine_constants_edition_candidate": 2006,
-            "header_rounding_bound_bohr": 5e-7, "field_significant_digits": 6,
+            "header_rounding_bound_bohr": 5e-7, "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
             "clipped_smoothed_or_renormalized": False,
             "physical_validation_status": "unvalidated", "convergence_status": "not_tested"}
 
 
 def parse_output(text: str) -> dict:
-    energies = re.findall(r"ENERGY\|\s+Total FORCE_EVAL.*?:\s*("+NUMBER+r")", text)
+    energies = re.findall(r"ENERGY\|\s+Total FORCE_EVAL[^\r\n]*?\benergy\s+\[[^\]]+\]\s*:?\s*("+NUMBER+r")", text)
     force_blocks = re.findall(r"ATOMIC FORCES in \[a\.u\.\](.*?)(?:SUM OF ATOMIC FORCES|\n\s*ENERGY\||\Z)", text, re.S)
     forces = []
     if force_blocks:

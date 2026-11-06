@@ -516,9 +516,10 @@
     "cube_axis_unit": "bohr",
     "cube_field_unit": "electrons/bohr^3",
     "cube_axis_rounding_bound_bohr": 5e-07,
-    "cube_field_significant_digits": 6,
+    "cube_field_significant_digits": 5,
     "cube_grid_integration": "Raw samples times voxel volume from rounded CUBE axes; both field and header serialization budgets and finite-grid/tail error remain distinct.",
-    "no_clipping_smoothing_or_renormalization": true
+    "no_clipping_smoothing_or_renormalization": true,
+    "A02_precision_erratum": "A02 historical description said six significant digits; actual Fortran E13.5E3 normalized0.ddddd representation and measured sample0.21598E-008 establish five significant digits. Corrected for A03, with historical A02 manifest unchanged."
   },
   "cancel_probe": {
     "system": "h2",

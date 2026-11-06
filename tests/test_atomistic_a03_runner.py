@@ -44,6 +44,25 @@ def test_source_report_does_not_claim_build_attestation():
     assert r["source_identity_attested"] is False
 
 
+def test_actual_cp2k_output_energy_without_colon_and_unknown_revision():
+    text = " CP2K| version string: CP2K version 2026.2\n CP2K| source code revision number: unknown\n ENERGY| Total FORCE_EVAL ( QS ) energy [hartree]             -2.884463653290686\n *** SCF run converged in 9 steps ***\n PROGRAM ENDED AT timestamp\n"
+    observed = a03.parse_output(text)
+    assert observed["energy_hartree"] == -2.884463653290686
+    assert observed["source_claims_from_output"]["reported_revision"] == "unknown"
+    assert observed["source_claims_from_output"]["release_source_prefix_matches"] is False
+    assert observed["scf_converged"] and observed["program_ended"]
+
+
+def test_cp2k_fixed13_fields_accept_adjacent_negative_exponent_values(tmp_path):
+    # Literal records taken from actual CP2K2026.2 full-density output.
+    field = " 0.21598E-008-0.21598E-008 0.21598E-008-0.21598E-008"
+    observed = a03.parse_cube(cube(tmp_path, field))
+    assert observed["samples"] == 4 and observed["negative_samples"] == 2
+    assert observed["electron_integral"] == pytest.approx(0.0, abs=1e-25)
+    assert observed["minimum_electrons_per_bohr3"] == -2.1598e-9
+    assert observed["field_significant_digits"] == 5
+
+
 def test_wrong_platform_and_wrong_config_are_rejected():
     lock = json.loads((a03.LOCK_DIR / "engine-lock.json").read_text())
     selected = a03.image_selection(lock, "linux/amd64")

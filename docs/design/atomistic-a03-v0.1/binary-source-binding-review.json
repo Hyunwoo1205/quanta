@@ -1,0 +1,527 @@
+{
+  "document_kind": "atomistic_A03_binary_source_binding_review",
+  "version": "0.1.0",
+  "reviewed_on": "2026-11-07",
+  "scope": "Read-only official source/archive/config review, not a build or a runtime change.",
+  "classification": "A04_blocking_source_association_unresolved",
+  "distinct_identities": {
+    "annotated_release_tag": {
+      "name": "v2026.2",
+      "tag_sha": "09496e055e132aa3dba53a7751ebdf432b4ebb78",
+      "source_commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+      "source_tree": "2e4405ec65578a3d8205bc23adf69249798d98d3",
+      "url": "https://github.com/cp2k/cp2k/tree/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50"
+    },
+    "official_release_archive": {
+      "url": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+      "bytes": 79898041,
+      "sha256": "f9bd86f580f57a53a0768c0045d1417f9f9a1d66d851ed7f662f496200043373",
+      "archive_bytes_verified_in_this_review": true,
+      "REVISION_member": {
+        "member": "cp2k-2026.2/REVISION",
+        "utf8": "git:c92cc08\n",
+        "hex": "6769743a633932636330380a",
+        "bytes": 12,
+        "sha256": "fe0381986c93c8c78e83c7b831ac28ce04faf6d4bcad2c55b8341857ea2600ed"
+      },
+      "do_not_equate_member_label_with_full_archive_tree": true
+    },
+    "archive_REVISION_resolved_upstream_commit": {
+      "short": "c92cc08",
+      "full": "c92cc08b45378b85150447011b5a4bb552f5b797",
+      "tree": "740ea8a53bdd7cd506ea975f66350564376a72cd",
+      "url": "https://github.com/cp2k/cp2k/commit/c92cc08b45378b85150447011b5a4bb552f5b797",
+      "api_url": "https://api.github.com/repos/cp2k/cp2k/commits/c92cc08",
+      "date": "2026-07-14T11:37:50Z"
+    },
+    "A03_native_binary_self_report": {
+      "version": "2026.2",
+      "revision": "unknown",
+      "scope": "A03 controller observations on both native architectures, with binary SHA256 stored by each measured report; this review does not substitute its source review for those runtime artifacts.",
+      "version_is_not_source_commit_proof": true
+    },
+    "images": [
+      {
+        "platform": "linux/arm64",
+        "image": "docker.io/cp2k/cp2k@sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade",
+        "config_sha256": "882a6f30ac4d9e705b5b3a474f9085c19d7f820b1531a4526b320e3f1e164c95",
+        "CP2K_source_revision_label_present": false,
+        "label_scope": "Observed labels describe Ubuntu base image, not an attested CP2K source commit."
+      },
+      {
+        "platform": "linux/amd64",
+        "image": "docker.io/cp2k/cp2k@sha256:28e35f63a5253b95cc0f50e786370669185ad9f58eacacf33170cb1257216f36",
+        "config_sha256": "f3d9dc68a19277908fa0656c79c7c3f80179b1e909116ae19266d4cd8d5adb0d",
+        "CP2K_source_revision_label_present": false,
+        "label_scope": "Observed labels describe Ubuntu base image, not an attested CP2K source commit."
+      }
+    ]
+  },
+  "source_mechanism_evidence": [
+    {
+      "path": "cmake/GenerateCp2kBuildInfo.cmake",
+      "archive_member": "cp2k-2026.2/cmake/GenerateCp2kBuildInfo.cmake",
+      "primary_archive_url": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+      "tag_source_reference_url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/cmake/GenerateCp2kBuildInfo.cmake",
+      "bytes": 1820,
+      "sha256": "37854b6709a8a918dbcf26b13cfcaa1496fc023472c5a701ae57264e0de7ad98",
+      "git_blob_sha1": "854f55149a80a8a054189fcdc49b3d0577cecb1c",
+      "review": "If git/revision fallback yields no text, generated __COMPILE_REVISION is unknown.",
+      "evidence_lines": {
+        "git log -1 --format=%h || cat REVISION": [
+          23
+        ],
+        "if(NOT CP2K_GIT_HASH)": [
+          28
+        ],
+        "unknown": [
+          29
+        ]
+      }
+    },
+    {
+      "path": "src/CMakeLists.txt",
+      "archive_member": "cp2k-2026.2/src/CMakeLists.txt",
+      "primary_archive_url": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+      "tag_source_reference_url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/CMakeLists.txt",
+      "bytes": 57499,
+      "sha256": "6f95a743974942ef15f898480ea46d60954a5e640d6b7206cfc056c664573573",
+      "git_blob_sha1": "21439a11e8123963161ca0ff56927545b77bc594",
+      "review": "Generated build info is a separate build target, initialized unknown and compiled into cp2k_info.",
+      "evidence_lines": {
+        "set(CP2K_BUILD_INFO_FILE": [
+          1808
+        ],
+        "__COMPILE_REVISION": [
+          1811
+        ],
+        "cp2k_build_info": [
+          1808,
+          1814,
+          1904
+        ],
+        "-DSOURCE_DIR=${PROJECT_SOURCE_DIR}": [
+          1817
+        ]
+      }
+    },
+    {
+      "path": "src/cp2k_info.F",
+      "archive_member": "cp2k-2026.2/src/cp2k_info.F",
+      "primary_archive_url": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+      "tag_source_reference_url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/cp2k_info.F",
+      "bytes": 14628,
+      "sha256": "2b41d36f77967beaada5f797a650926b5b1d19622b83342339e1ce33a50e34ab",
+      "git_blob_sha1": "872951cffda9f289cd890a5fc224c924360ff4cc",
+      "review": "Printed release version is a literal independently defined from compile_revision.",
+      "evidence_lines": {
+        "compile_revision": [
+          39,
+          43,
+          45,
+          424
+        ],
+        "cp2k_version = \"CP2K version 2026.2\"": [
+          49
+        ]
+      }
+    },
+    {
+      "path": "ci/docker/build_cp2k_spack.Dockerfile",
+      "archive_member": "cp2k-2026.2/ci/docker/build_cp2k_spack.Dockerfile",
+      "primary_archive_url": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+      "tag_source_reference_url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/ci/docker/build_cp2k_spack.Dockerfile",
+      "bytes": 1784,
+      "sha256": "59911cad38002d063d7928ffab9bdf97ed0d5fd154a2272accc8ce46a93854c3",
+      "git_blob_sha1": "2ebc12b262b74d838070221ce5da05754a331c2b",
+      "review": "Tagged official Spack Docker build template copies selected source directories but does not copy .git or root REVISION.",
+      "evidence_lines": {
+        "COPY ./src ./src": [
+          26
+        ],
+        "COPY ./data ./data": [
+          27
+        ],
+        "COPY ./cmake ./cmake": [
+          29
+        ],
+        "COPY ./CMakeLists.txt .": [
+          30
+        ],
+        "RUN ./make_cp2k.sh": [
+          32
+        ]
+      }
+    },
+    {
+      "path": "ci/docker/build_deps_spack.Dockerfile",
+      "archive_member": "cp2k-2026.2/ci/docker/build_deps_spack.Dockerfile",
+      "primary_archive_url": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+      "tag_source_reference_url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/ci/docker/build_deps_spack.Dockerfile",
+      "bytes": 1422,
+      "sha256": "bfc8b400e93079777eb05474367bb27c0e1a1a88dc48337fac22ab183a708a96",
+      "git_blob_sha1": "2d1e25d9b5e50e669600fc7df214019b1792d180",
+      "review": "The preceding dependencies stage installs git but copies only tools/spack, tools/docker and make_cp2k.sh into /opt/cp2k; it likewise does not copy root REVISION or .git. This supports the template-based explanation, without attesting the actual published image build.",
+      "evidence_lines": {
+        "git \\": [
+          18
+        ],
+        "COPY ./tools/spack ./tools/spack": [
+          55
+        ],
+        "COPY ./tools/docker ./tools/docker": [
+          56
+        ],
+        "COPY ./make_cp2k.sh .": [
+          57
+        ]
+      }
+    }
+  ],
+  "explanation": {
+    "verified_source_rule": "Build-info generator tries git log, then cat REVISION; empty output becomes unknown. cp2k_info separately contains the 2026.2 release string.",
+    "inference_from_official_template": "The tagged Spack Docker build template omits .git and REVISION in its explicit build-context COPY list. A build using that context and lacking inherited revision metadata can legitimately emit unknown. This explains a plausible official build path.",
+    "not_proven": "No source-attestation/build-provenance record tying the two exact image manifest digests and measured binary SHA256 values to tag commit67b5da8 or another complete source tree was found. The actual image build pipeline is not proven solely by this template or image history."
+  },
+  "selected_source_comparison": {
+    "scope": "Only the14 A02 source evidence paths, fetched independently at both full upstream commits and compared to A02 recorded release-archive member SHA256 values.",
+    "files": [
+      {
+        "path": "LICENSE",
+        "A02_archive_member_sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/LICENSE",
+          "bytes": 18092,
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/LICENSE",
+          "bytes": 18092,
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "CMakeLists.txt",
+        "A02_archive_member_sha256": "147aaf86596e26e39ce857b62b357f241b59b894b02c5f2dc47476ba58c860b5",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "CMakeLists.txt",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/CMakeLists.txt",
+          "bytes": 47269,
+          "sha256": "147aaf86596e26e39ce857b62b357f241b59b894b02c5f2dc47476ba58c860b5"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "CMakeLists.txt",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/CMakeLists.txt",
+          "bytes": 47269,
+          "sha256": "750ccd8ac5fd6b31d6146255e09da487f4f2f0d62166aebe7bd432da32cd8db5"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": false
+      },
+      {
+        "path": "INSTALL.md",
+        "A02_archive_member_sha256": "04e0a979da22fa0cfd0b60d0ff235f45805d68fda50de8778a2d7c3625cfdd0f",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "INSTALL.md",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/INSTALL.md",
+          "bytes": 3318,
+          "sha256": "04e0a979da22fa0cfd0b60d0ff235f45805d68fda50de8778a2d7c3625cfdd0f"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "INSTALL.md",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/INSTALL.md",
+          "bytes": 3318,
+          "sha256": "04e0a979da22fa0cfd0b60d0ff235f45805d68fda50de8778a2d7c3625cfdd0f"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "data/ALL_POTENTIALS",
+        "A02_archive_member_sha256": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "data/ALL_POTENTIALS",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/data/ALL_POTENTIALS",
+          "bytes": 2717,
+          "sha256": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "data/ALL_POTENTIALS",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/data/ALL_POTENTIALS",
+          "bytes": 2717,
+          "sha256": "d2b0c996d1ba0531710574199b7f0c6bdfa85e2082ed5086224e08ef2cac7f79"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "src/input_cp2k_print_dft.F",
+        "A02_archive_member_sha256": "2cef0bc8e85f0ec6c291a5c5101da55fea0658440c15647d42220f530c0aa2bc",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "src/input_cp2k_print_dft.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_print_dft.F",
+          "bytes": 208298,
+          "sha256": "2cef0bc8e85f0ec6c291a5c5101da55fea0658440c15647d42220f530c0aa2bc"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "src/input_cp2k_print_dft.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/src/input_cp2k_print_dft.F",
+          "bytes": 208298,
+          "sha256": "2cef0bc8e85f0ec6c291a5c5101da55fea0658440c15647d42220f530c0aa2bc"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "src/qs_scf_post_gpw.F",
+        "A02_archive_member_sha256": "51c6456557b3cc5f95b2cfa2cee2b514739b80ccee7d32caa905f510d89e4fdc",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "src/qs_scf_post_gpw.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_scf_post_gpw.F",
+          "bytes": 217795,
+          "sha256": "51c6456557b3cc5f95b2cfa2cee2b514739b80ccee7d32caa905f510d89e4fdc"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "src/qs_scf_post_gpw.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/src/qs_scf_post_gpw.F",
+          "bytes": 217795,
+          "sha256": "51c6456557b3cc5f95b2cfa2cee2b514739b80ccee7d32caa905f510d89e4fdc"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "src/pw/realspace_grid_cube.F",
+        "A02_archive_member_sha256": "c349dcfd603fd29fa738d90bafd2cc608251caa6466b1172dfa046da5ec1058a",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "src/pw/realspace_grid_cube.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/pw/realspace_grid_cube.F",
+          "bytes": 46451,
+          "sha256": "c349dcfd603fd29fa738d90bafd2cc608251caa6466b1172dfa046da5ec1058a"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "src/pw/realspace_grid_cube.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/src/pw/realspace_grid_cube.F",
+          "bytes": 46451,
+          "sha256": "c349dcfd603fd29fa738d90bafd2cc608251caa6466b1172dfa046da5ec1058a"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "src/input_cp2k_qs.F",
+        "A02_archive_member_sha256": "84817ccefcafe19f39c64c8af6a531a7bf9ae3aad0c7686ece21d3d3a56a6500",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "src/input_cp2k_qs.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_qs.F",
+          "bytes": 50122,
+          "sha256": "84817ccefcafe19f39c64c8af6a531a7bf9ae3aad0c7686ece21d3d3a56a6500"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "src/input_cp2k_qs.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/src/input_cp2k_qs.F",
+          "bytes": 50122,
+          "sha256": "84817ccefcafe19f39c64c8af6a531a7bf9ae3aad0c7686ece21d3d3a56a6500"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "src/input_cp2k_subsys.F",
+        "A02_archive_member_sha256": "ac2a47f03b781055efd43547b527788513811314fe5dd6a6c681776e54cce9e4",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "src/input_cp2k_subsys.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_subsys.F",
+          "bytes": 146900,
+          "sha256": "ac2a47f03b781055efd43547b527788513811314fe5dd6a6c681776e54cce9e4"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "src/input_cp2k_subsys.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/src/input_cp2k_subsys.F",
+          "bytes": 146900,
+          "sha256": "ac2a47f03b781055efd43547b527788513811314fe5dd6a6c681776e54cce9e4"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "src/common/physcon.F",
+        "A02_archive_member_sha256": "b7c6a5d2c98ddc90652460059049919fc08512ecfcd32861790c6fd2a928cffb",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "src/common/physcon.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/physcon.F",
+          "bytes": 11857,
+          "sha256": "b7c6a5d2c98ddc90652460059049919fc08512ecfcd32861790c6fd2a928cffb"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "src/common/physcon.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/src/common/physcon.F",
+          "bytes": 11857,
+          "sha256": "b7c6a5d2c98ddc90652460059049919fc08512ecfcd32861790c6fd2a928cffb"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "src/common/cp_units.F",
+        "A02_archive_member_sha256": "e853a2e91a4949b81a034de949bb7a03d511da01e2753baac7e7ca8efaca7c3a",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "src/common/cp_units.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/cp_units.F",
+          "bytes": 59723,
+          "sha256": "e853a2e91a4949b81a034de949bb7a03d511da01e2753baac7e7ca8efaca7c3a"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "src/common/cp_units.F",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/src/common/cp_units.F",
+          "bytes": 59723,
+          "sha256": "e853a2e91a4949b81a034de949bb7a03d511da01e2753baac7e7ca8efaca7c3a"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "tools/docker/scripts/build_cp2k.sh",
+        "A02_archive_member_sha256": "d5fc363db4ac004f0ecbdcde52178fd31b337075331ad5e718ea4f8eaf59577a",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "tools/docker/scripts/build_cp2k.sh",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/scripts/build_cp2k.sh",
+          "bytes": 915,
+          "sha256": "d5fc363db4ac004f0ecbdcde52178fd31b337075331ad5e718ea4f8eaf59577a"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "tools/docker/scripts/build_cp2k.sh",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/tools/docker/scripts/build_cp2k.sh",
+          "bytes": 915,
+          "sha256": "d5fc363db4ac004f0ecbdcde52178fd31b337075331ad5e718ea4f8eaf59577a"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "tools/docker/scripts/cmake_cp2k.sh",
+        "A02_archive_member_sha256": "bce0fa9312ee63fd953aa299563ba7fbc935b22ce87b366f95e314bd798a0293",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "tools/docker/scripts/cmake_cp2k.sh",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/scripts/cmake_cp2k.sh",
+          "bytes": 8297,
+          "sha256": "bce0fa9312ee63fd953aa299563ba7fbc935b22ce87b366f95e314bd798a0293"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "tools/docker/scripts/cmake_cp2k.sh",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/tools/docker/scripts/cmake_cp2k.sh",
+          "bytes": 8297,
+          "sha256": "bce0fa9312ee63fd953aa299563ba7fbc935b22ce87b366f95e314bd798a0293"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      },
+      {
+        "path": "make_cp2k.sh",
+        "A02_archive_member_sha256": "ef6dc6b58c8448f06c35d6a64342cb7d4e2b4134c18308fa4d7ccd76e286d50a",
+        "tag_source": {
+          "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+          "path": "make_cp2k.sh",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/make_cp2k.sh",
+          "bytes": 62317,
+          "sha256": "ef6dc6b58c8448f06c35d6a64342cb7d4e2b4134c18308fa4d7ccd76e286d50a"
+        },
+        "archive_REVISION_source": {
+          "commit": "c92cc08b45378b85150447011b5a4bb552f5b797",
+          "path": "make_cp2k.sh",
+          "url": "https://raw.githubusercontent.com/cp2k/cp2k/c92cc08b45378b85150447011b5a4bb552f5b797/make_cp2k.sh",
+          "bytes": 62317,
+          "sha256": "ef6dc6b58c8448f06c35d6a64342cb7d4e2b4134c18308fa4d7ccd76e286d50a"
+        },
+        "A02_member_matches_tag": true,
+        "two_selected_commits_match": true
+      }
+    ],
+    "summary": {
+      "files_checked": 14,
+      "archive_member_matches_tag_count": 14,
+      "c92_vs_tag_identical_count": 13,
+      "different_paths": [
+        "CMakeLists.txt"
+      ],
+      "CMakeLists_only_targeted_difference": {
+        "c92": "VERSION \"2026.1\"",
+        "tag67b5da8": "VERSION \"2026.2\""
+      }
+    },
+    "full_tree_identity_proven": false,
+    "binary_source_identity_proven": false
+  },
+  "A04_resolution_options": [
+    {
+      "option": "Obtain upstream build provenance",
+      "requirement": "A publisher record tracing each exact image manifest digest/measured CP2K binary SHA256 to a complete immutable source tree or release-archive SHA256, build recipe, compiler and dependencies; evaluate evidence explicitly.",
+      "insufficient": [
+        "release/tag name alone",
+        "CP2K version2026.2 alone",
+        "inherited Ubuntu image labels",
+        "test files or data matching a source checkout alone",
+        "binary hash without a source/build chain"
+      ]
+    },
+    {
+      "option": "Produce a separately pinned native build",
+      "requirement": "Build a new isolated candidate from an explicitly selected full source commit/archive digest with locked recipe/compiler/dependencies. Record full source identity, generated build-info contents, input data hashes and output binary/image digest. This is new planned work, not performed here.",
+      "policy": "Do not relabel existing unknown binaries or overwrite historical A02 identities. Any new build requires its own lock/evidence and relevant revalidation."
+    },
+    {
+      "option": "Keep current images exploratory only",
+      "requirement": "Retain immutable images and actual A03 measurements as execution evidence while keeping source-specific units/settings semantics provisional and public atomistic enablement blocked until binding is resolved."
+    }
+  ],
+  "A04_gate": "Before freezing engine-specific constants, density semantics and numerical profile, resolve the actual binary/source association or explicitly replace the candidate with a newly traceable build. Version matching alone does not pass this gate.",
+  "A02_historical_files_changed": false,
+  "runtime_changed": false,
+  "artifact_built_in_this_review": false,
+  "physical_validation_status": "unvalidated",
+  "A02_serialization_description_erratum": {
+    "historical_file": "docs/design/atomistic-a02-v0.1/density-and-units.json",
+    "historical_field": "cube_serialization.density_significant_digits",
+    "historical_value": 6,
+    "correct_A03_value": 5,
+    "source_path": "src/pw/realspace_grid_cube.F",
+    "source_reference_url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/pw/realspace_grid_cube.F",
+    "source_format": "E13.5E3",
+    "observed_A03_field_example": "0.21598E-008",
+    "reason": "Fortran E13.5E3 writes five digits after the decimal in a 0.ddddd coefficient. The leading zero is not significant; the density field therefore has five significant digits, not six.",
+    "header_format_unchanged": "F12.6; coordinate/axis absolute rounding budget remains half1e-6bohr per component.",
+    "historical_A02_manifest_preserved": true,
+    "raw_density_values_modified": false,
+    "physical_acceptance_claim": false
+  }
+}
