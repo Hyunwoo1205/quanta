@@ -118,6 +118,24 @@ def memory_available():
     raise ProbeError('memory_unknown')
 
 
+def docker_child_groups(user):
+    """Grant only this reviewed child access to the existing root-owned socket.
+
+    /var/run is the normal system symlink to /run. No user/group database,
+    socket permission, service or persistent host configuration is changed.
+    """
+    canonical = Path('/run/docker.sock')
+    if Path('/var/run').resolve(strict=True) != Path('/run'):
+        raise ProbeError('docker_socket_path')
+    _parents(canonical)
+    info = canonical.lstat()
+    if (not stat.S_ISSOCK(info.st_mode) or info.st_uid != 0 or info.st_gid <= 0
+            or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) != 0o660):
+        raise ProbeError('docker_socket_metadata')
+    groups = os.getgrouplist(user.pw_name, user.pw_gid)
+    return sorted(set([*groups, info.st_gid])), info.st_gid not in groups
+
+
 def resource_preflight(active, available, disk):
     if active != 0 or available < 6 * 1024**3 or disk < 10 * 1024**3:
         raise ProbeError('resource_preflight')
@@ -265,11 +283,13 @@ def execute(config, archive):
         user = pwd.getpwnam('ubuntu')
         if user.pw_uid == 0 or user.pw_gid == 0:
             raise ProbeError('runtime_user')
+        groups, added_group = docker_child_groups(user)
+        value['docker_socket_verified'] = True
+        value['ephemeral_docker_group_added'] = added_group
         stage = 'archive'
         directory, source = prepare(config, archive, user)
         output = directory / 'run'
         stage = 'benchmark'
-        groups = os.getgrouplist(user.pw_name, user.pw_gid)
         def demote():
             os.setgroups(groups)
             os.setgid(user.pw_gid)

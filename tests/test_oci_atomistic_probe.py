@@ -202,3 +202,36 @@ def test_failed_resource_preflight_still_checks_service_preservation(tmp_path, m
     assert result['postflight_verified'] is True and result['container_preserved'] is True
     assert result['configuration_preserved'] is True and result['database_bytes_preserved'] is True
     assert len(count)==2
+
+
+@pytest.mark.parametrize('kind,uid,gid,mode,nlink', [
+    ('file',0,999,0o660,1),('socket',1000,999,0o660,1),('socket',0,0,0o660,1),
+    ('socket',0,999,0o666,1),('socket',0,999,0o640,1),('socket',0,999,0o660,2)])
+def test_child_docker_group_rejects_untrusted_socket(monkeypatch, kind, uid, gid, mode, nlink):
+    remote=load('remote_atomistic_probe')
+    import stat
+    monkeypatch.setattr(remote,'_parents',lambda path:None)
+    monkeypatch.setattr(remote.Path,'resolve',lambda path, strict=False:Path('/run'))
+    monkeypatch.setattr(remote.Path,'lstat',lambda path:SimpleNamespace(
+        st_mode=(stat.S_IFSOCK if kind=='socket' else stat.S_IFREG)|mode,
+        st_uid=uid,st_gid=gid,st_nlink=nlink))
+    monkeypatch.setattr(remote.os,'getgrouplist',lambda *args:[1000,27])
+    with pytest.raises(remote.ProbeError):
+        remote.docker_child_groups(SimpleNamespace(pw_name='ubuntu',pw_gid=1000))
+
+
+def test_child_docker_group_is_ephemeral_and_only_verified_socket_gid(monkeypatch):
+    remote=load('remote_atomistic_probe')
+    import stat
+    monkeypatch.setattr(remote,'_parents',lambda path:None)
+    monkeypatch.setattr(remote.Path,'resolve',lambda path, strict=False:Path('/run'))
+    monkeypatch.setattr(remote.Path,'lstat',lambda path:SimpleNamespace(
+        st_mode=stat.S_IFSOCK|0o660,st_uid=0,st_gid=999,st_nlink=1))
+    monkeypatch.setattr(remote.os,'getgrouplist',lambda *args:[1000,27])
+    groups, added=remote.docker_child_groups(SimpleNamespace(pw_name='ubuntu',pw_gid=1000))
+    assert groups==[27,999,1000] and added is True
+    monkeypatch.setattr(remote.os,'getgrouplist',lambda *args:[1000,999,27])
+    assert remote.docker_child_groups(SimpleNamespace(pw_name='ubuntu',pw_gid=1000))==([27,999,1000],False)
+    monkeypatch.setattr(remote.Path,'resolve',lambda path, strict=False:Path('/unexpected'))
+    with pytest.raises(remote.ProbeError):
+        remote.docker_child_groups(SimpleNamespace(pw_name='ubuntu',pw_gid=1000))

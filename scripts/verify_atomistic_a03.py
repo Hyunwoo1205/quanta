@@ -18,8 +18,11 @@ from pathlib import Path
 import platform
 import re
 import shutil
+import select
 import subprocess
 import sys
+import tarfile
+import tempfile
 import threading
 import time
 from urllib.error import HTTPError
@@ -38,6 +41,8 @@ LIMITS = {"cpus": 1, "memory_bytes": 2 * 1024**3,
           "supplementary_groups": [0]}
 HEARTBEAT = 0.5
 NUMBER = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[EeDd][-+]?\d+)?"
+ARCHIVE_MAX_BYTES = LIMITS["work_tmpfs_bytes"] + 8 * 1024**2
+OUTPUT_LOG_MAX_BYTES = 512 * 1024
 
 
 def sha256(path: Path) -> str:
@@ -46,6 +51,89 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def extract_work_archive(archive: Path, destination: Path) -> dict:
+    """Extract only bounded ordinary files from the fixed engine-work tar stream."""
+    if archive.stat().st_size > ARCHIVE_MAX_BYTES:
+        raise ValueError("Engine archive exceeds transport byte limit")
+    destination.mkdir(mode=0o700, exist_ok=False)
+    total = 0; count = 0; seen = set()
+    with tarfile.open(archive, mode="r:") as tf:
+        for member in tf:
+            if tf.pax_headers or member.pax_headers:
+                raise ValueError("PAX metadata is not accepted in engine artifacts")
+            if not (member.isdir() or member.isfile()):
+                raise ValueError("Engine archive contains a link or special entry")
+            name = member.name
+            if not name or name.startswith("/") or "\\" in name or ".." in name.split("/"):
+                raise ValueError("Unsafe engine archive path")
+            relative = Path(name)
+            if str(relative) == ".":
+                if not member.isdir():
+                    raise ValueError("Invalid archive root entry")
+                continue
+            if str(relative) in seen:
+                raise ValueError("Duplicate engine archive path")
+            seen.add(str(relative)); count += 1
+            if count > 256:
+                raise ValueError("Engine archive contains too many entries")
+            target = destination / relative
+            if not target.resolve().is_relative_to(destination.resolve()):
+                raise ValueError("Engine archive escapes destination")
+            if member.isdir():
+                target.mkdir(mode=0o700, parents=True, exist_ok=True)
+                continue
+            if member.size < 0 or member.size > LIMITS["work_tmpfs_bytes"]:
+                raise ValueError("Engine artifact file exceeds byte limit")
+            total += member.size
+            if total > LIMITS["work_tmpfs_bytes"]:
+                raise ValueError("Engine artifact total exceeds work tmpfs limit")
+            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            source = tf.extractfile(member)
+            if source is None:
+                raise ValueError("Engine archive omitted regular-file data")
+            with source, target.open("xb") as output:
+                remaining = member.size
+                while remaining:
+                    chunk = source.read(min(1024*1024, remaining))
+                    if not chunk:
+                        raise ValueError("Truncated engine artifact")
+                    output.write(chunk); remaining -= len(chunk)
+    return {"transport": "fixed docker exec tar from live tmpfs",
+            "archive_bytes": archive.stat().st_size, "archive_sha256": sha256(archive),
+            "regular_file_bytes": total, "entries": count,
+            "links_special_files_pax_and_escaping_paths_allowed": False}
+
+
+def stream_work_archive(name: str, archive: Path, timeout: float = 60) -> None:
+    """Bound stdout on disk while reading a live container tmpfs through exec."""
+    args = ["docker", "exec", name, "tar", "-C", "/work", "-cf", "-", "."]
+    with tempfile.TemporaryFile() as err, archive.open("xb") as target:
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=err)
+        deadline = time.monotonic()+timeout; size = 0
+        try:
+            while True:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Engine artifact transport deadline exceeded")
+                ready, _, _ = select.select([process.stdout], [], [], min(1, deadline-time.monotonic()))
+                if not ready:
+                    continue
+                data = os.read(process.stdout.fileno(), 1024*1024)
+                if not data:
+                    break
+                size += len(data)
+                if size > ARCHIVE_MAX_BYTES:
+                    raise ValueError("Engine archive exceeds transport byte limit")
+                target.write(data)
+            code = process.wait(timeout=max(0.1, deadline-time.monotonic()))
+            if code:
+                err.seek(0)
+                raise RuntimeError("Engine tar transport failed: "+err.read(3000).decode(errors="replace"))
+        finally:
+            if process.poll() is None:
+                process.kill(); process.wait(timeout=5)
+            process.stdout.close()
 
 
 def run(args: list[str], timeout: float = 30, check: bool = True) -> subprocess.CompletedProcess:
@@ -390,8 +478,21 @@ class DockerProbe:
         return rows
 
     def read_output(self, name: str, target: Path) -> str:
-        r = run(["docker", "cp", name+":/work/cp2k.out", str(target)], check=False)
-        return target.read_text(errors="replace") if r.returncode == 0 and target.exists() else ""
+        # docker cp may omit live tmpfs contents; exec observes the actual mount.
+        r = run(["docker", "exec", name, "head", "-c", str(OUTPUT_LOG_MAX_BYTES+1), "/work/cp2k.out"], check=False)
+        if r.returncode:
+            return ""
+        raw = r.stdout.encode()
+        target.write_bytes(raw[:OUTPUT_LOG_MAX_BYTES])
+        return r.stdout if len(raw) <= OUTPUT_LOG_MAX_BYTES else ""
+
+    def copy_work(self, name: str, destination: Path) -> dict:
+        archive = destination.parent / "engine-artifacts.tar"
+        try:
+            stream_work_archive(name, archive)
+            return extract_work_archive(archive, destination)
+        finally:
+            archive.unlink(missing_ok=True)
 
     @staticmethod
     def remaining_pids(rows: list[dict]) -> list[int]:
@@ -433,7 +534,7 @@ class DockerProbe:
                     if cancel:
                         raise RuntimeError("Cancellation probe completed before an active engine could be cancelled")
                     record["engine_returncode"] = int(done.stdout.strip())
-                    run(["docker", "cp", name+":/work/.", str(target / "raw")], timeout=60)
+                    record["artifact_transport"] = self.copy_work(name, target / "raw")
                     run(["docker", "exec", name, "touch", "/work/quanta_release"])
                     wait = run(["docker", "wait", name], timeout=15)
                     record["container_returncode"] = int(wait.stdout.strip())

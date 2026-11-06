@@ -2,6 +2,10 @@
 from pathlib import Path
 import importlib.util
 import json
+import io
+import subprocess
+import sys
+import tarfile
 
 import pytest
 
@@ -92,3 +96,57 @@ def test_production_boundary_headers_are_fixed_to_oci_loopback():
     assert sampler.headers == {"Host": "quanta.kro.kr", "Origin": "https://quanta.kro.kr"}
     with pytest.raises(ValueError, match="fixed OCI loopback"):
         a03.WebSampler("http://127.0.0.1:9999", True)
+
+
+def make_archive(path, name="cp2k.out", content=b"CP2K actual tmpfs output\n", kind=tarfile.REGTYPE, pax=None, declared_size=None):
+    with tarfile.open(path, "w", format=tarfile.PAX_FORMAT if pax else tarfile.USTAR_FORMAT) as tf:
+        info = tarfile.TarInfo(name)
+        info.type = kind
+        info.size = len(content) if declared_size is None else declared_size
+        if pax:
+            info.pax_headers = pax
+        tf.addfile(info, io.BytesIO(content) if kind == tarfile.REGTYPE and declared_size is None else None)
+    return path
+
+
+def test_live_tmpfs_artifacts_use_exec_stream_not_docker_cp(tmp_path, monkeypatch):
+    source = make_archive(tmp_path / "source.tar")
+    observed = []
+    real_popen = subprocess.Popen
+    def fake_docker(args, **kwargs):
+        observed.append(args)
+        return real_popen([sys.executable, "-c", "import sys;sys.stdout.buffer.write(open(sys.argv[1],'rb').read())", str(source)], **kwargs)
+    monkeypatch.setattr(a03.subprocess, "Popen", fake_docker)
+    probe = a03.DockerProbe("fixed-image", tmp_path, 180)
+    receipt = probe.copy_work("fixed-container", tmp_path / "raw")
+    assert observed == [["docker", "exec", "fixed-container", "tar", "-C", "/work", "-cf", "-", "."]]
+    assert (tmp_path / "raw/cp2k.out").read_bytes() == b"CP2K actual tmpfs output\n"
+    assert receipt["regular_file_bytes"] == len(b"CP2K actual tmpfs output\n")
+    assert not (tmp_path / "engine-artifacts.tar").exists()
+
+
+@pytest.mark.parametrize("name,kind,pax,size", [
+    ("../escape", tarfile.REGTYPE, None, None),
+    ("/absolute", tarfile.REGTYPE, None, None),
+    ("link", tarfile.SYMTYPE, None, None),
+    ("hardlink", tarfile.LNKTYPE, None, None),
+    ("device", tarfile.CHRTYPE, None, None),
+    ("regular", tarfile.REGTYPE, {"comment": "metadata"}, None),
+    ("too-large", tarfile.REGTYPE, None, a03.LIMITS["work_tmpfs_bytes"]+1),
+])
+def test_engine_tar_extraction_rejects_unsafe_or_oversized_entries(tmp_path, name, kind, pax, size):
+    archive = make_archive(tmp_path / "bad.tar", name=name, kind=kind, pax=pax, declared_size=size)
+    with pytest.raises(ValueError):
+        a03.extract_work_archive(archive, tmp_path / "raw")
+    assert not (tmp_path / "escape").exists()
+
+
+def test_partial_log_read_uses_bounded_live_exec(tmp_path, monkeypatch):
+    calls = []
+    def fake(args, **kwargs):
+        calls.append(args)
+        return subprocess.CompletedProcess(args, 0, "CP2K| active engine\n", "")
+    monkeypatch.setattr(a03, "run", fake)
+    probe = a03.DockerProbe("fixed-image", tmp_path, 180)
+    assert probe.read_output("fixed-container", tmp_path / "partial.out") == "CP2K| active engine\n"
+    assert calls == [["docker", "exec", "fixed-container", "head", "-c", str(512*1024+1), "/work/cp2k.out"]]
