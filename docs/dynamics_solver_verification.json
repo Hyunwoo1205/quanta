@@ -3,7 +3,7 @@
   "updated_at": "2026-11-06",
   "package_version": "0.14.0",
   "baseline_main": "4996b1f6d1a3fd21715f66c5f996362addcb5738",
-  "implementation_source_commit": null,
+  "implementation_source_commit": "7d60e3f5110f41f99e356e4fc072fe9aa04272a0",
   "source_files_sha256": {
     "quanta/__init__.py": "dc42d9f1082e74ab31be6f97684ca328ebf01f2db40e7d21262268406ee40748",
     "quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
@@ -66,10 +66,824 @@
     "full_design_acceptance_completed": false
   },
   "local_full_regression": {
-    "status": "running"
+    "status": "passed",
+    "passed": 1866,
+    "seconds": 395.58,
+    "python": "CPython 3.12.14",
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "log_sha256": "8cd13c3f8cdeebba74f8676a814cefacd47a3d8cc30a53d27030b977cdc77397"
   },
   "native_ci": {
-    "status": "pending"
+    "status": "passed",
+    "run_id": 42191349859,
+    "run_attempt": 1,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42191349859",
+    "source_commit": "7d60e3f5110f41f99e356e4fc072fe9aa04272a0",
+    "jobs": [
+      {
+        "id": 127803866420,
+        "name": "contracts (aarch64)",
+        "status": "passed",
+        "pytest_passed": 1866,
+        "pytest_seconds": 385.42,
+        "all_34_steps_success": true,
+        "native_and_installed_container_vv_gates": "all seven passed",
+        "installed_wheel_and_hardened_nonroot_operations": "passed"
+      },
+      {
+        "id": 127803866671,
+        "name": "contracts (x86_64)",
+        "status": "passed",
+        "pytest_passed": 1866,
+        "pytest_seconds": 277.03,
+        "all_34_steps_success": true,
+        "native_and_installed_container_vv_gates": "all seven passed",
+        "installed_wheel_and_hardened_nonroot_operations": "passed"
+      }
+    ],
+    "native_numerical_measurements": {
+      "x86_64": {
+        "artifact_id": 13490421895,
+        "actual_report_sha256": "472beda44ce81ed8514690e4bf695cbdd44a94f7e16d8dafa906e1ba6eded63a",
+        "created_at": "2026-11-06T09:02:30.543748+00:00",
+        "status": "passed",
+        "source_set_sha256": "e5a4b6015183c7aeb62ab199308b4f31bdade48edee21411b0e79fcfd02dcdc3",
+        "environment": {
+          "valid": true,
+          "runtime_profile": "cpython-3.12.14-linux-x86_64-cpu-v1",
+          "versions": {
+            "python": "3.12.14",
+            "numpy": "2.3.5",
+            "scipy": "1.17.0",
+            "jsonschema": "4.26.0",
+            "referencing": "0.37.0",
+            "rfc8785": "0.1.4",
+            "threadpoolctl": "3.6.0"
+          },
+          "implementation": "CPython",
+          "platform": {
+            "os": "Linux",
+            "architecture": "x86_64"
+          },
+          "thread_environment": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1"
+          },
+          "requirements_lock_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5"
+        },
+        "cases": [
+          {
+            "id": "D01",
+            "name": "independent ballistic motion and invariants",
+            "status": "passed",
+            "reference": "r(t)=r0+v0*t, v(t)=v0; independent exact rational initial E/P/L; scales all1",
+            "accepted_frames_checked": 9,
+            "retained_frame_max_state_error": 0.0,
+            "max_scaled_errors": {
+              "position": 0.0,
+              "velocity": 0.0,
+              "force": 0.0,
+              "energy": 0.0,
+              "momentum": 0.0,
+              "angular_momentum": 0.0,
+              "center_of_mass": 0.0
+            },
+            "tolerance": 1e-12,
+            "request_sha256": "e046f9446e8eb28a8c19b1636bacef14a679b6800773632d096a4ac2110553a4",
+            "payload_sha256": "95d4f614807825124019ca9fa6852e772c2e8be3a9378ca6d4d9e12e9fc00390",
+            "execution_status": "SUCCEEDED",
+            "numerical_status": "pass",
+            "resolution_status": "not_checked",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              9
+            ]
+          },
+          {
+            "id": "D02",
+            "name": "unequal-mass noncollinear harmonic closed form",
+            "status": "passed",
+            "reference": "q=[2cos(t),sin(t),0], qdot=[-2sin(t),cos(t),0]; r1=R-.75q,r2=R+.25q,R=R0+Vt; no numerical reference stepping",
+            "normalized_with": {
+              "L0": 1,
+              "V0": 1,
+              "E0": 1,
+              "P0": 1,
+              "J0": 1
+            },
+            "accepted_frames_checked": 1001,
+            "max_scaled_errors": {
+              "position": 9.577237136682015e-08,
+              "velocity": 1.240069262831156e-07,
+              "force": 9.577237092273094e-08,
+              "energy": 1.9914564064471563e-07,
+              "momentum": 6.106226635438361e-15,
+              "angular_momentum": 1.915134717478395e-14,
+              "center_of_mass": 3.8191672047105385e-14
+            },
+            "tolerances": {
+              "position": 1e-06,
+              "velocity": 1e-06,
+              "force": 1e-06,
+              "energy": 1e-06,
+              "momentum": 1e-10,
+              "angular_momentum": 1e-10,
+              "center_of_mass": 1e-10
+            },
+            "retained_frame_max_state_error": 1.240069262831156e-07,
+            "runtime_vs_independent_allstep_diagnostic_deltas": {
+              "energy": 0.0,
+              "momentum": 0.0,
+              "angular_momentum": 0.0,
+              "center_of_mass": 0.0
+            },
+            "diagnostic_consistency_tolerance": 1e-12,
+            "runtime_diagnostic_maxima": {
+              "max_energy_drift_scaled": 1.9914564064471563e-07,
+              "max_momentum_drift_scaled": 6.106226635438361e-15,
+              "max_angular_momentum_drift_scaled": 1.915134717478395e-14,
+              "max_com_ballistic_error_scaled": 3.8191672047105385e-14
+            },
+            "request_sha256": "262a2eada7af4e083e540e65770e151f8277283be90599eed6e2be7f14e0ae53",
+            "payload_sha256": "2aea7f3356d3fa803b0836637e8d38e4b5ed337c796ccdeb776afa0cab7f6bfc",
+            "execution_status": "SUCCEEDED",
+            "numerical_status": "pass",
+            "resolution_status": "not_checked",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              101
+            ]
+          },
+          {
+            "id": "D03",
+            "name": "same-duration independent second-order convergence",
+            "status": "passed",
+            "duration_s": 1,
+            "dt_s": [
+              0.05,
+              0.025,
+              0.0125
+            ],
+            "steps": [
+              20,
+              40,
+              80
+            ],
+            "common_integer_grid_counts": {
+              "1": 21,
+              "2": 21,
+              "4": 21
+            },
+            "max_exact_state_errors": {
+              "1": 0.00031008842995827735,
+              "2": 7.750876741097201e-05,
+              "4": 1.937635835935758e-05
+            },
+            "all_integer_grid_counts": {
+              "1": 21,
+              "2": 41,
+              "4": 81
+            },
+            "observer_and_retained_payload_errors_match": true,
+            "observed_orders": [
+              2.0002482817090113,
+              2.0000620576317454
+            ],
+            "order_band": [
+              1.8,
+              2.2
+            ],
+            "fine_error_limit": 0.0001,
+            "roundoff_floor": 1e-13,
+            "runtime_resolution": {
+              "mode": "halving_2",
+              "status": "pass",
+              "coarse_pair_scaled_error": 0.23257966254730533,
+              "fine_pair_scaled_error": 0.05813240905161443,
+              "comparison_grid": "every_primary_integer_step",
+              "interpretation": "finite_step_agreement_not_physical_validation"
+            },
+            "request_sha256": "2d12ec316043904d3ffa77b4356139ee790ad80364524204b77038c85bff012c",
+            "payload_sha256": "5a2219dd4134ef75b5315c0e93279027c252744dea41b452a1f2fc910c080879",
+            "execution_status": "SUCCEEDED",
+            "numerical_status": "pass",
+            "resolution_status": "pass",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              21,
+              21,
+              21
+            ]
+          },
+          {
+            "id": "D04",
+            "name": "SI invariance with correct angular-momentum origin transform",
+            "status": "passed",
+            "rotation": "Rz(+pi/2), determinant+1",
+            "translation_m": [
+              0.25,
+              -0.5,
+              0.125
+            ],
+            "angular_rule": "L'=R*L+a cross (R*P)",
+            "normalized_with": "Baseline physical SI scales L0=E0=T0=1 for all transformed comparisons; raw U/K/E preserved",
+            "rescaling": "L0=2,E0=3,T0=4 and f(rho)=0.5rho^2 preserve U(r)=0.375r^2",
+            "measurements": [
+              {
+                "transform": "proper_rotation_translation",
+                "max_scaled_errors": {
+                  "position": 1.7763568394002505e-15,
+                  "velocity": 2.220446049250313e-16,
+                  "force": 8.881784197001252e-16,
+                  "potential_energy": 1.7763568394002505e-15,
+                  "kinetic_energy": 1.6653345369377348e-16,
+                  "total_energy": 1.7763568394002505e-15,
+                  "momentum": 2.220446049250313e-16,
+                  "angular_momentum": 8.881784197001252e-16,
+                  "center_of_mass": 1.2212453270876722e-15
+                },
+                "tolerance": 1e-09,
+                "passed": true,
+                "request_sha256": "1e08704ac1da6c03c7a6fbfe95b1ba17b4a2f4b50ad52dc54d9e11a14801b2db",
+                "payload_sha256": "17c2f438e95700aeaaecd57dbc14be7a0e565c4c647ff2c373de17945e997e45",
+                "execution_status": "SUCCEEDED",
+                "numerical_status": "pass",
+                "resolution_status": "not_checked",
+                "physical_validation_status": "unvalidated",
+                "saved_frame_counts": [
+                  11
+                ]
+              },
+              {
+                "transform": "particle_id_permutation",
+                "max_scaled_errors": {
+                  "position": 0.0,
+                  "velocity": 0.0,
+                  "force": 0.0,
+                  "potential_energy": 0.0,
+                  "kinetic_energy": 0.0,
+                  "total_energy": 0.0,
+                  "momentum": 0.0,
+                  "angular_momentum": 0.0,
+                  "center_of_mass": 0.0
+                },
+                "tolerance": 1e-09,
+                "passed": true,
+                "request_sha256": "dc739d875549bce2489f9068cf5dbd27ab8a5970b8f3938dc93a8b2b098fdee8",
+                "payload_sha256": "c175fb6950562706182031ce0e259d22e78492efc286beb36ba749dc57894080",
+                "execution_status": "SUCCEEDED",
+                "numerical_status": "pass",
+                "resolution_status": "not_checked",
+                "physical_validation_status": "unvalidated",
+                "saved_frame_counts": [
+                  11
+                ]
+              },
+              {
+                "transform": "same_SI_model_different_L0_E0_T0",
+                "max_scaled_errors": {
+                  "position": 0.0,
+                  "velocity": 0.0,
+                  "force": 2.220446049250313e-16,
+                  "potential_energy": 0.0,
+                  "kinetic_energy": 0.0,
+                  "total_energy": 0.0,
+                  "momentum": 0.0,
+                  "angular_momentum": 0.0,
+                  "center_of_mass": 0.0
+                },
+                "tolerance": 1e-09,
+                "passed": true,
+                "request_sha256": "88126cc4629a196e04aec9570756c25e201ec1762dd81beb4cccce87a099628d",
+                "payload_sha256": "da1b91d073161130a686a97d5386ce93387a754bd0bfd0c5771c4e358ea45bc5",
+                "execution_status": "SUCCEEDED",
+                "numerical_status": "pass",
+                "resolution_status": "not_checked",
+                "physical_validation_status": "unvalidated",
+                "saved_frame_counts": [
+                  11
+                ]
+              }
+            ],
+            "base": {
+              "request_sha256": "23899fb73332f4c0fbed86cb32846f136666489b6f38127b00123c8b49c012ef",
+              "payload_sha256": "85ddbdb40700e34d4d904430bf0731ead959d317a0feb63a4ac279df315b1bae",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                11
+              ]
+            }
+          },
+          {
+            "id": "D05",
+            "name": "supplementary positive-step velocity reversal",
+            "status": "passed",
+            "max_position_error_scaled": 1.1102230246251565e-16,
+            "max_velocity_error_scaled": 1.3877787807814457e-16,
+            "tolerance": 1e-09,
+            "interpretation": "Two explicit standalone initial-value requests, each time0; not checkpoint/continuation support and not a substitute for D02/D03.",
+            "forward": {
+              "request_sha256": "262a2eada7af4e083e540e65770e151f8277283be90599eed6e2be7f14e0ae53",
+              "payload_sha256": "2aea7f3356d3fa803b0836637e8d38e4b5ed337c796ccdeb776afa0cab7f6bfc",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                101
+              ]
+            },
+            "reverse": {
+              "request_sha256": "7dfdd5f3460a4e4cefab69c21c04d72e187c0282346da986634569e61f45ab96",
+              "payload_sha256": "170d9f0816236317a3ba0a76869ffb9e80de57c6f8345dffb431b2d6ac9aeaa8",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                101
+              ]
+            }
+          },
+          {
+            "id": "D06",
+            "name": "all-step diagnostic maxima independent of legal output sparsity",
+            "status": "passed",
+            "steps": 100,
+            "interpretation": "n100 keeps bothstride1/stride10 under declared512-frame cap; D02 independently observes all1001accepted steps without altering that cap.",
+            "common_frames_equal": true,
+            "diagnostic_maxima_equal": true,
+            "statuses_equal": true,
+            "diagnostic_maxima": {
+              "max_energy_drift_scaled": 2.803136389673e-09,
+              "max_momentum_drift_scaled": 1.4432899320127035e-15,
+              "max_angular_momentum_drift_scaled": 2.1094237467877974e-15,
+              "max_com_ballistic_error_scaled": 3.818993732362941e-15
+            },
+            "dense": {
+              "request_sha256": "05e0125c5e3f814bd1e3ca9cece5b2062debab67f2a27dc11f8e73c6fe514c82",
+              "payload_sha256": "902782f1d77ab12b18a30a91fc716e573f80799e67e7fde31d46d004377100b4",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                101
+              ]
+            },
+            "sparse": {
+              "request_sha256": "23899fb73332f4c0fbed86cb32846f136666489b6f38127b00123c8b49c012ef",
+              "payload_sha256": "85ddbdb40700e34d4d904430bf0731ead959d317a0feb63a4ac279df315b1bae",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                11
+              ]
+            }
+          },
+          {
+            "id": "D07_drift_segment_subcase",
+            "name": "interior drift crossing between safe endpoints",
+            "status": "passed",
+            "coverage": "Drift segment crossing subcase only; other domain/range and fullD07 gates are separate tests.",
+            "numerical_drift_path": "d(s)=[-2+4s,0,0]; min distance0 at s=.5 although endpointdistances2",
+            "no_reflection_or_clipping": true,
+            "errors": [
+              {
+                "code": "EXPRESSION_DOMAIN",
+                "category": "numerical",
+                "message": "Numerical drift segment reaches the minimum pair distance",
+                "path": "/system/particles",
+                "step_id": null,
+                "branch_index": null,
+                "retryable": false,
+                "details": {
+                  "pair_indices": [
+                    0,
+                    1
+                  ],
+                  "guard": "numerical_drift_segment_not_physical_collision_time",
+                  "refinement_factor": 1,
+                  "attempted_force_evaluations": 1,
+                  "completed_force_evaluations": 1
+                }
+              }
+            ],
+            "request_sha256": "6bad8cf29854076af51a8599818fa2e22d606dab32c785d06b1b0fb3a647d480",
+            "payload_sha256": "5745fee26a3dbee9c6a61b61f9f02f2b8a31610eb3d4d3c3c1fcc26e00f6699c",
+            "execution_status": "FAILED",
+            "numerical_status": "not_checked",
+            "resolution_status": "not_checked",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              1
+            ]
+          }
+        ],
+        "full_design_acceptance_completed": false,
+        "physical_validation_status": "unvalidated"
+      },
+      "aarch64": {
+        "artifact_id": 13490342965,
+        "actual_report_sha256": "e08c584551cf331a70866136bcda099210ec821820a8ca98ccea2857893e82e6",
+        "created_at": "2026-11-06T09:04:32.672935+00:00",
+        "status": "passed",
+        "source_set_sha256": "e5a4b6015183c7aeb62ab199308b4f31bdade48edee21411b0e79fcfd02dcdc3",
+        "environment": {
+          "valid": true,
+          "runtime_profile": "cpython-3.12.14-linux-aarch64-cpu-v1",
+          "versions": {
+            "python": "3.12.14",
+            "numpy": "2.3.5",
+            "scipy": "1.17.0",
+            "jsonschema": "4.26.0",
+            "referencing": "0.37.0",
+            "rfc8785": "0.1.4",
+            "threadpoolctl": "3.6.0"
+          },
+          "implementation": "CPython",
+          "platform": {
+            "os": "Linux",
+            "architecture": "aarch64"
+          },
+          "thread_environment": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1"
+          },
+          "requirements_lock_sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f"
+        },
+        "cases": [
+          {
+            "id": "D01",
+            "name": "independent ballistic motion and invariants",
+            "status": "passed",
+            "reference": "r(t)=r0+v0*t, v(t)=v0; independent exact rational initial E/P/L; scales all1",
+            "accepted_frames_checked": 9,
+            "retained_frame_max_state_error": 0.0,
+            "max_scaled_errors": {
+              "position": 0.0,
+              "velocity": 0.0,
+              "force": 0.0,
+              "energy": 0.0,
+              "momentum": 0.0,
+              "angular_momentum": 0.0,
+              "center_of_mass": 0.0
+            },
+            "tolerance": 1e-12,
+            "request_sha256": "e046f9446e8eb28a8c19b1636bacef14a679b6800773632d096a4ac2110553a4",
+            "payload_sha256": "95d4f614807825124019ca9fa6852e772c2e8be3a9378ca6d4d9e12e9fc00390",
+            "execution_status": "SUCCEEDED",
+            "numerical_status": "pass",
+            "resolution_status": "not_checked",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              9
+            ]
+          },
+          {
+            "id": "D02",
+            "name": "unequal-mass noncollinear harmonic closed form",
+            "status": "passed",
+            "reference": "q=[2cos(t),sin(t),0], qdot=[-2sin(t),cos(t),0]; r1=R-.75q,r2=R+.25q,R=R0+Vt; no numerical reference stepping",
+            "normalized_with": {
+              "L0": 1,
+              "V0": 1,
+              "E0": 1,
+              "P0": 1,
+              "J0": 1
+            },
+            "accepted_frames_checked": 1001,
+            "max_scaled_errors": {
+              "position": 9.577237136682015e-08,
+              "velocity": 1.240069262831156e-07,
+              "force": 9.577237092273094e-08,
+              "energy": 1.9914564064471563e-07,
+              "momentum": 6.106226635438361e-15,
+              "angular_momentum": 1.915134717478395e-14,
+              "center_of_mass": 3.8191672047105385e-14
+            },
+            "tolerances": {
+              "position": 1e-06,
+              "velocity": 1e-06,
+              "force": 1e-06,
+              "energy": 1e-06,
+              "momentum": 1e-10,
+              "angular_momentum": 1e-10,
+              "center_of_mass": 1e-10
+            },
+            "retained_frame_max_state_error": 1.240069262831156e-07,
+            "runtime_vs_independent_allstep_diagnostic_deltas": {
+              "energy": 0.0,
+              "momentum": 0.0,
+              "angular_momentum": 0.0,
+              "center_of_mass": 0.0
+            },
+            "diagnostic_consistency_tolerance": 1e-12,
+            "runtime_diagnostic_maxima": {
+              "max_energy_drift_scaled": 1.9914564064471563e-07,
+              "max_momentum_drift_scaled": 6.106226635438361e-15,
+              "max_angular_momentum_drift_scaled": 1.915134717478395e-14,
+              "max_com_ballistic_error_scaled": 3.8191672047105385e-14
+            },
+            "request_sha256": "262a2eada7af4e083e540e65770e151f8277283be90599eed6e2be7f14e0ae53",
+            "payload_sha256": "2aea7f3356d3fa803b0836637e8d38e4b5ed337c796ccdeb776afa0cab7f6bfc",
+            "execution_status": "SUCCEEDED",
+            "numerical_status": "pass",
+            "resolution_status": "not_checked",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              101
+            ]
+          },
+          {
+            "id": "D03",
+            "name": "same-duration independent second-order convergence",
+            "status": "passed",
+            "duration_s": 1,
+            "dt_s": [
+              0.05,
+              0.025,
+              0.0125
+            ],
+            "steps": [
+              20,
+              40,
+              80
+            ],
+            "common_integer_grid_counts": {
+              "1": 21,
+              "2": 21,
+              "4": 21
+            },
+            "max_exact_state_errors": {
+              "1": 0.00031008842995827735,
+              "2": 7.750876741097201e-05,
+              "4": 1.937635835935758e-05
+            },
+            "all_integer_grid_counts": {
+              "1": 21,
+              "2": 41,
+              "4": 81
+            },
+            "observer_and_retained_payload_errors_match": true,
+            "observed_orders": [
+              2.0002482817090113,
+              2.0000620576317454
+            ],
+            "order_band": [
+              1.8,
+              2.2
+            ],
+            "fine_error_limit": 0.0001,
+            "roundoff_floor": 1e-13,
+            "runtime_resolution": {
+              "mode": "halving_2",
+              "status": "pass",
+              "coarse_pair_scaled_error": 0.23257966254730533,
+              "fine_pair_scaled_error": 0.05813240905161443,
+              "comparison_grid": "every_primary_integer_step",
+              "interpretation": "finite_step_agreement_not_physical_validation"
+            },
+            "request_sha256": "2d12ec316043904d3ffa77b4356139ee790ad80364524204b77038c85bff012c",
+            "payload_sha256": "5a2219dd4134ef75b5315c0e93279027c252744dea41b452a1f2fc910c080879",
+            "execution_status": "SUCCEEDED",
+            "numerical_status": "pass",
+            "resolution_status": "pass",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              21,
+              21,
+              21
+            ]
+          },
+          {
+            "id": "D04",
+            "name": "SI invariance with correct angular-momentum origin transform",
+            "status": "passed",
+            "rotation": "Rz(+pi/2), determinant+1",
+            "translation_m": [
+              0.25,
+              -0.5,
+              0.125
+            ],
+            "angular_rule": "L'=R*L+a cross (R*P)",
+            "normalized_with": "Baseline physical SI scales L0=E0=T0=1 for all transformed comparisons; raw U/K/E preserved",
+            "rescaling": "L0=2,E0=3,T0=4 and f(rho)=0.5rho^2 preserve U(r)=0.375r^2",
+            "measurements": [
+              {
+                "transform": "proper_rotation_translation",
+                "max_scaled_errors": {
+                  "position": 1.7763568394002505e-15,
+                  "velocity": 2.220446049250313e-16,
+                  "force": 8.881784197001252e-16,
+                  "potential_energy": 1.7763568394002505e-15,
+                  "kinetic_energy": 1.6653345369377348e-16,
+                  "total_energy": 1.7763568394002505e-15,
+                  "momentum": 2.220446049250313e-16,
+                  "angular_momentum": 8.881784197001252e-16,
+                  "center_of_mass": 1.2212453270876722e-15
+                },
+                "tolerance": 1e-09,
+                "passed": true,
+                "request_sha256": "1e08704ac1da6c03c7a6fbfe95b1ba17b4a2f4b50ad52dc54d9e11a14801b2db",
+                "payload_sha256": "17c2f438e95700aeaaecd57dbc14be7a0e565c4c647ff2c373de17945e997e45",
+                "execution_status": "SUCCEEDED",
+                "numerical_status": "pass",
+                "resolution_status": "not_checked",
+                "physical_validation_status": "unvalidated",
+                "saved_frame_counts": [
+                  11
+                ]
+              },
+              {
+                "transform": "particle_id_permutation",
+                "max_scaled_errors": {
+                  "position": 0.0,
+                  "velocity": 0.0,
+                  "force": 0.0,
+                  "potential_energy": 0.0,
+                  "kinetic_energy": 0.0,
+                  "total_energy": 0.0,
+                  "momentum": 0.0,
+                  "angular_momentum": 0.0,
+                  "center_of_mass": 0.0
+                },
+                "tolerance": 1e-09,
+                "passed": true,
+                "request_sha256": "dc739d875549bce2489f9068cf5dbd27ab8a5970b8f3938dc93a8b2b098fdee8",
+                "payload_sha256": "c175fb6950562706182031ce0e259d22e78492efc286beb36ba749dc57894080",
+                "execution_status": "SUCCEEDED",
+                "numerical_status": "pass",
+                "resolution_status": "not_checked",
+                "physical_validation_status": "unvalidated",
+                "saved_frame_counts": [
+                  11
+                ]
+              },
+              {
+                "transform": "same_SI_model_different_L0_E0_T0",
+                "max_scaled_errors": {
+                  "position": 0.0,
+                  "velocity": 0.0,
+                  "force": 2.220446049250313e-16,
+                  "potential_energy": 0.0,
+                  "kinetic_energy": 0.0,
+                  "total_energy": 0.0,
+                  "momentum": 0.0,
+                  "angular_momentum": 0.0,
+                  "center_of_mass": 0.0
+                },
+                "tolerance": 1e-09,
+                "passed": true,
+                "request_sha256": "88126cc4629a196e04aec9570756c25e201ec1762dd81beb4cccce87a099628d",
+                "payload_sha256": "da1b91d073161130a686a97d5386ce93387a754bd0bfd0c5771c4e358ea45bc5",
+                "execution_status": "SUCCEEDED",
+                "numerical_status": "pass",
+                "resolution_status": "not_checked",
+                "physical_validation_status": "unvalidated",
+                "saved_frame_counts": [
+                  11
+                ]
+              }
+            ],
+            "base": {
+              "request_sha256": "23899fb73332f4c0fbed86cb32846f136666489b6f38127b00123c8b49c012ef",
+              "payload_sha256": "85ddbdb40700e34d4d904430bf0731ead959d317a0feb63a4ac279df315b1bae",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                11
+              ]
+            }
+          },
+          {
+            "id": "D05",
+            "name": "supplementary positive-step velocity reversal",
+            "status": "passed",
+            "max_position_error_scaled": 1.1102230246251565e-16,
+            "max_velocity_error_scaled": 1.3877787807814457e-16,
+            "tolerance": 1e-09,
+            "interpretation": "Two explicit standalone initial-value requests, each time0; not checkpoint/continuation support and not a substitute for D02/D03.",
+            "forward": {
+              "request_sha256": "262a2eada7af4e083e540e65770e151f8277283be90599eed6e2be7f14e0ae53",
+              "payload_sha256": "2aea7f3356d3fa803b0836637e8d38e4b5ed337c796ccdeb776afa0cab7f6bfc",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                101
+              ]
+            },
+            "reverse": {
+              "request_sha256": "7dfdd5f3460a4e4cefab69c21c04d72e187c0282346da986634569e61f45ab96",
+              "payload_sha256": "170d9f0816236317a3ba0a76869ffb9e80de57c6f8345dffb431b2d6ac9aeaa8",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                101
+              ]
+            }
+          },
+          {
+            "id": "D06",
+            "name": "all-step diagnostic maxima independent of legal output sparsity",
+            "status": "passed",
+            "steps": 100,
+            "interpretation": "n100 keeps bothstride1/stride10 under declared512-frame cap; D02 independently observes all1001accepted steps without altering that cap.",
+            "common_frames_equal": true,
+            "diagnostic_maxima_equal": true,
+            "statuses_equal": true,
+            "diagnostic_maxima": {
+              "max_energy_drift_scaled": 2.803136389673e-09,
+              "max_momentum_drift_scaled": 1.4432899320127035e-15,
+              "max_angular_momentum_drift_scaled": 2.1094237467877974e-15,
+              "max_com_ballistic_error_scaled": 3.818993732362941e-15
+            },
+            "dense": {
+              "request_sha256": "05e0125c5e3f814bd1e3ca9cece5b2062debab67f2a27dc11f8e73c6fe514c82",
+              "payload_sha256": "902782f1d77ab12b18a30a91fc716e573f80799e67e7fde31d46d004377100b4",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                101
+              ]
+            },
+            "sparse": {
+              "request_sha256": "23899fb73332f4c0fbed86cb32846f136666489b6f38127b00123c8b49c012ef",
+              "payload_sha256": "85ddbdb40700e34d4d904430bf0731ead959d317a0feb63a4ac279df315b1bae",
+              "execution_status": "SUCCEEDED",
+              "numerical_status": "pass",
+              "resolution_status": "not_checked",
+              "physical_validation_status": "unvalidated",
+              "saved_frame_counts": [
+                11
+              ]
+            }
+          },
+          {
+            "id": "D07_drift_segment_subcase",
+            "name": "interior drift crossing between safe endpoints",
+            "status": "passed",
+            "coverage": "Drift segment crossing subcase only; other domain/range and fullD07 gates are separate tests.",
+            "numerical_drift_path": "d(s)=[-2+4s,0,0]; min distance0 at s=.5 although endpointdistances2",
+            "no_reflection_or_clipping": true,
+            "errors": [
+              {
+                "code": "EXPRESSION_DOMAIN",
+                "category": "numerical",
+                "message": "Numerical drift segment reaches the minimum pair distance",
+                "path": "/system/particles",
+                "step_id": null,
+                "branch_index": null,
+                "retryable": false,
+                "details": {
+                  "pair_indices": [
+                    0,
+                    1
+                  ],
+                  "guard": "numerical_drift_segment_not_physical_collision_time",
+                  "refinement_factor": 1,
+                  "attempted_force_evaluations": 1,
+                  "completed_force_evaluations": 1
+                }
+              }
+            ],
+            "request_sha256": "6bad8cf29854076af51a8599818fa2e22d606dab32c785d06b1b0fb3a647d480",
+            "payload_sha256": "5745fee26a3dbee9c6a61b61f9f02f2b8a31610eb3d4d3c3c1fcc26e00f6699c",
+            "execution_status": "FAILED",
+            "numerical_status": "not_checked",
+            "resolution_status": "not_checked",
+            "physical_validation_status": "unvalidated",
+            "saved_frame_counts": [
+              1
+            ]
+          }
+        ],
+        "full_design_acceptance_completed": false,
+        "physical_validation_status": "unvalidated"
+      }
+    }
   },
   "wheel": {
     "python_bytes_match": 32,
@@ -123,5 +937,35 @@
     },
     "dependencies": "Existing exact locked .venv site-packages supplied via PYTHONPATH; quanta and all contract roots asserted inside the new wheel environment.",
     "wheel_python_files": 32
+  },
+  "publication_method": {
+    "local_materialization": "Files restored from remote tree; no local git worktree claimed",
+    "github": "Tree/commit API followed by non-forced main update with expected baseline head lease",
+    "user_changes": "No baseline files missing; old contracts exact; no remote concurrent head change at publication"
+  },
+  "stage_complete": true,
+  "related_control_ci": [
+    {
+      "id": 42191349808,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42191349808",
+      "status": "success",
+      "source_commit": "7d60e3f5110f41f99e356e4fc072fe9aa04272a0",
+      "all_jobs_success": true,
+      "tests_per_architecture": 190
+    },
+    {
+      "id": 42191349906,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42191349906",
+      "status": "success",
+      "source_commit": "7d60e3f5110f41f99e356e4fc072fe9aa04272a0",
+      "all_jobs_success": true,
+      "tests_per_architecture": 49
+    }
+  ],
+  "planning_document_update": {
+    "existing_document_url": "https://docs.google.com/document/d/1t0SUe1Z3tYB5rlpnujeguBRqIQzxuAynOcCxLk27tIQ",
+    "same_document_updated": true,
+    "content_and_heading_readback_verified": true,
+    "handoff_document_created_or_updated": false
   }
 }
