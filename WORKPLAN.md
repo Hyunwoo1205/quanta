@@ -324,6 +324,8 @@ ACME job `127588786706`은 기존 설치·Caddy·설정 범위를 확인한 뒤 
 
 배포 전 독립 통합 검토에서reboot 전용수집기가UID10001로내린뒤자체권한전환을하는audit DBreader를중복호출하는문제를찾았습니다. 실제서버신규작업을실행하기전에바깥전환을제거했고, actualaudit DBreader와실제SQLite를연결하는정상/오류2회귀를추가했습니다. 이변경은새source/CI에서다시고정하며문제가있던34dda소스를서버에서실행하지않았습니다. audit권한전환은ALRM/HUP/TERM criticalmask도적용합니다. 현재운영회귀170개+Caddy준비10개, 총180개검증을기준으로새CI후재개합니다.
 
+수정 소스 `e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f`의 [전용CI42163707530](https://github.com/Hyunwoo1205/quanta/actions/runs/42163707530)가 ARM/x86 각각180개 시험과 종료 단계까지 성공했습니다. 코드와 앱소스를 새로 바꾸지 않는 workflow핀·검증기록 커밋은 이 실제 source/CI와 local11개분류시험을 사용하며, 같은 수치 전체검사를 중복 시작하지 않습니다. 현재 source를고정하여 read-onlycompare부터 실제서버점검을수행합니다. 추가백업갱신은실행하지않았습니다.
+
 ## 다음 작업
 
 OCI 단독 A1의 기존 2 OCPU·12 GB·부트 200 GB를 유지한 앱 0.11.0 설치, 실제 ARM 계산 smoke·인증·검증 API, 영속 데이터·백업 및 격리 복원, 앱 자동 시작·일일 SQLite 백업을 완료했습니다. 기존 컨테이너·데이터를 보존했고 새 SSH 키·상시 PC·Tailscale을 추가하지 않았습니다. 관리형 OCI 볼륨 백업과 off-host 복구는 별도 미설정 범위입니다.

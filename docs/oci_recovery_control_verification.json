@@ -71,15 +71,15 @@
     "production_configuration_changed": false,
     "actual_pinned_caddy_ci_reverification": "Both architecture framing steps passed in run42162923559; full repository run still in progress"
   },
-  "current_control_source": "34dda174b422714e3ad6a7316cfd067d97e0a458",
+  "current_control_source": "e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f",
   "current_control_ci": {
-    "id": 42162923545,
-    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42162923545",
+    "id": 42163707530,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42163707530",
     "architectures": [
       "x86_64",
       "aarch64"
     ],
-    "tests_each": 178,
+    "tests_each": 180,
     "conclusion": "success"
   },
   "predeployment_review_correction": {
