@@ -57,8 +57,7 @@ jobs:
           python -m pip check
       - name: Test inactive A03 inputs and fixed controls
         run: |
-          python -m pytest tests/test_atomistic_a03_inputs.py tests/test_atomistic_a03_runner.py -q
-          python -m unittest discover -s tests -p 'test_oci_atomistic_probe.py' -v
+          python -m pytest tests/test_atomistic_a03_inputs.py tests/test_atomistic_a03_runner.py tests/test_oci_atomistic_probe.py -q
           python scripts/check_atomistic_a02.py
       - name: Run real isolated engine with a separate Quanta web service
         run: python scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a03
