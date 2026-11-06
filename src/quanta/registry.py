@@ -35,7 +35,7 @@ class ContractRegistry:
         # Version selection is explicit: merely installing a new bundle never
         # changes validation or replay of existing 0.2 inputs.
         if contract_version is not None and (not isinstance(contract_version, str)
-                                             or contract_version not in {"0.2.0", "0.3.0"}):
+                                             or contract_version not in {"0.2.0", "0.3.0", "0.3.1"}):
             raise ValueError("Unsupported bundled contract version")
         selected_version = contract_version or "0.2.0"
         enforce_selected_version = contract_dir is None or contract_version is not None
@@ -76,7 +76,7 @@ class ContractRegistry:
         self.contract_version = self.data.get("contract_version")
         if enforce_selected_version and self.contract_version != selected_version:
             raise ValueError("Selected contract version differs from the loaded registry")
-        if self.contract_version not in {"0.2.0", "0.3.0"}:
+        if self.contract_version not in {"0.2.0", "0.3.0", "0.3.1"}:
             self._load_errors.append(_error("Unsupported registry contract version", "registry.json"))
         self.resource_policy = self.documents.get("resource_policy.json", {})
         self.schema_ids: dict[str, str] = {}
@@ -166,7 +166,7 @@ class ContractRegistry:
         if not self.data:
             errors.append(_error("The frozen registry document is unavailable"))
             return errors
-        if self.contract_version == "0.3.0":
+        if self.contract_version in {"0.3.0", "0.3.1"}:
             for name, schema in (("registry.json", "registry.schema.json"),
                                  ("resource_policy.json", "resource_policy.schema.json")):
                 try:

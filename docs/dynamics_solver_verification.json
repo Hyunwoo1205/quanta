@@ -1,0 +1,127 @@
+{
+  "verification_kind": "standalone_velocity_verlet_implementation_checkpoint",
+  "updated_at": "2026-11-06",
+  "package_version": "0.14.0",
+  "baseline_main": "4996b1f6d1a3fd21715f66c5f996362addcb5738",
+  "implementation_source_commit": null,
+  "source_files_sha256": {
+    "quanta/__init__.py": "dc42d9f1082e74ab31be6f97684ca328ebf01f2db40e7d21262268406ee40748",
+    "quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "quanta/access_auth.py": "f096678d5e9d89badcb3b92600836e2f91ab2f2dd794a0f43752ca8fe4d85d27",
+    "quanta/account_auth.py": "2960f00c538c0c17172625092b6b4b2b2fe7cc0e82f2209d02d81ddd1bb364a8",
+    "quanta/autodiff.py": "736335535a13797cb4b794b3797497474477782ff8b8c6520bbe1789182b65d2",
+    "quanta/backup.py": "da062fe3d33c71dddda2220f8929078bd79636aa85a87a395cd886a4fd90e8fe",
+    "quanta/cli.py": "87ef278c0d171207451b53d327d5d8d69f20bbf8c836eb74a4cf880cac488a63",
+    "quanta/dynamics.py": "3bf177c7b3c1626fc45fe6f9361ffc0e6549079da1613305f863cd7d74f301d6",
+    "quanta/dynamics_results.py": "47e5ecff034d76161f921ac1cf3f8c5682e034fc984bdc2146bb2ac256925940",
+    "quanta/dynamics_validation.py": "72c431840ff14af3d28d3ffb8776b1428eb4fce5dd0a222a17922eb6e082023d",
+    "quanta/environment.py": "ec2c2fad0fc10b5be7faf4ab986ae78b1f87090eede9b7e904993d9a0ccc5d8f",
+    "quanta/evaluation.py": "4f5771e7597b39746e541a331ce5843cfbf9aded6447b69d356eaebddf58d5e4",
+    "quanta/gmail_mailer.py": "037b40e76997f49af695cf8b452d7a50331e4047869d85490ed178d3e75195f5",
+    "quanta/hashing.py": "ff8d05e1b2655738dd2af41b5f675cb1165a1f275e38a3d869432034b9afce2e",
+    "quanta/job_store.py": "195d60efb36c0e0941c23f72b71ada0d3313f7e5de94e78c6822cde73f3e0554",
+    "quanta/owner_token.py": "b1d8165f79282032f80f147d426208bb2510f8ba3a838947d05276936bc2e183",
+    "quanta/pair.py": "36e058be7269d8ae808ac427db611368288e9f049c2349b58a1067f477314131",
+    "quanta/pair_kernel.py": "4d2e907a8a95db5fa0174c39dfd8760ce8ca522df8e8cb2ed42ed898f9e6a136",
+    "quanta/parsing.py": "c30398982ed09fda9bb96e2b157d88bb5a8fdc5f7c2bb9ae9b2962456bd79b26",
+    "quanta/planning.py": "d8561a354aa7f501e7f88adb522178450f6fbde66250e2909ae57e5901d31365",
+    "quanta/production.py": "bd93a5f564b049a6831396a121b3f5211835ffc640f5505898f181a56eefde52",
+    "quanta/production_server.py": "29ea2360306f7463494cd906745e4fdfbbe51a4675f442efe1b966d4012db880",
+    "quanta/profiles.py": "6aa1108ea2bfb7fb16dcad7da333d7e8ffcd60827c174c861f2124fac8707096",
+    "quanta/quantum.py": "b280ac3d1cd2d345fca4168b31077b350bcc2c64cef8d2508b0cc1971b3c7fa2",
+    "quanta/registry.py": "547d430eecd4d345c3dc7b992fb7cb5718566f3516b461d53ec782affdd58b00",
+    "quanta/relaxation.py": "c1c85c191ea101cf0b48699437f279df7c27e7d8a6c7a52bd9c2c84d3d2b3e23",
+    "quanta/run_store.py": "b51e1c5a283e9a064d531fe2bf429677485115afa06527e1683eb66eaf1fb5b1",
+    "quanta/server.py": "d40d664e65955e280c5bb6d66c864fa1fe4cdd212416155ccc8a61e1338f2543",
+    "quanta/service.py": "18f4364671adf79daf7d98d16ef048f38dda3e7c74ae064e01554fa5b3361cdf",
+    "quanta/validation.py": "6de4373ef48a5910f7dc15794b6dcebe1c7e993c0afcde6a2187e9ee2dfba253",
+    "quanta/worker.py": "c1c454256f41b14ada5133eb7990685dc801839ee3c8dc9f69a24aba08d32b99",
+    "quanta/workflow.py": "470c842fab562eb75cf6fa7c0309070d7d48b3c18886672a99a8834a3ff386fb",
+    "scripts/verify_dynamics.py": "028c9e27675d31c81a28e0282f9c17a4f547dba5454847dfef6a6e4df5f6b698"
+  },
+  "contract_versions": {
+    "default_experiment": "0.2.0",
+    "validation_only_dynamics": "0.3.0",
+    "standalone_execution": "0.3.1"
+  },
+  "previous_contract_blobs_unchanged": {
+    "0.2.0": 24,
+    "0.3.0": 17
+  },
+  "targeted_tests": {
+    "solver": 24,
+    "results": 46,
+    "independent_numerics": 12,
+    "solver_contracts": 19,
+    "cli": 5,
+    "independent_combined_review": {
+      "passed": 82,
+      "seconds": 39.85
+    }
+  },
+  "named_numerics": {
+    "status": "passed",
+    "record": "docs/dynamics_numerical_verification.json",
+    "scope": "Independent D01-D06 numerical fixtures plus one drift-guard subcase; no fullD07-D11/integration acceptance claim.",
+    "full_design_acceptance_completed": false
+  },
+  "local_full_regression": {
+    "status": "running"
+  },
+  "native_ci": {
+    "status": "pending"
+  },
+  "wheel": {
+    "python_bytes_match": 32,
+    "contract_bytes_match": {
+      "0.2.0": 24,
+      "0.3.0": 17,
+      "0.3.1": 18
+    }
+  },
+  "review": "Read-only independent review and targeted probes found no remaining blocker after snapshot binding, numeric-token, partial-prefix, publication-timeout and transport corrections.",
+  "deployment": {
+    "changed": false,
+    "actual_package_version": "0.12.0",
+    "actual_source_commit": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9"
+  },
+  "remaining": [
+    "Generic single-step planning/execution/typed state transfer",
+    "SQLite/async API/cancellation/replay/artifact integration",
+    "Remaining D07-D11 integrated acceptance",
+    "Web trajectory/observable visualization"
+  ],
+  "physical_validation_status": "unvalidated",
+  "installed_wheel_check": {
+    "status": "passed",
+    "package_version": "0.14.0",
+    "outside_source_tree": "/tmp",
+    "installed_contract_files": {
+      "0.2.0": 24,
+      "0.3.0": 17,
+      "0.3.1": 18
+    },
+    "actual_integrations": {
+      "free": {
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "not_checked",
+        "physical_validation_status": "unvalidated"
+      },
+      "harmonic": {
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "not_checked",
+        "physical_validation_status": "unvalidated"
+      },
+      "harmonic-refinement": {
+        "execution_status": "SUCCEEDED",
+        "numerical_status": "pass",
+        "resolution_status": "pass",
+        "physical_validation_status": "unvalidated"
+      }
+    },
+    "dependencies": "Existing exact locked .venv site-packages supplied via PYTHONPATH; quanta and all contract roots asserted inside the new wheel environment.",
+    "wheel_python_files": 32
+  }
+}

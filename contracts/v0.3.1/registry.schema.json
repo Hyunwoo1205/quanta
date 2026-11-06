@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:dynamics-registry:0.3.1",
+  "title": "Explicit opt-in standalone dynamics solver registry",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.3.1"
+    },
+    "registry_version": {
+      "const": "0.3.1"
+    },
+    "status": {
+      "const": "standalone_dynamics_solver"
+    },
+    "default_for_existing_experiments": {
+      "const": false
+    },
+    "execution_supported": {
+      "const": true
+    },
+    "generic_experiment_supported": {
+      "const": false
+    },
+    "module_versions": {
+      "const": [
+        "quanta.pair_dynamics@0.1.0"
+      ]
+    },
+    "schema_resolution": {
+      "const": {
+        "mode": "fixed_offline_bundle_allowlist",
+        "remote_resolution": false
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "$ref": "module_manifest.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "observables": {
+      "type": "array",
+      "items": {
+        "$ref": "observable_manifest.schema.json"
+      },
+      "minItems": 5,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "contract_version",
+    "registry_version",
+    "status",
+    "default_for_existing_experiments",
+    "execution_supported",
+    "generic_experiment_supported",
+    "module_versions",
+    "schema_resolution",
+    "modules",
+    "observables"
+  ],
+  "additionalProperties": false
+}

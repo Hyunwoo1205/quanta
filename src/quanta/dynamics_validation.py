@@ -19,6 +19,8 @@ from .parsing import StrictJSONError, parse_json, pointer
 from .registry import ContractRegistry
 
 CONTRACT_VERSION = "0.3.0"
+SOLVER_CONTRACT_VERSION = "0.3.1"
+_CONTRACT_VERSIONS = frozenset((CONTRACT_VERSION, SOLVER_CONTRACT_VERSION))
 _MODULE = "quanta.pair_dynamics"
 _MODULE_VERSION = "0.1.0"
 _MAX_BYTES = 1_048_576
@@ -235,8 +237,13 @@ def _initial_diagnostics(request: dict, force_result: Any, scales: dict[str, flo
             "scope": "initial_feasibility_only_not_trajectory"}
 
 
-def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRegistry | None = None) -> dict:
-    """Check a standalone request; acceptance never enables its time integrator."""
+def _prepare_dynamics_request(value: bytes | str | dict, *, registry: ContractRegistry | None = None) -> tuple[dict, dict | None]:
+    """Admission plus private initial force snapshot, without duplicate force work.
+
+    The public validator returns only the report.  A standalone integrator may
+    reuse the already checked primary initial force and must count it as its
+    first evaluation.  Private monotonic timing values never enter provenance.
+    """
     report = {"scope": "standalone_dynamics_request_validation", "valid": False,
               "contract_version": CONTRACT_VERSION, "module_id": _MODULE,
               "module_version": _MODULE_VERSION, "operation": "integrate",
@@ -245,12 +252,16 @@ def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRe
               "physical_validation_status": "unvalidated", "input_sha256": None,
               "errors": [], "warnings": []}
     started = time.monotonic()
+    prepared = None
     try:
         request = parse_json(value, max_bytes=_MAX_BYTES)
         if not isinstance(request, dict):
             raise _Invalid("INPUT_SCHEMA", "Standalone dynamics request must be an object", "")
-        if request.get("contract_version") != CONTRACT_VERSION:
-            raise _Invalid("MODEL_UNSUPPORTED", "Standalone dynamics request requires contract0.3.0", "/contract_version")
+        selected_version = request.get("contract_version")
+        if not isinstance(selected_version, str) or selected_version not in _CONTRACT_VERSIONS:
+            raise _Invalid("MODEL_UNSUPPORTED", "Standalone dynamics request requires an explicit supported contract version", "/contract_version",
+                           supported_versions=sorted(_CONTRACT_VERSIONS))
+        report["contract_version"] = selected_version
         canonical = canonical_bytes(request)
         if isinstance(value, bytes):
             source_size = len(value)
@@ -258,12 +269,12 @@ def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRe
             source_size = len(value.encode("utf-8"))
         else:
             source_size = len(canonical)
-        frozen = registry or ContractRegistry(contract_version=CONTRACT_VERSION)
+        frozen = registry or ContractRegistry(contract_version=selected_version)
         integrity = frozen.validate_integrity()
         if integrity:
             raise _Invalid("REGISTRY_SNAPSHOT_UNAVAILABLE", "Frozen dynamics bundle integrity check failed", None,
                            errors=integrity[:5])
-        if frozen.data.get("contract_version") != CONTRACT_VERSION:
+        if frozen.data.get("contract_version") != selected_version:
             raise _Invalid("REGISTRY_SNAPSHOT_UNAVAILABLE", "Wrong contract bundle supplied for dynamics validation", None)
         module = frozen.get_module(_MODULE, _MODULE_VERSION)
         if module is None:
@@ -290,13 +301,13 @@ def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRe
         errors = list(itertools.islice(frozen.validator(schema_ref).iter_errors(request), 20))
         if errors:
             report["errors"] = [_issue("INPUT_SCHEMA", error.message[:300], pointer(tuple(error.absolute_path))) for error in errors]
-            return report
+            return report, None
         identifiers = [p["id"] for p in request["system"]["particles"]]
         if len(identifiers) != len(set(identifiers)):
             raise _Invalid("INPUT_SEMANTIC", "Particle IDs must be unique", "/system/particles")
         _parameter_refs(request["system"]["potential"]["expression"], request["system"]["potential"]["parameters"])
         budgets = _budgets(request, profile, common, source_size, canonical, frozen)
-        scales, _ = _scales(request)
+        scales, reduced_masses = _scales(request)
         legs = _time_grid(request, budgets["refinement_factors"])
         deadline = started+budgets["validation_wall_seconds"]
         def check_deadline():
@@ -318,8 +329,18 @@ def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRe
         check_deadline()
         report.update(valid=True, input_sha256=hashlib.sha256(canonical).hexdigest(),
                       budgets=budgets, derived_scales=scales, time_legs=legs, initial_state_checks=initial)
-        report["warnings"].append(_issue("MODEL_UNSUPPORTED",
-            "Request is valid, but the dynamics integrator and workflow execution are not implemented", None))
+        if selected_version == SOLVER_CONTRACT_VERSION:
+            # Admission and a completed trajectory remain different operations.
+            report.update(executable=True, execution_scope="standalone_solver_request")
+            report["warnings"].append(_issue("MODEL_UNSUPPORTED",
+                "Standalone solver admission does not enable generic workflow, API or UI execution", None))
+        else:
+            report["warnings"].append(_issue("MODEL_UNSUPPORTED",
+                "Request is valid, but the dynamics integrator and workflow execution are not implemented", None))
+        prepared = {"request": request, "registry": frozen, "initial_force": result,
+                    "initial_diagnostics": initial, "derived_scales": scales,
+                    "reduced_masses": reduced_masses, "time_legs": legs, "budgets": budgets,
+                    "validation_started_monotonic": started, "deadline_monotonic": deadline}
     except StrictJSONError as exc:
         report["errors"] = [_issue(exc.code, str(exc), exc.path)]
     except (CalculationError, _Invalid) as exc:
@@ -328,4 +349,9 @@ def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRe
         report["errors"] = [_issue("REGISTRY_SNAPSHOT_UNAVAILABLE",
             "Dynamics validation could not load or resolve the frozen bundle", None,
             {"reason": str(exc)[:200]})]
-    return report
+    return report, prepared
+
+
+def validate_dynamics_request(value: bytes | str | dict, *, registry: ContractRegistry | None = None) -> dict:
+    """Check admission only; no time integration or result state is created."""
+    return _prepare_dynamics_request(value, registry=registry)[0]

@@ -48,7 +48,7 @@ def test_new_bundle_is_explicit_and_has_no_solver_or_generic_experiment_claim():
     assert new.get_module("quanta.pair_static", "0.1.0") is None
 
 
-@pytest.mark.parametrize("version", ["0.3.1", "v0.3.0", "../v0.3.0", "", 0.3, [], False])
+@pytest.mark.parametrize("version", ["0.3.2", "v0.3.0", "../v0.3.0", "", 0.3, [], False])
 def test_unsupported_selector_never_falls_back(version):
     with pytest.raises(ValueError, match="Unsupported bundled contract version"):
         ContractRegistry(contract_version=version)

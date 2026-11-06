@@ -15,6 +15,12 @@ from .validation import validate_experiment
 
 def _emit(report: dict, output_format: str = "json") -> None:
     if output_format == "json":
+        if report.get("scope") == "standalone_dynamics_integration":
+            from .dynamics_results import transport_bytes
+            # Match the solver's signed-zero-preserving report byte budget.
+            # Do not expand it with pretty-print whitespace or a trailing byte.
+            sys.stdout.write(transport_bytes(report).decode("utf-8"))
+            return
         print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
         return
     if report.get("scope") in {"synchronous_workflow", "workflow_plan"}:
@@ -35,9 +41,20 @@ def _emit(report: dict, output_format: str = "json") -> None:
         for issue in report.get("errors", []) + (result.get("errors", []) if result else []):
             print(f"error: {issue['code']}: {issue['message']}")
         return
+    if report.get("scope") == "standalone_dynamics_integration":
+        print(report["execution_status"])
+        for field in ("numerical_status", "resolution_status", "physical_validation_status", "partial"):
+            print(f"{field}: {report[field]}")
+        if report.get("input_sha256"):
+            print("input_sha256: " + report["input_sha256"])
+        for leg in (report.get("payload") or {}).get("legs", []):
+            print(f"leg[{leg['refinement_factor']}]: {leg['completed_steps']}/{leg['requested_steps']} steps")
+        for issue in report.get("errors", []):
+            print(f"error: {issue['code']}: {issue.get('path') or '/'}: {issue['message']}")
+        return
     if report.get("scope") == "standalone_dynamics_request_validation":
         print("VALID_INPUT" if report.get("valid") else "INVALID_INPUT")
-        print("execution_supported: false")
+        print("execution_supported: " + str(bool(report.get("executable"))).lower())
         print("dynamics_simulation_executed: false")
         if report.get("input_sha256"):
             print("input_sha256: " + report["input_sha256"])
@@ -79,6 +96,9 @@ def main(argv: list[str] | None = None) -> int:
     dynamics = sub.add_parser("validate-dynamics", help="Validate a standalone 0.3.0 dynamics request; no time integration.")
     dynamics.add_argument("file", help="Standalone dynamics request JSON, or - for standard input.")
     dynamics.add_argument("--format", choices=("json", "text"), default="json")
+    integrate = sub.add_parser("integrate-dynamics", help="Integrate a standalone 0.3.1 dynamics request with velocity-Verlet.")
+    integrate.add_argument("file", help="Standalone 0.3.1 dynamics request JSON, or - for standard input.")
+    integrate.add_argument("--format", choices=("json", "text"), default="json")
     evaluate = sub.add_parser("evaluate", help="Calculate pair energy and forces for one initial configuration.")
     evaluate.add_argument("file", help="Single-step experiment JSON, or - for standard input.")
     evaluate.add_argument("--format", choices=("json", "text"), default="json")
@@ -114,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
     restore.add_argument("directory")
     restore.add_argument("--output", required=True)
     contracts = sub.add_parser("check-contracts", help="Check one explicitly selected bundled contract registry.")
-    contracts.add_argument("--contract-version", choices=("0.2.0", "0.3.0"), default="0.2.0")
+    contracts.add_argument("--contract-version", choices=("0.2.0", "0.3.0", "0.3.1"), default="0.2.0")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
 
@@ -217,6 +237,14 @@ def main(argv: list[str] | None = None) -> int:
             with Path(args.file).open("rb") as stream:
                 raw = stream.read(1_048_577)
     except OSError as exc:
+        if args.command == "integrate-dynamics":
+            from .dynamics import integrate_dynamics_request
+            report = integrate_dynamics_request(b"")
+            report["errors"] = [{"code": "INPUT_READ", "category": "input", "path": None,
+                "message": str(exc), "step_id": None, "branch_index": None,
+                "retryable": False, "details": {}}]
+            _emit(report, args.format)
+            return 2
         if args.command in {"plan", "run"}:
             report = _workflow_read_failure(exc, code="INPUT_READ")
             if args.command == "plan":
@@ -245,6 +273,11 @@ def main(argv: list[str] | None = None) -> int:
         report = validate_dynamics_request(raw)
         _emit(report, args.format)
         return 0 if report["valid"] else 2
+    if args.command == "integrate-dynamics":
+        from .dynamics import integrate_dynamics_request
+        report = integrate_dynamics_request(raw)
+        _emit(report, args.format)
+        return 0 if report["execution_status"] == "SUCCEEDED" else 2
     if args.command == "plan":
         from .planning import plan_experiment
         report = plan_experiment(raw)

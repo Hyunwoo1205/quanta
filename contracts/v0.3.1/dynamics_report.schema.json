@@ -1,0 +1,500 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:pair-dynamics-report:0.3.1",
+  "title": "Standalone synchronized dynamics report; no invented run or state IDs",
+  "type": "object",
+  "properties": {
+    "report_version": {
+      "const": "0.1.0"
+    },
+    "scope": {
+      "const": "standalone_dynamics_integration"
+    },
+    "contract_version": {
+      "const": "0.3.1"
+    },
+    "module_ref": {
+      "type": "object",
+      "properties": {
+        "module_id": {
+          "const": "quanta.pair_dynamics"
+        },
+        "module_version": {
+          "const": "0.1.0"
+        },
+        "solver_id": {
+          "const": "velocity_verlet_forward_ad"
+        },
+        "solver_version": {
+          "const": "0.1.0"
+        }
+      },
+      "required": [
+        "module_id",
+        "module_version",
+        "solver_id",
+        "solver_version"
+      ],
+      "additionalProperties": false
+    },
+    "operation": {
+      "const": "integrate"
+    },
+    "input_validation_status": {
+      "enum": [
+        "pass",
+        "failed"
+      ]
+    },
+    "execution_status": {
+      "enum": [
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "numerical_status": {
+      "enum": [
+        "pass",
+        "not_converged",
+        "not_checked"
+      ]
+    },
+    "resolution_status": {
+      "enum": [
+        "pass",
+        "not_converged",
+        "not_checked"
+      ]
+    },
+    "physical_validation_status": {
+      "const": "unvalidated"
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "input_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "step_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "branch_index": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "code",
+          "category",
+          "message",
+          "path",
+          "step_id",
+          "branch_index",
+          "retryable",
+          "details"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "step_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "branch_index": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "code",
+          "category",
+          "message",
+          "path",
+          "step_id",
+          "branch_index",
+          "retryable",
+          "details"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "payload": {
+      "anyOf": [
+        {
+          "$ref": "dynamics_payload.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "final_state": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "$ref": "dynamics_state.schema.json"
+            },
+            "metadata": {
+              "$ref": "dynamics_metadata.schema.json"
+            },
+            "physical_time": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "unit": {
+                  "const": "s"
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            },
+            "scientific_state_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "data",
+            "metadata",
+            "physical_time",
+            "scientific_state_sha256"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "dynamics_simulation_executed": {
+      "type": "boolean"
+    },
+    "initial_force_evaluation_performed": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "report_version",
+    "scope",
+    "contract_version",
+    "module_ref",
+    "operation",
+    "input_validation_status",
+    "execution_status",
+    "numerical_status",
+    "resolution_status",
+    "physical_validation_status",
+    "partial",
+    "input_sha256",
+    "errors",
+    "warnings",
+    "payload",
+    "final_state",
+    "provenance",
+    "dynamics_simulation_executed",
+    "initial_force_evaluation_performed"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "SUCCEEDED"
+          }
+        },
+        "required": [
+          "execution_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "input_validation_status": {
+            "const": "pass"
+          },
+          "numerical_status": {
+            "const": "pass"
+          },
+          "resolution_status": {
+            "enum": [
+              "pass",
+              "not_checked"
+            ]
+          },
+          "partial": {
+            "const": false
+          },
+          "errors": {
+            "maxItems": 0
+          },
+          "input_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "dynamics_simulation_executed": {
+            "const": true
+          },
+          "initial_force_evaluation_performed": {
+            "const": true
+          },
+          "payload": {
+            "allOf": [
+              {
+                "$ref": "dynamics_payload.schema.json"
+              },
+              {
+                "properties": {
+                  "partial": {
+                    "const": false
+                  }
+                }
+              }
+            ]
+          },
+          "final_state": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "dynamics_state.schema.json"
+              },
+              "metadata": {
+                "$ref": "dynamics_metadata.schema.json"
+              },
+              "physical_time": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "unit": {
+                    "const": "s"
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit"
+                ],
+                "additionalProperties": false
+              },
+              "scientific_state_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "data",
+              "metadata",
+              "physical_time",
+              "scientific_state_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "provenance": {
+            "type": "object"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "final_state": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "input_validation_status": {
+            "const": "failed"
+          }
+        },
+        "required": [
+          "input_validation_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution_status": {
+            "const": "FAILED"
+          },
+          "dynamics_simulation_executed": {
+            "const": false
+          },
+          "payload": {
+            "type": "null"
+          },
+          "partial": {
+            "const": false
+          },
+          "numerical_status": {
+            "const": "not_checked"
+          },
+          "resolution_status": {
+            "const": "not_checked"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "FAILED"
+          }
+        },
+        "required": [
+          "execution_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "errors": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "payload": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "payload"
+        ]
+      },
+      "then": {
+        "properties": {
+          "partial": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "CANCELLED"
+          }
+        },
+        "required": [
+          "execution_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "null"
+          },
+          "partial": {
+            "const": false
+          },
+          "final_state": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

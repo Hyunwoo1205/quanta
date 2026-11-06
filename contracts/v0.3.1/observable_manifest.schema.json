@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:dynamics-observable-manifest:0.3.1",
+  "title": "Declared standalone dynamics solver outputs; generic workflow/API/UI unsupported",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.3.1"
+    },
+    "module_id": {
+      "const": "quanta.pair_dynamics"
+    },
+    "module_version": {
+      "const": "0.1.0"
+    },
+    "observable_id": {
+      "enum": [
+        "trajectory",
+        "energy_components",
+        "linear_momentum",
+        "angular_momentum",
+        "conservation_diagnostics"
+      ]
+    },
+    "operations": {
+      "const": [
+        "integrate"
+      ]
+    },
+    "payload_schema_ref": {
+      "const": "dynamics_payload.schema.json"
+    },
+    "unit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_supported": {
+      "const": true
+    },
+    "validation_status": {
+      "const": "not_executed"
+    }
+  },
+  "required": [
+    "contract_version",
+    "module_id",
+    "module_version",
+    "observable_id",
+    "operations",
+    "payload_schema_ref",
+    "unit",
+    "execution_supported",
+    "validation_status"
+  ],
+  "additionalProperties": false
+}

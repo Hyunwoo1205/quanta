@@ -1,0 +1,39 @@
+{
+  "version": "0.3.1",
+  "status": "protection_ceilings_not_measured_performance",
+  "common_execution": {
+    "cpu_workers": 1,
+    "cpu_threads_per_worker": 1,
+    "memory_mib_per_run": 1024,
+    "wall_seconds_per_step": 60,
+    "wall_seconds_per_run": 120,
+    "max_input_bytes": 1048576,
+    "max_artifact_bytes_per_run": 33554432
+  },
+  "profiles": {
+    "pair_dynamics_cpu": {
+      "module_versions": [
+        "quanta.pair_dynamics@0.1.0"
+      ],
+      "max_particles": 128,
+      "max_base_steps": 10000,
+      "max_total_force_evaluations": 10000,
+      "max_pair_evaluations": 1000000,
+      "max_total_output_frames": 512,
+      "max_ast_depth": 16,
+      "max_ast_nodes": 128,
+      "max_parameters": 32,
+      "max_protocol_steps": 1,
+      "max_expanded_steps": 1,
+      "max_sweep_axes": 0
+    }
+  },
+  "resource_semantics": {
+    "force_calls": "For a completed primary leg n+1, or independent h/h2/h4 legs 7n+3; all attempted calls count.",
+    "pair_work": "N*(N-1)/2 times planned total force evaluations",
+    "output_frames": "F=1+ceil(n/sample_stride); reserve L*(F+1), L=1 or3 including terminal partial frame.",
+    "trajectory_byte_bound": "65536+reserved_frames*(25*(9*N+15)+8*N+1024)",
+    "whole_run_bytes": "Original input, full provenance and terminal status bytes count against same artifact budget in addition to trajectory bound.",
+    "failure": "Refuse exceeded requests explicitly; no automatic timestep/precision/sampling reductions."
+  }
+}

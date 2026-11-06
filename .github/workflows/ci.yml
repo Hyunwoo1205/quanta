@@ -69,9 +69,11 @@ jobs:
         run: |
           python -m quanta check-contracts
           python -m quanta check-contracts --contract-version 0.3.0
+          python -m quanta check-contracts --contract-version 0.3.1
           python -m quanta validate-dynamics contracts/v0.3.0/examples/harmonic.request.json
           python -m quanta validate-dynamics contracts/v0.3.0/examples/harmonic-refinement.request.json
           python -m quanta validate-dynamics contracts/v0.3.0/examples/free.request.json
+          python -m quanta integrate-dynamics contracts/v0.3.1/examples/free.request.json --format text
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4, verified 2026-11-04 (UTC+09:00)
         with:
           node-version: "24.22.1"
@@ -102,6 +104,8 @@ jobs:
         run: python -m pytest
       - name: Measure named numerical benchmarks
         run: python scripts/verify_numerics.py --output .cache/numerical_verification.json
+      - name: Measure standalone velocity-Verlet numerical gates
+        run: python scripts/verify_dynamics.py --output .cache/dynamics_verification.json
       - name: Measure constrained relaxation benchmark
         run: python scripts/verify_relaxation.py --output .cache/relaxation_verification.json
       - name: Measure stationary quantum benchmarks
@@ -126,6 +130,7 @@ jobs:
             .cache/caddy_verification.json
             .cache/selected_lock_sha256.txt
             .cache/numerical_verification.json
+            .cache/dynamics_verification.json
             .cache/relaxation_verification.json
             .cache/quantum_verification.json
             .cache/workflow_verification.json
@@ -155,7 +160,10 @@ jobs:
         run: |
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta check-contracts
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta check-contracts --contract-version 0.3.0
+          docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta check-contracts --contract-version 0.3.1
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta validate-dynamics /app/contracts/v0.3.0/examples/harmonic.request.json
+          docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta integrate-dynamics /app/contracts/v0.3.1/examples/free.request.json --format text
+          docker run --rm --workdir /tmp quanta-contracts-ci python /app/scripts/verify_dynamics.py --output /tmp/dynamics-verification.json
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta environment
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta evaluate /app/examples/pair_energy_forces.json
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta relax /app/examples/pair_relax.json

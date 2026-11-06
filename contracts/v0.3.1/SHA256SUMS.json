@@ -1,0 +1,19 @@
+{
+  "README.txt": "f988240b3c13577ccb0cc29ca23ba04b77fe050ba5720849552181c0f7f68d28",
+  "dynamics_metadata.schema.json": "35e82bd48a749bad0c9c166c122e081ca753b2874569b86681222bfe9d6242ae",
+  "dynamics_payload.schema.json": "f14f1afa1dbf5365aabf955dbc5b37968cbb27c1482d4e259e9b85f090efd83f",
+  "dynamics_report.schema.json": "95fc2192f68a13edd129d3c7973bdb0295092d9d4d2fc8676a9172db6e9028bf",
+  "dynamics_request.schema.json": "32074a727c1f2f99b11813f79e889983e99872b0eb4f926e0fd206685002555a",
+  "dynamics_state.schema.json": "c1ffdbaf8e867701a63464ef61a1fd0d3f732dd88db7e73cc89105d4c930eb09",
+  "examples/free.request.json": "f7a699e8c4bbbb9b6c0c0dae8b7182e388d2266421aa914ff64ca29895f4dad5",
+  "examples/harmonic-refinement.request.json": "94e00e2b927e6e55b29e3e9a0a2bc05336ad4f0635884691bbf6e76866f1b52e",
+  "examples/harmonic.request.json": "5b5b88d7ad22cf005e753311cc7aeae72efbb13f89f59141bb3604d18bd917bf",
+  "module_manifest.schema.json": "a1d82eab78ad301d6224dc1e56dfcb8569fd704caaad422275f25bd416700f14",
+  "observable_manifest.schema.json": "ad7339bd7d6ecb960e0a5e5447964a23521a8070f99f4b461c40907871a42f8b",
+  "registry.json": "0968f2b04c3dfa3828ae9cd97f173780fd92c0680f387748f94845ac248e3fec",
+  "registry.schema.json": "95de495a74acd5a5ed6882138f6b6eea852a07964a021eb965188e6c72646248",
+  "resource_policy.json": "2955732e596d3ce3eeea8b28ae660987e30ae5ea9558e38219be232cdb1034b8",
+  "resource_policy.schema.json": "c8e44699c725267f3157c8b47a977c72b5e0b1e0ade8033ee745e02ec301281f",
+  "semantic_rules.json": "7f079b1b6b525d4ccbbedd3a7d8e5f9c3ab5bf8b71a9ff67f759f32f04287466",
+  "validation_manifest.json": "95ab57957f174ad12d88a90fb90482a5acfd6abd89dd48df308a9f7938bb571e"
+}
