@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "upgrade-accounts",
+  "operation": "verify-accounts",
   "source_sha": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
-  "request_id": "e7ef6a41-c052-4ef9-94ab-b2ecd7726d61"
+  "request_id": "7683d225-0f4a-4dcd-ae2d-f0c17eaee70b"
 }
