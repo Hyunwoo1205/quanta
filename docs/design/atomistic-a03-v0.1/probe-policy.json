@@ -1,0 +1,70 @@
+{
+  "document_kind": "inactive_atomistic_A03_probe_policy",
+  "version": "0.1.0",
+  "predeclared_on": "2026-11-07",
+  "scope": "Installation, feature, resource and cancellation measurement; not A04 frozen science settings or a public atomistic runtime",
+  "engine_candidates": "../atomistic-a02-v0.1/engine-lock.json",
+  "native_architectures": [
+    "x86_64",
+    "aarch64"
+  ],
+  "initial_hard_limits": {
+    "concurrent_engine_containers": 1,
+    "cpu_quota": 1,
+    "mpi_ranks": 1,
+    "omp_threads": 1,
+    "blas_threads": 1,
+    "memory_bytes": 2147483648,
+    "memory_swap_total_bytes": 2147483648,
+    "pids": 128,
+    "tmpfs_bytes": 134217728,
+    "case_wall_timeout_seconds": 180,
+    "case_output_tmpfs_bytes": 268435456,
+    "output_storage_policy": "Engine /work uses a hard 256MiB tmpfs, copied to controlled scratch only after completion; /tmp uses a separate hard128MiB tmpfs. Both count against cgroup memory."
+  },
+  "isolation": [
+    "nonroot",
+    "read_only_root",
+    "network_none",
+    "cap_drop_all",
+    "no_new_privileges",
+    "read_only_locked_data",
+    "new_controlled_scratch_only",
+    "supplementary_gid0_for_read_only_image_launcher_access"
+  ],
+  "web_probe": {
+    "requests": [
+      "anonymous GET / expected 200",
+      "anonymous GET /v1/capabilities expected 401"
+    ],
+    "phases": [
+      "before",
+      "during",
+      "after"
+    ],
+    "timeout_seconds": 2,
+    "individual_latency_ceiling_seconds": 2,
+    "no_owner_token_or_account_credentials": true,
+    "native_CI_does_not_prove_OCI_responsiveness": true
+  },
+  "OCI_preflight": {
+    "minimum_MemAvailable_bytes": 6442450944,
+    "minimum_free_disk_bytes": 10737418240,
+    "active_production_jobs": 0,
+    "concurrent_new_production_job_policy": "Stop isolated probe and report no-go if a queued/running production job is observed",
+    "preserve": [
+      "production service identity",
+      "production DB and accounts",
+      "deployment configuration",
+      "mail credentials",
+      "backup configuration"
+    ]
+  },
+  "go_no_go": {
+    "native_probe_go": "Both actual native digest pulls, binary feature/data/units checks, bounded successful calculations, real active-engine cancellation/cleanup/followup and independent web probes pass",
+    "OCI_isolated_probe_go": "Fixed verified controller preflight, measured web responsiveness under actual probe, no production changes/jobs and declared headroom hold",
+    "public_atomistic_enablement": "no-go: no runtime contract/adapter, no per-account atomic quotas and no physical acceptance yet",
+    "A04_dependency": "Review actual binary/source identity and density diagnostics; freeze explicit numerics/conversions before scientific acceptance"
+  },
+  "physical_validation_status": "unvalidated"
+}

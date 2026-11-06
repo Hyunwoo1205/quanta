@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.2",
+  "plan_version": "1.0.3",
   "updated_at": "2026-11-07",
   "status": "planned_development",
   "executable": false,
@@ -337,12 +337,13 @@
       "depends_on": [
         "A02"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "acceptance": [
         "설치/실행·wall time·peak RSS·출력 크기·취소 지연·자식 정리·웹 응답성 측정",
         "공개 가입 한도와 서버 여유를 보존하는 자원 상한을 정하고 go/no-go 기록"
       ],
-      "owner_role": "실행·운영"
+      "owner_role": "실행·운영",
+      "probe_policy": "docs/design/atomistic-a03-v0.1/probe-policy.json"
     },
     {
       "id": "A04",

@@ -1,0 +1,547 @@
+{
+  "document_kind": "inactive_atomistic_A03_input_source_review",
+  "version": "0.1.0",
+  "reviewed_on": "2026-11-07",
+  "scope": "Review of input meaning and source syntax before actual native engine execution; not an engine success, numerical convergence or physical acceptance result.",
+  "engine_source": {
+    "release": "2026.2",
+    "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "source_archive": "https://github.com/cp2k/cp2k/releases/download/v2026.2/cp2k-2026.2.tar.bz2",
+    "source_archive_sha256": "f9bd86f580f57a53a0768c0045d1417f9f9a1d66d851ed7f662f496200043373",
+    "relationship_to_pinned_image_binary": "Unattested at A02; actual A03 binary version/revision must be recorded and mismatches reviewed before A04."
+  },
+  "input_generator": "scripts/atomistic_a03_inputs.py",
+  "probe_policy": "docs/design/atomistic-a03-v0.1/probe-policy.json",
+  "core_goal_policy": {
+    "JSON_is_authoritative_authored_experiment": true,
+    "visual_editor_uses_same_definition": true,
+    "these_internal_fixture_choices_are_not_a_product_menu": true,
+    "public_runtime_contract_implemented_here": false
+  },
+  "source_evidence": [
+    {
+      "path": "src/input_cp2k_global.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_global.F",
+      "size_bytes": 52507,
+      "sha256": "2dc68cf761520f3e30c2a920b4b336f131095cd228d4c7f2bec0e1209c76b69f",
+      "git_blob_sha1": "c77ae457c3a9b0e6e60dc0f9d9d89a6cbc9f752b",
+      "evidence_lines": {
+        "RUN_TYPE": [
+          393,
+          396
+        ],
+        "PRINT_LEVEL": [
+          42,
+          43,
+          44,
+          45,
+          46,
+          339,
+          342,
+          343,
+          348,
+          349,
+          538,
+          585
+        ],
+        "PROJECT": [
+          375,
+          376,
+          377,
+          379,
+          380,
+          387,
+          511
+        ]
+      },
+      "review": "ENERGY_FORCE and output-level syntax."
+    },
+    {
+      "path": "src/input_cp2k_dft.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_dft.F",
+      "size_bytes": 147289,
+      "sha256": "93887178d0208020a96826b794459bac9937a66cec8ff6a69b7d4e1d393d5648",
+      "git_blob_sha1": "082cc27f4b68aea0b85d88455a9d277784d3425a",
+      "evidence_lines": {
+        "BASIS_SET_FILE_NAME": [
+          134,
+          137
+        ],
+        "POTENTIAL_FILE_NAME": [
+          143,
+          146
+        ],
+        "UKS": [
+          161,
+          234
+        ],
+        "MULTIPLICITY": [
+          182,
+          189,
+          219,
+          223,
+          239,
+          1099,
+          1120,
+          1122,
+          1125
+        ],
+        "NGRIDS": [
+          1250,
+          1253
+        ],
+        "REL_CUTOFF": [
+          1291
+        ],
+        "name=\"cutoff\"": [
+          1257
+        ]
+      },
+      "review": "All-electron input data references, restricted state and regular grid units."
+    },
+    {
+      "path": "src/input_cp2k_scf.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_scf.F",
+      "size_bytes": 128117,
+      "sha256": "23f7fdd4abfdf64904f0c95ed6dd672f6ca645c0abb7f91b60347ab6693bacf1",
+      "git_blob_sha1": "2162acfc57070584830c42dc10d13ed8b99697cf",
+      "evidence_lines": {
+        "MAX_SCF": [
+          140,
+          142,
+          146,
+          148,
+          528,
+          530,
+          680,
+          683
+        ],
+        "EPS_SCF": [
+          168,
+          170,
+          174,
+          176,
+          506,
+          508,
+          510,
+          511,
+          512
+        ],
+        "SCF_GUESS": [
+          207,
+          209
+        ]
+      },
+      "review": "SCF stopping/initialization options; EPS_SCF is not a property-convergence claim."
+    },
+    {
+      "path": "src/input_cp2k_poisson.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_poisson.F",
+      "size_bytes": 73815,
+      "sha256": "cbd8e7446f05723800dd0550842ce966341fedd2cd14eb7e903ca5f73fa400a0",
+      "git_blob_sha1": "8cadede87f48bcf1da9741ba5b394b6a8facde60",
+      "evidence_lines": {
+        "POISSON_SOLVER": [
+          115,
+          118
+        ],
+        "MT (Martyna": [
+          125
+        ],
+        "PERIODIC": [
+          70,
+          72,
+          75,
+          119,
+          120,
+          122,
+          123,
+          130,
+          136,
+          140,
+          141,
+          142
+        ]
+      },
+      "review": "Nonperiodic MT solver with explicit finite-cell/density-support warning."
+    },
+    {
+      "path": "src/input_cp2k_force_eval.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_force_eval.F",
+      "size_bytes": 23053,
+      "sha256": "966515458634db9fb5355423781bc69e28ffa4bb65689c10b7ccef7e06413c0f",
+      "git_blob_sha1": "cea88f47605a5c9bc49646e0127bc427f0320b7e",
+      "evidence_lines": {
+        "name=\"FORCES\"": [
+          322
+        ],
+        "name=\"NDIGITS\"": [
+          326
+        ],
+        "name=\"FORCE_UNIT\"": [
+          335
+        ],
+        "name=\"ENERGY_UNIT\"": [
+          310
+        ]
+      },
+      "review": "Forces are a CP2K table; filename suffix does not select XYZ. Explicit energy/force units and decimal precision."
+    },
+    {
+      "path": "src/input_cp2k_qs.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_qs.F",
+      "size_bytes": 50122,
+      "sha256": "84817ccefcafe19f39c64c8af6a531a7bf9ae3aad0c7686ece21d3d3a56a6500",
+      "git_blob_sha1": "47b57966753b7c95d4753f2091cd5038835a2170",
+      "evidence_lines": {
+        "EPS_DEFAULT": [
+          91,
+          92,
+          93,
+          98,
+          106,
+          112,
+          119,
+          133,
+          139,
+          145,
+          151,
+          158
+        ],
+        "EPSFIT": [
+          170,
+          175
+        ],
+        "EPSISO": [
+          179,
+          182
+        ],
+        "EPSSVD": [
+          186
+        ],
+        "EPSRHO0": [
+          194,
+          198
+        ],
+        "LMAXN1": [
+          346,
+          349
+        ],
+        "LMAXN0": [
+          354,
+          357
+        ],
+        "QUADRATURE": [
+          371,
+          373,
+          376,
+          377,
+          378
+        ]
+      },
+      "review": "GAPW split/projector/atomic-density numerical controls."
+    },
+    {
+      "path": "src/input_cp2k_subsys.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_subsys.F",
+      "size_bytes": 146900,
+      "sha256": "ac2a47f03b781055efd43547b527788513811314fe5dd6a6c681776e54cce9e4",
+      "git_blob_sha1": "0a3fb1ad6f932041f79b159837da2931965f724f",
+      "evidence_lines": {
+        "name=\"UNIT\"": [
+          962,
+          1004,
+          1046
+        ],
+        "name=\"MASS\"": [
+          1189
+        ],
+        "LEBEDEV_GRID": [
+          1283,
+          1286
+        ],
+        "RADIAL_GRID": [
+          1290,
+          1293
+        ]
+      },
+      "review": "Coordinate-unit and KIND mass/basis/atomic-grid syntax."
+    },
+    {
+      "path": "src/input_cp2k_print_dft.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_print_dft.F",
+      "size_bytes": 208298,
+      "sha256": "2cef0bc8e85f0ec6c291a5c5101da55fea0658440c15647d42220f530c0aa2bc",
+      "git_blob_sha1": "304ca5399095e7a80b52df073e2a8ce5b69cc03a",
+      "evidence_lines": {
+        "E_DENSITY_CUBE": [
+          868
+        ],
+        "DENSITY_INCLUDE": [
+          2611,
+          2620
+        ],
+        "XRD_INTERFACE": [
+          875
+        ],
+        "TOTAL_DENSITY": [
+          111,
+          2616,
+          2621,
+          2630
+        ]
+      },
+      "review": "Explicit hard+soft electron density; no approximate-hard or soft-only substitute."
+    },
+    {
+      "path": "src/qs_scf_post_gpw.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_scf_post_gpw.F",
+      "size_bytes": 217795,
+      "sha256": "51c6456557b3cc5f95b2cfa2cee2b514739b80ccee7d32caa905f510d89e4fdc",
+      "git_blob_sha1": "16cd43613c69583a898c0ca4af26961f1041a2c2",
+      "evidence_lines": {
+        "TOTAL_ELECTRON_DENSITY": [
+          2791
+        ],
+        "calculate_rhotot_elec_gspace": [
+          215,
+          2776,
+          2831
+        ],
+        "xrd_interface": [
+          2486,
+          2639,
+          2642,
+          2645
+        ]
+      },
+      "review": "Tagged implementation of full density branch and output naming."
+    },
+    {
+      "path": "src/common/physcon.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/physcon.F",
+      "size_bytes": 11857,
+      "sha256": "b7c6a5d2c98ddc90652460059049919fc08512ecfcd32861790c6fd2a928cffb",
+      "git_blob_sha1": "5dfbeaa2ff8706eeb265ef3a06e3fb5a975ec007",
+      "evidence_lines": {
+        "a_bohr": [
+          11,
+          77,
+          135,
+          136,
+          144,
+          162,
+          174,
+          189,
+          195,
+          256
+        ],
+        "a_mass": [
+          13,
+          77,
+          132,
+          141,
+          254
+        ],
+        "massunit": [
+          33,
+          79,
+          141,
+          264
+        ],
+        "CODATA": [
+          48,
+          51,
+          54,
+          57,
+          61,
+          62,
+          63,
+          65,
+          84,
+          211,
+          212,
+          223
+        ]
+      },
+      "review": "Candidate engine constants: CODATA2006. No mutation of A01 CODATA2022 references."
+    },
+    {
+      "path": "src/pw/realspace_grid_cube.F",
+      "url": "https://raw.githubusercontent.com/cp2k/cp2k/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/pw/realspace_grid_cube.F",
+      "size_bytes": 46451,
+      "sha256": "c349dcfd603fd29fa738d90bafd2cc608251caa6466b1172dfa046da5ec1058a",
+      "git_blob_sha1": "c470d2ac7756ae5c23483e48d40b1858641ad6a6",
+      "evidence_lines": {
+        "F12.6": [
+          166,
+          168,
+          171,
+          174,
+          181,
+          185,
+          756,
+          760,
+          766,
+          772,
+          781,
+          787
+        ],
+        "E13.5": [
+          35,
+          36,
+          60,
+          993,
+          1013
+        ]
+      },
+      "review": "Rounded CUBE serialization; not lossless binary64 scientific state."
+    }
+  ],
+  "candidate_model": {
+    "method": "GAPW",
+    "functional": "PBE",
+    "potential": "ALL",
+    "charge_e": 0,
+    "multiplicity": 1,
+    "electron_count": 2,
+    "uks": false,
+    "dispersion": false,
+    "periodic": "NONE"
+  },
+  "candidate_baseline_numerics": {
+    "cell_angstrom": 12,
+    "cutoff_ry": 400,
+    "rel_cutoff_ry": 40,
+    "ngrids": 4,
+    "eps_scf": 1e-08,
+    "max_scf": 80,
+    "poisson_solver": "MT",
+    "scf_guess": "ATOMIC",
+    "scf_method": "OT/DIIS/FULL_ALL",
+    "eps_default": 1e-12,
+    "eps_pgf_orb": 1e-10,
+    "epsfit": 0.0001,
+    "epsiso": 1e-12,
+    "epssvd": 1e-08,
+    "epsrho0": 1e-08,
+    "lmaxn0": 2,
+    "lmaxn1": 6,
+    "quadrature": "GC_LOG",
+    "radial_grid": 100,
+    "lebedev_grid": 110
+  },
+  "candidate_regular_families": {
+    "basis": [
+      "cc-pVDZ",
+      "cc-pVTZ",
+      "cc-pVQZ"
+    ],
+    "cell_angstrom": [
+      12,
+      16,
+      20
+    ],
+    "cutoff_ry": [
+      400,
+      600,
+      800
+    ],
+    "rel_cutoff_ry": [
+      40,
+      60,
+      80
+    ],
+    "eps_scf": [
+      1e-08,
+      1e-09,
+      1e-10
+    ],
+    "policy": "Predeclared candidate values, not converged selections; refine one family at a time under P2 acceptance plan."
+  },
+  "input_mapping": {
+    "coordinate_unit": "angstrom",
+    "source_coordinate_unit": "m",
+    "angstrom_in_m": "1e-10",
+    "translation_angstrom": [
+      6,
+      6,
+      6
+    ],
+    "translation_scope": "Explicitly recorded shift to centre both bounded neutral systems in the finite isolated cell; no finite-cell translation-invariance claim.",
+    "H2_distance_angstrom": "0.8",
+    "H2_source_fixture": "C03-H2-stretched",
+    "He_source_fixture": "C01-He",
+    "bare_nuclear_masses": [
+      {
+        "element": "H",
+        "mass_kg": "1.67262192595E-27",
+        "engine_mass_amu": "1.007276640618683243737694287708602279426",
+        "source": "NIST-CODATA-2022:proton_mass_kg"
+      },
+      {
+        "element": "He",
+        "mass_kg": "6.644657345E-27",
+        "engine_mass_amu": "4.001506870557389968866141182362340032357",
+        "source": "NIST-CODATA-2022:alpha_particle_mass_kg"
+      }
+    ],
+    "engine_mass_unit_kg": "1.660538782e-27",
+    "mass_policy": "Use CODATA2022 bare nucleus kg, explicitly divide by candidate engine CODATA2006 atomic_mass_kg; never accept implicit neutral atomic mass."
+  },
+  "output_units": {
+    "energy": {
+      "unit": "hartree",
+      "scope": "electronic plus nuclear repulsion; no ZPE/rest/thermal terms"
+    },
+    "forces": {
+      "file": "forces.xyz",
+      "format": "CP2K ATOMIC FORCES table, not XYZ despite filename suffix",
+      "unit": "hartree/bohr",
+      "ndigits": 15
+    },
+    "density": {
+      "enabled": true,
+      "quantity": "electron_number_density_hard_plus_soft",
+      "density_include": "TOTAL_DENSITY",
+      "stride": [
+        1,
+        1,
+        1
+      ],
+      "xrd_interface": false,
+      "append": false,
+      "clipping_or_renormalization": false
+    },
+    "cube_axis_unit": "bohr",
+    "cube_field_unit": "electrons/bohr^3",
+    "cube_axis_rounding_bound_bohr": 5e-07,
+    "cube_field_significant_digits": 6,
+    "cube_grid_integration": "Raw samples times voxel volume from rounded CUBE axes; both field and header serialization budgets and finite-grid/tail error remain distinct.",
+    "no_clipping_smoothing_or_renormalization": true
+  },
+  "cancel_probe": {
+    "system": "h2",
+    "operation": "ENERGY_FORCE",
+    "basis": "cc-pVQZ",
+    "cell_angstrom": 20,
+    "cutoff_ry": 800,
+    "rel_cutoff_ry": 80,
+    "scope": "A larger static probe is interrupted only while a genuine CP2K process is present. No MD, invented delay or dynamics acceptance.",
+    "phase_policy": "Record initialization versus SCF phase actually reached. Exit/child-cleanup and a fresh followup execution must be measured."
+  },
+  "risks_and_remaining_checks": [
+    "MT source explicitly warns cell must exceed twice the electronic-density support; current12Angstrom probes need cell/tail convergence before scientific use.",
+    "Atomic radial100/Lebedev110, LMAXN1=6/LMAXN0=2, EPSFIT/EPSISO/EPSSVD/EPSRHO0 and other thresholds are explicit exploratory candidates, not a frozen or converged all-electron profile.",
+    "An SCF stopping metric and normal exit do not establish force, basis, grid, isolation or physical convergence.",
+    "Confirm actual basis function counts and conditioning, pinned basis/potential data use, electronic count, closed-shell state and nonperiodic features from measured engine evidence.",
+    "Full density export can have finite-g-vector spikes/negative lobes; retain and report raw extrema, negative count and integral; no clipping or renormalization.",
+    "Actual binary/source association and constants must be resolved before candidate CODATA2006 SI factors become an A04 production policy.",
+    "The high-grid cancellation case may hit declared memory/time/output bounds first; such a failure is a failed measured gate, not permission to alter the model or silently relax limits.",
+    "Native CI measurements are not OCI production responsiveness or installed-server verification.",
+    "Generic upstream defaults remain version-tied candidates until A04 enumerates the effective profile; generator does not claim all numerical controls are frozen."
+  ],
+  "physical_validation_status": "unvalidated",
+  "actual_engine_result_in_this_document": null,
+  "source_licenses": "CP2K GPL-2.0-or-later; basis data and preserved licensing/references remain in A02 bundle."
+}

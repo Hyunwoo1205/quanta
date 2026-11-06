@@ -12,9 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A02 소스·자료·이미지 후보 잠금 완료, A03 실측 전
+## 현재 개발 위치 — A03 격리 설치·자원/취소 실측 진행 중
 
 앱0.16.0에서 [동역학 웹·3D 재생](docs/dynamics-web.md)을 구현하고 최종 소스의 양쪽 native 전체시험·독립 검증·설치 컨테이너와 실제 브라우저 사례를 확인한 뒤 운영에 반영했습니다. backend 일반 계약0.4.0·독립0.3.1·기존0.2.0 원본·수치해법·의존성 잠금은 보존했습니다. 실제 브라우저 근거는 [명시한 사례](docs/dynamics_web_browser_verification.json) 범위이며 전체 D11/실제 모바일/물질 거동 합격으로 확대하지 않습니다. 연속 단계·sweep/override·자동 상태 변환·원소/결합/반응 모형은 후보/미구현입니다. 물리 검증은unvalidated입니다. 이후 개발 순서는 아래 통합 재계획v1.0과 기계 판독 개발 계획을 우선합니다. A01의 범위·기준·입력 묶음과 설계 정합성 검사를 완료했습니다. A02의 소스·기저/자료·이미지 후보와 전자밀도 출력/단위 의미를 고정하고 실제 잠금 검사를 완료했습니다. 다음 시작점은A03: 고정 이미지의 격리 설치·실제 버전/리비전·기능·단위/밀도 자료 사용·시간/메모리/출력·취소를 검증하는 작업입니다. 새3D의 실기기/터치 확인은 별도 UI 검증 범위로 유지합니다.
+
+## A03 실행 검증 준비 — 2026-11-07 KST
+
+A02의 고정 이미지·자료를 그대로 사용하는 내부 설치/기능·자원/취소 검증을 준비했습니다. [사전 자원 정책](docs/design/atomistic-a03-v0.1/probe-policy.json)은 비root·network none·읽기 전용 이미지/자료·CPU1·RAM/전체swap2GiB·PID128·시험180초·출력용256MiB tmpfs 상한를 선언합니다. 별도 native ARM/x86 CI와 독립 임시 Quanta API의 응답성을 측정하며 그 결과를 실제 OCI 서버 근거로 쓰지 않습니다. 기존 PPK/Plink와 새UUID/고정소스/성공CI 검증을 사용하는 제한된 OCI 시험을 별도로 준비합니다. 운영 앱 재배포·인증/DB 변경·새 키·자유 원격명령은 포함하지 않습니다.
+
+내부 He/H2 입력 생성기 시험13개가 통과했습니다. 수치 후보는12Å·400/40Ry·EPS_SCF1e-8·명시적 원자격자이며 전체 hard+soft 전자밀도·고정 기저·명시적 핵 질량을 사용합니다. 이 단계에서는 실제 엔진 실행·밀도 적분·취소·서버 여유가 아직 검증되지 않았습니다. 실제 결과로 이 절과 개발 계획을 갱신합니다. 물리 검증은unvalidated이며 제품은 지원 모형 안의 자유 JSON 실험 설계를 목표로 유지합니다.
 
 ## A02 소스·기저/자료·이미지 후보 잠금 — 2026-11-07 KST
 
