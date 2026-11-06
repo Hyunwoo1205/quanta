@@ -1,0 +1,66 @@
+{
+  "contract_version": "0.3.0",
+  "operation": "integrate",
+  "scales": {
+    "length_m": 1.0,
+    "energy_j": 1.0,
+    "time_s": 1.0
+  },
+  "initial_time_s": 0,
+  "system": {
+    "module_id": "quanta.pair_dynamics",
+    "module_version": "0.1.0",
+    "representation": "particles_phase_space_3d",
+    "boundary": "nonperiodic",
+    "min_distance_m": 0.1,
+    "particles": [
+      {
+        "id": "p1",
+        "position_m": [
+          -1,
+          -0.25,
+          0.75
+        ],
+        "velocity_m_per_s": [
+          0.125,
+          -0.6875,
+          -0.03125
+        ],
+        "mass_kg": 1
+      },
+      {
+        "id": "p2",
+        "position_m": [
+          1,
+          -0.25,
+          0.75
+        ],
+        "velocity_m_per_s": [
+          0.125,
+          0.3125,
+          -0.03125
+        ],
+        "mass_kg": 3
+      }
+    ],
+    "potential": {
+      "expression": {
+        "op": "const",
+        "value": 0
+      },
+      "parameters": {}
+    }
+  },
+  "numerics": {
+    "integrator": "velocity_verlet_forward_ad",
+    "dt_s": 0.125,
+    "steps": 8,
+    "sample_stride": 1,
+    "refinement": "none",
+    "energy_drift_atol": 1e-12,
+    "momentum_drift_atol": 1e-10,
+    "angular_momentum_drift_atol": 1e-10,
+    "state_atol": 1e-06,
+    "state_rtol": 1e-06
+  }
+}

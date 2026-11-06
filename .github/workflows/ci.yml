@@ -66,7 +66,12 @@ jobs:
           cat .cache/environment_verification.json
           sha256sum requirements.in "$QUANTA_LOCK_FILE" "$QUANTA_LOCK_MANIFEST" > .cache/selected_lock_sha256.txt
       - name: Check contracts and canonicalization
-        run: python -m quanta check-contracts
+        run: |
+          python -m quanta check-contracts
+          python -m quanta check-contracts --contract-version 0.3.0
+          python -m quanta validate-dynamics contracts/v0.3.0/examples/harmonic.request.json
+          python -m quanta validate-dynamics contracts/v0.3.0/examples/harmonic-refinement.request.json
+          python -m quanta validate-dynamics contracts/v0.3.0/examples/free.request.json
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4, verified 2026-11-04 (UTC+09:00)
         with:
           node-version: "24.22.1"
@@ -149,6 +154,8 @@ jobs:
       - name: Check installed-wheel container
         run: |
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta check-contracts
+          docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta check-contracts --contract-version 0.3.0
+          docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta validate-dynamics /app/contracts/v0.3.0/examples/harmonic.request.json
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta environment
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta evaluate /app/examples/pair_energy_forces.json
           docker run --rm --workdir /tmp quanta-contracts-ci python -m quanta relax /app/examples/pair_relax.json

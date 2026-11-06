@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:pair-dynamics-state:0.3.0",
+  "title": "Scientific phase state data; not a run or provenance envelope",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.3.0"
+    },
+    "module_id": {
+      "const": "quanta.pair_dynamics"
+    },
+    "module_version": {
+      "const": "0.1.0"
+    },
+    "representation": {
+      "const": "particles_phase_space_3d"
+    },
+    "representation_version": {
+      "const": "0.1.0"
+    },
+    "time_kind": {
+      "const": "evolving"
+    },
+    "time_s": {
+      "type": "number",
+      "minimum": 0
+    },
+    "scales": {
+      "$ref": "dynamics_request.schema.json#/properties/scales"
+    },
+    "system": {
+      "$ref": "dynamics_request.schema.json#/properties/system"
+    }
+  },
+  "required": [
+    "contract_version",
+    "module_id",
+    "module_version",
+    "representation",
+    "representation_version",
+    "time_kind",
+    "time_s",
+    "scales",
+    "system"
+  ],
+  "additionalProperties": false
+}

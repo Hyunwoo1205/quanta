@@ -1,0 +1,27 @@
+{
+  "contract_version": "0.3.0",
+  "scope": "standalone_request_validation_foundation",
+  "request_semantics": [
+    "Strict JSON + finite binary64; unique ordered IDs; all masses/scales/min_distance positive.",
+    "Derived force/velocity/mass/momentum/angular scales and reduced masses are finite strictly positive; reduced q/v/min_distance and dt are finite; nonzero-to-zero underflow is an explicit range error.",
+    "Every leg SI dt and its half, reduced dt and its half are positive representable; exact dt/factor retained when refining. Conservative arithmetic-domain restriction is declared, not universal physical necessity.",
+    "Initial and every force evaluation require all pair distances greater than minimum, AST value and first derivative defined and finite; drift-segment guard is additional. Checker does not execute arbitrary AST physics/domain evaluations."
+  ],
+  "payload_semantics": {
+    "legs": "Complete operation factors exactly[1] or[1,2,4] in order. Partial is nonempty prefix of started legs with valid initial force, no duplicates or invented unstarted leg.",
+    "particle_arrays": "particle_ids and masses exactly match request order; every q/v/F frame has shape[N,3]. No reordering or inferred entries.",
+    "step_counts": "leg.requested_steps=factor*primary_n; 0<=completed_steps<=requested_steps; full completion requires equality; aggregate tolerance failure may still have completed_steps=requested_steps.",
+    "force_counts": "force_evaluations counts attempted complete-force calls including failed calls; completed_force_evaluations counts calls returning valid q/U/F. Complete finite leg has both=n_leg+1. Partial leg has completed>=completed_steps+1 and attempted>=completed; driftguard failure may occur before next force call.",
+    "frame_indices": "For leg factor r, normal sample indices are r*j for primary j in{0,s,2s,...<n,n}, restricted to <=completed_steps. Append completed_steps if not already sampled for partial; reserve this terminal extra beforehand. Indices unique sorted, begin0, endcompleted_steps.",
+    "times": "frame.time_s equals correctly-rounded binary64(frame.step_index*exact_binary64(leg_dt)); same common nominal time in refinement; no interpolated or half-step frames.",
+    "none_resolution": "mode=none requires status=not_checked and both errors=null.",
+    "refinement_resolution": "Completed halving_2 has exactly3 complete legs and numeric coarse/fine errors; pass iff declared pass_rule. Incomplete refinement has status=not_checked and both errors=null. No successful output state on failed execution.",
+    "status": "execution/numerical/resolution/physical axes are in common result envelope; physical remainsunvalidated; successful phase state derives only from primary factor1 final frame."
+  },
+  "state_semantics": {
+    "time": "data.time_s is scientific content; any later envelope physical_time must equal it exactly.",
+    "initial_only": "Initial request requires0; evolving state schema permits nonnegative output times, but continuation not implemented.",
+    "integrity": "IDs, masses, potential, scales and array ordering retain authored identity. Structural schema alone does not establish physical or temporal correctness."
+  },
+  "execution": "Validation may evaluate initial potential/forces to check domain. No time propagation, numerical acceptance, output-state publishing or generic workflow support is claimed."
+}

@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:dynamics-module-manifest:0.3.0",
+  "title": "Standalone dynamics validation foundation declaration",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.3.0"
+    },
+    "module_id": {
+      "const": "quanta.pair_dynamics"
+    },
+    "module_version": {
+      "const": "0.1.0"
+    },
+    "implementation_status": {
+      "const": "validation_ready_execution_not_implemented"
+    },
+    "request_scope": {
+      "const": "standalone_solver_request"
+    },
+    "request_schema_ref": {
+      "const": "dynamics_request.schema.json"
+    },
+    "payload_schema_ref": {
+      "const": "dynamics_payload.schema.json"
+    },
+    "state_data_schema_ref": {
+      "const": "dynamics_state.schema.json"
+    },
+    "state_metadata_schema_ref": {
+      "const": "dynamics_metadata.schema.json"
+    },
+    "operations": {
+      "const": [
+        "integrate"
+      ]
+    },
+    "observables": {
+      "const": [
+        "trajectory",
+        "energy_components",
+        "linear_momentum",
+        "angular_momentum",
+        "conservation_diagnostics"
+      ]
+    },
+    "validation": {
+      "const": {
+        "status": "not_executed",
+        "manifest_ref": "validation_manifest.json",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11"
+        ],
+        "physical_validation_status": "unvalidated"
+      }
+    },
+    "ports": {
+      "const": [
+        {
+          "port_id": "phase_in",
+          "direction": "input",
+          "representation": "particles_phase_space_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "dynamics_state.schema.json",
+          "metadata_schema_ref": "dynamics_metadata.schema.json",
+          "time_kind": "evolving",
+          "required": true,
+          "operations": [
+            "integrate"
+          ],
+          "allowed_sources": [
+            "initial"
+          ]
+        },
+        {
+          "port_id": "phase_out",
+          "direction": "output",
+          "representation": "particles_phase_space_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "dynamics_state.schema.json",
+          "metadata_schema_ref": "dynamics_metadata.schema.json",
+          "time_kind": "evolving",
+          "required": true,
+          "operations": [
+            "integrate"
+          ],
+          "allowed_sources": [
+            "not_applicable"
+          ]
+        }
+      ]
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "request_scope": {
+          "const": "standalone_solver_request"
+        },
+        "time_kind": {
+          "const": "evolving"
+        },
+        "spatial_dimensions": {
+          "const": [
+            3
+          ]
+        },
+        "boundaries": {
+          "const": [
+            "nonperiodic"
+          ]
+        },
+        "all_particles_free": {
+          "const": true
+        },
+        "physical_coupling": {
+          "const": false
+        },
+        "execution_supported": {
+          "const": false
+        },
+        "generic_experiment_supported": {
+          "const": false
+        },
+        "resource_policy_ref": {
+          "const": "resource_policy.json"
+        },
+        "resource_profile_pointer": {
+          "const": "/profiles/pair_dynamics_cpu"
+        }
+      },
+      "required": [
+        "request_scope",
+        "time_kind",
+        "spatial_dimensions",
+        "boundaries",
+        "all_particles_free",
+        "physical_coupling",
+        "execution_supported",
+        "generic_experiment_supported",
+        "resource_policy_ref",
+        "resource_profile_pointer"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract_version",
+    "module_id",
+    "module_version",
+    "implementation_status",
+    "request_scope",
+    "request_schema_ref",
+    "payload_schema_ref",
+    "state_data_schema_ref",
+    "state_metadata_schema_ref",
+    "operations",
+    "observables",
+    "validation",
+    "ports",
+    "capabilities"
+  ],
+  "additionalProperties": false
+}

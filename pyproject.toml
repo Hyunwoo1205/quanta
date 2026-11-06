@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quanta-research-contracts"
-version = "0.12.0"
+version = "0.13.0"
 description = "Validated scientific workflows and a durable asynchronous execution service for Quanta"
 readme = "README.md"
 requires-python = "==3.12.14"
@@ -36,6 +36,8 @@ quanta = ["web/*.html", "web/*.css", "web/*.js", "web/*.mjs", "web/*.json"]
 "share/quanta/contracts/v0.2.0" = ["contracts/v0.2.0/*.json", "contracts/v0.2.0/README.txt"]
 "share/quanta/contracts/v0.2.0/examples" = ["contracts/v0.2.0/examples/*.json"]
 "share/quanta/contracts/v0.2.0/module_results" = ["contracts/v0.2.0/module_results/*.json"]
+"share/quanta/contracts/v0.3.0" = ["contracts/v0.3.0/*.json", "contracts/v0.3.0/README.txt"]
+"share/quanta/contracts/v0.3.0/examples" = ["contracts/v0.3.0/examples/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

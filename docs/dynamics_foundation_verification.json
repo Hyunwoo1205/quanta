@@ -1,0 +1,108 @@
+{
+  "verification_kind": "dynamics_contract_foundation_and_shared_pair_kernel",
+  "observed_date_kst": "2026-11-06",
+  "development_app_version": "0.13.0",
+  "repository_base": "d7360dacea6d10af24dd86dd8b3c847ba9581a17",
+  "default_experiment_contract": "0.2.0",
+  "explicit_dynamics_request_contract": "0.3.0",
+  "deployed_app_version": "0.12.0",
+  "deployed_app_source": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+  "implemented": [
+    "explicit immutable offline0.3 registry and packaged schemas",
+    "standalone request structural/semantic/initial feasibility validation",
+    "shared all-pairs AD force kernel preserving static adapter",
+    "CLI validate-dynamics and explicit bundle integrity selection"
+  ],
+  "local_verification": {
+    "locked_python": "3.12.14",
+    "architecture": "x86_64",
+    "thread_environment": "OMP/OPENBLAS/MKL/NUMEXPR=1",
+    "kernel_and_existing_static_relax_regression": {
+      "passed": 155,
+      "seconds": 42.03
+    },
+    "new_bundle_after_final_boundary_fix": {
+      "passed": 23,
+      "seconds": 0.95
+    },
+    "dynamics_request_validator": {
+      "passed": 55,
+      "seconds": 4.82
+    },
+    "new_and_existing_cli": {
+      "passed": 10,
+      "seconds": 0.96
+    },
+    "independent_new_module_review_tests": {
+      "passed": 106,
+      "seconds": 5.68
+    },
+    "design_consistency": {
+      "passed": 46,
+      "dynamics_solver_executed": false
+    },
+    "pip_check": "passed",
+    "wheel": {
+      "wheel_sha256": "01b78368788bfc8aa91c65d35693040015f7d6f2f68861375182de3cff53e876",
+      "files": {
+        "0.2.0": 24,
+        "0.3.0": 17
+      }
+    },
+    "full_suite": {
+      "status": "in_progress"
+    }
+  },
+  "exact_legacy_pair_comparison": {
+    "baseline_commit": "d7360dacea6d10af24dd86dd8b3c847ba9581a17",
+    "baseline_pair_sha256": "8d11ddf2c29988490d3aaafb037ab6dbdaabb1b60bfad76922b92588e9d871c8",
+    "comparison_scope": "Both baseline and candidate use the same currently installed package dependencies, unchanged core AD helpers and default0.2 registry. This is exact old pair implementation comparison, not an isolated historical environment replay.",
+    "successful_computations": 7,
+    "successful_cases": [
+      "base",
+      "signed_fixed_zero",
+      "zero",
+      "nonlinear",
+      "cancel_sum",
+      "all_fixed_forces_retained",
+      "four_body_noncollinear"
+    ],
+    "expected_rejections": 4,
+    "rejection_cases": [
+      "signed_fixed_rejected",
+      "domain",
+      "collision",
+      "deadline"
+    ],
+    "float_comparison": "complete output/error dictionaries with float.hex including signed zero",
+    "before_sha256": "6fa7cb100f791ee58762abd6c18a4604a20ee607712e8b855d3a7edf35632802",
+    "after_sha256": "6fa7cb100f791ee58762abd6c18a4604a20ee607712e8b855d3a7edf35632802",
+    "callback_count_before": 2,
+    "callback_count_after": 2,
+    "earlier_invalid_probe_selection": "Withdrawn: optimization_history had caused early input refusal. Corrected proof first asserts7successful computations and4expected rejections; no skipped failure."
+  },
+  "independent_review": {
+    "remaining_concrete_blockers_in_reviewed_scope": false,
+    "fixed_findings": [
+      "intersect lowered AST/parameter limits before expensive work",
+      "allow zero effective parameter budget for parameter-free AST",
+      "default directory must match default0.2 version",
+      "intersect run and step wall deadline"
+    ]
+  },
+  "remote_ci": {
+    "status": "pending"
+  },
+  "scope_limits": {
+    "time_integrator_implemented": false,
+    "dynamics_trajectory_executed": false,
+    "D01_through_D11_full_dynamics_acceptance": "not_executed",
+    "dynamics_generic_experiment_api_or_ui_supported": false,
+    "initial_pair_force_and_diagnostic_feasibility_checked": true,
+    "complete_future_run_provenance_bytes_estimated": false,
+    "new_deployment_or_oci_changes": false,
+    "credentials_accessed": false
+  },
+  "physical_validation_status": "unvalidated",
+  "next_work": "velocity-Verlet time integration, drift-segment guard, full-step diagnostics, sampling/refinement/partial payload semantics; then independent numerical and workflow integration before web visualization"
+}

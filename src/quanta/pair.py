@@ -5,12 +5,11 @@ from __future__ import annotations
 import math
 import struct
 from dataclasses import dataclass
-from fractions import Fraction
 from itertools import islice
 from typing import Callable
 
-from .autodiff import (CalculationError, _fraction_float, _number, _product,
-                       _ratio, _sum, value_and_derivative)
+from .autodiff import CalculationError, _number, _ratio
+from .pair_kernel import PairForceKernel
 from .parsing import StrictJSONError, parse_json, pointer
 from .registry import ContractRegistry
 from .validation import validate_definition
@@ -120,6 +119,12 @@ class _PreparedPair:
         self.requested_pairs = "pair_energies" in self.definition["observables"]
         self.count = len(self.initial_positions)
         self.pair_count = self.count * (self.count - 1) // 2
+        self.kernel = PairForceKernel(
+            count=self.count, length_m=self.length, energy_j=self.energy,
+            min_distance_m=self.minimum, expression=self.expression,
+            parameters=self.parameters, requested_pairs=self.requested_pairs,
+            particles_path=_PARTICLES_PATH, payload_path=_PAYLOAD_PATH,
+            scales_path="/definition/scales", potential_path="/definition/system/potential")
 
     def evaluate(self, positions: list[list[float]], *, check_deadline: Callable[[], None] | None = None) -> _PairEvaluation:
         if len(positions) != self.count or any(len(row) != 3 for row in positions):
@@ -132,48 +137,11 @@ class _PreparedPair:
                     raise CalculationError("A fixed trial coordinate changed", code="INPUT_SEMANTIC", path=f"{_PARTICLES_PATH}/{i}/position_m/{axis}")
                 if not math.isfinite(positions[i][axis] / self.length):
                     raise CalculationError("Trial coordinate exceeds the finite reduced domain", path=f"{_PARTICLES_PATH}/{i}/position_m/{axis}")
-        energy_terms: list[float] = []
-        force_terms: list[list[list[float]]] = [[[] for _ in range(3)] for _ in range(self.count)]
-        pair_energies: list[dict] = []
-        for i in range(self.count):
-            for j in range(i + 1, self.count):
-                if check_deadline is not None:
-                    check_deadline()
-                try:
-                    displacement = [_sum((positions[i][axis], -positions[j][axis]), _PARTICLES_PATH,
-                                         "coordinate difference") for axis in range(3)]
-                    distance = math.hypot(*displacement)
-                    if not math.isfinite(distance) or distance <= self.minimum:
-                        raise CalculationError("Every pair distance must exceed the minimum distance",
-                                               code="INPUT_SEMANTIC", path=_PARTICLES_PATH)
-                    rho = _ratio(distance, self.length, _PARTICLES_PATH, "reduced pair distance")
-                    value, slope = value_and_derivative(self.expression, self.parameters, rho)
-                    energy_terms.append(value)
-                    for axis in range(3):
-                        contribution = _fraction_float(-Fraction(slope) * Fraction(displacement[axis])
-                                                       / Fraction(distance), _PARTICLES_PATH,
-                                                       "reduced pair force")
-                        force_terms[i][axis].append(contribution)
-                        force_terms[j][axis].append(-contribution)
-                    if self.requested_pairs:
-                        pair_energies.append({"i": i, "j": j, "distance_m": distance,
-                                              "energy_j": _product((value, self.energy), _PAYLOAD_PATH + "/pair_energies",
-                                                                   "SI pair energy")})
-                except CalculationError as exc:
-                    exc.details.setdefault("pair_indices", [i, j])
-                    raise
-        reduced_energy = _sum(energy_terms, _PAYLOAD_PATH + "/energy_j", "total reduced energy")
-        reduced_forces = [[_sum(terms, f"{_PAYLOAD_PATH}/forces_n/{index}/{axis}", "total reduced force")
-                           for axis, terms in enumerate(axes)] for index, axes in enumerate(force_terms)]
-        total_energy = _product((reduced_energy, self.energy), _PAYLOAD_PATH + "/energy_j", "SI total energy")
-        forces = [[_product((component, self.force_scale), f"{_PAYLOAD_PATH}/forces_n/{index}/{axis}", "SI force")
-                   for axis, component in enumerate(row)] for index, row in enumerate(reduced_forces)]
-        free_gradient = max((abs(reduced_forces[i][axis]) for i, axis in self.free_coordinates), default=0.0)
-        if len(energy_terms) != self.pair_count:
-            raise CalculationError("Not all pairs were evaluated", code="ENGINE_FAILURE", path=_PAYLOAD_PATH)
-        if check_deadline is not None:
-            check_deadline()
-        return _PairEvaluation(positions, reduced_energy, reduced_forces, total_energy, forces, free_gradient, pair_energies)
+        result = self.kernel.evaluate(positions, check_deadline=check_deadline)
+        free_gradient = max((abs(result.reduced_forces[i][axis])
+                             for i, axis in self.free_coordinates), default=0.0)
+        return _PairEvaluation(result.positions, result.reduced_energy, result.reduced_forces,
+                               result.energy_j, result.forces_n, free_gradient, result.pair_energies)
 
     def payload(self, evaluation: _PairEvaluation, *, operation: str = "energy_forces", iterations: int = 0,
                 evaluations: int = 1, stop_reason: str = "evaluated", history: list[dict] | None = None,

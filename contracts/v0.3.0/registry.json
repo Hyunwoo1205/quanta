@@ -1,0 +1,173 @@
+{
+  "contract_version": "0.3.0",
+  "registry_version": "0.3.0",
+  "status": "standalone_validation_foundation",
+  "default_for_existing_experiments": false,
+  "execution_supported": false,
+  "generic_experiment_supported": false,
+  "module_versions": [
+    "quanta.pair_dynamics@0.1.0"
+  ],
+  "schema_resolution": {
+    "mode": "fixed_offline_bundle_allowlist",
+    "remote_resolution": false
+  },
+  "modules": [
+    {
+      "contract_version": "0.3.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "implementation_status": "validation_ready_execution_not_implemented",
+      "request_scope": "standalone_solver_request",
+      "request_schema_ref": "dynamics_request.schema.json",
+      "payload_schema_ref": "dynamics_payload.schema.json",
+      "state_data_schema_ref": "dynamics_state.schema.json",
+      "state_metadata_schema_ref": "dynamics_metadata.schema.json",
+      "operations": [
+        "integrate"
+      ],
+      "ports": [
+        {
+          "port_id": "phase_in",
+          "direction": "input",
+          "representation": "particles_phase_space_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "dynamics_state.schema.json",
+          "metadata_schema_ref": "dynamics_metadata.schema.json",
+          "time_kind": "evolving",
+          "required": true,
+          "operations": [
+            "integrate"
+          ],
+          "allowed_sources": [
+            "initial"
+          ]
+        },
+        {
+          "port_id": "phase_out",
+          "direction": "output",
+          "representation": "particles_phase_space_3d",
+          "representation_version": "0.1.0",
+          "data_schema_ref": "dynamics_state.schema.json",
+          "metadata_schema_ref": "dynamics_metadata.schema.json",
+          "time_kind": "evolving",
+          "required": true,
+          "operations": [
+            "integrate"
+          ],
+          "allowed_sources": [
+            "not_applicable"
+          ]
+        }
+      ],
+      "observables": [
+        "trajectory",
+        "energy_components",
+        "linear_momentum",
+        "angular_momentum",
+        "conservation_diagnostics"
+      ],
+      "capabilities": {
+        "request_scope": "standalone_solver_request",
+        "time_kind": "evolving",
+        "spatial_dimensions": [
+          3
+        ],
+        "boundaries": [
+          "nonperiodic"
+        ],
+        "all_particles_free": true,
+        "physical_coupling": false,
+        "execution_supported": false,
+        "generic_experiment_supported": false,
+        "resource_policy_ref": "resource_policy.json",
+        "resource_profile_pointer": "/profiles/pair_dynamics_cpu"
+      },
+      "validation": {
+        "status": "not_executed",
+        "manifest_ref": "validation_manifest.json",
+        "case_ids": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11"
+        ],
+        "physical_validation_status": "unvalidated"
+      }
+    }
+  ],
+  "observables": [
+    {
+      "contract_version": "0.3.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "observable_id": "trajectory",
+      "operations": [
+        "integrate"
+      ],
+      "payload_schema_ref": "dynamics_payload.schema.json",
+      "unit": "SI phase-space arrays",
+      "execution_supported": false,
+      "validation_status": "not_executed"
+    },
+    {
+      "contract_version": "0.3.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "observable_id": "energy_components",
+      "operations": [
+        "integrate"
+      ],
+      "payload_schema_ref": "dynamics_payload.schema.json",
+      "unit": "J",
+      "execution_supported": false,
+      "validation_status": "not_executed"
+    },
+    {
+      "contract_version": "0.3.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "observable_id": "linear_momentum",
+      "operations": [
+        "integrate"
+      ],
+      "payload_schema_ref": "dynamics_payload.schema.json",
+      "unit": "kg m/s",
+      "execution_supported": false,
+      "validation_status": "not_executed"
+    },
+    {
+      "contract_version": "0.3.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "observable_id": "angular_momentum",
+      "operations": [
+        "integrate"
+      ],
+      "payload_schema_ref": "dynamics_payload.schema.json",
+      "unit": "kg m^2/s",
+      "execution_supported": false,
+      "validation_status": "not_executed"
+    },
+    {
+      "contract_version": "0.3.0",
+      "module_id": "quanta.pair_dynamics",
+      "module_version": "0.1.0",
+      "observable_id": "conservation_diagnostics",
+      "operations": [
+        "integrate"
+      ],
+      "payload_schema_ref": "dynamics_payload.schema.json",
+      "unit": "dimensionless scaled residuals",
+      "execution_supported": false,
+      "validation_status": "not_executed"
+    }
+  ]
+}

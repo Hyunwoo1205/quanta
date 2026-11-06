@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:schema:pair-dynamics-metadata:0.3.0",
+  "title": "Unit and precision metadata for phase state",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.3.0"
+    },
+    "position_unit": {
+      "const": "m"
+    },
+    "velocity_unit": {
+      "const": "m/s"
+    },
+    "mass_unit": {
+      "const": "kg"
+    },
+    "time_unit": {
+      "const": "s"
+    },
+    "force_unit": {
+      "const": "N"
+    },
+    "real_dtype": {
+      "const": "float64"
+    },
+    "finite_only": {
+      "const": true
+    },
+    "velocity_time_convention": {
+      "const": "synchronized_full_step"
+    },
+    "physical_validation_status": {
+      "const": "unvalidated"
+    }
+  },
+  "required": [
+    "contract_version",
+    "position_unit",
+    "velocity_unit",
+    "mass_unit",
+    "time_unit",
+    "force_unit",
+    "real_dtype",
+    "finite_only",
+    "velocity_time_convention",
+    "physical_validation_status"
+  ],
+  "additionalProperties": false
+}

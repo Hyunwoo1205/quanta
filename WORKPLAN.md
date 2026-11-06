@@ -10,15 +10,15 @@
 
 최신 상태는 아래 **Gmail 설정 후 실제 가입·로그인 사용자 확인**과 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification을 우선합니다. 배포 당시의 실행 범위는 **서버 계정·Gmail 인증 배포 마감**과 [실제 배포·보존 점검](docs/oci_accounts_upgrade_verification.json), [계정 검증 기록](docs/account_auth_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단은 각 당시의 경과 기록입니다.
 
-## 현재 개발 위치 — 동역학 설계 기준 확정
+## 현재 개발 위치 — 동역학 계약·검증과공용 힘 커널 구현
 
-첫 동역학 모듈 `quanta.pair_dynamics@0.1.0`의 범위·법칙/모형/해법·독립 solver 입출력 초안·자원·실패 의미·D01~D11 검증 기준을 정했습니다. [기계 판독 설계](docs/design/pair-dynamics-v0.1/README.md)와 [설계 확인](docs/dynamics_design_verification.json)을 기준으로 다음 작업은 **새 번들·등록/검증 경계와 공용 힘 커널 구현**입니다. 새 모듈·미래0.3.0 번들은 비활성이며 동역학 solver·수치 합격·웹 시각화·배포는 아직 완료하지 않았습니다. 아래 이전 단계의 다음 작업 문장은 당시 기록입니다.
+개발 앱0.13.0에 [독립0.3 요청 검증과 공용 힘 커널](docs/dynamics-foundation.md)을 구현했습니다. 기본 실험·웹/API는0.2.0을 유지하며 새 계약은 명시적 독립 검증용입니다. `valid=true`도 `executable=false`와 `dynamics_simulation_executed=false`를 유지합니다. 초기 힘·진단 가능성 검사를 실제 시간 궤적 실행과 구분합니다. 현재 전체 회귀·원격CI를 확인 중이며 최종 범위는 [구현 검증 기록](docs/dynamics_foundation_verification.json)을 따릅니다. 다음 구현은 **velocity-Verlet 시간적분과 실패·부분 결과·시간 해상도 경계**입니다. OCI 배포 앱은 위0.12.0/9aba659를 유지합니다.
 
 ## 목표와 기준
 
 연구자가 물리·화학 실험을 직접 구성하는 시뮬레이션 플랫폼을 개발합니다. 코드·기계 판독 명세·시험은 `Hyunwoo1205/quanta`, 계획서와 참고 자료는 README에 연결한 개인용 Drive에서 관리합니다.
 
-계약은 `0.2.0`, 현재 개발 패키지는 `0.12.0`입니다. 배포된 앱 버전·소스는 위 현재 운영 상태와 후속 배포 근거에서 별도로 구분합니다. 초기 계산 모듈 등록의 `0.1.0`과 서로 다른 버전입니다. 등록 모듈 전체의 기능과 실제 구현한 연산을 구분합니다.
+기본 실험 계약은 `0.2.0`, 명시적 독립 동역학 요청 계약은 `0.3.0`, 현재 개발 패키지는 `0.13.0`입니다. 배포된 앱 버전·소스는 위 현재 운영 상태와 후속 배포 근거에서 별도로 구분합니다. 초기 계산 모듈 등록의 `0.1.0`과 서로 다른 버전입니다. 등록 모듈 전체의 기능과 실제 구현한 연산을 구분합니다.
 
 ## 완료한 개발 기반
 
@@ -450,3 +450,13 @@ OCI 단독 A1의 기존 2 OCPU·12 GB·부트 200 GB를 유지한 앱 0.11.0 설
 설계 보조 검사 `scripts/check_dynamics_design.py`의 **46 checks**가 통과했고 두 독립 검토가 같은 결과와 보완 반영을 확인했습니다. 여기에는 시간/척도 half-step underflow 거부, 구조 비용을 포함한 보수적 bytes 상한, 독립 Fraction 초기 보존량과 구조용 합성 payload가 포함됩니다. 이는 완전한 임의 solver 입력/출력 검증기나 실제 동역학 실행이 아닙니다. [확인 기록](docs/dynamics_design_verification.json)의 numerical_solver_executed=false를 유지하고 D01~D11은 모두 미실행입니다. 활성0.2 계약 검사와 기준main 대비 활성src/계약/잠금/배포103개 파일의 Git blob 일치를 확인했습니다. 코드·과학 계약 활성화·서버 배포·인증 설정·재부팅·백업은 변경하지 않았습니다.
 
 기존 개인용 Drive 세부 명세에 전체 설계 절과 실제 확인 범위를 추가했습니다. 설계·기계 판독 파일만 바꿔 수치 전체 회귀나 운영 설치를 중복 실행하지 않습니다. 다음 시작점은 새0.3 번들·등록/검증 경계와 공용 내부 힘 커널 추출입니다. 기존 `_PreparedPair`의 정적 module_id를 바꾸거나 질량/속도를 제거해 호출하지 않으며 기존 에너지·힘/relax 회귀를 먼저 확인합니다. 이어 VV·실패 경계 → 독립 수치검증·네이티브x86/ARM → 단일 단계/SQLite/API/취소/재현 → 웹·시각화를 진행합니다. 현재 배포0.12.0/9aba659와 과학계약0.2.0 및 물리unvalidated를 유지합니다.
+
+## 동역학 계약·검증과 공용 힘 커널 — 2026-11-06
+
+새 동봉 contracts/v0.3.0과 module/request/payload/phase-state/metadata/관측량/자원/의미 규칙·예제·원본 해시를 구현했습니다. 등록 상태는 standalone_validation_foundation이며 실행과 generic experiment 지원은 false입니다. 기본0.2를 바꾸거나 그 원본 bytes를 수정하지 않습니다. 명시 selector·실제 registry 버전 불일치, 버전별 offline alias 혼동·원격 참조·변조를 거부합니다. 패키지에는 기존0.2파일24개와 새0.3파일17개를 포함하며 wheel bytes를 대조했습니다.
+
+독립 validate_dynamics_request와 CLI validate-dynamics는 엄격JSON·등록부 무결성·구조·입자/단위/척도/AST/참조·half-step/정수시각·하향 자원 한도·예약 bytes를 확인하고 공용 커널로 초기 힘·에너지와 초기K/P/L 가능성을 실제 검사합니다. 전체 미래 실행 provenance는 아직 없으므로 완전한 실행 예산으로 주장하지 않고 미완전 추정 플래그와 잔여 bytes를 제공합니다. 초기 힘 평가 플래그를 시간적분 실행 false와 분리합니다. 기존 run/웹/API에 새 동역학 실행을 노출하지 않습니다.
+
+공용 PairForceKernel로 기존 전체 쌍 AD 루프·합산 순서·Fraction 정책을 추출했습니다. 정적 어댑터는 고정 좌표 signed-zero·반력·자유기울기·기존 payload/오류 경계를 유지합니다. 관련155개 시험과 정확한 이전소스 대조의 실제 계산7개·거부4개가 통과했습니다. 새번들23개·검증기55개·CLI10개 및 독립검토106개가 통과했습니다. 잘못된 관측량 때문에 계산 전 거부됐던 초기 parity 시도는 철회하고 성공/오류를 먼저 확인한 교정 근거만 사용합니다. 입력/실행/구현/환경 해시와 물리unvalidated 의미를 유지합니다.
+
+개발 패키지는 새 구현 지문을 구분하도록0.13.0입니다. 과거 strict replay 해시는 덮어쓰지 않으며 현재 구현에서 같은 입력을 실행하는 것은 별도 새 run입니다. 현재 전체 회귀와 ARM/x86 원격CI를 확인 중이며 결과는 후속 마감과 검증JSON에 기록합니다. 실제 동역학 시간적분·D01~D11 전체 수치 합격·웹 시각화·서버 배포는 아직 완료로 표시하지 않습니다.

@@ -35,6 +35,15 @@ def _emit(report: dict, output_format: str = "json") -> None:
         for issue in report.get("errors", []) + (result.get("errors", []) if result else []):
             print(f"error: {issue['code']}: {issue['message']}")
         return
+    if report.get("scope") == "standalone_dynamics_request_validation":
+        print("VALID_INPUT" if report.get("valid") else "INVALID_INPUT")
+        print("execution_supported: false")
+        print("dynamics_simulation_executed: false")
+        if report.get("input_sha256"):
+            print("input_sha256: " + report["input_sha256"])
+        for issue in report.get("errors", []):
+            print(f"error: {issue['code']}: {issue.get('path') or '/'}: {issue['message']}")
+        return
     print(report["evaluation_status"] if "evaluation_status" in report else ("VALID" if report.get("valid") else "INVALID"))
     if report.get("input_sha256"):
         print("input_sha256: " + report["input_sha256"])
@@ -67,6 +76,9 @@ def main(argv: list[str] | None = None) -> int:
     validate = sub.add_parser("validate", help="Validate one UTF-8 experiment revision.")
     validate.add_argument("file", help="Path to an experiment JSON file, or - for standard input.")
     validate.add_argument("--format", choices=("json", "text"), default="json")
+    dynamics = sub.add_parser("validate-dynamics", help="Validate a standalone 0.3.0 dynamics request; no time integration.")
+    dynamics.add_argument("file", help="Standalone dynamics request JSON, or - for standard input.")
+    dynamics.add_argument("--format", choices=("json", "text"), default="json")
     evaluate = sub.add_parser("evaluate", help="Calculate pair energy and forces for one initial configuration.")
     evaluate.add_argument("file", help="Single-step experiment JSON, or - for standard input.")
     evaluate.add_argument("--format", choices=("json", "text"), default="json")
@@ -101,7 +113,8 @@ def main(argv: list[str] | None = None) -> int:
     restore = sub.add_parser("restore-store", help="Restore a checked backup to a new store directory.")
     restore.add_argument("directory")
     restore.add_argument("--output", required=True)
-    sub.add_parser("check-contracts", help="Check bundled schemas, references and registry integrity.")
+    contracts = sub.add_parser("check-contracts", help="Check one explicitly selected bundled contract registry.")
+    contracts.add_argument("--contract-version", choices=("0.2.0", "0.3.0"), default="0.2.0")
     sub.add_parser("environment", help="Report actual runtime versions and numerical library configuration.")
     args = parser.parse_args(argv)
 
@@ -180,14 +193,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if report["valid"] else 2
     if args.command == "check-contracts":
         try:
-            registry = ContractRegistry()
+            registry = ContractRegistry(contract_version=args.contract_version)
             errors = registry.validate_integrity()
         except (OSError, ValueError, TypeError) as exc:
             errors = [{"code": "REGISTRY_SNAPSHOT_UNAVAILABLE", "category": "support",
                        "message": "The bundled contract registry could not be loaded.",
                        "path": None, "step_id": None, "branch_index": None,
                        "retryable": False, "details": {"reason": str(exc)[:200]}}]
-        _emit({"valid": not errors, "contract_version": "0.2.0", "errors": errors,
+        _emit({"valid": not errors, "contract_version": args.contract_version, "errors": errors,
                "physical_validation_status": "unvalidated", "simulation_executed": False})
         return 0 if not errors else 2
     if args.command == "replay":
@@ -214,6 +227,9 @@ def main(argv: list[str] | None = None) -> int:
                 "path": None, "message": str(exc), "step_id": None, "branch_index": None,
                 "retryable": False, "details": {}}], "warnings": [],
                 "input_sha256": None, "physical_validation_status": "unvalidated"}
+        if args.command == "validate-dynamics":
+            report.update(scope="standalone_dynamics_request_validation", contract_version="0.3.0",
+                          executable=False, dynamics_simulation_executed=False)
         if args.command in {"evaluate", "relax", "eigenstates"}:
             quantum = args.command == "eigenstates"
             report.update(evaluation_status="FAILED", calculation_executed=False, payload=None,
@@ -224,6 +240,11 @@ def main(argv: list[str] | None = None) -> int:
                           scope="single_configuration_eigenstates" if quantum else ("single_configuration_relaxation" if args.command == "relax" else "single_configuration_energy_forces"))
         _emit(report, args.format)
         return 2
+    if args.command == "validate-dynamics":
+        from .dynamics_validation import validate_dynamics_request
+        report = validate_dynamics_request(raw)
+        _emit(report, args.format)
+        return 0 if report["valid"] else 2
     if args.command == "plan":
         from .planning import plan_experiment
         report = plan_experiment(raw)
