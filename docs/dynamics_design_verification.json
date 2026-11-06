@@ -1,0 +1,77 @@
+{
+  "verification_kind": "first_pair_dynamics_design_consistency",
+  "observed_date_kst": "2026-11-06",
+  "design_version": "0.1.0",
+  "repository_base": "215bd436be8a803ed4b350746e385f26ea543558",
+  "design_status": "baseline_finalized_implementation_pending",
+  "active_app_version": "0.12.0",
+  "active_contract_version": "0.2.0",
+  "deployed_app_source": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+  "design_package": "docs/design/pair-dynamics-v0.1",
+  "local_design_check": {
+    "checks": 46,
+    "numerical_solver_executed": false,
+    "physical_validation_status": "unvalidated",
+    "request_fixtures": {
+      "free.request.json": {
+        "evaluations": 9,
+        "pair_evaluations": 9,
+        "reserved_frames": 10,
+        "trajectory_byte_bound": 84186
+      },
+      "harmonic-refinement.request.json": {
+        "evaluations": 143,
+        "pair_evaluations": 143,
+        "reserved_frames": 66,
+        "trajectory_byte_bound": 188626
+      },
+      "harmonic.request.json": {
+        "evaluations": 1001,
+        "pair_evaluations": 1001,
+        "reserved_frames": 102,
+        "trajectory_byte_bound": 255766
+      }
+    },
+    "scope": "inactive_design_consistency_only",
+    "status": "passed",
+    "synthetic_structure_fixture_only": true
+  },
+  "design_checker_sha256": "ca469e79f26db4ab8d18091aad1609a92efea26c4e591755eb5f7abe66f22856",
+  "design_hash_manifest_sha256": "b17709f987d9958d8edca5546cdb9c651a5424665e3fd5e9cf4152a9f7870744",
+  "active_source_comparison": {
+    "compared_files": 103,
+    "active_files_match_base": true,
+    "mismatches": []
+  },
+  "active_contract_check": {
+    "valid": true,
+    "contract_version": "0.2.0",
+    "simulation_executed": false
+  },
+  "independent_review": {
+    "contract_compatibility": "targeted fixes reviewed; checker46passed; no_remaining_concrete_blocker_in_reviewed_scope",
+    "numerical_design": "targeted fixes reviewed; checker46passed; no_remaining_concrete_blocker_in_reviewed_scope",
+    "corrections": [
+      "full-step acceptance separated from final invariant tolerances",
+      "failed numerical/resolution criteria map to FAILED/partial/no state promotion",
+      "payload cross-field and attempted/completed force call rules",
+      "positive representable SI/reduced half-step guards, including refinementnone",
+      "conservative frame structure byte overhead included",
+      "both coarse and fine agreement gates while primary h remains output"
+    ]
+  },
+  "scope_limits": {
+    "solver_implemented": false,
+    "dynamics_solver_executed": false,
+    "D01_through_D11": "planned_not_executed",
+    "new_remote_ci": "not_run_design_only_no_active_runtime_change",
+    "dynamics_in_active_registry": false,
+    "new_contract_bundle_activated": false,
+    "web_visualization_implemented": false,
+    "server_deployed_or_modified": false,
+    "credentials_accessed": false,
+    "additional_backup_or_reboot": false
+  },
+  "next_work": "Implement versioned bundle registration/validation and extract shared force kernel with existing static and relax regression, then VV and independent numerical gates before web visualization.",
+  "physical_validation_status": "unvalidated"
+}

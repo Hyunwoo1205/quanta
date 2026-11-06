@@ -150,7 +150,7 @@
     "next_feature": "first_dynamics_module_design"
   },
   "next_work": {
-    "current_phase": "first_dynamics_module_design",
+    "current_phase": "pair_dynamics_bundle_validation_and_shared_force_kernel_implementation",
     "sequence": [
       "scope_physical_model_input_output_contract_and_validation_criteria",
       "implementation",
@@ -159,8 +159,10 @@
     ],
     "correction_date_kst": "2026-11-06",
     "reason": "The assistant incorrectly made existing-particle 3D visualization the immediate next task. User correction and retrieved prior proposal restore dynamics design first.",
-    "dynamics_design_finalized": false,
+    "dynamics_design_finalized": true,
     "dynamics_implemented": false,
-    "scientific_or_deployment_change_in_this_correction": false
+    "scientific_or_deployment_change_in_this_correction": false,
+    "design_reference": "docs/design/pair-dynamics-v0.1/design.json",
+    "design_verification_reference": "docs/dynamics_design_verification.json"
   }
 }

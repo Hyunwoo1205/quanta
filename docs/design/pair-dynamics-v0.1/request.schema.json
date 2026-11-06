@@ -1,0 +1,363 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:draft:pair-dynamics-request:0.1.0",
+  "title": "INACTIVE DESIGN: pair dynamics standalone solver request",
+  "type": "object",
+  "properties": {
+    "draft_schema_version": {
+      "const": "0.1.0"
+    },
+    "operation": {
+      "const": "integrate"
+    },
+    "scales": {
+      "type": "object",
+      "properties": {
+        "length_m": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "energy_j": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "time_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "length_m",
+        "energy_j",
+        "time_s"
+      ],
+      "additionalProperties": false
+    },
+    "initial_time_s": {
+      "const": 0
+    },
+    "system": {
+      "type": "object",
+      "properties": {
+        "module_id": {
+          "const": "quanta.pair_dynamics"
+        },
+        "module_version": {
+          "const": "0.1.0"
+        },
+        "representation": {
+          "const": "particles_phase_space_3d"
+        },
+        "boundary": {
+          "const": "nonperiodic"
+        },
+        "particles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+              },
+              "position_m": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "velocity_m_per_s": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "mass_kg": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "position_m",
+              "velocity_m_per_s",
+              "mass_kg"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 128
+        },
+        "min_distance_m": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "potential": {
+          "$ref": "#/$defs/potential"
+        }
+      },
+      "required": [
+        "module_id",
+        "module_version",
+        "representation",
+        "boundary",
+        "particles",
+        "min_distance_m",
+        "potential"
+      ],
+      "additionalProperties": false
+    },
+    "numerics": {
+      "type": "object",
+      "properties": {
+        "integrator": {
+          "const": "velocity_verlet_forward_ad"
+        },
+        "dt_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "sample_stride": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "refinement": {
+          "enum": [
+            "none",
+            "halving_2"
+          ]
+        },
+        "energy_drift_atol": {
+          "type": "number",
+          "minimum": 0
+        },
+        "momentum_drift_atol": {
+          "type": "number",
+          "minimum": 0
+        },
+        "angular_momentum_drift_atol": {
+          "type": "number",
+          "minimum": 0
+        },
+        "state_atol": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "state_rtol": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "integrator",
+        "dt_s",
+        "steps",
+        "sample_stride",
+        "refinement",
+        "energy_drift_atol",
+        "momentum_drift_atol",
+        "angular_momentum_drift_atol",
+        "state_atol",
+        "state_rtol"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "draft_schema_version",
+    "operation",
+    "scales",
+    "initial_time_s",
+    "system",
+    "numerics"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "expression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "const"
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "var"
+            },
+            "name": {
+              "const": "rho"
+            }
+          },
+          "required": [
+            "op",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "param"
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+            }
+          },
+          "required": [
+            "op",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "add",
+                "mul"
+              ]
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 2,
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "sub",
+                "div"
+              ]
+            },
+            "args": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/expression"
+                },
+                {
+                  "$ref": "#/$defs/expression"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "neg",
+                "exp",
+                "log",
+                "sqrt",
+                "sin",
+                "cos"
+              ]
+            },
+            "arg": {
+              "$ref": "#/$defs/expression"
+            }
+          },
+          "required": [
+            "op",
+            "arg"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "pow"
+            },
+            "arg": {
+              "$ref": "#/$defs/expression"
+            },
+            "exponent": {
+              "type": "integer",
+              "minimum": -12,
+              "maximum": 12
+            }
+          },
+          "required": [
+            "op",
+            "arg",
+            "exponent"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "potential": {
+      "type": "object",
+      "properties": {
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "parameters": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+          },
+          "additionalProperties": {
+            "type": "number"
+          },
+          "maxProperties": 32
+        }
+      },
+      "required": [
+        "expression",
+        "parameters"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

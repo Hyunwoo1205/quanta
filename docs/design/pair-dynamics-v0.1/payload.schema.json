@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:quanta:draft:pair-dynamics-payload:0.1.0",
+  "title": "INACTIVE DESIGN: synchronized trajectory payload, not a run envelope",
+  "type": "object",
+  "properties": {
+    "draft_schema_version": {
+      "const": "0.1.0"
+    },
+    "operation": {
+      "const": "integrate"
+    },
+    "module_id": {
+      "const": "quanta.pair_dynamics"
+    },
+    "module_version": {
+      "const": "0.1.0"
+    },
+    "particle_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+      },
+      "minItems": 2,
+      "maxItems": 128
+    },
+    "masses_kg": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "minItems": 2,
+      "maxItems": 128
+    },
+    "primary_refinement_factor": {
+      "const": 1
+    },
+    "time_kind": {
+      "const": "evolving"
+    },
+    "initial_time_s": {
+      "const": 0
+    },
+    "physical_validation_status": {
+      "const": "unvalidated"
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "legs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/leg"
+      },
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "resolution_comparison": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "halving_2"
+          ]
+        },
+        "status": {
+          "enum": [
+            "not_checked",
+            "pass",
+            "not_converged"
+          ]
+        },
+        "coarse_pair_scaled_error": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fine_pair_scaled_error": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "comparison_grid": {
+          "const": "every_primary_integer_step"
+        },
+        "interpretation": {
+          "const": "finite_step_agreement_not_physical_validation"
+        }
+      },
+      "required": [
+        "mode",
+        "status",
+        "coarse_pair_scaled_error",
+        "fine_pair_scaled_error",
+        "comparison_grid",
+        "interpretation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "draft_schema_version",
+    "operation",
+    "module_id",
+    "module_version",
+    "particle_ids",
+    "masses_kg",
+    "primary_refinement_factor",
+    "time_kind",
+    "initial_time_s",
+    "physical_validation_status",
+    "partial",
+    "legs",
+    "resolution_comparison"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "frame": {
+      "type": "object",
+      "properties": {
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "time_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "positions_m": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "minItems": 2,
+          "maxItems": 128
+        },
+        "velocities_m_per_s": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "minItems": 2,
+          "maxItems": 128
+        },
+        "forces_n": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "minItems": 2,
+          "maxItems": 128
+        },
+        "potential_energy_j": {
+          "type": "number"
+        },
+        "kinetic_energy_j": {
+          "type": "number",
+          "minimum": 0
+        },
+        "total_energy_j": {
+          "type": "number"
+        },
+        "linear_momentum_kg_m_per_s": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "angular_momentum_kg_m2_per_s": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": [
+        "step_index",
+        "time_s",
+        "positions_m",
+        "velocities_m_per_s",
+        "forces_n",
+        "potential_energy_j",
+        "kinetic_energy_j",
+        "total_energy_j",
+        "linear_momentum_kg_m_per_s",
+        "angular_momentum_kg_m2_per_s"
+      ],
+      "additionalProperties": false
+    },
+    "leg": {
+      "type": "object",
+      "properties": {
+        "refinement_factor": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "dt_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "requested_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "completed_steps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "force_evaluations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "sampled_frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/frame"
+          },
+          "minItems": 1,
+          "maxItems": 512
+        },
+        "max_energy_drift_scaled": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_momentum_drift_scaled": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_angular_momentum_drift_scaled": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_com_ballistic_error_scaled": {
+          "type": "number",
+          "minimum": 0
+        },
+        "diagnostics_evaluated_at": {
+          "const": "every_accepted_full_step"
+        },
+        "stop_reason": {
+          "enum": [
+            "completed",
+            "domain_error",
+            "range_error",
+            "resource_limit"
+          ]
+        },
+        "completed_force_evaluations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "refinement_factor",
+        "dt_s",
+        "requested_steps",
+        "completed_steps",
+        "force_evaluations",
+        "sampled_frames",
+        "max_energy_drift_scaled",
+        "max_momentum_drift_scaled",
+        "max_angular_momentum_drift_scaled",
+        "max_com_ballistic_error_scaled",
+        "diagnostics_evaluated_at",
+        "stop_reason",
+        "completed_force_evaluations"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

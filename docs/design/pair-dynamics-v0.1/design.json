@@ -1,0 +1,170 @@
+{
+  "design_version": "0.1.0",
+  "status": "design_baseline_not_implemented",
+  "design_date_kst": "2026-11-06",
+  "repository_base": "215bd436be8a803ed4b350746e385f26ea543558",
+  "active_app_version": "0.12.0",
+  "active_contract_version": "0.2.0",
+  "module_id": "quanta.pair_dynamics",
+  "module_version": "0.1.0",
+  "operation": "integrate",
+  "schemas": {
+    "standalone_solver_request": "request.schema.json",
+    "module_payload": "payload.schema.json"
+  },
+  "activation": {
+    "active_registry_modified": false,
+    "runtime_support": false,
+    "target_bundle_version": "0.3.0",
+    "version_selection_is_project_decision": true,
+    "envelope_shape_forces_version_bump": false,
+    "first_release_protocol": "one integrate step; source=initial; no sweep or overrides",
+    "registration_gate": "new immutable bundle/schema IDs, module+observable/resource registrations, semantic+runner+payload dispatch, package data and hashes, old 0.2 resolver/replay regression"
+  },
+  "physics": {
+    "law": "Newton m_i*d2r_i/dt2 = -gradient_i U",
+    "model": "autonomous conservative identical radial pair potential on all i<j",
+    "potential": "U=E0*sum(i<j,f(|r_i-r_j|/L0)); no cutoff",
+    "scope": "finite nonperiodic 3D all-free point particles, 2..128; explicit masses and full-step velocities",
+    "not_claimed": "NVE ensemble sampling, temperature, pressure, ergodicity, or real-material validity",
+    "excluded": [
+      "fixed_coordinates",
+      "constraints",
+      "thermostat",
+      "barostat",
+      "external_force",
+      "time_dependent_parameters",
+      "periodic_boundaries",
+      "cutoff",
+      "random_initialization",
+      "reaction_chemistry",
+      "quantum_coupling",
+      "external_engine",
+      "cross_module_state_conversion",
+      "solver_checkpoint_resume",
+      "multi_segment_continuation"
+    ]
+  },
+  "scaling": {
+    "mass_scale_kg": "E0*T0^2/L0^2",
+    "velocity_scale_m_per_s": "L0/T0",
+    "momentum_scale_kg_m_per_s": "E0*T0/L0",
+    "angular_momentum_scale_kg_m2_per_s": "E0*T0",
+    "reduced_mass": "m_i*L0^2/(E0*T0^2)",
+    "reduced_time_step": "dt_s/T0",
+    "force_scale_n": "E0/L0",
+    "energy_normalization": "E0, not abs(initial energy)",
+    "precision": "finite IEEE754 binary64; existing overflow-safe product/sum policy; no silent lower precision"
+  },
+  "integrator": {
+    "id": "velocity_verlet_forward_ad",
+    "version": "0.1.0",
+    "updates": [
+      "v_half=v_n+(h/2)*F(r_n)/m",
+      "r_trial=r_n+h*v_half",
+      "validate drift segment and trial domain; compute F(r_trial)",
+      "v_trial=v_half+(h/2)*F(r_trial)/m",
+      "accept synchronized q/v/force only after structural/domain/finite checks; record diagnostics at every accepted full step"
+    ],
+    "force_evaluations": "n+1 per leg; no trial accepted before whole step validation",
+    "time_grid": "t_j=correctly-rounded binary64(j*exact_binary64(leg_dt)); no iterative addition; each halved leg_dt must exactly represent dt/factor. Reject nonfinite/non-increasing grid and unrepresentable/zero SI or reduced half-step.",
+    "no_adaptations": [
+      "no automatic dt reduction",
+      "no COM removal",
+      "no velocity rescaling",
+      "no inferred masses",
+      "no automatic energy offset",
+      "no path interpolation as computed physical states"
+    ],
+    "drift_guard": "For each pair d(s)=d0+s*(d1-d0), reject if min_{0<=s<=1}|d(s)| <= min_distance_m. Use scaled/overflow-safe geometry. This only guards the numerical drift path, not a physical collision-time certificate; other AST singularities checked at force evaluations.",
+    "internal_arithmetic": "Reduced q=r/L0, u=v/(L0/T0), reduced masses and step; SI update formulas specify the same method. Explicitly require positive representable SI and reduced half-steps for every requested leg, including finest half-step h/8 in refinement mode."
+  },
+  "resources": {
+    "status": "planned_ceilings_not_measured_performance",
+    "max_particles": 128,
+    "max_base_steps": 10000,
+    "max_total_force_evaluations": 10000,
+    "max_pair_evaluations": 1000000,
+    "max_total_output_frames": 512,
+    "input_bytes": 1048576,
+    "artifact_bytes_per_run": 33554432,
+    "wall_seconds_per_step": 60,
+    "wall_seconds_per_run": 120,
+    "memory_mib_per_run": 1024,
+    "sampling": "primary indices {0,s,2s,...<n,n}; F=1+ceil(n/s); require 1<=s<=n. For refinement save each leg only at primary sample times; combined frames=3F. Reserve one additional unsampled terminal-partial frame per requested leg: total reserved=L*(F+1)<=512.",
+    "preflight": "legs=1 or3; total evaluations=n+1 or7n+3; pair work=C(N,2)*total evaluations; enforce all ceilings before execution. Conservative trajectory bound: reserved_frames*[25*(9N+15)+8N+1024]+65536. Separately count actual original input/provenance and reserved terminal envelope bytes against same32MiB run cap; final exact bytes checked before atomic publish.",
+    "wall_limit": "Hard supervisor deadline remains authoritative; accepted ceilings do not promise completion."
+  },
+  "diagnostics": {
+    "cadence": "every accepted integration step of every leg, never only output samples",
+    "energy": "max_j |E_j-E_initial| / E0",
+    "momentum": "max_j max_component |P_j-P_initial| / P0",
+    "angular_momentum": "max_j max_component |L_j-L_initial| / J0; about fixed SI origin",
+    "center_of_mass": "max_j max_component |R_j-(R_initial+V_initial*t_j)| / L0; reported, exact-fixture gate only",
+    "numerical_status": "pass only if full trajectory completed, finite/domain/drift checks pass and declared E/P/L scaled tolerances pass; failed criterion -> not_converged (not optimizer convergence)",
+    "physical_validation_status": "unvalidated",
+    "tolerance_timing": "Do not reject or adapt a finite step solely because an E/P/L tolerance is exceeded. Finish all requested legs unless hard domain/range/resource/cancel failure; judge aggregate maxima after completion."
+  },
+  "refinement": {
+    "modes": [
+      "none",
+      "halving_2"
+    ],
+    "primary_factor_always": 1,
+    "halving_2": "independent h,n; h/2,2n; h/4,4n from identical initial phase state to same exact nominal duration; no hidden replacement of primary trajectory",
+    "state_error": "max across every primary integer step, particle and q/L0,v/(L0/T0) component: abs(a-b)/(state_atol+state_rtol*max(abs(a),abs(b)))",
+    "pass_rule": "coarse(h,h/2) error<=1 AND fine(h/2,h/4) error<=1 AND fine<=coarse; if both exactly zero, finite-step agreement may pass but observed order is indeterminate, not a second-order proof",
+    "none_resolution_status": "not_checked",
+    "comparison_storage": "bounded coarse q/v buffers; compare matching integer indices2j/4j, not interpolated sample curves",
+    "refinement_failure": "Any failed leg fails full requested operation; completed leg evidence may be partial, no successful final state or downstream promotion."
+  },
+  "failure_semantics": {
+    "invalid_initial_state": "fail before any trajectory payload; no invented initial force or zeros",
+    "later_domain_or_range_failure": "only last fully synchronized accepted step may be partial; append last accepted frame if not sampled, include it in preflight reserved frame count; never publish half-kick/trial r as state",
+    "resource_or_timeout": "explicit failure with requested/limit/observed quantities; no truncation to pass or automatic resampling",
+    "cancellation": "existing supervisor semantics; no success after committed cancel; only already committed artifacts retained. Do not promise active child in-memory trajectory survival or checkpoint resume.",
+    "publication": "result envelope execution/numerical/resolution/physical axes separate; complete all requested legs before successful state publish; cancelled/failed output never downstream source",
+    "status_mapping": {
+      "success": "SUCCEEDED only when all requested legs complete, numerical_status=pass and resolution_status=pass or explicitly not_checked for refinement=none; partial=false; publish final phase state of primary factor1.",
+      "tolerance_failure": "Any E/P/L criterion failure on any complete leg -> numerical_status=not_converged; any requested resolution criterion failure -> resolution_status=not_converged. Execution=FAILED, partial=true if validated trajectory exists, no successful output state.",
+      "hard_failure": "Domain/range/structural/resource failure -> FAILED; cancellation -> CANCELLED; overall uncompleted numerical/resolution assessments=not_checked, no successful output state. Existing committed earlier evidence remains separate."
+    }
+  },
+  "state_and_replay": {
+    "representation": "particles_phase_space_3d@0.1.0",
+    "time_kind": "evolving",
+    "state_content": "ordered ids,masses,positions,full-step velocities,physical time, potential, scales, boundary and min_distance; envelope physical_time must equal content time_s",
+    "hashes": "canonical authored request, effective phase state including time, frozen module/solver/schema/registry/resource profile, actual arrays/artifact bytes, implementation/dependency/environment hashes all retained",
+    "initial": "starts at explicitly required time0; no live restart from solver data",
+    "static_transfer": "not automatic; copying coordinates requires explicit new input with chosen masses and velocities",
+    "replay": "old0.2 bundle/implementation hashes never rewritten; current-version execution is a separate new run"
+  },
+  "implementation_order": [
+    "immutable0.3 bundle + reject/accept validation gates",
+    "extract shared pair force kernel preserving static/relax regression",
+    "single-request VV + resource/domain/partial result validation",
+    "independent analytic/refinement/invariant gates on x86+ARM",
+    "single initial-stage workflow + SQLite/API/cancel/replay integration",
+    "web integration and visualization after numerical gates"
+  ],
+  "validation_plan": "validation-plan.json",
+  "numerical_execution_status": "not_executed",
+  "references": "references.json",
+  "admission_semantics": [
+    "Strict JSON + finite binary64; unique ordered IDs; all masses/scales/min_distance positive.",
+    "Derived force/velocity/mass/momentum/angular scales and reduced masses are finite strictly positive; reduced q/v/min_distance and dt are finite; nonzero-to-zero underflow is an explicit range error.",
+    "Every leg SI dt and its half, reduced dt and its half are positive representable; exact dt/factor retained when refining. Conservative arithmetic-domain restriction is declared, not universal physical necessity.",
+    "Initial and every force evaluation require all pair distances greater than minimum, AST value and first derivative defined and finite; drift-segment guard is additional. Checker does not execute arbitrary AST physics/domain evaluations."
+  ],
+  "payload_semantics": {
+    "legs": "Complete operation factors exactly[1] or[1,2,4] in order. Partial is nonempty prefix of started legs with valid initial force, no duplicates or invented unstarted leg.",
+    "particle_arrays": "particle_ids and masses exactly match request order; every q/v/F frame has shape[N,3]. No reordering or inferred entries.",
+    "step_counts": "leg.requested_steps=factor*primary_n; 0<=completed_steps<=requested_steps; full completion requires equality; aggregate tolerance failure may still have completed_steps=requested_steps.",
+    "force_counts": "force_evaluations counts attempted complete-force calls including failed calls; completed_force_evaluations counts calls returning valid q/U/F. Complete finite leg has both=n_leg+1. Partial leg has completed>=completed_steps+1 and attempted>=completed; driftguard failure may occur before next force call.",
+    "frame_indices": "For leg factor r, normal sample indices are r*j for primary j in{0,s,2s,...<n,n}, restricted to <=completed_steps. Append completed_steps if not already sampled for partial; reserve this terminal extra beforehand. Indices unique sorted, begin0, endcompleted_steps.",
+    "times": "frame.time_s equals correctly-rounded binary64(frame.step_index*exact_binary64(leg_dt)); same common nominal time in refinement; no interpolated or half-step frames.",
+    "none_resolution": "mode=none requires status=not_checked and both errors=null.",
+    "refinement_resolution": "Completed halving_2 has exactly3 complete legs and numeric coarse/fine errors; pass iff declared pass_rule. Incomplete refinement has status=not_checked and both errors=null. No successful output state on failed execution.",
+    "status": "execution/numerical/resolution/physical axes are in common result envelope; physical remainsunvalidated; successful phase state derives only from primary factor1 final frame."
+  }
+}

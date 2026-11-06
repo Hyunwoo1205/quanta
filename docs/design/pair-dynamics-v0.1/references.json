@@ -1,0 +1,29 @@
+{
+  "accessed_date_kst": "2026-11-06",
+  "sources": [
+    {
+      "id": "GROMACS-VV",
+      "url": "https://manual.gromacs.org/current/reference-manual/algorithms/molecular-dynamics.html",
+      "observed_version": "2026.4",
+      "use": "equations31/32 full-step velocity-Verlet and distinction from leap-frog velocities; no source-derived project tolerance"
+    },
+    {
+      "id": "LAMMPS-NVE",
+      "url": "https://docs.lammps.org/fix_nve.html",
+      "observed_version": "release30Sep2026",
+      "use": "VV integration reference; source ensemble claim requires full periodic boundary, so Quanta finite open-space design does not claim ensemble sampling"
+    },
+    {
+      "id": "LAMMPS-FLOW",
+      "url": "https://docs.lammps.org/Developer_flow.html",
+      "observed_version": "release30Sep2026",
+      "use": "initial force before first step and energy minimization is not literal timestepping"
+    },
+    {
+      "id": "OMELYAN2002",
+      "url": "https://arxiv.org/abs/cond-mat/0110438",
+      "doi": "10.1103/PhysRevE.65.056706",
+      "use": "second-order Verlet-family methods; ordinary velocity-Verlet selected, not optimized variant"
+    }
+  ]
+}
