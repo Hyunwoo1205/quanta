@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "upgrade-application",
+  "operation": "verify-application",
   "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
-  "request_id": "35167703-7479-438c-abef-949b26a75e17"
+  "request_id": "68351a5c-8774-4419-98db-0db2da41a3be"
 }
