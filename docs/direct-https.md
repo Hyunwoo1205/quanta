@@ -1,6 +1,6 @@
 # OCI 직접 HTTPS 선택 구성
 
-2026-11-06 · 직접 HTTPS 구성 · 공개 TLS/인증 경계 확인, 소유자 전체 흐름 대기
+2026-11-06 · 공개 TLS·소유자 데스크톱 흐름 확인 · 실제 모바일·운영 복구 확인은 별도
 
 Cloudflare Access·Tunnel의 기본 구성은 유지합니다. 이 문서는 외부 DNS의 A/AAAA 레코드로 OCI에 직접 연결하고, Caddy가 HTTPS를 종료하며 Quanta가 단일 소유자 bearer 토큰을 검사하는 대안을 설명합니다. 이 파일과 예시는 서버 설치·방화벽 개방·인증 방식 전환을 실행하지 않습니다.
 
@@ -18,7 +18,7 @@ Cloudflare Access·Tunnel의 기본 구성은 유지합니다. 이 문서는 외
 
 [고정 전환 실행 42125582058](https://github.com/Hyunwoo1205/quanta/actions/runs/42125582058)은 2026-11-05 22:57:03 UTC에 성공했습니다. ZeroSSL 인증서 발급, DNS 일치, HTTP 308의 정확한 HTTPS 전환, HTTPS 화면 200, owner-token 인증 안내 200, 익명·잘못된 토큰의 API 401을 확인했습니다. 과거 이메일 누락·공유 등록 도메인 발급 한도는 이 성공 이전의 이력입니다. [ACME 실행 기록](oci_acme_configuration_verification.json)에 이전 실패와 후속 성공을 구분해 보존합니다.
 
-이 공개 검사는 올바른 소유자 접속키를 사용하지 않았습니다. 소유자 브라우저·계산 검증이나 실제 OS 재부팅·off-host 복구의 합격을 뜻하지 않습니다. 다음은 [소유자 브라우저 확인](owner-browser-check.md)의 비공개 입력 절차로 로그인한 뒤 저장·실행·결과·다운로드·재실행을 검증하는 단계입니다. 키를 Actions나 채팅으로 가져오거나 기존 설치·방화벽·인증서 작업을 반복하지 않습니다.
+이 공개 검사는 올바른 소유자 접속키를 사용하지 않았으며, 그 자체로 소유자 브라우저·계산 합격을 뜻하지 않습니다. 이후 [소유자 브라우저 기록](oci_owner_browser_verification.json)의 실제 비공개 데스크톱 세션에서 저장·실행·결과·다운로드·재실행·취소·새로고침 재인증을 별도로 확인했습니다. 현재 남은 실제 모바일·OS 재부팅·off-host 복구는 [소유자 브라우저 절차](owner-browser-check.md)와 운영 계획으로 구분합니다. 키를 Actions나 채팅으로 가져오거나 기존 설치·방화벽·인증서 작업을 반복하지 않습니다.
 
 ## Caddy 설정 준비
 
@@ -69,6 +69,14 @@ python3 scripts/verify_caddy.py --caddy /path/to/verified/caddy
 최종 로컬 검사는 설정 검사와 요청 9개 사례를 통과했습니다. HTTP/2 전용 연결의 음성 검사는 OpenSSL 오류 문구에 의존하지 않고 TLS handshake 실패를 기록합니다. 이어서 동일한 Python TLS context·CA·hostname에서 HTTP/1.1 POST가 정상 전달되는지 검사해 일반 TLS 실패나 서버 중단을 합격으로 처리하지 않습니다.
 
 실제 운영 검증에는 외부 HTTPS 인증서 신뢰·HTTP→HTTPS 이동, 토큰 없는 API 401, 잘못된 토큰 401, 올바른 토큰의 준비 상태·계산·조회·다운로드, 다른 Host·Origin 거부, 재시작 후 단일 worker와 데이터 보존을 포함합니다. 브라우저에서 인증한 실제 동작과 단순한 TLS 연결 성공을 구분합니다.
+
+## 실제 OCI 확인 범위
+
+2026-11-06의 [누적 ACME 기록](oci_acme_configuration_verification.json)은 명시적 ZeroSSL 발급과 공개 HTTPS·HTTP 308·익명 및 잘못된 토큰의 401을 확인했습니다. 이 공개 자동검사는 올바른 소유자 키를 사용하지 않았습니다.
+
+이어 사용자가 비공개 인증 입력으로 연결한 실제 데스크톱 브라우저에서 입력 검증·저장, 입자 평가·정적 탐색·양자 상태·다단계 계산, 기록·재실행·취소와 결과·산출물 다운로드를 확인했습니다. [소유자 브라우저 기록](oci_owner_browser_verification.json)은 5개 검증 실험·8개 실행의 실제 UUID와 결과·미확인 범위를 보존합니다. 키 값을 에이전트·로그·저장소로 가져오지 않았으며 원래 앱·인증 방식·배포 소스는 변경하지 않았습니다.
+
+강제 취소 뒤 같은 서비스의 새 입자 재실행, 실제 새로고침의 인증 해제와 비공개 재인증, 저장 실험 5개·실행 8개 보존까지 확인했습니다. 잘못 입력한 키의 거부도 확인했으며 사용자 입력 오류를 앱 결함으로 분류하지 않습니다. 실제 모바일·OS 재부팅·off-host 또는 관리형 볼륨 복구는 아직 확인하지 않았습니다. 브라우저 결과를 모든 과학 기준의 독립 재검증으로 표시하지 않으며 물리 검증 상태는 `unvalidated`입니다. 다음 확인은 [소유자 브라우저 절차](owner-browser-check.md)를 따릅니다.
 
 공식 참고: [Caddy reverse_proxy와 buffer·header·HTTP transport](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy), [요청 본문 상한](https://caddyserver.com/docs/caddyfile/directives/request_body), [요청 matcher](https://caddyserver.com/docs/caddyfile/matchers), [HTTP 프로토콜 설정](https://caddyserver.com/docs/caddyfile/options#protocols), [환경 변수 치환](https://caddyserver.com/docs/caddyfile/concepts#environment-variables), [설정 검사](https://caddyserver.com/docs/command-line#caddy-adapt), [자동 HTTPS 조건](https://caddyserver.com/docs/automatic-https).
 

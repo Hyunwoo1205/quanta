@@ -108,9 +108,9 @@
       "wrong_token_api_status": null
     }
   },
-  "current_blocker": "owner_browser_authentication_pending",
+  "current_blocker": null,
   "diagnostic_test_count": 28,
-  "historical_record_scope": "The original workflow_run, request, configuration_result, public_result, scope, notes and diagnostic_retry describe the two unsuccessful attempts; successful_retry and current_state describe the later verified state.",
+  "historical_record_scope": "The original workflow_run, request, configuration_result, public_result, scope, notes and diagnostic_retry describe the two unsuccessful attempts; successful_retry and current_state describe the later verified state. current_state is explicitly the post-public-probe, pre-owner-session snapshot and is superseded by the owner-browser record.",
   "successful_retry": {
     "workflow_run": {
       "id": 42125582058,
@@ -227,6 +227,11 @@
     "compute_verified": false,
     "mobile_verified": false,
     "physical_validation_status": "unvalidated",
-    "next": "Use the existing trusted SSH session to privately obtain the owner key and complete the actual HTTPS browser/mobile workflow; do not send the key through chat or public automatic checks."
-  }
+    "next": "Use the existing trusted SSH session to privately obtain the owner key and complete the actual HTTPS browser/mobile workflow; do not send the key through chat or public automatic checks.",
+    "scope": "after_public_probe_before_owner_session",
+    "superseded_by_owner_browser_record": "oci_owner_browser_verification.json",
+    "next_is_historical": true,
+    "scope_note": "These flags and next action are the snapshot immediately after the public probe; actual later owner-browser, cancellation recovery and reload/reauthentication observations are recorded separately in oci_owner_browser_verification.json."
+  },
+  "remaining_verification_record": "oci_owner_browser_verification.json"
 }

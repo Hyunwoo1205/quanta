@@ -1,0 +1,210 @@
+{
+  "verification_kind": "oci_authenticated_owner_desktop_browser_flow",
+  "checked_at_date": "2026-11-06",
+  "date_timezone": "Asia/Seoul",
+  "status": "desktop_core_flow_verified_with_remaining_checks",
+  "documentation_base_commit": "34211c62bba6c68e732c6c4121d92a15950b4bf3",
+  "deployed_source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "package_version": "0.11.0",
+  "input_contract_version": "0.2.0",
+  "authentication": {
+    "mode": "owner-token",
+    "credential_supplied_through_private_browser_auth_handoff": true,
+    "credential_value_returned_to_or_read_by_agent": false,
+    "credential_value_logged_or_committed": false,
+    "credential_sent_through_public_automatic_probe": false,
+    "credential_kept_in_live_page_memory": true,
+    "new_authentication_or_bootstrap_feature_added": false
+  },
+  "scope": {
+    "actual_oci_https_desktop_browser": true,
+    "owner_authentication_verified": true,
+    "browser_verified": true,
+    "compute_verified": true,
+    "input_validation_and_revision_save_verified": true,
+    "run_history_reopen_verified": true,
+    "result_json_browser_download_completed": true,
+    "artifact_browser_download_completed": true,
+    "artifact_ui_size_and_sha256_check_passed": true,
+    "independent_downloaded_file_hash_verification_performed": false,
+    "actual_cancellation_verified": true,
+    "refresh_and_reauthentication_verified": true,
+    "mobile_device_verified": false,
+    "os_reboot_verified": false,
+    "off_host_or_managed_volume_backup_verified": false,
+    "entire_scientific_acceptance_suite_rerun_on_oci": false,
+    "server_worker_process_identity_checked": false,
+    "source_or_contract_or_workflow_changed": false,
+    "deployed_application_or_authentication_mode_changed": false,
+    "physical_validation_status": "unvalidated",
+    "reload_reauthentication_verified": true,
+    "stored_records_after_reload_verified": true,
+    "post_cancellation_service_processing_verified": true
+  },
+  "test_data": {
+    "saved_verification_experiments": 5,
+    "observed_run_count": 8,
+    "pre_existing_data_preserved": true,
+    "verification_experiments_left_in_owner_history": true,
+    "completed_run_count": 7,
+    "cancelled_run_count": 1
+  },
+  "value_interpretation": "Recorded numerical values are observed browser result/display values. They do not replace independent numerical acceptance measurements or establish physical validation.",
+  "runs": [
+    {
+      "operation": "energy_forces",
+      "run_id": "8552f552-8aed-4d1b-a057-3211c1ff1233",
+      "revision_id": "2e84ec5c-df46-4389-8b41-4688fb9c493c",
+      "completed_successfully": true,
+      "observed_values": {
+        "energy_j": 4e-21,
+        "max_force_n": 4e-11
+      }
+    },
+    {
+      "operation": "replay",
+      "run_id": "0c0a52aa-3875-483a-9116-d30d399acb8a",
+      "revision_id": "2e84ec5c-df46-4389-8b41-4688fb9c493c",
+      "replay_of_run_id": "8552f552-8aed-4d1b-a057-3211c1ff1233",
+      "completed_successfully": true,
+      "new_run_id_and_same_revision_verified": true,
+      "observed_result_matches_original": true,
+      "observed_values": {
+        "energy_j": 4e-21,
+        "max_force_n": 4e-11
+      }
+    },
+    {
+      "operation": "relax",
+      "run_id": "d91930ca-f8d7-43b7-913b-c1a2cd8dc6e7",
+      "revision_id": "31fd3eb1-a6b7-4439-b8f5-db2c6bbfb6d3",
+      "completed_successfully": true,
+      "numerical_criterion_pass_observed": true,
+      "observed_values": {
+        "energy_j": 0,
+        "free_gradient_inf": 0,
+        "second_particle_final_x_m": 1e-09
+      },
+      "global_minimum_or_stability_certified": false
+    },
+    {
+      "operation": "eigenstates",
+      "run_id": "d3d6ba19-95cc-44cc-a8bc-cd479ce47c64",
+      "revision_id": "dc251c3b-3666-49d2-bf6d-18bee7eda438",
+      "completed_successfully": true,
+      "numerical_criterion_pass_observed": true,
+      "resolution_criterion_pass_observed": true,
+      "observed_values": {
+        "lowest_energy_j": 5.4881e-20,
+        "state_count": 4,
+        "displayed_point_count": 1025
+      },
+      "fourth_state_wavefunction_chart_selected_and_rendered": true
+    },
+    {
+      "operation": "workflow",
+      "run_id": "9bf4e935-d3ba-4b92-aef0-255bef4e9f9f",
+      "revision_id": "54e42834-feff-4447-ba7f-df010ca97ec2",
+      "completed_successfully": true,
+      "branch_count": 2,
+      "step_count": 6,
+      "observed_branch_one_values": {
+        "baseline_energy_j": 8e-21,
+        "baseline_force_n": 8e-11,
+        "final_energy_j": 0,
+        "final_force_n": 0
+      }
+    },
+    {
+      "operation": "workflow_replay_with_late_cancel_request",
+      "run_id": "626e4603-113f-42af-b0a7-fdb4a04cd187",
+      "revision_id": "54e42834-feff-4447-ba7f-df010ca97ec2",
+      "replay_of_run_id": "9bf4e935-d3ba-4b92-aef0-255bef4e9f9f",
+      "completed_successfully": true,
+      "terminal_cancelled_status_observed": false,
+      "cancellation_pass_claimed": false,
+      "note": "The workflow completed before cancellation could take effect. This completion/cancellation race is retained and is not used as successful cancellation evidence."
+    },
+    {
+      "operation": "relax_with_cancellation",
+      "run_id": "cebb297d-60af-4ab7-a990-6b6682e6a19d",
+      "revision_id": "06806198-13f0-4619-909d-e186054ce250",
+      "input_family": "64-particle relaxation using the same registered harmonic pair model",
+      "observed_terminal_status": "CANCELLED",
+      "cancellation_pass_claimed": true,
+      "observed_diagnostic": "Cancellation required a forced process stop; no uncommitted results were retained",
+      "uncommitted_payload_retained": false,
+      "committed_payload_for_cancelled_stage": false
+    },
+    {
+      "operation": "pair_replay_after_forced_stop_cancellation",
+      "run_id": "d5efeb70-b238-4ea5-ba83-a5a54be6afa9",
+      "revision_id": "2e84ec5c-df46-4389-8b41-4688fb9c493c",
+      "replay_of_run_id": "8552f552-8aed-4d1b-a057-3211c1ff1233",
+      "completed_successfully": true,
+      "submitted_after_cancelled_run_id": "cebb297d-60af-4ab7-a990-6b6682e6a19d",
+      "new_run_id_and_same_revision_verified": true,
+      "observed_result_matches_original": true,
+      "observed_values": {
+        "energy_j": 4e-21,
+        "max_force_n": 4e-11
+      },
+      "same_service_processed_followup_run": true
+    }
+  ],
+  "history_and_downloads": {
+    "first_pair_experiment_reopened": true,
+    "original_and_replay_completed_records_preserved": true,
+    "verification_experiments_visible": 5,
+    "full_result_json_browser_download_completed": true,
+    "artifact_browser_download_count": 1,
+    "artifact_size_and_sha256_checked_by_existing_ui_before_download": true,
+    "independent_external_file_hash_claimed": false,
+    "run_rows_visible_after_reload": 8,
+    "completed_run_rows_after_reload": 7,
+    "cancelled_run_rows_after_reload": 1,
+    "stored_records_after_reload_verified": true
+  },
+  "pending_checks": [
+    "Actual mobile-device browser workflow.",
+    "Actual OS reboot and off-host or OCI managed-volume recovery; earlier same-boot isolated restore is separate evidence."
+  ],
+  "evidence_relationships": {
+    "earlier_public_probe_record": "oci_acme_configuration_verification.json",
+    "earlier_unauthenticated_browser_entry_record": "oci_browser_entry_verification.json",
+    "original_public_probe_booleans_left_unchanged": true,
+    "private_origin_ip_email_and_keys_not_recorded": true
+  },
+  "notes": [
+    "The user supplied the credential through the private browser authentication handoff; its value was never returned to, read by or logged by the agent.",
+    "The live browser sent authenticated application requests as the owner's chosen session. No valid owner credential was used by the public automatic deployment probe.",
+    "Verification created five saved test experiments and eight run records in the existing owner store; no pre-existing data was deleted.",
+    "These browser observations confirm actual transport, storage, calculation and display paths for the listed inputs. They are not a new independent scientific accuracy certification.",
+    "Source, contracts, dependencies, workflows, deployed image and authentication mode were not changed by the browser verification.",
+    "After the forced-stop cancellation, a fresh pair replay completed on the same service with the original revision and observed energy/force values, confirming continued processing.",
+    "An actual page reload required authentication again and hid private history. The user-confirmed incorrect key was rejected; private corrected reauthentication restored the connected state and all five test experiments/eight run rows.",
+    "The incorrect credential response is expected authentication rejection and is not classified as an application defect."
+  ],
+  "reload_and_reauthentication": {
+    "actual_page_reload_performed": true,
+    "reload_cleared_page_memory_authentication": true,
+    "key_required_and_controls_restricted_after_reload": true,
+    "unauthenticated_visible_run_count": 0,
+    "first_reauthentication_used_user_confirmed_incorrect_key": true,
+    "incorrect_key_rejected_without_exposing_saved_data": true,
+    "incorrect_key_rejection_classified_as_application_bug": false,
+    "private_corrected_credential_handoff_completed": true,
+    "fresh_connected_state_observed": true,
+    "observed_connected_text": "계산 환경 연결됨",
+    "observed_package_version": "0.11.0",
+    "actual_history_refresh_clicked": true,
+    "saved_experiments_visible_after_reauthentication": 5,
+    "run_rows_visible_after_reauthentication": 8,
+    "completed_run_rows": 7,
+    "cancelled_run_rows": 1,
+    "cancelled_run_completed_step_count": 0,
+    "cancelled_run_total_step_count": 1,
+    "credential_value_returned_to_or_read_by_agent": false,
+    "stored_records_after_reload_verified": true
+  }
+}
