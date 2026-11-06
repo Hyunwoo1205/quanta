@@ -47,4 +47,4 @@ quanta replay .cache/dynamics-run --output-dir .cache/dynamics-replay --format t
 
 실측 명령은 `python scripts/verify_dynamics_workflow.py --output .cache/dynamics_workflow_verification.json`입니다. 인증된 실제 루프백 HTTP·SQLite·별도 계산 프로세스로 입력/저장/실행, 독립 해석해, 실제 물리 시각, 산출물 bytes, 소유자 분리, 번들 왕복·재실행, 세분화와 drift 오류를 확인합니다. 다른 오류·자원·취소·변조 경계는 관련 시험과 함께 기록합니다.
 
-최종 소스·실제 시험 수·ARM/x86·설치 패키지 근거는 WORKPLAN과 검증JSON에 보존합니다. D07~D11 전체 또는 웹 화면의 궤적 일치를 일괄 완료로 표시하지 않습니다. 물리 검증은 계속 `unvalidated`입니다. 다음 단계는 이 저장된 궤적·관측량을 3D 입자 화면과 시간 재생에 연결하는 작업입니다.
+최종 소스·실제 시험 수·ARM/x86·설치 패키지 근거는 [WORKPLAN](../WORKPLAN.md)과 [검증JSON](dynamics_workflow_verification.json)에 보존합니다. [실제 HTTP·수치 측정](dynamics_workflow_numerical_verification.json)은 별도 기록입니다. D07~D11 전체 또는 웹 화면의 궤적 일치를 일괄 완료로 표시하지 않습니다. 물리 검증은 계속 `unvalidated`입니다. 다음 단계는 이 저장된 궤적·관측량을 3D 입자 화면과 시간 재생에 연결하는 작업입니다.

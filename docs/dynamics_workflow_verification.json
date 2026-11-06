@@ -4,8 +4,8 @@
   "generic_contract_version": "0.4.0",
   "solver_contract_version": "0.3.1",
   "baseline_main": "6cde7740fa72ab6a41f1002a8b014abad7702d5c",
-  "implementation_source_commit": null,
-  "stage_complete": false,
+  "implementation_source_commit": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4",
+  "stage_complete": true,
   "source_files_sha256": {
     "quanta/__init__.py": "c881320a2ec63428c96d47c50ea1b3baab04cb311b83c91486b2e29bb88398f8",
     "quanta/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
@@ -55,7 +55,20 @@
     "validation_and_cli": 19,
     "planning_and_legacy_combined": 37,
     "workflow": 13,
-    "independent_review": 31
+    "independent_review": 31,
+    "bundle_and_legacy_combined": {
+      "passed": 46,
+      "seconds": 260.01
+    },
+    "service": {
+      "distinct_cases_passed": 18,
+      "initial_attempt": {
+        "passed": 16,
+        "failed": 2,
+        "seconds": 202.27
+      },
+      "corrections": "Test helpers parsed plaintext artifacts as JSON and used frames instead of sampled_frames; both corrected targets passed without runtime code changes."
+    }
   },
   "actual_backend_measurements": {
     "status": "passed",
@@ -70,12 +83,490 @@
     }
   },
   "local_full_regression": {
-    "status": "running",
+    "status": "failed_with_corrected_test_helpers",
     "collected": 2021,
-    "note": "Two service test-helper parsing/carrier corrections occurred after collection; authoritative final targeted and CI results will be recorded."
+    "passed": 2019,
+    "failed": 2,
+    "seconds": 900.43,
+    "failed_tests": [
+      "tests/test_dynamics_service.py::test_real_child_success_durable_reopen_and_new_input_replay",
+      "tests/test_dynamics_service.py::test_failed_drift_publishes_only_accepted_partial_without_final_state"
+    ],
+    "reason": "This process collected service test bytecode before the helper corrections. Corrected targets passed separately without changes to runtime code; final native CI uses all final tests, including six replay cases added after local collection.",
+    "log_sha256": "817c54d18b07e8eeabcdac6056e9ea2f178c2835e31a456047079a8e6bcb4ca0"
   },
   "native_ci": {
-    "status": "pending"
+    "status": "passed",
+    "run_id": 42197895494,
+    "run_attempt": 1,
+    "source_commit": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4",
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42197895494",
+    "jobs": [
+      {
+        "id": 127825643337,
+        "name": "contracts (x86_64)",
+        "pytest_passed": 2027,
+        "pytest_seconds": 1388.54,
+        "all_35_steps_success": true,
+        "native_and_installed_cases": {
+          "standalone_VV": 7,
+          "backend_DW": 6,
+          "all_passed": true
+        },
+        "installed_wheel_and_hardened_nonroot_operations": "passed"
+      },
+      {
+        "id": 127825643715,
+        "name": "contracts (aarch64)",
+        "pytest_passed": 2027,
+        "pytest_seconds": 946.69,
+        "all_35_steps_success": true,
+        "native_and_installed_cases": {
+          "standalone_VV": 7,
+          "backend_DW": 6,
+          "all_passed": true
+        },
+        "installed_wheel_and_hardened_nonroot_operations": "passed"
+      }
+    ],
+    "native_measurements": {
+      "aarch64": {
+        "artifact_id": 13493962389,
+        "archive_sha256": "9867b2416f24c7b6bcef234046ad3267f3fbc0cfd17584f894cc3dfe6fd4f777",
+        "backend_report_sha256": "c53d52f723b4a8e0b46710b6d13945c2ad0cdc3e85183a2bdc4ae5e1a7f3a6a0",
+        "vv_report_sha256": "6087f3cc1e9208d365e0d127a8f47a2363f81f4e18e99448bea4701b973ffdce",
+        "source_set_sha256": "8cf6e327e862aaff740b9432b4a418daab800ee5e03860d24bcc9ff1f3bdd9cc",
+        "backend_environment": {
+          "valid": true,
+          "runtime_profile": "cpython-3.12.14-linux-aarch64-cpu-v1",
+          "versions": {
+            "python": "3.12.14",
+            "numpy": "2.3.5",
+            "scipy": "1.17.0",
+            "jsonschema": "4.26.0",
+            "referencing": "0.37.0",
+            "rfc8785": "0.1.4",
+            "threadpoolctl": "3.6.0"
+          },
+          "implementation": "CPython",
+          "platform": {
+            "os": "Linux",
+            "architecture": "aarch64"
+          },
+          "thread_environment": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1"
+          }
+        },
+        "locked_inventory_scope": "Complete observed lock inventory is from the standalone VV report; backend child separately passed its runner locked-environment gate.",
+        "vv_lock_evidence": {
+          "requirements_lock_sha256": "2bbe3c935e671dee374d73635d8d2677aed927ba92c5ee9b73a49b33c8b5dc9f",
+          "locked_distributions": {
+            "attrs": "26.1.0",
+            "cffi": "2.1.1",
+            "click": "8.5.0",
+            "cryptography": "50.0.2",
+            "h11": "0.16.0",
+            "iniconfig": "2.3.1",
+            "jsonschema": "4.26.0",
+            "jsonschema-specifications": "2025.9.1",
+            "numpy": "2.3.5",
+            "packaging": "26.3",
+            "pip": "25.3",
+            "pluggy": "1.7.0",
+            "pycparser": "3.12",
+            "pygments": "2.21.0",
+            "pyjwt": "2.15.1",
+            "pytest": "9.0.2",
+            "referencing": "0.37.0",
+            "rfc3339-validator": "0.1.4",
+            "rfc8785": "0.1.4",
+            "rpds-py": "2026.9.1",
+            "scipy": "1.17.0",
+            "setuptools": "80.9.0",
+            "six": "1.17.0",
+            "threadpoolctl": "3.6.0",
+            "typing-extensions": "4.16.0",
+            "uvicorn": "0.54.0",
+            "wheel": "0.45.1"
+          }
+        },
+        "cases": [
+          {
+            "id": "DW01",
+            "status": "passed",
+            "checks": {
+              "unauthenticated_401": true,
+              "default_contract_preserved": true,
+              "explicit_dynamics_capability": true,
+              "valid_input": true,
+              "validation_does_not_store": true,
+              "initial_force_checks_explicitly_deferred": true,
+              "queued_cancelled_without_worker": true
+            },
+            "scope": "Authenticated HTTP admission, capability versioning, no storage effects and queued cancellation"
+          },
+          {
+            "id": "DW02",
+            "status": "passed",
+            "checks": {
+              "actual_child_succeeded": true,
+              "result_contract": true,
+              "closed_form_state_error": true,
+              "actual_time_in_data_and_envelope": true,
+              "evolving_phase_state": true,
+              "force_count": true,
+              "physical_unvalidated": true
+            },
+            "scope": "Real numerical child via HTTP, independent harmonic closed form on every retained frame",
+            "frames_checked": 101,
+            "max_position_velocity_error": 1.240069262831156e-07,
+            "tolerance": 1e-06,
+            "final_time_s": 1.0,
+            "elapsed_seconds": 19.172776934000012,
+            "progress": [
+              {
+                "execution_status": "QUEUED",
+                "progress": {
+                  "completed_steps": 0,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              },
+              {
+                "execution_status": "RUNNING",
+                "progress": {
+                  "completed_steps": 0,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              },
+              {
+                "execution_status": "RUNNING",
+                "progress": {
+                  "completed_steps": 0,
+                  "total_steps": 1,
+                  "active_step": "integrate",
+                  "active_branch": 0
+                }
+              },
+              {
+                "execution_status": "RUNNING",
+                "progress": {
+                  "completed_steps": 1,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              },
+              {
+                "execution_status": "SUCCEEDED",
+                "progress": {
+                  "completed_steps": 1,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              }
+            ]
+          },
+          {
+            "id": "DW03",
+            "status": "passed",
+            "checks": {
+              "all_raw_http_transfers_verified": true,
+              "foreign_owner_404": true,
+              "bundle_roundtrip_exact": true,
+              "sqlite_reopen_exact": true
+            },
+            "scope": "Actual HTTP artifact bytes, owner separation, validated bundle and durable SQLite reopen",
+            "artifact_transfers": {
+              "count": 95,
+              "all_hashes_and_sizes_verified": true,
+              "sum_transferred_bytes": 1653168
+            }
+          },
+          {
+            "id": "DW04",
+            "status": "passed",
+            "checks": {
+              "new_run_id": true,
+              "real_replay_succeeded": true,
+              "same_payload": true,
+              "same_science_and_execution_hashes": true,
+              "new_state_ids": true
+            },
+            "scope": "A second actual numerical child replays immutable initial input; no solver checkpoint continuation",
+            "elapsed_seconds": 19.251387775000012
+          },
+          {
+            "id": "DW05",
+            "status": "passed",
+            "checks": {
+              "three_legs_completed": true,
+              "resolution_pass": true,
+              "actual_force_counts": true
+            },
+            "scope": "h/h2/h4 trajectory survives generic API and result verification",
+            "resolution_comparison": {
+              "mode": "halving_2",
+              "status": "pass",
+              "coarse_pair_scaled_error": 0.23257966254730533,
+              "fine_pair_scaled_error": 0.05813240905161443,
+              "comparison_grid": "every_primary_integer_step",
+              "interpretation": "finite_step_agreement_not_physical_validation"
+            },
+            "elapsed_seconds": 15.897102074000031
+          },
+          {
+            "id": "DW06",
+            "status": "passed",
+            "checks": {
+              "failed_not_successful": true,
+              "no_successful_output_state": true,
+              "only_initial_accepted_frame": true,
+              "no_completed_step_claim": true,
+              "unvalidated": true
+            },
+            "scope": "Interior drift crossing rejected by actual child; accepted partial evidence stored without final-state promotion",
+            "elapsed_seconds": 13.957834361000096
+          }
+        ],
+        "vv_case_statuses": {
+          "D01": "passed",
+          "D02": "passed",
+          "D03": "passed",
+          "D04": "passed",
+          "D05": "passed",
+          "D06": "passed",
+          "D07_drift_segment_subcase": "passed"
+        },
+        "full_D07_D11_acceptance_completed": false,
+        "physical_validation_status": "unvalidated"
+      },
+      "x86_64": {
+        "artifact_id": 13494029197,
+        "archive_sha256": "7b6aa357c7c72c0746aa689b2ade22e6fc7b517b21cc4d449ee30721159a1e2b",
+        "backend_report_sha256": "be626449f8bf7291fbac94d934230ffb4439bf1cb054861bfed7631b9225bb0c",
+        "vv_report_sha256": "42f81b977d9b2e0c0205057215842bb2b3b96b67ea0abff820a45290b488c0f3",
+        "source_set_sha256": "8cf6e327e862aaff740b9432b4a418daab800ee5e03860d24bcc9ff1f3bdd9cc",
+        "backend_environment": {
+          "valid": true,
+          "runtime_profile": "cpython-3.12.14-linux-x86_64-cpu-v1",
+          "versions": {
+            "python": "3.12.14",
+            "numpy": "2.3.5",
+            "scipy": "1.17.0",
+            "jsonschema": "4.26.0",
+            "referencing": "0.37.0",
+            "rfc8785": "0.1.4",
+            "threadpoolctl": "3.6.0"
+          },
+          "implementation": "CPython",
+          "platform": {
+            "os": "Linux",
+            "architecture": "x86_64"
+          },
+          "thread_environment": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1"
+          }
+        },
+        "locked_inventory_scope": "Complete observed lock inventory is from the standalone VV report; backend child separately passed its runner locked-environment gate.",
+        "vv_lock_evidence": {
+          "requirements_lock_sha256": "202670c26847dd123319dd74e06b98fdf99f4b2edbe3e164feaee99b71e28ca5",
+          "locked_distributions": {
+            "attrs": "26.1.0",
+            "cffi": "2.1.1",
+            "click": "8.5.0",
+            "cryptography": "50.0.2",
+            "h11": "0.16.0",
+            "iniconfig": "2.3.1",
+            "jsonschema": "4.26.0",
+            "jsonschema-specifications": "2025.9.1",
+            "numpy": "2.3.5",
+            "packaging": "26.3",
+            "pip": "25.3",
+            "pluggy": "1.7.0",
+            "pycparser": "3.12",
+            "pygments": "2.21.0",
+            "pyjwt": "2.15.1",
+            "pytest": "9.0.2",
+            "referencing": "0.37.0",
+            "rfc3339-validator": "0.1.4",
+            "rfc8785": "0.1.4",
+            "rpds-py": "2026.9.1",
+            "scipy": "1.17.0",
+            "setuptools": "80.9.0",
+            "six": "1.17.0",
+            "threadpoolctl": "3.6.0",
+            "typing-extensions": "4.16.0",
+            "uvicorn": "0.54.0",
+            "wheel": "0.45.1"
+          }
+        },
+        "cases": [
+          {
+            "id": "DW01",
+            "status": "passed",
+            "checks": {
+              "unauthenticated_401": true,
+              "default_contract_preserved": true,
+              "explicit_dynamics_capability": true,
+              "valid_input": true,
+              "validation_does_not_store": true,
+              "initial_force_checks_explicitly_deferred": true,
+              "queued_cancelled_without_worker": true
+            },
+            "scope": "Authenticated HTTP admission, capability versioning, no storage effects and queued cancellation"
+          },
+          {
+            "id": "DW02",
+            "status": "passed",
+            "checks": {
+              "actual_child_succeeded": true,
+              "result_contract": true,
+              "closed_form_state_error": true,
+              "actual_time_in_data_and_envelope": true,
+              "evolving_phase_state": true,
+              "force_count": true,
+              "physical_unvalidated": true
+            },
+            "scope": "Real numerical child via HTTP, independent harmonic closed form on every retained frame",
+            "frames_checked": 101,
+            "max_position_velocity_error": 1.240069262831156e-07,
+            "tolerance": 1e-06,
+            "final_time_s": 1.0,
+            "elapsed_seconds": 27.034555402000024,
+            "progress": [
+              {
+                "execution_status": "QUEUED",
+                "progress": {
+                  "completed_steps": 0,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              },
+              {
+                "execution_status": "RUNNING",
+                "progress": {
+                  "completed_steps": 0,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              },
+              {
+                "execution_status": "RUNNING",
+                "progress": {
+                  "completed_steps": 0,
+                  "total_steps": 1,
+                  "active_step": "integrate",
+                  "active_branch": 0
+                }
+              },
+              {
+                "execution_status": "RUNNING",
+                "progress": {
+                  "completed_steps": 1,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              },
+              {
+                "execution_status": "SUCCEEDED",
+                "progress": {
+                  "completed_steps": 1,
+                  "total_steps": 1,
+                  "active_step": null,
+                  "active_branch": null
+                }
+              }
+            ]
+          },
+          {
+            "id": "DW03",
+            "status": "passed",
+            "checks": {
+              "all_raw_http_transfers_verified": true,
+              "foreign_owner_404": true,
+              "bundle_roundtrip_exact": true,
+              "sqlite_reopen_exact": true
+            },
+            "scope": "Actual HTTP artifact bytes, owner separation, validated bundle and durable SQLite reopen",
+            "artifact_transfers": {
+              "count": 95,
+              "all_hashes_and_sizes_verified": true,
+              "sum_transferred_bytes": 1652697
+            }
+          },
+          {
+            "id": "DW04",
+            "status": "passed",
+            "checks": {
+              "new_run_id": true,
+              "real_replay_succeeded": true,
+              "same_payload": true,
+              "same_science_and_execution_hashes": true,
+              "new_state_ids": true
+            },
+            "scope": "A second actual numerical child replays immutable initial input; no solver checkpoint continuation",
+            "elapsed_seconds": 27.245450677000008
+          },
+          {
+            "id": "DW05",
+            "status": "passed",
+            "checks": {
+              "three_legs_completed": true,
+              "resolution_pass": true,
+              "actual_force_counts": true
+            },
+            "scope": "h/h2/h4 trajectory survives generic API and result verification",
+            "resolution_comparison": {
+              "mode": "halving_2",
+              "status": "pass",
+              "coarse_pair_scaled_error": 0.23257966254730533,
+              "fine_pair_scaled_error": 0.05813240905161443,
+              "comparison_grid": "every_primary_integer_step",
+              "interpretation": "finite_step_agreement_not_physical_validation"
+            },
+            "elapsed_seconds": 23.427635579000025
+          },
+          {
+            "id": "DW06",
+            "status": "passed",
+            "checks": {
+              "failed_not_successful": true,
+              "no_successful_output_state": true,
+              "only_initial_accepted_frame": true,
+              "no_completed_step_claim": true,
+              "unvalidated": true
+            },
+            "scope": "Interior drift crossing rejected by actual child; accepted partial evidence stored without final-state promotion",
+            "elapsed_seconds": 20.860517524999977
+          }
+        ],
+        "vv_case_statuses": {
+          "D01": "passed",
+          "D02": "passed",
+          "D03": "passed",
+          "D04": "passed",
+          "D05": "passed",
+          "D06": "passed",
+          "D07_drift_segment_subcase": "passed"
+        },
+        "full_D07_D11_acceptance_completed": false,
+        "physical_validation_status": "unvalidated"
+      }
+    }
   },
   "remaining": [
     "3D particle/trajectory and observable UI parity",
@@ -88,5 +579,86 @@
     "package_version": "0.12.0",
     "source_commit": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
     "changed": false
+  },
+  "wheel_bytes_check": {
+    "status": "passed",
+    "python_files": 33,
+    "contracts": {
+      "0.2.0": 24,
+      "0.3.0": 17,
+      "0.3.1": 18,
+      "0.4.0": 26
+    }
+  },
+  "installed_wheel_check": {
+    "status": "passed",
+    "package_version": "0.15.0",
+    "outside_source_tree": "/tmp",
+    "installed_contract_files": {
+      "0.2.0": 24,
+      "0.3.0": 17,
+      "0.3.1": 18,
+      "0.4.0": 26
+    },
+    "generic_dynamics_run_bundle_read_replay": "passed",
+    "python_files_bytes_matched": 33,
+    "dependencies": "Existing exact locked .venv site-packages supplied via PYTHONPATH. Runtime quanta and every contract root asserted inside the new wheel environment; no fresh dependency-download claim."
+  },
+  "related_control_ci": [
+    {
+      "id": 42197895691,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42197895691",
+      "status": "success",
+      "source_commit": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4",
+      "all_jobs_success": true,
+      "tests_per_architecture": 49
+    },
+    {
+      "id": 42197895602,
+      "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42197895602",
+      "status": "success",
+      "source_commit": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4",
+      "all_jobs_success": true,
+      "tests_per_architecture": 190
+    }
+  ],
+  "generic_contract_files_sha256": {
+    "README.txt": "8178520d277d0f4549bebe56fe2dfce6010ffb84b2e54f15ff3a73175e0d2deb",
+    "artifact.schema.json": "940a8b2b1a12d6ae4c06d04aa6b486f0b58ca42a1885ba3a4a9c834773ba2ada",
+    "dynamics_adapter.json": "44a679e76be6a4f639986b61215cbd49263eb733f1155dedee51f5978b2b100d",
+    "dynamics_adapter.schema.json": "403dda7214c4b39c61727bb52cc76b7af9e99c24914c05bb1ad31dda0bb9b408",
+    "dynamics_definition.schema.json": "ce4120b7342fb3365dd29eb31e017f61b47e55009a54204f61a568a1bd473ef3",
+    "dynamics_metadata.schema.json": "35e82bd48a749bad0c9c166c122e081ca753b2874569b86681222bfe9d6242ae",
+    "dynamics_payload.schema.json": "f14f1afa1dbf5365aabf955dbc5b37968cbb27c1482d4e259e9b85f090efd83f",
+    "dynamics_report.schema.json": "95fc2192f68a13edd129d3c7973bdb0295092d9d4d2fc8676a9172db6e9028bf",
+    "dynamics_request.schema.json": "32074a727c1f2f99b11813f79e889983e99872b0eb4f926e0fd206685002555a",
+    "dynamics_state.schema.json": "c1ffdbaf8e867701a63464ef61a1fd0d3f732dd88db7e73cc89105d4c930eb09",
+    "examples/free_revision.json": "d7252a4040b31f470e9df93e0df86106357c3148ee7253b2fa5853d0d07f54af",
+    "examples/harmonic_refinement_revision.json": "592b2f80949f09b847164e6f2d8759e318384abe43b06db94a82c6b2252aa717",
+    "examples/harmonic_revision.json": "8791adaf2f8785fe5f8c98fd56c150e9e0764fffa82f9bbd7019dd8f98e48896",
+    "experiment.schema.json": "07b13aaaa26e1d439fd7b9e2a5f6c1f23fe9473dd43cc3bfe7418ec3503b18ec",
+    "hashing_contract.json": "fff26c5c5b7b4e1b9bc4547bd684bc6fbd19b00d66876289a3e3fe8ab0422ce2",
+    "module_manifest.schema.json": "70bc8439e83a4ec851ceb5e3fd7bb52775463f52e11b469dfa947dfa3f1ecf7e",
+    "observable_manifest.schema.json": "b098590910b58885e1260ddccd02f682ddb26bd6c545448213922bbe570d9e84",
+    "registry.json": "8bc8db49c58606d4677a71d46e81d75232577c6c099496c2e8d9b5e6e714f760",
+    "registry.schema.json": "9677dfef7b1b7dfd4cd46e8d84de5d93beb8565350836df158776ff4c90309b3",
+    "resource_policy.json": "196a5e8ffa43e360d5dbde1b38e71fe1082a8ba2d047c06745b3c97e83a08be5",
+    "resource_policy.schema.json": "ce57d2cec3ea3717558d39d49c72b1b72feec7c97aaac422fc3c6dd52f8b7529",
+    "result.schema.json": "4162369a9e450f10d73ef47f626e6c83ba86be970aaa6987d0093a6bf1b15d03",
+    "semantic_rules.json": "9022d57dea3074e893b6452539dcc41e2313aa26a2957158b4191a35af69017b",
+    "state.schema.json": "5134738a1ae22afc855e717fd3328a3caaf50a6187dd052e5a39a95eb30b08aa",
+    "validation_manifest.json": "6521f3b5ec1b6e39613ce09ebc0bf18e9b62add35691801b1bd5c98367571c6f"
+  },
+  "generic_digest_manifest_sha256": "f040b59762932dd92c82275201df1922680d89018b68cb5f483e72427abee16c",
+  "planning_document_update": {
+    "existing_document_url": "https://docs.google.com/document/d/1t0SUe1Z3tYB5rlpnujeguBRqIQzxuAynOcCxLk27tIQ",
+    "same_document_updated": true,
+    "content_and_headings_readback_verified": true,
+    "handoff_document_created_or_updated": false
+  },
+  "publication_method": {
+    "local_workspace": "Materialized remote files, not a claimed git worktree",
+    "github": "Content tree and commit API, main fast-forward with expected-head lease",
+    "runtime_code_unchanged_since_tested_source": true
   }
 }
