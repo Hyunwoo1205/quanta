@@ -1,0 +1,28 @@
+{
+  "verification_kind": "oci_fixed_application_upgrade",
+  "status": "controller_prepared",
+  "target": {
+    "source_sha": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4",
+    "app_version": "0.15.0",
+    "application_ci_run": 42197895494
+  },
+  "last_verified_installation": {
+    "source_sha": "9aba659c0ff71e1c336ad57e4e960c2c9d2c7cb9",
+    "app_version": "0.12.0"
+  },
+  "controller": {
+    "source_sha": null,
+    "native_ci_run": null,
+    "local_new_tests": 70,
+    "local_new_test_seconds": 0.418,
+    "legacy_accounts_tests": 49,
+    "legacy_accounts_seconds": 0.092,
+    "script_sha256": "c489b17a46787fd397bd8a78703de0f1e2da1b9755a489d448e1945100876e62"
+  },
+  "actual_server_operations": [],
+  "actual_upgrade_completed": false,
+  "secrets_returned": false,
+  "reboot_or_additional_regular_backup": false,
+  "physical_validation_status": "unvalidated",
+  "scope": "Fixed application release update; no new 3D UI. Definitive dual DB/Gmail proof precedes restored public admission."
+}

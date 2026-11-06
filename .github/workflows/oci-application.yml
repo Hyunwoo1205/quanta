@@ -1,0 +1,59 @@
+name: OCI fixed application upgrade
+
+on:
+  push:
+    branches:
+      - ops/oci
+    paths:
+      - .github/oci/application-request.json
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: quanta-oci-installation
+  cancel-in-progress: false
+
+jobs:
+  application:
+    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/ops/oci' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    environment: oci-preflight
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Checkout independently verified fixed control
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: '0000000000000000000000000000000000000000'
+          path: verified-application-control
+          persist-credentials: false
+      - name: Require completed controller and selected application CI
+        id: authorize
+        env:
+          QUANTA_APPLICATION_CONTROL_SHA: '0000000000000000000000000000000000000000'
+          QUANTA_APPLICATION_CONTROL_CI_RUN: '1'
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+        run: python3 -I -B verified-application-control/deploy/oci/authorize_application_upgrade.py
+      - name: Install existing-key SSH transport
+        run: |
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
+      - name: Execute the verified fixed application operation
+        env:
+          QUANTA_APPLICATION_CONTROL_SHA: '0000000000000000000000000000000000000000'
+          QUANTA_APPLICATION_CONTROL_CI_RUN: '1'
+          QUANTA_APPLICATION_OPERATION: ${{ steps.authorize.outputs.operation }}
+          QUANTA_APPLICATION_SOURCE_SHA: ${{ steps.authorize.outputs.source_sha }}
+          QUANTA_APPLICATION_REQUEST_ID: ${{ steps.authorize.outputs.request_id }}
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+          QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
+          QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
+          QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
+          QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
+        run: python3 -I -B verified-application-control/deploy/oci/probe_application_upgrade.py
+
