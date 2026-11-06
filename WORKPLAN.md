@@ -288,13 +288,27 @@ ACME job `127588786706`은 기존 설치·Caddy·설정 범위를 확인한 뒤 
 
 새 운영 코드 `4f63777003826073cd4bec3fe16969c8cc8c53eb`의 [전용 CI 42157978228](https://github.com/Hyunwoo1205/quanta/actions/runs/42157978228)이 ARM/x86 두 native job과 종료 단계까지 성공했습니다. 각 job은 CPython3.12.14의 새 운영 시험78개를 실행했습니다. 실제 서버 요청은 이 control SHA와 CI를 workflow에 고정하여 실행하며, 앱 소스/기존 앱 CI 핀은 유지합니다. 요청 분류의 실제 로컬6개 fixture 및 control checkout·인가·SSH secret 순서와 암호문 전용 artifact 경로를 확인했습니다. 다음은 이 고정 경로의 읽기 전용 실제 서버 audit입니다.
 
+## 실제 운영 복구 준비 검증
+
+읽기 전용 [audit 42158159348](https://github.com/Hyunwoo1205/quanta/actions/runs/42158159348)에서 설치/저장소·앱/HTTPS/Docker·활성/enable 백업 timer·단일 작업자 독점 잠금·무대기 계산·기존 컨테이너1개 재시작 정책을 확인했습니다. 당시 실험6개·실행9개였으며 설정을 변경하지 않았습니다. [점검 원본](docs/oci_recovery_audit_verification.json)에 수집 성공과 재부팅/외부백업 미확인을 분리합니다.
+
+이후 [새 백업·분리 복원 42158376795](https://github.com/Hyunwoo1205/quanta/actions/runs/42158376795)이 성공했고 timer를 정지/재설정하지 않고 운영 앱·DB 정체성을 보존했습니다. [준비 근거](docs/oci_recovery_backup_verification.json)의 root 비공개 기준 파일은 덮어쓰지 않습니다.
+
+[암호화 내보내기 42158531263](https://github.com/Hyunwoo1205/quanta/actions/runs/42158531263) 후 원본 DB가 아닌 암호문만 실행기 산출물로 받았습니다. 이를 개인용 Drive에 비공개로 보관하고 다시 내려받아 암호문 SHA·인증 복호화·DB/manifest 두파일 제한·고정 앱의 백업 검증기·SQLite 무결성/스키마/외래키/모든 산출물 bytes·서버 밖 새 디렉터리 복원과 DB bytes 일치를 확인했습니다. 이 사본은 추가된 기록을 포함한 실험7개·revision7개·실행10개(완료9/취소1)·산출물678개, DB35,684,352bytes입니다. 수신자 개인키도 같은 개인 계정의 비공개 파일에서 되받아 일치를 확인했으며 서버·공개 실행기·저장소에 공급하지 않았습니다. 서버의 소유자 인증키/환경 파일은 내보내지 않았습니다. [off-host 검증](docs/oci_off_host_backup_verification.json)은 **일회성 외부 SQLite 백업/복원 성공**이며 자동 off-host 일정·OCI 관리형 볼륨 백업·전체 서버/볼륨 복원을 뜻하지 않습니다.
+
+운영 코드/워크플로의 전체 [후속 CI42158128354](https://github.com/Hyunwoo1205/quanta/actions/runs/42158128354)는 ARM/x86 두 job 전체가 성공했고 x86 pytest1,401개를 실제 로그에서 확인했습니다. 이전 S 전체CI의 x86은 로컬 Caddy http1_known_length curl 실패로 중단됐고 ARM은 성공했습니다. 같은 앱/Caddy 코드의 후속 전체 성공과 이 실패 기록은 [제어 검증](docs/oci_recovery_control_verification.json)에 구분하며 최초 실패의 세부 근본원인을 확정했다고 표시하지 않습니다.
+
+현재 실제 재부팅/부트 변화/자동 복구·기존 기록/컨테이너 보존과 재부팅 뒤 새 API 계산은 아직 수행하지 않았습니다. 이를 위한 고정 재부팅·검증·계산 smoke 작업을 별도 시험 후 실행합니다. 실제 재부팅 때만 외부 접수와 backup timer를 잠시 멈추고, 새 실행/진행 백업이 없을 때만 진행하며 실패 시 원상복구와 watchdog을 사용합니다. 인수인계 문서는 이 채팅에서는 갱신하지 않습니다.
+
+고정 `reboot-recovery`/`verify-reboot`와 서버 내부 API `post-reboot-compute` 구현·독립 검토 및 새 운영 회귀122개(로컬CPython3.12.14,1.494초)가 통과했습니다. 재부팅 시에만 Caddy 수락과 timer를 잠시 멈추며 실패/SSH단절에 대비한 복구 watchdog을 둡니다. 실제 재부팅 요청·부트 변화/데이터 보존·후속 계산은 아직 수행하지 않았고 새 운영 소스의 별도 CI 통과 뒤 진행합니다.
+
 ## 다음 작업
 
 OCI 단독 A1의 기존 2 OCPU·12 GB·부트 200 GB를 유지한 앱 0.11.0 설치, 실제 ARM 계산 smoke·인증·검증 API, 영속 데이터·백업 및 격리 복원, 앱 자동 시작·일일 SQLite 백업을 완료했습니다. 기존 컨테이너·데이터를 보존했고 새 SSH 키·상시 PC·Tailscale을 추가하지 않았습니다. 관리형 OCI 볼륨 백업과 off-host 복구는 별도 미설정 범위입니다.
 
 실제 방화벽 관리자인 firewalld에서 IPv4 TCP 80·443을 runtime·permanent에 허용했고, 후속 ZeroSSL 발급과 공개 HTTPS·HTTP 308 전환·익명 및 잘못된 토큰의 401을 확인했습니다. 앱 설치·방화벽·백업·ACME 전환을 처음부터 반복하지 않습니다. [이전 CA 진단](docs/oci_certificate_diagnostics.json)의 발급 한도와 재시도 간격은 당시 기록입니다.
 
-실제 모바일은 [사용자 확인 기록](docs/oci_mobile_verification.json)으로 정상 동작 보고를 받았습니다. 현재 다음 작업은 운영 상태 점검과 OS 재부팅·외부 백업 복구 준비입니다. [데스크톱 검증 기록](docs/oci_owner_browser_verification.json)의 인증·계산·취소 후 재사용·새로고침 재인증은 완료했으므로 반복할 필요가 없습니다. 올바른 키를 채팅·공개 로그·공개 자동검사에 가져오지 않으며 수행한 범위만 합격으로 기록합니다. 실제 OS 재부팅·off-host·관리형 볼륨 복구는 별도 운영 확인으로 남깁니다.
+실제 모바일은 [사용자 확인 기록](docs/oci_mobile_verification.json)으로 정상 동작 보고를 받았습니다. 현재 다음 작업은 고정 OS 재부팅/자동 복구 검증입니다. 운영 점검·새 백업·분리 복원과 일회성 외부 사본의 실제 복원은 위 근거로 완료했습니다. [데스크톱 검증 기록](docs/oci_owner_browser_verification.json)의 인증·계산·취소 후 재사용·새로고침 재인증은 완료했으므로 반복할 필요가 없습니다. 올바른 키를 채팅·공개 로그·공개 자동검사에 가져오지 않으며 수행한 범위만 합격으로 기록합니다. 실제 OS 재부팅·관리형 볼륨 복구는 별도 운영 확인으로 남기며, 일회성 off-host SQLite 복원은 위 후속 근거로 확인했습니다.
 
 두 CPU의 전체 1,116개·Node 35개·Caddy 9개·여덟 수치/운영 측정 근거는 `docs/verification/v0.11.0/`에 보존합니다. 실제 OCI의 계약·에너지 smoke·운영 복구에 더해 위 데스크톱 입력들의 실제 계산과 화면 흐름을 확인했으며, 모든 수치 기준을 A1에서 독립 재측정한 것으로 표시하지 않습니다. 물리 검증은 `unvalidated`입니다.
 

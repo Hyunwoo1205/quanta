@@ -42,3 +42,5 @@ jobs:
           python -m unittest discover -s tests -p 'test_oci_audit_recovery.py' -v
           python -m unittest discover -s tests -p 'test_oci_recovery_backup.py' -v
           python -m unittest discover -s tests -p 'test_oci_recovery_export.py' -v
+          python -m unittest discover -s tests -p 'test_oci_reboot_recovery.py' -v
+          python -m unittest discover -s tests -p 'test_oci_recovery_smoke.py' -v

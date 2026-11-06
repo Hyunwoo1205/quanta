@@ -1,0 +1,46 @@
+{
+  "verification_kind": "oci_live_recovery_backup_preparation",
+  "app_source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "control_source_commit": "4f63777003826073cd4bec3fe16969c8cc8c53eb",
+  "control_ci": 42157978228,
+  "workflow_run": {
+    "id": 42158376795,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42158376795",
+    "head_sha": "805741064e84de9f5237f11db0c71bb721de36db",
+    "job_id": 127697861551,
+    "conclusion": "success"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "prepare-recovery",
+    "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "request_id": "9d91c2ff-1afc-4b30-a635-ee0800a186d7"
+  },
+  "result": {
+    "authentication_attempted": true,
+    "requested_operation": "prepare-recovery",
+    "result": {
+      "backup_created": true,
+      "backup_verified": true,
+      "baseline_saved": true,
+      "failure_reason": "none",
+      "off_host_backup_verified": false,
+      "operating_system_rebooted": false,
+      "production_preserved": true,
+      "restore_verified": true,
+      "scope": "recovery_backup_preparation",
+      "source_verified": true,
+      "stage": "complete",
+      "status": "success",
+      "timer_state_preserved": true
+    },
+    "scope": "ssh_fixed_recovery",
+    "status": "success"
+  },
+  "scope": {
+    "same_boot_isolated_restore": true,
+    "off_host_copy_verified": false,
+    "os_reboot_verified": false,
+    "timer_stop_or_reconfiguration_performed": false
+  }
+}

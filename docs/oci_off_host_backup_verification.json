@@ -1,0 +1,70 @@
+{
+  "verification_kind": "oci_encrypted_off_host_backup_and_restore",
+  "app_source_commit": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "control_source_commit": "4f63777003826073cd4bec3fe16969c8cc8c53eb",
+  "control_ci": 42157978228,
+  "workflow_run": {
+    "id": 42158531263,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42158531263",
+    "head_sha": "c29c1d22db3105def6bbf1c6165e3f8557672530",
+    "job_id": 127698357923,
+    "conclusion": "success"
+  },
+  "request": {
+    "schema_version": 1,
+    "operation": "export-recovery",
+    "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+    "request_id": "4344dd3c-af27-4581-9c56-0fb4ad572af3"
+  },
+  "export_result": {
+    "authentication_attempted": true,
+    "ciphertext": {
+      "sha256": "2235567da92e5a237649e565f44dd2fb1382708d32d7c5a1936fda88ef72a9a3",
+      "size_bytes": 35697408
+    },
+    "requested_operation": "export-recovery",
+    "scope": "ssh_fixed_recovery",
+    "status": "success"
+  },
+  "encrypted_transfer_artifact": {
+    "id": 13475038872,
+    "zip_sha256": "d9f84b6e7091a519aafffbd2e4ba2a1fc51ae60b25b625d7f628e22e0c3cf9ee",
+    "ciphertext_size_bytes": 35697408,
+    "ciphertext_sha256": "2235567da92e5a237649e565f44dd2fb1382708d32d7c5a1936fda88ef72a9a3"
+  },
+  "scope": {
+    "one_time_external_snapshot": true,
+    "private_personal_drive_copy_saved": true,
+    "private_drive_permission_metadata_owner_only": true,
+    "drive_download_bytes_verified": true,
+    "authenticated_decryption_verified": true,
+    "archive_only_database_and_manifest": true,
+    "manifest_schema_sqlite_integrity_foreign_keys_and_artifact_bytes_verified": true,
+    "off_host_fresh_directory_restore_verified": true,
+    "restored_database_bytes_equal": true,
+    "automatic_off_host_schedule_configured": false,
+    "server_authentication_key_exported": false,
+    "oci_managed_volume_backup_configured": false,
+    "whole_volume_restore_verified": false
+  },
+  "snapshot_counts": {
+    "experiments": 7,
+    "revisions": 7,
+    "runs": 10,
+    "artifacts": 678,
+    "idempotency": 10,
+    "events": 31
+  },
+  "snapshot_status_counts": {
+    "SUCCEEDED": 9,
+    "CANCELLED": 1
+  },
+  "database_size_bytes": 35684352,
+  "database_sha256": "31282c6acd3a48bfc321af96aad05ef35f35d6995ba25fd2e804aa56db3bb98f",
+  "notes": [
+    "The owner-only external file was downloaded again, decrypted, fully checked using the pinned application's backup reader and restored to a new directory on a different host.",
+    "The recovery recipient private key is separately retained privately and was never supplied to the OCI host or public runner.",
+    "The snapshot includes later activity than the prior read-only audit; historical record counts remain unchanged.",
+    "This is a one-time external SQLite backup/restore verification, not a scheduled off-host service or whole-server recovery."
+  ]
+}

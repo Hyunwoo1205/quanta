@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import shlex
 import stat
+import subprocess
 import tempfile
 import types
 import unittest
@@ -101,7 +102,7 @@ class GateTests(unittest.TestCase):
             self.assertEqual(self.parse_request(request(operation)), request(operation))
         for value in [[], {}, None, {**request(), "command": "reboot"},
                       {**request(), "source_sha": SHA}, {**request(), "schema_version": True},
-                      {**request(), "operation": "reboot-recovery"},
+                      {**request(), "operation": "shutdown"},
                       {**request(), "operation": ["audit-recovery"]},
                       {**request(), "request_id": REQUEST_ID.upper()},
                       {**request(), "request_id": "00000000-0000-0000-0000-000000000000"}]:
@@ -202,6 +203,28 @@ class GateTests(unittest.TestCase):
             self.assertFalse(gate.ci_passed(RUN, SHA, gate.CONTROL_WORKFLOW, {}))
         self.assertIsNone(gate.NoRedirect().redirect_request(None, None, None, None, None, None))
 
+    def test_actual_git_checkout_requires_exact_head_and_unmodified_tracked_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            def git(*arguments):
+                return subprocess.run(["/usr/bin/git", "-C", str(root), *arguments], check=True,
+                                      stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                      stdin=subprocess.DEVNULL, timeout=5).stdout
+            git("init", "-q")
+            tracked = root / "collector.py"
+            tracked.write_text("# fixed control fixture\n")
+            git("add", "collector.py")
+            git("-c", "user.name=Quanta Test", "-c", "user.email=test@example.invalid",
+                "-c", "commit.gpgsign=false", "commit", "-qm", "Test-only control fixture")
+            sha = git("rev-parse", "HEAD").decode().strip()
+            env = {**metadata(), "QUANTA_CONTROL_SHA": sha}
+            self.assertTrue(gate.control_checkout_matches(env, root=root))
+            self.assertFalse(gate.control_checkout_matches({**env, "QUANTA_CONTROL_SHA": "0" * 40}, root=root))
+            tracked.write_text("# altered tracked bytes\n")
+            self.assertFalse(gate.control_checkout_matches(env, root=root))
+            git("add", "collector.py")
+            self.assertFalse(gate.control_checkout_matches(env, root=root))
+
     def test_authorization_orders_both_ci_checks_and_never_uses_ssh_credentials(self):
         env = {**metadata(), "QUANTA_OCI_PPK": "private-must-not-read"}
         with mock.patch.object(gate, "read_request", return_value=request()), \
@@ -243,8 +266,10 @@ class GateTests(unittest.TestCase):
 
 class TransportTests(unittest.TestCase):
     @contextlib.contextmanager
-    def modules(self, *, match=True, sanitizer=None, validator=None):
+    def modules(self, *, match=True, sanitizer=None, validator=None, action=None):
         expected = {"scope": "fixture", "status": "success"}
+        if action is not None:
+            expected["action"] = action
         if sanitizer is None:
             def sanitizer(raw):
                 try:
@@ -291,9 +316,9 @@ class TransportTests(unittest.TestCase):
         self.assertNotIn("private-origin", json.dumps(value))
 
     def test_plink_flags_private_key_cleanup_and_minimal_environment_for_both_operations(self):
-        for operation in ["audit-recovery", "prepare-recovery"]:
+        for operation in ["audit-recovery", "prepare-recovery", "reboot-recovery", "verify-reboot", "post-reboot-compute"]:
             paths = []
-            with self.modules() as (expected, _, source, _, _, _):
+            with self.modules(action=operation if operation in probe.BOOT_OPERATIONS else None) as (expected, _, source, _, _, _):
                 def runner(command, environment, directory):
                     paths.append(Path(directory))
                     key_path = Path(command[command.index("-i") + 1])
@@ -310,6 +335,10 @@ class TransportTests(unittest.TestCase):
                     config = json.loads(base64.b64decode(remote[7]))
                     self.assertEqual(set(config), {"source_sha", "public_origin", "auth_mode"})
                     self.assertEqual(config["source_sha"], gate.SOURCE_SHA)
+                    if operation in probe.BOOT_OPERATIONS:
+                        self.assertEqual(remote[8:], [operation])
+                    else:
+                        self.assertEqual(len(remote), 8)
                     self.assertNotIn("QUANTA_OWNER_TOKEN", command[-1])
                     return "success", json.dumps(expected).encode(), True
                 result = probe.probe(credentials(operation), runner=runner)
@@ -357,8 +386,10 @@ class TransportTests(unittest.TestCase):
         self.assertEqual(value["result"], partial)
 
     def test_default_capture_is_bounded_separately_for_audit_and_backup(self):
-        for operation, timeout in [("audit-recovery", 120), ("prepare-recovery", 600)]:
-            with self.modules() as (_, _, _, _, transport, _):
+        for operation, timeout in [("audit-recovery", 120), ("prepare-recovery", 600),
+                                   ("reboot-recovery", 300), ("verify-reboot", 300),
+                                   ("post-reboot-compute", 180)]:
+            with self.modules(action=operation if operation in probe.BOOT_OPERATIONS else None) as (_, _, _, _, transport, _):
                 self.assertEqual(probe.probe(credentials(operation))["status"], "success")
                 self.assertEqual(transport._capture.call_args.kwargs, {"timeout": timeout, "limit": 8192})
 
@@ -378,6 +409,53 @@ class TransportTests(unittest.TestCase):
             _, remote = probe._payload("prepare-recovery")
             exec(compile(remote, "<test-fixed-program>", "exec"), {"__name__": "__main__"})
         self.assertEqual(reads, ["recovery_backup.py", "verify_backup.py"])
+
+    def test_boot_uses_only_fixed_backup_and_audit_helpers_with_no_helper_main(self):
+        helper_source = "value = 4\nif __name__ == '__main__': raise AssertionError('helper main')\n"
+        audit_source = "value = 8\nif __name__ == '__main__': raise AssertionError('audit main')\n"
+        main_source = ("import quanta_fixed_backup, quanta_fixed_audit\n"
+                       "assert quanta_fixed_backup.value + quanta_fixed_audit.value == 12\n")
+        for operation in probe.BOOT_OPERATIONS:
+            reads = []
+            def read(path, **kwargs):
+                reads.append(path.name)
+                return {"verify_backup.py": helper_source, "audit_recovery.py": audit_source,
+                        "reboot_recovery.py": main_source}[path.name]
+            with mock.patch.object(Path, "read_text", read), \
+                    mock.patch.object(probe, "_module", return_value=types.SimpleNamespace()), \
+                    mock.patch.dict(probe.sys.modules):
+                _, remote = probe._payload(operation)
+                exec(compile(remote, "<test-fixed-boot-program>", "exec"), {"__name__": "__main__"})
+            self.assertEqual(reads, ["reboot_recovery.py", "verify_backup.py", "audit_recovery.py"])
+
+    def test_reboot_acknowledgement_does_not_claim_a_verified_boot(self):
+        acknowledged = {"scope": "fixture", "status": "success", "action": "reboot-recovery", "reboot_requested": True,
+                        "boot_verified": False}
+        with self.modules(sanitizer=lambda raw: acknowledged):
+            value = probe.probe(credentials("reboot-recovery"),
+                                runner=lambda *args: ("success", b"{}", True))
+        self.assertEqual(value["status"], "success")
+        self.assertFalse(value["result"]["boot_verified"])
+        self.assertEqual(set(value), {"scope", "status", "authentication_attempted", "requested_operation", "result"})
+
+    def test_boot_response_action_must_match_requested_fixed_action(self):
+        wrong = {"scope": "fixture", "status": "success", "action": "verify-reboot", "boot_changed": True}
+        with self.modules(sanitizer=lambda raw: wrong):
+            value = probe.probe(credentials("reboot-recovery"), runner=lambda *args: ("success", b"{}", True))
+        self.assertEqual(value["status"], "invalid_output")
+        self.assertNotIn("result", value)
+
+    def test_reboot_disconnect_or_timeout_is_failure_and_never_triggers_a_retry(self):
+        for status, expected in [("failed", "remote_failed"), ("timeout", "timeout"),
+                                 ("output_limit", "output_limit")]:
+            runner = mock.Mock(return_value=(status, b"private-disconnected-text", True))
+            with self.modules():
+                value = probe.probe(credentials("reboot-recovery"), runner=runner)
+            self.assertEqual(value["status"], expected)
+            self.assertEqual(value["requested_operation"], "reboot-recovery")
+            self.assertNotIn("result", value)
+            self.assertEqual(runner.call_count, 1)
+            self.assertNotIn("private", json.dumps(value))
 
     def test_encrypted_export_capture_never_returns_ciphertext_bytes_or_plaintext(self):
         raw = ciphertext_fixture()
@@ -448,7 +526,8 @@ class WorkflowTests(unittest.TestCase):
     def test_recovery_ci_has_native_architectures_and_no_secret_or_remote_step(self):
         source = (ROOT / ".github/workflows/oci-recovery-tests.yml").read_text()
         for value in ["ubuntu-24.04-arm", "ubuntu-24.04", "3.12.14", "test_oci_recovery_control.py",
-                      "test_oci_audit_recovery.py", "test_oci_recovery_backup.py", "test_oci_recovery_export.py"]:
+                      "test_oci_audit_recovery.py", "test_oci_recovery_backup.py", "test_oci_recovery_export.py",
+                      "test_oci_reboot_recovery.py", "test_oci_recovery_smoke.py"]:
             self.assertIn(value, source)
         for forbidden in ["secrets.", "oci-preflight", "probe_recovery.py", "putty-tools", "workflow_dispatch"]:
             self.assertNotIn(forbidden, source)

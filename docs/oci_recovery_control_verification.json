@@ -1,0 +1,45 @@
+{
+  "verification_kind": "recovery_control_and_regression",
+  "app_source_unchanged": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
+  "control_source": "4f63777003826073cd4bec3fe16969c8cc8c53eb",
+  "control_ci": {
+    "id": 42157978228,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42157978228",
+    "status": "completed",
+    "conclusion": "success",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "tests_each": 78
+  },
+  "workflow_source": "ce24fa7245336821c6d4743acdfc287bf0635895",
+  "full_regression_ci": {
+    "id": 42158128354,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42158128354",
+    "status": "completed",
+    "conclusion": "success",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "x86_pytest_passed": 1401,
+    "arm_pytest_count_not_requeried": true,
+    "scope": "repository regression, numerical measurements and installed containers; not newly deployed application or physical validation"
+  },
+  "earlier_full_ci": {
+    "id": 42157978225,
+    "url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42157978225",
+    "conclusion": "failure",
+    "arm_job_conclusion": "success",
+    "x86_failure": {
+      "stage": "Check pinned direct HTTPS proxy framing",
+      "reason": "http1_known_length: curl failed",
+      "release_hash_check": "passed",
+      "exact_root_cause": "not established from sanitized test report"
+    },
+    "superseding_success_ci": 42158128354,
+    "notes": "The application and Caddy implementation were unchanged between these sources; the failure record is retained rather than rewritten."
+  },
+  "physical_validation_status": "unvalidated"
+}

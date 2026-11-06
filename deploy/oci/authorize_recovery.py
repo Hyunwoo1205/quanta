@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Authorize a fixed recovery audit against separate app and control CI pins.
+"""Authorize a fixed recovery operation against separate app and control CI pins.
 
 Run from the request checkout, using this file from a separately pinned control
 checkout. No SSH credential is read, requested, or emitted by this gate.
@@ -20,7 +20,8 @@ SOURCE_SHA = "1738107301ef873bfe5e01f930866c2a74e4ec3f"
 APP_CI_RUN = 42064056609
 REPOSITORY = "Hyunwoo1205/quanta"
 API_ROOT = "https://api.github.com/repos/" + REPOSITORY + "/actions/runs/"
-OPERATIONS = frozenset({"audit-recovery", "prepare-recovery", "export-recovery"})
+OPERATIONS = frozenset({"audit-recovery", "prepare-recovery", "export-recovery",
+                        "reboot-recovery", "verify-reboot", "post-reboot-compute"})
 REQUEST = Path(".github/oci/install-request.json")
 CONTROL_ROOT = Path(__file__).resolve().parents[2]
 CONTROL_WORKFLOW = ".github/workflows/oci-recovery-tests.yml"

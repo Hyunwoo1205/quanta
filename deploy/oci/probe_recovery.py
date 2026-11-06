@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""One fixed read-only recovery audit over the unchanged pinned PPK transport."""
+"""Fixed recovery operations over the unchanged pinned PPK transport.
+
+Scheduling a reboot is a request acknowledgement, never proof of a new boot.
+Disconnects are failures; this process never retries a reboot request.
+"""
 from __future__ import annotations
 
 import base64
@@ -23,7 +27,11 @@ def _module(name):
 
 SOURCE_SHA = "1738107301ef873bfe5e01f930866c2a74e4ec3f"
 OPERATIONS = {"audit-recovery": "audit_recovery", "prepare-recovery": "recovery_backup",
-              "export-recovery": "export_recovery"}
+              "export-recovery": "export_recovery", "reboot-recovery": "reboot_recovery",
+              "verify-reboot": "reboot_recovery", "post-reboot-compute": "recovery_smoke"}
+BOOT_OPERATIONS = frozenset({"reboot-recovery", "verify-reboot"})
+TIMEOUTS = {"audit-recovery": 120, "prepare-recovery": 600, "export-recovery": 600,
+            "reboot-recovery": 300, "verify-reboot": 300, "post-reboot-compute": 180}
 FAILURES = frozenset({"control_checkout_invalid", "audit_module_invalid", "configuration_invalid"})
 MAX_EXPORT = 128 * 1024**2
 EXPORT_PATH = Path(".cache/recovery-backup.cms")
@@ -50,15 +58,21 @@ def _payload(operation):
         raise ValueError("unsupported recovery operation")
     name = OPERATIONS[operation]
     source = Path(__file__).with_name(name + ".py").read_text(encoding="utf-8")
-    if operation in {"prepare-recovery", "export-recovery"}:
-        helper = Path(__file__).with_name("verify_backup.py").read_text(encoding="utf-8")
-        fixed = _module("verify_backup")
-        sys.modules["quanta_fixed_backup"] = fixed
-        remote = ("import sys, types\n"
-                  "_fixed = types.ModuleType('quanta_fixed_backup')\n"
-                  "exec(compile(" + repr(helper) + ", '<quanta-fixed-backup>', 'exec'), _fixed.__dict__)\n"
-                  "sys.modules['quanta_fixed_backup'] = _fixed\n"
-                  "exec(compile(" + repr(source) + ", '<quanta-recovery-backup>', 'exec'))\n")
+    helpers = ()
+    if operation in {"prepare-recovery", "export-recovery", "post-reboot-compute"}:
+        helpers = (("verify_backup", "quanta_fixed_backup"),)
+    elif operation in BOOT_OPERATIONS:
+        helpers = (("verify_backup", "quanta_fixed_backup"), ("audit_recovery", "quanta_fixed_audit"))
+    if helpers:
+        pieces = ["import sys, types\n"]
+        for filename, module_name in helpers:
+            helper = Path(__file__).with_name(filename + ".py").read_text(encoding="utf-8")
+            sys.modules[module_name] = _module(filename)
+            pieces += ["_fixed = types.ModuleType(" + repr(module_name) + ")\n",
+                       "exec(compile(" + repr(helper) + ", '<quanta-fixed-helper>', 'exec'), _fixed.__dict__)\n",
+                       "sys.modules[" + repr(module_name) + "] = _fixed\n"]
+        pieces.append("exec(compile(" + repr(source) + ", '<quanta-fixed-recovery>', 'exec'))\n")
+        remote = "".join(pieces)
     else:
         remote = source
     return _module(name), remote
@@ -130,8 +144,10 @@ def probe(environ=None, *, runner=None):
     except Exception:
         return report("configuration_invalid", operation=operation, failure_reason="configuration_invalid")
     remote = "/usr/bin/sudo -n /usr/bin/python3 -I -B -c " + shlex.quote(source) + " " + shlex.quote(encoded)
+    if operation in BOOT_OPERATIONS:
+        remote += " " + shlex.quote(operation)
     runner = (lambda command, environment, directory: transport._capture(
-        command, environment, directory, timeout=600 if operation != "audit-recovery" else 120,
+        command, environment, directory, timeout=TIMEOUTS[operation],
         limit=MAX_EXPORT if operation == "export-recovery" else 8192)) if runner is None else runner
     attempted = False
     try:
@@ -158,6 +174,9 @@ def probe(environ=None, *, runner=None):
             if status in {"success", "failed"}:
                 result = audit.sanitize_report(raw)
                 if result is not None:
+                    if operation in BOOT_OPERATIONS and result.get("action") != operation:
+                        return report("invalid_output" if status == "success" else "remote_failed",
+                                      attempted, operation=operation)
                     success = status == "success" and result.get("status") == "success"
                     return report("success" if success else "remote_failed", attempted,
                                   operation=operation, result=result)
