@@ -22,12 +22,40 @@ jobs:
     environment: oci-preflight
     timeout-minutes: 20
     outputs:
-      operation: ${{ steps.authorize.outputs.operation }}
+      operation: ${{ steps.authorize.outputs.operation || steps.authorize-recovery.outputs.operation }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - name: Classify the fixed recovery request
+        id: classify
+        run: |
+          python3 -I - <<'PY_REQUEST'
+          import json, os
+          from pathlib import Path
+          value = json.loads(Path('.github/oci/install-request.json').read_bytes())
+          operation = value.get('operation') if isinstance(value, dict) else None
+          recovery = isinstance(operation, str) and operation in {'audit-recovery', 'prepare-recovery', 'export-recovery'}
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              stream.write('recovery=' + ('true' if recovery else 'false') + '\n')
+          PY_REQUEST
+      - name: Checkout separately verified recovery control
+        if: steps.classify.outputs.recovery == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 4f63777003826073cd4bec3fe16969c8cc8c53eb
+          path: verified-control
+          persist-credentials: false
+      - name: Authorize app and recovery control CI pins
+        if: steps.classify.outputs.recovery == 'true'
+        id: authorize-recovery
+        env:
+          QUANTA_CONTROL_SHA: '4f63777003826073cd4bec3fe16969c8cc8c53eb'
+          QUANTA_CONTROL_CI_RUN: '42157978228'
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+        run: python3 -I -B verified-control/deploy/oci/authorize_recovery.py
       - name: Authorize the fixed request and completed native CI
+        if: steps.classify.outputs.recovery != 'true'
         id: authorize
         env:
           QUANTA_CI_READ_TOKEN: ${{ github.token }}
@@ -43,7 +71,7 @@ jobs:
           sudo -n unshare --net /usr/bin/python3 -I deploy/oci/verify_nft_namespace.py
       - name: Execute the authorized fixed installer
         id: install
-        if: steps.authorize.outputs.operation != 'configure-acme'
+        if: steps.classify.outputs.recovery != 'true' && steps.authorize.outputs.operation != 'configure-acme'
         env:
           QUANTA_OCI_AUTH_CONFIRMED: 'true'
           QUANTA_OCI_INSTALL_OPERATION: ${{ steps.authorize.outputs.operation }}
@@ -53,6 +81,28 @@ jobs:
           QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
           QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
         run: python3 -I deploy/oci/probe_install.py
+      - name: Execute the verified fixed recovery operation
+        if: steps.classify.outputs.recovery == 'true'
+        id: recovery
+        env:
+          QUANTA_CONTROL_SHA: '4f63777003826073cd4bec3fe16969c8cc8c53eb'
+          QUANTA_CONTROL_CI_RUN: '42157978228'
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
+          QUANTA_OCI_INSTALL_OPERATION: ${{ steps.authorize-recovery.outputs.operation }}
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+          QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
+          QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
+          QUANTA_PUBLIC_ORIGIN: ${{ secrets.QUANTA_PUBLIC_ORIGIN }}
+          QUANTA_AUTH_MODE: ${{ secrets.QUANTA_AUTH_MODE }}
+        run: python3 -I -B verified-control/deploy/oci/probe_recovery.py
+      - name: Preserve encrypted backup transfer only
+        if: steps.authorize-recovery.outputs.operation == 'export-recovery' && steps.recovery.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: encrypted-recovery-backup-${{ github.run_id }}
+          path: .cache/recovery-backup.cms
+          if-no-files-found: error
+          retention-days: 1
       - name: Configure the explicitly selected ACME provider
         if: steps.authorize.outputs.operation == 'configure-acme'
         env:
