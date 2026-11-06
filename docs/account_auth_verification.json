@@ -147,6 +147,20 @@
     "private_identifiers_persisted": false,
     "server_source_or_services_changed": false,
     "additional_ssh_operation_or_deployment": false,
-    "next_feature": "3d_particle_results_visualization"
+    "next_feature": "first_dynamics_module_design"
+  },
+  "next_work": {
+    "current_phase": "first_dynamics_module_design",
+    "sequence": [
+      "scope_physical_model_input_output_contract_and_validation_criteria",
+      "implementation",
+      "independent_numerical_verification",
+      "web_integration_and_visualization"
+    ],
+    "correction_date_kst": "2026-11-06",
+    "reason": "The assistant incorrectly made existing-particle 3D visualization the immediate next task. User correction and retrieved prior proposal restore dynamics design first.",
+    "dynamics_design_finalized": false,
+    "dynamics_implemented": false,
+    "scientific_or_deployment_change_in_this_correction": false
   }
 }
