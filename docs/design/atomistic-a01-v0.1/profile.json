@@ -1,0 +1,153 @@
+{
+  "document_kind": "inactive_atomistic_design_profile",
+  "profile_id": "quanta.atomistic-a01-ae-pbe",
+  "version": "0.1.0",
+  "executable": false,
+  "status": "A01_scope_and_criteria_selected",
+  "runtime_contract_version": null,
+  "physical_validation_status": "unvalidated",
+  "goal": "First bounded atomistic calculation-to-motion-to-3D path; internal reference systems do not define fixed experiment menus.",
+  "selected_scope": {
+    "elements": {
+      "H": 1,
+      "He": 2
+    },
+    "reference_compositions": [
+      {
+        "H": 2
+      },
+      {
+        "He": 1
+      }
+    ],
+    "nuclear_charge_model": "nonrelativistic point nuclei",
+    "electronic_state": "restricted closed-shell singlet ground state",
+    "charge_e": 0,
+    "multiplicity": 1,
+    "electron_count": 2,
+    "boundary": "isolated_nonperiodic_3d",
+    "h2_validation_distance_m": [
+      6e-11,
+      1e-10
+    ],
+    "initial_nuclei_in_reference_cases": [
+      1,
+      2
+    ],
+    "maximum_product_nuclei": null,
+    "capacity_status": "not_measured_A03"
+  },
+  "model": {
+    "theory": "Kohn-Sham density functional theory",
+    "exchange_correlation": "PBE",
+    "electron_treatment": "all_electron",
+    "core_pseudopotential": null,
+    "preferred_implementation": "CP2K Quickstep GAPW with POTENTIAL ALL",
+    "engine_adoption": "not_selected_not_installed",
+    "basis_family": "all-electron correlation-consistent cc-pVXZ",
+    "candidate_levels": [
+      "cc-pVDZ",
+      "cc-pVTZ",
+      "cc-pVQZ"
+    ],
+    "target_basis": "cc-pVTZ after availability/conditioning checks",
+    "basis_file_sha256": null,
+    "engine_version": null,
+    "dispersion_correction": false,
+    "external_fields": false,
+    "fractional_occupations": false,
+    "electronic_temperature": false,
+    "spin_polarized": false,
+    "relativistic_corrections": false,
+    "reference_energy": "electronic plus nuclear repulsion, no rest energies/ZPE/thermal corrections"
+  },
+  "planned_operations": [
+    "single_point_energy_forces",
+    "electron_density_export",
+    "local_geometry_optimization",
+    "local_harmonic_curvature"
+  ],
+  "planned_observables": [
+    "total_energy_j",
+    "forces_n",
+    "nuclear_positions_m",
+    "electron_count",
+    "electron_number_density_per_m3",
+    "electric_dipole_c_m",
+    "scf_diagnostics",
+    "convergence_diagnostics"
+  ],
+  "density_semantics": {
+    "quantity": "electron_number_density",
+    "electron_count_expected": 2,
+    "signed_total_charge_density_allowed_as_substitute": false,
+    "soft_density_allowed_as_total": false,
+    "export_approximation_must_be_explicit": true,
+    "hard_density_and_export_selection_gate": "A02/A04 must pin and verify full hard+soft density export, grid axes, units and electron integral; no silent replacement by soft density or approximate hard shape",
+    "density_cube_method": null,
+    "label": "Computed electronic state; export approximation and grid resolution remain explicit."
+  },
+  "numerical_candidate_sweeps": {
+    "regular_grid_cutoffs_ry": [
+      400,
+      600,
+      800
+    ],
+    "relative_cutoffs_ry": [
+      40,
+      60,
+      80
+    ],
+    "isolated_cell_lengths_angstrom": [
+      12,
+      16,
+      20
+    ],
+    "finite_difference_displacements_bohr": [
+      0.002,
+      0.001,
+      0.0005
+    ],
+    "atomic_grid_and_GAPW_split": "A02 must identify version-supported settings and A04 freeze explicit refinement levels",
+    "sweep_policy": "Refine one numerical family at a time, keep others fixed at verified fine settings; SCF stop threshold alone is not property convergence.",
+    "scf_internal_thresholds": [
+      1e-08,
+      1e-09,
+      1e-10
+    ],
+    "scf_threshold_semantics": "Version-specific internal SCF stopping metric, not an energy-difference guarantee or universally Hartree-valued property."
+  },
+  "not_supported_in_first_profile": [
+    "charged_or_open_shell_systems",
+    "other_elements_or_unvalidated_compositions",
+    "periodic_cells",
+    "large_H2_stretch_or_dissociation",
+    "reaction_or_bond_formation_claims",
+    "atomization_energy_requiring_open_shell_H",
+    "independent_electronic_time_propagation",
+    "nuclear_quantum_effects",
+    "thermostats_barostats",
+    "macroscopic_coupling"
+  ],
+  "freeze_gates": {
+    "A01": "Composition/state/boundary/model intention/reference observables and engineering criteria selected before any engine run.",
+    "A02": "Resolve stable engine/build/data versions, full-density export and compatible all-electron basis bytes/hashes.",
+    "A03": "Measure installation, resource/time/output/cancellation and protect existing web service.",
+    "A04": "Freeze actual engine settings and runtime contracts before scientific acceptance execution. Failure cannot silently change model or tolerances."
+  },
+  "open_items": [
+    "engine/build and basis bytes not pinned",
+    "GAPW full-density export/grid semantics not executed",
+    "resource/atom-count limits not measured",
+    "no atomic runtime module or endpoint implemented"
+  ],
+  "sources": [
+    "NIST-H2-RE",
+    "NIST-H2-WE",
+    "NIST-CODATA-2022",
+    "CP2K-GAPW",
+    "CP2K-DENSITY",
+    "CP2K-DFT",
+    "NIST-PBE-CONTEXT"
+  ]
+}

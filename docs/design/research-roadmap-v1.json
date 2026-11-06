@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.0",
+  "plan_version": "1.0.1",
   "updated_at": "2026-11-06",
   "status": "planned_development",
   "executable": false,
@@ -95,7 +95,7 @@
       "depends_on": [
         "P0"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "deliverables": [
         "지원 상태·경계·관측량의 첫 범위",
         "CP2K 우선 설치·실행·취소·자원 벤치마크",
@@ -295,12 +295,18 @@
       "phase": "P1",
       "title": "첫 원자계 지원 범위·독립 기준 선정",
       "depends_on": [],
-      "status": "planned",
+      "status": "completed_design_only",
       "acceptance": [
         "지원 원소 집합·전하/스핀·경계·관측량·근사·미지원 조건을 명시",
         "반복 가능한 비교 입력과 독립 기준 자료 및 출처를 확정"
       ],
-      "owner_role": "과학 설계"
+      "owner_role": "과학 설계",
+      "completion_evidence": {
+        "profile": "docs/design/atomistic-a01-v0.1/profile.json",
+        "fixtures": "docs/design/atomistic-a01-v0.1/fixtures.json",
+        "verification": "docs/atomistic_a01_design_verification.json",
+        "scope": "inactive design/input consistency, no engine or scientific pass"
+      }
     },
     {
       "id": "A02",
@@ -629,7 +635,8 @@
     "method": "의존성과 검증 완료 기준으로 단계 관리",
     "calendar_estimate": null,
     "estimate_gate": "A03 엔진 실측 및 M1 완료 후 실제 처리량·실패율로 범위별 일정 산정",
-    "first_execution": "A01"
+    "first_execution": "A02",
+    "next_task": "A02"
   },
   "risks": [
     {
@@ -698,8 +705,8 @@
     }
   ],
   "initial_atomistic_profile": {
-    "status": "proposed_for_P1_freeze",
-    "scope": "작은3D 비주기 원자계·비상대론적 전자 바닥상태·명시한 핵 좌표/조성/총전하/스핀·검증한 원소와 자료 조합",
+    "status": "A01_selected_pending_engine_and_runtime_freeze",
+    "scope": "He/H2 internal reference systems, neutral two-electron closed-shell, isolated3D, nonrelativistic PBE all-electron candidate; only selected conditions have planned criteria",
     "first_subprofile": "닫힌껍질 계부터 검증하며 추가 전하·열린껍질·주기계는 독립 지원 프로필로 확장",
     "nuclear_dynamics": "P3에서 전자구조로 얻은 힘과 고전적 핵의 짧은 NVE 운동",
     "not_claimed": [
@@ -709,7 +716,8 @@
       "거시 규모 전체 계산",
       "쿼크/QCD 계산"
     ],
-    "freeze_gate": "A01–A04에서 기준 자료·실측·허용오차와 함께 확정"
+    "freeze_gate": "A01–A04에서 기준 자료·실측·허용오차와 함께 확정",
+    "selected_profile": "docs/design/atomistic-a01-v0.1/profile.json"
   },
   "future_work_packages": [
     {

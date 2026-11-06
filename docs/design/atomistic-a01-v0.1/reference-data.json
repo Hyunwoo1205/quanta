@@ -1,0 +1,92 @@
+{
+  "document_kind": "atomistic_reference_selection",
+  "version": "0.1.0",
+  "retrieved_on": "2026-11-06",
+  "sources": [
+    {
+      "id": "NIST-H2-RE",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1333740&Mask=1000",
+      "meaning": "H2 X singlet ground electronic state equilibrium internuclear distance",
+      "value": 0.74144,
+      "unit": "angstrom",
+      "classification": "independent_experimental_compilation",
+      "uncertainty": null,
+      "uncertainty_note": "No uncertainty inferred from displayed digits."
+    },
+    {
+      "id": "NIST-H2-WE",
+      "url": "https://cccbdb.nist.gov/exp2x.asp?casno=1333740",
+      "meaning": "H2 harmonic vibrational constant omega_e, detailed diatomic data (2007Iri:389)",
+      "value": 4401.213,
+      "unit": "cm^-1",
+      "classification": "independent_spectroscopic_compilation",
+      "not_equivalent_to": "fundamental transition approximately 4161 cm^-1"
+    },
+    {
+      "id": "NIST-CODATA-2022",
+      "url": "https://physics.nist.gov/cuu/Constants/Table/allascii.txt",
+      "meaning": "2022 CODATA recommended constants; rounded published central values are explicit conversion inputs"
+    },
+    {
+      "id": "CP2K-GAPW",
+      "url": "https://manual.cp2k.org/trunk/methods/dft/gapw.html",
+      "meaning": "All-electron GAPW requires compatible all-electron basis and POTENTIAL ALL; atomic and regular grids need convergence"
+    },
+    {
+      "id": "CP2K-DENSITY",
+      "url": "https://manual.cp2k.org/trunk/CP2K_INPUT/FORCE_EVAL/DFT/PRINT/E_DENSITY_CUBE.html",
+      "meaning": "TOTAL_HARD_APPROX approximates hard-density shape; TOTAL_DENSITY may have grid artefacts; SOFT_DENSITY is not the complete electron density; signed total charge density is a different quantity"
+    },
+    {
+      "id": "CP2K-DFT",
+      "url": "https://manual.cp2k.org/trunk/methods/dft/index.html",
+      "meaning": "Consistent basis/potential and target-property SCF/grid convergence"
+    },
+    {
+      "id": "NIST-PBE-CONTEXT",
+      "url": "https://cccbdb.nist.gov/energy3x.asp?basis=36&casno=1333740&method=61",
+      "meaning": "PBEPBE/daug-cc-pVDZ optimized r=0.7676 angstrom and harmonic wavenumber=4265 cm^-1. Context only; different basis/settings, no exact energy or force pass target."
+    }
+  ],
+  "constants": {
+    "hartree_j": {
+      "value": 4.359744722206e-18,
+      "standard_uncertainty": 4.8e-30
+    },
+    "bohr_m": {
+      "value": 5.29177210544e-11,
+      "standard_uncertainty": 8.2e-21
+    },
+    "proton_mass_kg": {
+      "value": 1.67262192595e-27,
+      "standard_uncertainty": 5.2e-37
+    },
+    "alpha_particle_mass_kg": {
+      "value": 6.644657345e-27,
+      "standard_uncertainty": 2.1e-36
+    },
+    "speed_of_light_m_per_s": {
+      "value": 299792458,
+      "exact": true
+    },
+    "elementary_charge_c": {
+      "value": 1.602176634e-19,
+      "exact": true
+    },
+    "angstrom_m": {
+      "value": 1e-10,
+      "exact": true,
+      "source": "unit definition"
+    },
+    "femtosecond_s": {
+      "value": 1e-15,
+      "exact": true,
+      "source": "unit definition"
+    }
+  },
+  "policy": [
+    "Only reference scalars and metadata are retained, not source pages.",
+    "Physical references are not model-exact PBE energies.",
+    "No reference result is a Quanta calculation."
+  ]
+}

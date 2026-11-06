@@ -1,0 +1,41 @@
+{
+  "document_kind": "inactive_design_file_manifest",
+  "version": "0.1.0",
+  "hash_scope": "exact_UTF8_file_bytes_not_scientific_state_identity",
+  "excludes": [
+    "manifest.json",
+    "docs/atomistic_a01_design_verification.json"
+  ],
+  "files": [
+    {
+      "path": "docs/design/atomistic-a01-v0.1/profile.json",
+      "size_bytes": 5174,
+      "sha256": "0c802bfe15568a12d29af6d80741c0fda57e1dd62940614cea43dd8f1bfcdeb0"
+    },
+    {
+      "path": "docs/design/atomistic-a01-v0.1/fixtures.json",
+      "size_bytes": 13738,
+      "sha256": "ecffd8eb16fb80bedb7276fcade57e6a0a75e9f8022beceb82beb98dfc5a436c"
+    },
+    {
+      "path": "docs/design/atomistic-a01-v0.1/validation-plan.json",
+      "size_bytes": 7729,
+      "sha256": "1b0ae648a0c260cbf9be25af756e6dfcf1243bae88db3e159173a40e9d161206"
+    },
+    {
+      "path": "docs/design/atomistic-a01-v0.1/reference-data.json",
+      "size_bytes": 3296,
+      "sha256": "1d3e5666a70cdf208d70ddf47a1bee5e4afbae48f5215b1e74004e1deac222ea"
+    },
+    {
+      "path": "docs/design/atomistic-a01-v0.1/README.md",
+      "size_bytes": 1974,
+      "sha256": "5a38693cb3b81495a355227abe4b734b4c3db0031a2db41fa17bb6232eb38de8"
+    },
+    {
+      "path": "scripts/check_atomistic_a01.py",
+      "size_bytes": 9101,
+      "sha256": "188d6e31ea978334cecc3ac18bcd399c68aef931895d0cd9ba59bb5875334c58"
+    }
+  ]
+}

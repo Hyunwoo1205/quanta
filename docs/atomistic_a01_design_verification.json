@@ -1,0 +1,23 @@
+{
+  "verification_kind": "inactive_A01_design_consistency",
+  "passed": true,
+  "engine_executed": false,
+  "numerical_solver_checks_executed": false,
+  "physical_validation_status": "unvalidated",
+  "valid_fixtures_checked": 7,
+  "negative_fixtures_rejected": 9,
+  "planned_scientific_checks": 12,
+  "input_relations_checked": [
+    "SI/angstrom mapping",
+    "rigid rotation determinant and mapping",
+    "permutation by stable ID",
+    "reference bond distance",
+    "nonzero seed velocities",
+    "bare nuclear mass provenance",
+    "zero initial momentum",
+    "proposed time extent"
+  ],
+  "file_hashes_checked": 6,
+  "manifest_sha256": "65dd31baed5cb7238471990569d1174941697305c614385fabbd7689e7f93847",
+  "scientific_results": null
+}

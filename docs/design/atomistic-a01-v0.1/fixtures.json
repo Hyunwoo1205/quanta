@@ -1,0 +1,545 @@
+{
+  "document_kind": "inactive_atomistic_fixture_set",
+  "version": "0.1.0",
+  "executable": false,
+  "valid": [
+    {
+      "fixture_id": "C01-He",
+      "document_kind": "atomistic_validation_fixture",
+      "fixture_version": "0.1.0",
+      "executable": false,
+      "status": "planned_not_executed",
+      "profile_id": "quanta.atomistic-a01-ae-pbe",
+      "role": "static",
+      "operation": "single_point_energy_forces",
+      "coordinate_unit": "m",
+      "charge_e": 0,
+      "multiplicity": 1,
+      "electron_count": 2,
+      "boundary": "isolated_nonperiodic_3d",
+      "atoms": [
+        {
+          "id": "he1",
+          "element": "He",
+          "nuclear_charge": 2,
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "isotope_mass_number": 4
+        }
+      ],
+      "physical_expectations": {
+        "electron_count": 2,
+        "absolute_energy_j": null,
+        "individual_force_n": null
+      },
+      "purpose": "Atom electron count, isolation and symmetry; no absolute PBE energy invented."
+    },
+    {
+      "fixture_id": "C02-H2-reference",
+      "document_kind": "atomistic_validation_fixture",
+      "fixture_version": "0.1.0",
+      "executable": false,
+      "status": "planned_not_executed",
+      "profile_id": "quanta.atomistic-a01-ae-pbe",
+      "role": "static",
+      "operation": "single_point_energy_forces",
+      "coordinate_unit": "m",
+      "charge_e": 0,
+      "multiplicity": 1,
+      "electron_count": 2,
+      "boundary": "isolated_nonperiodic_3d",
+      "atoms": [
+        {
+          "id": "h1",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            -3.7072e-11,
+            0,
+            0
+          ],
+          "isotope_mass_number": 1
+        },
+        {
+          "id": "h2",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            3.7072e-11,
+            0,
+            0
+          ],
+          "isotope_mass_number": 1
+        }
+      ],
+      "physical_expectations": {
+        "electron_count": 2,
+        "absolute_energy_j": null,
+        "individual_force_n": null
+      },
+      "purpose": "NIST equilibrium-distance geometry; force need not vanish at experimental distance for approximate PBE."
+    },
+    {
+      "fixture_id": "C03-H2-stretched",
+      "document_kind": "atomistic_validation_fixture",
+      "fixture_version": "0.1.0",
+      "executable": false,
+      "status": "planned_not_executed",
+      "profile_id": "quanta.atomistic-a01-ae-pbe",
+      "role": "static",
+      "operation": "single_point_energy_forces",
+      "coordinate_unit": "m",
+      "charge_e": 0,
+      "multiplicity": 1,
+      "electron_count": 2,
+      "boundary": "isolated_nonperiodic_3d",
+      "atoms": [
+        {
+          "id": "h1",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            -4e-11,
+            0,
+            0
+          ],
+          "isotope_mass_number": 1
+        },
+        {
+          "id": "h2",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            4e-11,
+            0,
+            0
+          ],
+          "isotope_mass_number": 1
+        }
+      ],
+      "physical_expectations": {
+        "electron_count": 2,
+        "absolute_energy_j": null,
+        "individual_force_n": null
+      },
+      "purpose": "Force/energy derivative and non-equilibrium seed geometry."
+    },
+    {
+      "fixture_id": "C04-H2-rigid-transform",
+      "document_kind": "atomistic_validation_fixture",
+      "fixture_version": "0.1.0",
+      "executable": false,
+      "status": "planned_not_executed",
+      "profile_id": "quanta.atomistic-a01-ae-pbe",
+      "role": "static",
+      "operation": "single_point_energy_forces",
+      "coordinate_unit": "m",
+      "charge_e": 0,
+      "multiplicity": 1,
+      "electron_count": 2,
+      "boundary": "isolated_nonperiodic_3d",
+      "atoms": [
+        {
+          "id": "h1",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            1.8666666666666667e-10,
+            -1.2666666666666667e-10,
+            3.266666666666667e-10
+          ],
+          "isotope_mass_number": 1
+        },
+        {
+          "id": "h2",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            2.1333333333333335e-10,
+            -7.333333333333334e-11,
+            2.733333333333333e-10
+          ],
+          "isotope_mass_number": 1
+        }
+      ],
+      "physical_expectations": {
+        "electron_count": 2,
+        "absolute_energy_j": null,
+        "individual_force_n": null
+      },
+      "purpose": "3D rigid transform of the same molecular geometry; rotate force vectors and map density coordinates.",
+      "equivalence": {
+        "base": "C03-H2-stretched",
+        "rotation": [
+          [
+            0.3333333333333333,
+            0.6666666666666666,
+            0.6666666666666666
+          ],
+          [
+            0.6666666666666666,
+            0.3333333333333333,
+            -0.6666666666666666
+          ],
+          [
+            -0.6666666666666666,
+            0.6666666666666666,
+            -0.3333333333333333
+          ]
+        ],
+        "translation_m": [
+          2e-10,
+          -1e-10,
+          3e-10
+        ],
+        "input_sha_must_match": false
+      }
+    },
+    {
+      "fixture_id": "C05-H2-permuted",
+      "document_kind": "atomistic_validation_fixture",
+      "fixture_version": "0.1.0",
+      "executable": false,
+      "status": "planned_not_executed",
+      "profile_id": "quanta.atomistic-a01-ae-pbe",
+      "role": "static",
+      "operation": "single_point_energy_forces",
+      "coordinate_unit": "m",
+      "charge_e": 0,
+      "multiplicity": 1,
+      "electron_count": 2,
+      "boundary": "isolated_nonperiodic_3d",
+      "atoms": [
+        {
+          "id": "h2",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            4e-11,
+            0,
+            0
+          ],
+          "isotope_mass_number": 1
+        },
+        {
+          "id": "h1",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            -4e-11,
+            0,
+            0
+          ],
+          "isotope_mass_number": 1
+        }
+      ],
+      "physical_expectations": {
+        "electron_count": 2,
+        "absolute_energy_j": null,
+        "individual_force_n": null
+      },
+      "purpose": "Force/energy derivative and non-equilibrium seed geometry.",
+      "equivalence": {
+        "base": "C03-H2-stretched",
+        "mapping": "stable_atom_id",
+        "input_sha_must_match": false
+      }
+    },
+    {
+      "fixture_id": "C06-H2-angstrom",
+      "document_kind": "atomistic_validation_fixture",
+      "fixture_version": "0.1.0",
+      "executable": false,
+      "status": "planned_not_executed",
+      "profile_id": "quanta.atomistic-a01-ae-pbe",
+      "role": "static",
+      "operation": "single_point_energy_forces",
+      "coordinate_unit": "angstrom",
+      "charge_e": 0,
+      "multiplicity": 1,
+      "electron_count": 2,
+      "boundary": "isolated_nonperiodic_3d",
+      "atoms": [
+        {
+          "id": "h1",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            -0.39999999999999997,
+            0.0,
+            0.0
+          ],
+          "isotope_mass_number": 1
+        },
+        {
+          "id": "h2",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            0.39999999999999997,
+            0.0,
+            0.0
+          ],
+          "isotope_mass_number": 1
+        }
+      ],
+      "physical_expectations": {
+        "electron_count": 2,
+        "absolute_energy_j": null,
+        "individual_force_n": null
+      },
+      "purpose": "Force/energy derivative and non-equilibrium seed geometry.",
+      "equivalence": {
+        "base": "C03-H2-stretched",
+        "mapping": "explicit_unit_conversion",
+        "input_sha_must_match": false
+      }
+    },
+    {
+      "fixture_id": "C07-H2-motion-seed",
+      "document_kind": "atomistic_validation_fixture",
+      "fixture_version": "0.1.0",
+      "executable": false,
+      "status": "planned_not_executed",
+      "profile_id": "quanta.atomistic-a01-ae-pbe",
+      "role": "future_P3_seed",
+      "operation": "born_oppenheimer_nve_seed",
+      "coordinate_unit": "m",
+      "charge_e": 0,
+      "multiplicity": 1,
+      "electron_count": 2,
+      "boundary": "isolated_nonperiodic_3d",
+      "atoms": [
+        {
+          "id": "h1",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            1.8666666666666667e-10,
+            -1.2666666666666667e-10,
+            3.266666666666667e-10
+          ],
+          "nuclear_mass_kg": 1.67262192595e-27,
+          "nuclear_mass_source": "NIST-CODATA-2022:proton_mass_kg",
+          "velocity_m_per_s": [
+            -33.33333333333333,
+            -66.66666666666666,
+            66.66666666666666
+          ],
+          "isotope_mass_number": 1
+        },
+        {
+          "id": "h2",
+          "element": "H",
+          "nuclear_charge": 1,
+          "position": [
+            2.1333333333333335e-10,
+            -7.333333333333334e-11,
+            2.733333333333333e-10
+          ],
+          "nuclear_mass_kg": 1.67262192595e-27,
+          "nuclear_mass_source": "NIST-CODATA-2022:proton_mass_kg",
+          "velocity_m_per_s": [
+            33.33333333333333,
+            66.66666666666666,
+            -66.66666666666666
+          ],
+          "isotope_mass_number": 1
+        }
+      ],
+      "physical_expectations": {
+        "electron_count": 2,
+        "absolute_energy_j": null,
+        "individual_force_n": null
+      },
+      "purpose": "Stretched geometry and nonzero opposite velocities; bare proton masses, zero initial total momentum. This is not a computed trajectory.",
+      "equivalence": {
+        "base": "C03-H2-stretched",
+        "rotation": [
+          [
+            0.3333333333333333,
+            0.6666666666666666,
+            0.6666666666666666
+          ],
+          [
+            0.6666666666666666,
+            0.3333333333333333,
+            -0.6666666666666666
+          ],
+          [
+            -0.6666666666666666,
+            0.6666666666666666,
+            -0.3333333333333333
+          ]
+        ],
+        "translation_m": [
+          2e-10,
+          -1e-10,
+          3e-10
+        ],
+        "input_sha_must_match": false,
+        "scope": "nuclear_geometry_only"
+      },
+      "physical_time_s": 0.0,
+      "future_integration": {
+        "ensemble": "NVE",
+        "dt_s": 2e-16,
+        "steps": 50,
+        "sample_stride": 5,
+        "comparison_dt_s": [
+          1e-16,
+          5e-17
+        ],
+        "physical_duration_s": 1e-14,
+        "status": "proposal_for_P3_not_executed"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "fixture_id": "N01-charge",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "charge_e"
+          ],
+          "value": 1
+        }
+      ],
+      "expected_error": "UNSUPPORTED_CHARGE"
+    },
+    {
+      "fixture_id": "N02-spin",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "multiplicity"
+          ],
+          "value": 3
+        }
+      ],
+      "expected_error": "UNSUPPORTED_SPIN"
+    },
+    {
+      "fixture_id": "N03-element",
+      "base": "C01-He",
+      "mutations": [
+        {
+          "path": [
+            "atoms",
+            0,
+            "element"
+          ],
+          "value": "Li"
+        },
+        {
+          "path": [
+            "atoms",
+            0,
+            "nuclear_charge"
+          ],
+          "value": 3
+        }
+      ],
+      "expected_error": "UNSUPPORTED_ELEMENT"
+    },
+    {
+      "fixture_id": "N04-boundary",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "boundary"
+          ],
+          "value": "periodic_3d"
+        }
+      ],
+      "expected_error": "UNSUPPORTED_BOUNDARY"
+    },
+    {
+      "fixture_id": "N05-id",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "atoms",
+            1,
+            "id"
+          ],
+          "value": "h1"
+        }
+      ],
+      "expected_error": "DUPLICATE_ATOM_ID"
+    },
+    {
+      "fixture_id": "N06-overlap",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "atoms",
+            1,
+            "position"
+          ],
+          "value": [
+            -4e-11,
+            0,
+            0
+          ]
+        }
+      ],
+      "expected_error": "NUCLEAR_DISTANCE_OUTSIDE_PROFILE"
+    },
+    {
+      "fixture_id": "N07-electrons",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "electron_count"
+          ],
+          "value": 1
+        }
+      ],
+      "expected_error": "ELECTRON_COUNT_MISMATCH"
+    },
+    {
+      "fixture_id": "N08-unit",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "coordinate_unit"
+          ],
+          "value": "implicit"
+        }
+      ],
+      "expected_error": "UNSUPPORTED_COORDINATE_UNIT"
+    },
+    {
+      "fixture_id": "N09-stretch",
+      "base": "C03-H2-stretched",
+      "mutations": [
+        {
+          "path": [
+            "atoms",
+            1,
+            "position"
+          ],
+          "value": [
+            4e-10,
+            0,
+            0
+          ]
+        }
+      ],
+      "expected_error": "NUCLEAR_DISTANCE_OUTSIDE_PROFILE"
+    }
+  ],
+  "negative_error_codes": "Design checker codes, not registered public API errors."
+}
