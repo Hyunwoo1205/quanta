@@ -390,9 +390,10 @@ export function mountDynamicsViewer({payload, host, tableHost, metricsHost}) {
   function mode(value) { dragMode = value; orbitButton.setAttribute('aria-pressed', String(value === 'orbit')); panButton.setAttribute('aria-pressed', String(value === 'pan')); }
   listen(orbitButton, 'click', () => mode('orbit'));
   listen(panButton, 'click', () => mode('pan'));
-  listen(canvas, 'wheel', event => { event.preventDefault(); setZoom(zoom * Math.exp(-clamp(event.deltaY, -200, 200) * .002)); }, {passive: false});
+  listen(canvas, 'wheel', event => { if(event.ctrlKey || event.metaKey) return; event.preventDefault(); setZoom(zoom * Math.exp(-clamp(event.deltaY, -200, 200) * .002)); }, {passive: false});
   listen(canvas, 'contextmenu', event => event.preventDefault());
   listen(canvas, 'keydown', event => {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key === 'Home') { event.preventDefault(); resetCamera(); return; }
     if (event.key === '+' || event.key === '=') { event.preventDefault(); setZoom(zoom * 1.2); return; }
     if (event.key === '-') { event.preventDefault(); setZoom(zoom / 1.2); return; }
