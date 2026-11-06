@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "operation": "audit-recovery",
+  "operation": "post-reboot-compute",
   "source_sha": "1738107301ef873bfe5e01f930866c2a74e4ec3f",
-  "request_id": "42af4a01-b49d-4d65-b90b-085a53a1a7b3"
+  "request_id": "185ba7ee-5f2c-4b13-a148-b52fe62d5ac8"
 }
