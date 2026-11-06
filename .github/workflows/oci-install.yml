@@ -35,7 +35,7 @@ jobs:
           from pathlib import Path
           value = json.loads(Path('.github/oci/install-request.json').read_bytes())
           operation = value.get('operation') if isinstance(value, dict) else None
-          recovery = isinstance(operation, str) and operation in {'audit-recovery', 'prepare-recovery', 'export-recovery', 'reboot-recovery', 'verify-reboot', 'post-reboot-compute', 'compare-recovery', 'refresh-recovery'}
+          recovery = isinstance(operation, str) and operation in {'audit-recovery', 'prepare-recovery', 'export-recovery', 'reboot-recovery', 'verify-reboot', 'post-reboot-compute', 'compare-recovery', 'refresh-recovery', 'diagnose-peer-recovery'}
           with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
               stream.write('recovery=' + ('true' if recovery else 'false') + '\n')
           PY_REQUEST
@@ -43,15 +43,15 @@ jobs:
         if: steps.classify.outputs.recovery == 'true'
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f
+          ref: 5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e
           path: verified-control
           persist-credentials: false
       - name: Authorize app and recovery control CI pins
         if: steps.classify.outputs.recovery == 'true'
         id: authorize-recovery
         env:
-          QUANTA_CONTROL_SHA: 'e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f'
-          QUANTA_CONTROL_CI_RUN: '42163707530'
+          QUANTA_CONTROL_SHA: '5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e'
+          QUANTA_CONTROL_CI_RUN: '42165696689'
           QUANTA_CI_READ_TOKEN: ${{ github.token }}
         run: python3 -I -B verified-control/deploy/oci/authorize_recovery.py
       - name: Authorize the fixed request and completed native CI
@@ -85,8 +85,8 @@ jobs:
         if: steps.classify.outputs.recovery == 'true'
         id: recovery
         env:
-          QUANTA_CONTROL_SHA: 'e94b745b4b11c4cc5ce2314cb014ef4f0bd2266f'
-          QUANTA_CONTROL_CI_RUN: '42163707530'
+          QUANTA_CONTROL_SHA: '5aa8d5fee8cd9cadcdf6e2c75a5033bfe72a779e'
+          QUANTA_CONTROL_CI_RUN: '42165696689'
           QUANTA_OCI_AUTH_CONFIRMED: 'true'
           QUANTA_OCI_INSTALL_OPERATION: ${{ steps.authorize-recovery.outputs.operation }}
           QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
