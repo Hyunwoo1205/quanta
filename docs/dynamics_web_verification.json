@@ -1,13 +1,282 @@
 {
   "verification_kind": "dynamics_web_trajectory",
-  "status": "implementation_ready_verification_in_progress",
+  "status": "verified_native_browser_and_production",
   "app_version": "0.16.0",
   "general_contract": "0.4.0",
   "embedded_solver_contract": "0.3.1",
   "physical_validation_status": "unvalidated",
-  "local": {"node_tests_passed": 89, "focused_python_tests_passed": 167, "focused_python_subtests_passed": 7, "new_http_tests_passed": 9, "http_cases_passed": ["DWEB01", "DWEB02", "DWEB03", "DWEB04"]},
-  "browser": {"scope": "isolated_synthetic_preview_real_backend_worker", "credential_flow_tested": false, "basic_real_flow_and_raw_frame_graph_parity": true, "remaining_interaction_and_layout_checks": true},
-  "native_ci": {"source_sha": null, "run_id": null, "completed": false},
-  "production": {"app_version": "0.15.0", "source_sha": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4", "updated_this_step": false},
+  "local": {
+    "node_tests_passed": 89,
+    "focused_python_tests_passed": 167,
+    "focused_python_subtests_passed": 7,
+    "new_http_tests_passed": 9,
+    "http_cases_passed": [
+      "DWEB01",
+      "DWEB02",
+      "DWEB03",
+      "DWEB04"
+    ]
+  },
+  "browser": {
+    "verification_kind": "actual_browser_dynamics_ui",
+    "app_source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+    "app_version": "0.16.0",
+    "tested_at_utc": "2026-11-06T12:13:24.187792+00:00",
+    "scope": "isolated synthetic preview, actual HTTP SQLite and numerical child; default orthographic rendering",
+    "synthetic_authentication_adapter": true,
+    "production_user_authentication_tested": false,
+    "mobile_device_tested": false,
+    "touch_events_tested": false,
+    "physical_validation_status": "unvalidated",
+    "cases": {
+      "web_input_save_run_reopen": {
+        "passed": true,
+        "contract_version": "0.4.0",
+        "legacy_default_preserved": "0.2.0",
+        "source_bytes_sha_payload_checked_before_display": true
+      },
+      "sparse_free_frames": {
+        "passed": true,
+        "steps": [
+          0,
+          3,
+          6,
+          8
+        ],
+        "times_s": [
+          0,
+          0.375,
+          0.75,
+          1
+        ],
+        "particle": "p2",
+        "exact_positions_m": [
+          [
+            1,
+            -0.25,
+            0.75
+          ],
+          [
+            1.046875,
+            -0.1328125,
+            0.73828125
+          ],
+          [
+            1.09375,
+            -0.015625,
+            0.7265625
+          ],
+          [
+            1.125,
+            0.0625,
+            0.71875
+          ]
+        ],
+        "selected_mass_velocities_forces_and_graph_cursor_match": true
+      },
+      "physical_time_playback": {
+        "passed": true,
+        "screen_seconds_at_2x": 4,
+        "last_time_s": 1,
+        "stops_at_end": true
+      },
+      "refinement_download_parity": {
+        "passed": true,
+        "frames_per_leg": [
+          101,
+          101,
+          101
+        ],
+        "explicit_selected_factor": 4,
+        "last_step": 4000,
+        "last_time_s": 1,
+        "all_selected_particle_fields_equal_downloaded_result": true
+      },
+      "partial_failure": {
+        "passed": true,
+        "execution_status": "FAILED",
+        "failure_code": "EXPRESSION_DOMAIN",
+        "selected_leg_stop_reason": "domain_error",
+        "last_step": 1,
+        "last_time_s": 0.5,
+        "successful_final_state_not_implied": true
+      },
+      "maximum_particles": {
+        "passed": true,
+        "particles": 128,
+        "selected_id": "p127",
+        "last_time_s": 0.25,
+        "exact_position_m": [
+          7.03125,
+          3,
+          3
+        ]
+      },
+      "narrow_layout": {
+        "passed": true,
+        "method": "desktop Chrome zoom, not physical mobile",
+        "css_widths": [
+          539,
+          337
+        ],
+        "document_scroll_width_at_337": 337,
+        "frame_navigation_works": true,
+        "browser_zoom_shortcuts_preserved": true
+      },
+      "raster_projection": {
+        "scope": "independent_rotation_matrix_vs_native_browser_raster_selected_ring",
+        "particle_id": "p127",
+        "time_s": 0.25,
+        "position_m": [
+          7.03125,
+          3,
+          3
+        ],
+        "expected_center_px": [
+          891.92285508951,
+          538.9659600370404
+        ],
+        "observed_circle_fit_center_px": [
+          891.4880541648031,
+          537.9670937733994
+        ],
+        "edge_pixels": 36,
+        "error_px": 1.089396923424244,
+        "tolerance_px": 1.5,
+        "passed": true,
+        "method": "Known orthographic rotation matrices and physical bounding sphere versus antialiased selected-ring pixels; circle least-squares fit; Chrome viewport origin from observed1023px window minus936px innerHeight. No production or physical-model claim."
+      }
+    },
+    "preview_image": {
+      "google_drive_file_id": "11ih2h0yI6SfqBhnmnMXhpuqWggImByYY",
+      "url": "https://drive.google.com/file/d/11ih2h0yI6SfqBhnmnMXhpuqWggImByYY/view?usp=drivesdk",
+      "size_bytes": 65874,
+      "sha256": "6111549e5c5853a896a09300ed878f032998179c80c4b90ba18d3d22b4defcd5",
+      "contains_production_data": false
+    },
+    "limitations": [
+      "Named synthetic browser cases only; not blanket completion of every D11 scenario.",
+      "Independent pixel comparison is one known camera/particle/frame, with1.5px raster tolerance.",
+      "Actual production desktop login/MFA and physical mobile/touch behavior were not retested in this preview."
+    ],
+    "production_public_shell": {
+      "url": "https://quanta.kro.kr/",
+      "fresh_reload": true,
+      "username_password_login_form_visible": true,
+      "explicit_contract_choices": [
+        "0.2.0",
+        "0.4.0"
+      ],
+      "user_credentials_entered": false,
+      "authenticated_production_trajectory_retested": false
+    }
+  },
+  "native_ci": {
+    "status": "success",
+    "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+    "app_ci_run": 42214845497,
+    "run_url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42214845497",
+    "run_status": "completed",
+    "run_conclusion": "success",
+    "app_ci_event": "push",
+    "app_ci_branch": "main",
+    "created_at_utc": "2026-11-06T12:04:10Z",
+    "all_native_jobs_verified": true,
+    "jobs": [
+      {
+        "job_id": 127882174659,
+        "name": "contracts (aarch64)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at_utc": "2026-11-06T12:04:14Z",
+        "completed_at_utc": "2026-11-06T12:29:49Z",
+        "all_steps_success": true,
+        "steps_total": 36,
+        "steps_success": 36,
+        "pytest": {
+          "passed": 2106,
+          "seconds": 983.27,
+          "summary": "2106 passed in 983.27s (0:16:23)"
+        },
+        "node": {
+          "tests": 89,
+          "passed": 89,
+          "failed": 0
+        },
+        "dynamics_web": {
+          "native": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          },
+          "installed_container": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          }
+        },
+        "summary_log_lines": [
+          "2026-11-06T12:04:44.0934349Z ℹ tests 89",
+          "2026-11-06T12:04:44.0934892Z ℹ pass 89",
+          "2026-11-06T12:04:44.0935364Z ℹ fail 0",
+          "2026-11-06T12:21:09.4796541Z ======================= 2106 passed in 983.27s (0:16:23) =======================",
+          "2026-11-06T12:24:44.2992438Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \".cache/dynamics_web_verification.json\"}",
+          "2026-11-06T12:29:21.8392660Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \"/tmp/dynamics-web-verification.json\"}"
+        ]
+      },
+      {
+        "job_id": 127882174924,
+        "name": "contracts (x86_64)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at_utc": "2026-11-06T12:04:12Z",
+        "completed_at_utc": "2026-11-06T12:36:20Z",
+        "all_steps_success": true,
+        "steps_total": 36,
+        "steps_success": 36,
+        "pytest": {
+          "passed": 2106,
+          "seconds": 1232.51,
+          "summary": "2106 passed in 1232.51s"
+        },
+        "node": {
+          "tests": 89,
+          "passed": 89,
+          "failed": 0
+        },
+        "dynamics_web": {
+          "native": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          },
+          "installed_container": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          }
+        },
+        "summary_log_lines": [
+          "2026-11-06T12:04:50.2073024Z ℹ tests 89",
+          "2026-11-06T12:04:50.2073778Z ℹ pass 89",
+          "2026-11-06T12:04:50.2074138Z ℹ fail 0",
+          "2026-11-06T12:25:25.4844324Z ====================== 2106 passed in 1232.51s (0:20:32) =======================",
+          "2026-11-06T12:29:58.1702481Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \".cache/dynamics_web_verification.json\"}",
+          "2026-11-06T12:35:45.7261975Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \"/tmp/dynamics-web-verification.json\"}"
+        ]
+      }
+    ],
+    "updated_at_utc": "2026-11-06T12:36:20Z"
+  },
+  "production": {
+    "app_version": "0.16.0",
+    "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+    "updated_this_step": true,
+    "verification_file": "docs/oci_dynamics_web_upgrade_verification.json"
+  },
   "contracts_or_numerics_or_dependency_locks_changed": false
 }

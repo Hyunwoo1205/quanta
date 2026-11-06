@@ -2,7 +2,7 @@
 
 초기 웹 작업 공간(개발 패키지 `0.7.0`)은 실험 정의·입력 검증·불변 입력 저장·실행 진행·수치 결과·근거 다운로드를 같은 화면에 연결했습니다. 기존 Python 계산기와 실행 서비스를 사용하며 화면 자체가 새 계산식이나 물리적 검증 범위를 추가하지 않습니다.
 
-앱 `0.12.0`의 운영 HTTPS 화면은 [서버 계정과 Gmail 인증](account-login.md)을 사용합니다. 실제 계정 업그레이드·기록 보존·사용자 흐름의 확인 범위는 [계정 배포 기록](oci_accounts_upgrade_verification.json)과 WORKPLAN을 따릅니다. 아래 `quanta serve` 명령과 메모리 토큰 동작은 별도의 루프백 개발용 어댑터 설명입니다.
+0.12에서 도입한 운영 계정 구성을 유지하며 현재 앱0.16.0의 HTTPS 화면은 [서버 계정과 Gmail 인증](account-login.md)을 사용합니다. 실제 계정 업그레이드·기록 보존·사용자 흐름의 확인 범위는 [계정 배포 기록](oci_accounts_upgrade_verification.json)과 WORKPLAN을 따릅니다. 아래 `quanta serve` 명령과 메모리 토큰 동작은 별도의 루프백 개발용 어댑터 설명입니다.
 
 ## 루프백 개발용 시작하기
 
@@ -23,7 +23,7 @@ quanta serve --store .cache/local-service --port 8765
 
 ## 실험 구성부터 결과까지
 
-1. **예제 불러오기 또는 JSON 가져오기:** 에너지·힘, 정적 탐색, 양자 정적 상태와 다단계 예제 다섯 개를 제공합니다. JSON 정의 전체를 편집할 수 있습니다.
+1. **예제 불러오기 또는 JSON 가져오기:** 기존 정적·양자·다단계 다섯 예제와 새 자유입자·조화 동역학 두 예제를 제공합니다. 동역학은 명시적0.4.0, 기존 실험은0.2.0을 유지합니다. JSON 정의 전체를 편집할 수 있습니다.
 2. **입력 검증:** 서버의 등록 스키마·단위·수식·지원 범위·자원 한도로 검증합니다. 오류 코드와 JSON Pointer를 표시하며 미지원 내용을 임의 수정하지 않습니다.
 3. **새 입력 저장:** 실험을 만들거나 현재 실험의 새 불변 revision으로 저장합니다. 기존 저장 입력을 덮어쓰지 않습니다. 수정 중인 내용과 저장한 입력은 구분합니다.
 4. **실험 실행:** 저장한 revision을 실행합니다. 요청 응답이 불확실한 경우 같은 멱등성 키로 재시도해 실행 중복을 방지합니다.
@@ -59,3 +59,8 @@ quanta serve --store .cache/local-service --port 8765
 Python 회귀 시험은 정적 자원·동일 출처·인증·실행 기록·불변 입력을 검사합니다. Node `24.22.1`의 내장 시험은 상태 구분·숫자 보존·오류 입력·그래프 좌표 변환을 확인합니다. `scripts/verify_web.py`의 W01~W05는 실제 HTTP·SQLite·계산 자식 프로세스로 저장·실행·재조회·산출물 해시를 독립 기준과 비교합니다. 이 HTTP 검증을 브라우저 렌더링 검증으로 대신 표시하지 않습니다. 실제 검증 결과와 브라우저 확인 범위는 `runtime_manifest.json`에 기록합니다.
 
 계정·쿠키·CSRF·메일 경계의 구현 시험은 [계정 검증 기록](account_auth_verification.json), 실제 배포 이후의 확인은 [계정 배포 기록](oci_accounts_upgrade_verification.json)으로 구분합니다. 합성 메일 시험이나 앱 배포 성공만으로 실제 Gmail 인증·메일 수신·사용자 가입·추가 인증이 완료됐다고 표시하지 않습니다.
+
+
+## 0.16 동역학3D와 실제 운영 근거
+
+[동역학 입력·3D 저장 궤적](dynamics-web.md)은 입자 위치·선택 수치·관측량의 같은 저장 시각을 연결합니다. [실제 브라우저 사례](dynamics_web_browser_verification.json)와 [native/설치 검증](dynamics_web_verification.json), [실제0.16 운영 반영](oci_dynamics_web_upgrade_verification.json)을 각각 구분합니다.337/539px 확인은 데스크톱 Chrome 확대이며 모바일 실기기/터치를 대신하지 않습니다. 물리 검증은unvalidated입니다.

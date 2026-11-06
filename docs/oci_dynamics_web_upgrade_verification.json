@@ -1,0 +1,488 @@
+{
+  "verification_kind": "oci_dynamics_web_fixed_upgrade",
+  "status": "verified_production_upgrade",
+  "verified_at_utc": "2026-11-06T12:44:20.759343+00:00",
+  "public_origin": "https://quanta.kro.kr",
+  "previous": {
+    "app_version": "0.15.0",
+    "source_sha": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4"
+  },
+  "target": {
+    "app_version": "0.16.0",
+    "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+    "app_ci_run": 42214845497
+  },
+  "native_ci": {
+    "status": "success",
+    "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+    "app_ci_run": 42214845497,
+    "run_url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42214845497",
+    "run_status": "completed",
+    "run_conclusion": "success",
+    "app_ci_event": "push",
+    "app_ci_branch": "main",
+    "created_at_utc": "2026-11-06T12:04:10Z",
+    "all_native_jobs_verified": true,
+    "jobs": [
+      {
+        "job_id": 127882174659,
+        "name": "contracts (aarch64)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at_utc": "2026-11-06T12:04:14Z",
+        "completed_at_utc": "2026-11-06T12:29:49Z",
+        "all_steps_success": true,
+        "steps_total": 36,
+        "steps_success": 36,
+        "pytest": {
+          "passed": 2106,
+          "seconds": 983.27,
+          "summary": "2106 passed in 983.27s (0:16:23)"
+        },
+        "node": {
+          "tests": 89,
+          "passed": 89,
+          "failed": 0
+        },
+        "dynamics_web": {
+          "native": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          },
+          "installed_container": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          }
+        },
+        "summary_log_lines": [
+          "2026-11-06T12:04:44.0934349Z ℹ tests 89",
+          "2026-11-06T12:04:44.0934892Z ℹ pass 89",
+          "2026-11-06T12:04:44.0935364Z ℹ fail 0",
+          "2026-11-06T12:21:09.4796541Z ======================= 2106 passed in 983.27s (0:16:23) =======================",
+          "2026-11-06T12:24:44.2992438Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \".cache/dynamics_web_verification.json\"}",
+          "2026-11-06T12:29:21.8392660Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \"/tmp/dynamics-web-verification.json\"}"
+        ]
+      },
+      {
+        "job_id": 127882174924,
+        "name": "contracts (x86_64)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at_utc": "2026-11-06T12:04:12Z",
+        "completed_at_utc": "2026-11-06T12:36:20Z",
+        "all_steps_success": true,
+        "steps_total": 36,
+        "steps_success": 36,
+        "pytest": {
+          "passed": 2106,
+          "seconds": 1232.51,
+          "summary": "2106 passed in 1232.51s"
+        },
+        "node": {
+          "tests": 89,
+          "passed": 89,
+          "failed": 0
+        },
+        "dynamics_web": {
+          "native": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          },
+          "installed_container": {
+            "DWEB01": "passed",
+            "DWEB02": "passed",
+            "DWEB03": "passed",
+            "DWEB04": "passed"
+          }
+        },
+        "summary_log_lines": [
+          "2026-11-06T12:04:50.2073024Z ℹ tests 89",
+          "2026-11-06T12:04:50.2073778Z ℹ pass 89",
+          "2026-11-06T12:04:50.2074138Z ℹ fail 0",
+          "2026-11-06T12:25:25.4844324Z ====================== 2106 passed in 1232.51s (0:20:32) =======================",
+          "2026-11-06T12:29:58.1702481Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \".cache/dynamics_web_verification.json\"}",
+          "2026-11-06T12:35:45.7261975Z {\"status\": \"passed\", \"cases\": {\"DWEB01\": \"passed\", \"DWEB02\": \"passed\", \"DWEB03\": \"passed\", \"DWEB04\": \"passed\"}, \"error\": null, \"output\": \"/tmp/dynamics-web-verification.json\"}"
+        ]
+      }
+    ],
+    "updated_at_utc": "2026-11-06T12:36:20Z"
+  },
+  "controller": {
+    "paths": [
+      "deploy/oci/upgrade_application.py",
+      "deploy/oci/authorize_application_upgrade.py",
+      "tests/test_oci_application_upgrade.py",
+      "tests/test_oci_application_transport.py"
+    ],
+    "script_sha256": "e65127c6eaa5cfc4513c0c75cbf242987502fa293d8fed039879e4da46aa4df7",
+    "script_bytes": 69432,
+    "packed_bytes": 18857,
+    "command_bytes": 26356,
+    "old_source": "be398c636bbb9ba18590a7edec601bbcb5f9b1f4",
+    "target_source": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+    "old_version": "0.15.0",
+    "target_version": "0.16.0",
+    "app_ci_run": 42214845497,
+    "journal": "/etc/quanta/application-upgrade-0.16.json",
+    "staging": "/etc/quanta/.application-upgrade-0.16.publish",
+    "rollback": "/usr/local/lib/quanta/application-rollback-0.16.py",
+    "watchdog": "quanta-application-rollback-0-16",
+    "lock": "/run/quanta-application-upgrade.lock",
+    "asset_count": 7,
+    "tests": 79,
+    "test_seconds": 0.386
+  },
+  "control_source_sha": "fd5d0c3bf87030205951391805c6e183d5166f9a",
+  "control_ci_run": 42215072677,
+  "pinned_web_assets": {
+    "/": {
+      "size_bytes": 21922,
+      "sha256": "79c8660cd4502aea16d39e3eefb6a77e770306f39b6001812122cc1a4350b6ff"
+    },
+    "/assets/app.js": {
+      "size_bytes": 64196,
+      "sha256": "f833b472d5f8dbf60070fa4ef817e4c1890321a04fc9a6e52b7516ae2f82f586"
+    },
+    "/assets/view-model.mjs": {
+      "size_bytes": 21052,
+      "sha256": "a3d5b92478fa9cc449b2eb11860346fc74ec68d51602ce4d10af8c970385b0c6"
+    },
+    "/assets/dynamics-evidence.mjs": {
+      "size_bytes": 2325,
+      "sha256": "7ab9c6d4778e4dd475b334afb692c54d0bfc02a15a0d00713445efb876fae1c1"
+    },
+    "/assets/dynamics-model.mjs": {
+      "size_bytes": 14952,
+      "sha256": "715ea0dc8d0424bf2f91f5aece4e3252fde742c3eb0b4c41474b730e9ae516fc"
+    },
+    "/assets/dynamics-viewer.mjs": {
+      "size_bytes": 29484,
+      "sha256": "b11bf6db20bc93603568ed680558444f9484b55a6c7e6e80c4f0fb52c499a04d"
+    },
+    "/assets/dynamics-viewer.css": {
+      "size_bytes": 6139,
+      "sha256": "0bbb4e1042074cf70aa1c0babd4b8b4ce423d9d8cd6939acbf8ac18ecf40c549"
+    }
+  },
+  "actual_server_operations": [
+    {
+      "request": {
+        "schema_version": 1,
+        "operation": "audit-application",
+        "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+        "request_id": "4bf4a866-9bd6-491f-a113-7da4d8ee92b9"
+      },
+      "request_commit": "fafc2ea3968871a3dd7277b2d68cf937626faa23",
+      "run_id": 42219025874,
+      "job_id": 127896133350,
+      "workflow_conclusion": "success",
+      "report": {
+        "authentication_attempted": true,
+        "operation": "audit-application",
+        "result": {
+          "account_discovery_verified": true,
+          "active_runs": 0,
+          "actual_email_delivery_verified": false,
+          "admission_paused": false,
+          "application_stopped": false,
+          "application_version": "0.15.0",
+          "artifacts": 1091,
+          "auth_accounts": 1,
+          "auth_boundaries_verified": true,
+          "auth_database_preserved": false,
+          "auth_sessions": 2,
+          "backup_timer_paused": false,
+          "commit_visible_after_error": false,
+          "committed_resume": false,
+          "configuration_switched": false,
+          "database_preserved": false,
+          "dynamics_capability_verified": false,
+          "existing_rows_preserved": false,
+          "experiments": 11,
+          "failure_reason": "none",
+          "gmail_smtp_tls_checked": false,
+          "gmail_smtp_tls_ready": false,
+          "image_built": false,
+          "image_smoke_passed": false,
+          "mail_configured": true,
+          "mail_delivery_verified": false,
+          "mail_settings_preserved": false,
+          "new_calculation_verified": false,
+          "new_installation_verified": false,
+          "old_installation_verified": true,
+          "operation": "audit-application",
+          "peer_containers": 0,
+          "preservation_scope": "unmeasured",
+          "private_journal_saved": false,
+          "public_https_verified": true,
+          "registration": "open",
+          "revisions": 13,
+          "rollback_attempted": false,
+          "rollback_succeeded": false,
+          "runs": 15,
+          "scientific_smoke_verified": false,
+          "scope": "application_upgrade",
+          "server_modified": false,
+          "services_ready": true,
+          "settings_preserved": false,
+          "smoke_preservation_scope": "unmeasured",
+          "source_staged": false,
+          "stage": "complete",
+          "status": "success",
+          "worker_exclusive": true
+        },
+        "scope": "ssh_application_upgrade",
+        "status": "success"
+      }
+    },
+    {
+      "request": {
+        "schema_version": 1,
+        "operation": "upgrade-application",
+        "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+        "request_id": "35167703-7479-438c-abef-949b26a75e17"
+      },
+      "request_commit": "ba8d21565a54cb2a3bed74cea1d84a6ec277cea1",
+      "run_id": 42219205932,
+      "job_id": 127896737692,
+      "workflow_conclusion": "success",
+      "report": {
+        "authentication_attempted": true,
+        "operation": "upgrade-application",
+        "result": {
+          "account_discovery_verified": true,
+          "active_runs": 0,
+          "actual_email_delivery_verified": false,
+          "admission_paused": true,
+          "application_stopped": true,
+          "application_version": "0.16.0",
+          "artifacts": 1091,
+          "auth_accounts": 1,
+          "auth_boundaries_verified": true,
+          "auth_database_preserved": true,
+          "auth_sessions": 2,
+          "backup_timer_paused": true,
+          "commit_visible_after_error": false,
+          "committed_resume": false,
+          "configuration_switched": true,
+          "database_preserved": true,
+          "dynamics_capability_verified": true,
+          "existing_rows_preserved": false,
+          "experiments": 11,
+          "failure_reason": "none",
+          "gmail_smtp_tls_checked": false,
+          "gmail_smtp_tls_ready": false,
+          "image_built": true,
+          "image_smoke_passed": true,
+          "mail_configured": true,
+          "mail_delivery_verified": false,
+          "mail_settings_preserved": true,
+          "new_calculation_verified": false,
+          "new_installation_verified": true,
+          "old_installation_verified": true,
+          "operation": "upgrade-application",
+          "peer_containers": 0,
+          "preservation_scope": "private_barrier",
+          "private_journal_saved": true,
+          "public_https_verified": true,
+          "registration": "open",
+          "revisions": 13,
+          "rollback_attempted": false,
+          "rollback_succeeded": false,
+          "runs": 15,
+          "scientific_smoke_verified": false,
+          "scope": "application_upgrade",
+          "server_modified": true,
+          "services_ready": true,
+          "settings_preserved": true,
+          "smoke_preservation_scope": "unmeasured",
+          "source_staged": true,
+          "stage": "complete",
+          "status": "success",
+          "worker_exclusive": true
+        },
+        "scope": "ssh_application_upgrade",
+        "status": "success"
+      }
+    },
+    {
+      "request": {
+        "schema_version": 1,
+        "operation": "verify-application",
+        "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+        "request_id": "68351a5c-8774-4419-98db-0db2da41a3be"
+      },
+      "request_commit": "6295a102fc2a674eaff9dbe8147f42c1613190f2",
+      "run_id": 42219565016,
+      "job_id": 127897928800,
+      "workflow_conclusion": "success",
+      "report": {
+        "authentication_attempted": true,
+        "operation": "verify-application",
+        "result": {
+          "account_discovery_verified": true,
+          "active_runs": 0,
+          "actual_email_delivery_verified": false,
+          "admission_paused": false,
+          "application_stopped": false,
+          "application_version": "0.16.0",
+          "artifacts": 1091,
+          "auth_accounts": 1,
+          "auth_boundaries_verified": true,
+          "auth_database_preserved": true,
+          "auth_sessions": 2,
+          "backup_timer_paused": false,
+          "commit_visible_after_error": false,
+          "committed_resume": false,
+          "configuration_switched": false,
+          "database_preserved": true,
+          "dynamics_capability_verified": true,
+          "existing_rows_preserved": false,
+          "experiments": 11,
+          "failure_reason": "none",
+          "gmail_smtp_tls_checked": false,
+          "gmail_smtp_tls_ready": false,
+          "image_built": false,
+          "image_smoke_passed": false,
+          "mail_configured": true,
+          "mail_delivery_verified": false,
+          "mail_settings_preserved": true,
+          "new_calculation_verified": false,
+          "new_installation_verified": true,
+          "old_installation_verified": false,
+          "operation": "verify-application",
+          "peer_containers": 0,
+          "preservation_scope": "committed_upgrade",
+          "private_journal_saved": false,
+          "public_https_verified": true,
+          "registration": "open",
+          "revisions": 13,
+          "rollback_attempted": false,
+          "rollback_succeeded": false,
+          "runs": 15,
+          "scientific_smoke_verified": false,
+          "scope": "application_upgrade",
+          "server_modified": false,
+          "services_ready": true,
+          "settings_preserved": true,
+          "smoke_preservation_scope": "unmeasured",
+          "source_staged": false,
+          "stage": "complete",
+          "status": "success",
+          "worker_exclusive": true
+        },
+        "scope": "ssh_application_upgrade",
+        "status": "success"
+      }
+    },
+    {
+      "request": {
+        "schema_version": 1,
+        "operation": "smoke-application",
+        "source_sha": "5723290fc5f4ec9a6fa3b167f00745b18fc03a59",
+        "request_id": "3a518698-5419-48d2-9c09-25e76223d8c8"
+      },
+      "request_commit": "5a7ff760c421842963a2d6f9b1e60818a009338d",
+      "run_id": 42219731843,
+      "job_id": 127898491491,
+      "workflow_conclusion": "success",
+      "report": {
+        "authentication_attempted": true,
+        "operation": "smoke-application",
+        "result": {
+          "account_discovery_verified": true,
+          "active_runs": 0,
+          "actual_email_delivery_verified": false,
+          "admission_paused": false,
+          "application_stopped": false,
+          "application_version": "0.16.0",
+          "artifacts": 1183,
+          "auth_accounts": 1,
+          "auth_boundaries_verified": true,
+          "auth_database_preserved": true,
+          "auth_sessions": 2,
+          "backup_timer_paused": false,
+          "commit_visible_after_error": false,
+          "committed_resume": false,
+          "configuration_switched": false,
+          "database_preserved": true,
+          "dynamics_capability_verified": true,
+          "existing_rows_preserved": true,
+          "experiments": 12,
+          "failure_reason": "none",
+          "gmail_smtp_tls_checked": false,
+          "gmail_smtp_tls_ready": false,
+          "image_built": false,
+          "image_smoke_passed": false,
+          "mail_configured": true,
+          "mail_delivery_verified": false,
+          "mail_settings_preserved": true,
+          "new_calculation_verified": true,
+          "new_installation_verified": true,
+          "old_installation_verified": false,
+          "operation": "smoke-application",
+          "peer_containers": 0,
+          "preservation_scope": "committed_upgrade",
+          "private_journal_saved": false,
+          "public_https_verified": true,
+          "registration": "open",
+          "revisions": 14,
+          "rollback_attempted": false,
+          "rollback_succeeded": false,
+          "runs": 16,
+          "scientific_smoke_verified": true,
+          "scope": "application_upgrade",
+          "server_modified": true,
+          "services_ready": true,
+          "settings_preserved": true,
+          "smoke_preservation_scope": "immutable_jobs_cohort",
+          "source_staged": false,
+          "stage": "complete",
+          "status": "success",
+          "worker_exclusive": true
+        },
+        "scope": "ssh_application_upgrade",
+        "status": "success"
+      }
+    }
+  ],
+  "upgrade_barrier_counts": {
+    "experiments": 11,
+    "revisions": 13,
+    "runs": 15,
+    "artifacts": 1091,
+    "auth_accounts": 1,
+    "auth_sessions": 2,
+    "active_runs": 0,
+    "peer_containers": 0
+  },
+  "latest_observed_counts": {
+    "experiments": 12,
+    "revisions": 14,
+    "runs": 16,
+    "artifacts": 1183,
+    "auth_accounts": 1,
+    "auth_sessions": 2,
+    "active_runs": 0,
+    "peer_containers": 0
+  },
+  "preservation_scope": "Exact stopped-app jobs6/auth5 tables, typed rows/BLOBs, SQLite internals/PRAGMAs, Gmail config/budget/lock and root settings before public admission; later verify cites committed point-in-time proof plus current health, not frozen live sessions/mail/jobs.",
+  "smoke_preservation_scope": "immutable_jobs_cohort",
+  "new_static_assets_checked_before_admission_and_over_public_tls": true,
+  "existing_release_journal_and_watchdog_preserved": true,
+  "shared_operation_lock_preserved": true,
+  "browser_evidence": "docs/dynamics_web_browser_verification.json",
+  "actual_email_delivery_retested": false,
+  "actual_new_password_or_mfa_login_retested": false,
+  "actual_mobile_device_retested": false,
+  "os_reboot_or_additional_regular_backup": false,
+  "secrets_returned": false,
+  "physical_validation_status": "unvalidated",
+  "scope": "Fixed0.15 to0.16 application update including3D saved trajectory UI; no DB schema/auth/numerics/contracts/locks migration. Synthetic production smoke kept; browser case evidence is separately scoped."
+}

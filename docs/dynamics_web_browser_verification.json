@@ -139,5 +139,16 @@
     "Named synthetic browser cases only; not blanket completion of every D11 scenario.",
     "Independent pixel comparison is one known camera/particle/frame, with1.5px raster tolerance.",
     "Actual production desktop login/MFA and physical mobile/touch behavior were not retested in this preview."
-  ]
+  ],
+  "production_public_shell": {
+    "url": "https://quanta.kro.kr/",
+    "fresh_reload": true,
+    "username_password_login_form_visible": true,
+    "explicit_contract_choices": [
+      "0.2.0",
+      "0.4.0"
+    ],
+    "user_credentials_entered": false,
+    "authenticated_production_trajectory_retested": false
+  }
 }

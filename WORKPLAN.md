@@ -4,17 +4,17 @@
 
 ## 현재 운영 상태
 
-운영 사이트 https://quanta.kro.kr 은 앱 `0.15.0`·고정 소스 `be398c636bbb9ba18590a7edec601bbcb5f9b1f4`로 실제 최신화했습니다. 전환 시점의 실험10개·개정본12개·실행14개·산출물999개, jobs.sqlite3 여섯 표와 auth.sqlite3 다섯 표의 typed 행/BLOB·내부 메타데이터, Gmail 설정/예산/lock 파일과 기존 운영 설정을 접수 재개 전에 정확히 비교해 보존을 확인했습니다. 후속 독립 verify에서 새 설치·서비스·단일 작업자·계정/인증 경계·공개 HTTPS가 정상이고, 실제0.4 동역학 계산과 모든 생성 산출물의 크기/SHA 확인도 성공했습니다. 검증용 실험1개가 추가된 마지막 조회는 실험11개·개정본13개·실행15개·산출물1091개·계정1개·세션2개·진행 중 실행0개입니다. 이 실계산은 자유 입자 사례이며 물리 검증은 계속 `unvalidated`입니다. 웹 동역학 입력과3D 재생 화면은 다음 구현입니다.
+운영 사이트 https://quanta.kro.kr 은 앱 `0.16.0`·소스 `5723290fc5f4ec9a6fa3b167f00745b18fc03a59`입니다. 버전별 동역학 웹 입력·저장/실행·기록 재조회와 실제 저장 궤적의3D 카메라·입자 선택·시간 재생·SI 수치/관측량 동기화를 반영했습니다. 전환 시점의 실험11개·개정본13개·실행15개·산출물1091개, 계정1개·세션2개와 jobs/auth DB·Gmail 설정/예산/lock·기존 운영 설정을 접수 재개 전에 대조해 정확한 보존을 확인했습니다.
 
-기존0.12 계정 배포 뒤 Gmail 설정·이메일 인증 가입·로그인이 성공했다는 사용자 확인은 당시 근거로 보존합니다. 이번 최신화에서는 계정·메일 설정을 보존하고 인증 경계를 점검했으며 실제 새 메일 발송·사용자 비밀번호 로그인·선택형 이메일 추가 인증을 다시 수행하지 않았습니다. 앞선 앱0.11.0의 OS 재부팅·새 계산·사용자 모바일 확인도 당시 기록이며 이번0.15의 실제 기기/사용자 흐름 검증으로 확대하지 않습니다.
+후속 독립 verify와 실제0.4 자유입자 계산·산출물 크기/SHA·공개 HTTPS/새 화면7자산 검사가 성공했습니다. 검증용 실험1개를 남긴 마지막 조회는 실험12개·개정본14개·실행16개·산출물1183개·계정1개·세션2개·진행 중0개·다른 컨테이너0개입니다. 기존 가입·로그인 성공의 사용자 확인과0.11 모바일/재부팅 기록은 당시 범위입니다. 이번에는 새 메일 발송·사용자 비밀번호/MFA 로그인·실제 모바일 기기를 반복하지 않았습니다. 물리 검증은 계속 `unvalidated`입니다.
 
 사용자가 기존 컨테이너가 개인용임을 확인하고 직접 삭제했습니다. 이후 실제 점검에서 Quanta 컨테이너 1개·다른 컨테이너 0개, 정상 서비스·저장소·인증을 확인했습니다. 기존 컨테이너의 과거 설정 지문 차이와 실패 기록은 보존하되, 삭제된 개인 컨테이너는 현재 보존 대상에서 제외합니다. 일상 백업은 사용자가 설정한 OCI 일일 자동백업을 기본으로 하며 추가 정기 외부 백업을 요구하지 않습니다. 콘솔 정책 직접 확인과 전체 볼륨 복원은 미확인입니다.
 
-최신 운영 버전·전환 보존·실계산 근거는 아래 **운영 사이트0.15.0 최신화 마감**과 [실제 최신화 검증](docs/oci_application_upgrade_verification.json)을 우선합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
+최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — 동역학 웹 입력·3D 저장 궤적 검증 중
+## 현재 개발 위치 — 동역학 웹 입력·3D 저장 궤적 완료
 
-기반 앱0.15.0에서 [동역학 단일 단계의 일반 실험 통합](docs/dynamics-workflows.md)을 구현·검증했습니다. 새 명시적 일반 계약0.4.0은 동역학만 등록하고 기존 실험 기본0.2.0과 독립0.3.0/0.3.1을 보존합니다. 이번 범위는 입력/계획·실행·물리 시각을 가진 위상 상태·SQLite/비동기 API·취소·산출물·번들 재실행입니다. 연속 단계·sweep/override·자동 상태 변환·분자별 결합 모형·3D웹 화면은 이번 지원 범위가 아닙니다. 이전 독립 solver 검증 성공과 이번 통합의 실제 검증을 분리하며, 최종 소스의 ARM/x86 각2,027개 시험과 수치·HTTP·설치 컨테이너 검증이 성공했습니다. [검증 기록](docs/dynamics_workflow_verification.json)과 아래 마감에 실제 근거를 보존합니다. 실제 운영도0.15.0/be398이며 물리 검증은unvalidated입니다. 다음 시작점은 계획한 버전별 웹 입력·실행과 저장 궤적3D 화면입니다.
+앱0.16.0에서 [동역학 웹·3D 재생](docs/dynamics-web.md)을 구현하고 최종 소스의 양쪽 native 전체시험·독립 검증·설치 컨테이너와 실제 브라우저 사례를 확인한 뒤 운영에 반영했습니다. backend 일반 계약0.4.0·독립0.3.1·기존0.2.0 원본·수치해법·의존성 잠금은 보존했습니다. 실제 브라우저 근거는 [명시한 사례](docs/dynamics_web_browser_verification.json) 범위이며 전체 D11/실제 모바일/물질 거동 합격으로 확대하지 않습니다. 연속 단계·sweep/override·자동 상태 변환·원소/결합/반응 모형은 후보/미구현입니다. 물리 검증은unvalidated입니다. 다음은 최신 운영 근거와 새3D의 실기기/터치 확인을 출발점으로 후속 동역학 계약 범위를 정하는 작업입니다.
 
 ## 목표와 기준
 
@@ -552,3 +552,22 @@ wheel의 Python33개·네 계약24/17/18/26개 bytes를 원본과 대조했습�
 원본 solver 산출물의 두 manifest 일치·UTF8 bytes 크기/SHA·payload 전체 일치 뒤에만 표시합니다. 브라우저 점검에서 artifact의 octet-stream 응답을 JSON API로 읽어 연결을 해제하는 문제를 발견해 raw bytes 처리로 수정했고, 실제 저장된 자유입자 희소4프레임의3D·선택 수치/운동량 시각 일치를 확인했습니다. 이 preview는 합성 인증의 격리된 실제 서비스/계산자식이며 운영 사용자 로그인 검증이 아닙니다.
 
 로컬 Node89개, 기존 관련Python167개/7subtests(219.99초), 새 HTTP/production 자산9개(33.82초), DWEB01~04가 통과했습니다. 실제4프레임·95산출물 SHA·새 SQLite 재조회·기존 정적/양자 계산을 확인했습니다. 남은 브라우저 조작/레이아웃·native ARM/x86/설치 자산·실제 OCI 전환 결과는 완료 후 갱신합니다. 세부 범위는 docs/dynamics-web.md와 docs/dynamics_web_verification.json을 기준으로 하며 물리unvalidated를 유지합니다. 인수인계 문서는 만들거나 갱신하지 않습니다.
+
+
+## 동역학 웹0.16.0 구현·운영 반영 마감 — 2026-11-06
+
+고정 앱5723290/CI42214845497의 native ARM/x86 전체시험·Node89·DWEB01~04·설치 컨테이너가 완료-success입니다. 구체적인 시험 수/시간은 docs/dynamics_web_verification.json과 원격 job로그를 기준으로 합니다. 원본 solver 산출물의 크기/SHA·payload 일치 뒤 표시하며, 실제 브라우저의 희소4프레임·그래프/선택 수치·다운로드h/4 원본·부분 실패0.5초·128입자·337/539px CSS폭을 확인했습니다. 한정된 기본 카메라/입자/프레임의 독립 투영 행렬과 실제 raster의 차이는1.0894px(기준1.5px)입니다. 터치 실기기/모든 D11 사례·물리 합격으로 확대하지 않습니다.
+
+제어fd5d0c3/독립CI42215072677의 native 각79개 성공과 새 릴리스 journal/watchdog·기존 공통 잠금·화면7자산 고정을 사용했습니다. 기존0.15 journal/복구 근거는 삭제/덮어쓰지 않았습니다. 실제 작업은 다음과 같습니다.
+
+- [audit-application / 42219025874](https://github.com/Hyunwoo1205/quanta/actions/runs/42219025874): 완료-success.
+
+- [upgrade-application / 42219205932](https://github.com/Hyunwoo1205/quanta/actions/runs/42219205932): 완료-success.
+
+- [verify-application / 42219565016](https://github.com/Hyunwoo1205/quanta/actions/runs/42219565016): 완료-success.
+
+- [smoke-application / 42219731843](https://github.com/Hyunwoo1205/quanta/actions/runs/42219731843): 완료-success.
+
+전환 baseline은 실험11개·개정본13개·실행15개·산출물1091개이고 접수 재개 전 두DB/Gmail/운영 설정을 정확히 대조했습니다. 뒤 verify의 committed_upgrade는 이 시점의 확정 근거와 현재 준비 상태이며 정상적인 후속 세션/메일/작업을 동결하지 않습니다. 실제 자유입자2개·8스텝·9프레임의 좌표/속도/시각·최종 상태·모든 산출물 bytes/SHA와 기존 immutable jobs cohort 보존을 확인했습니다. 최종 조회는 실험12개·개정본14개·실행16개·산출물1183개입니다. 원본 설정 복구는 전환 확정 전에만 허용하며 이번 롤백은 시도하지 않았습니다. 새 사용자 동작을 과거 앱으로 자동 롤백하지 않습니다.
+
+[실제 전환 기록](docs/oci_dynamics_web_upgrade_verification.json)에 source/CI/UUID/커밋/run/job/정제 보고서를 보존했습니다. 사용자 OCI 일일 백업을 유지했고 재부팅·새 키·상시PC·Tailscale·추가 정기 외부 백업은 요구하지 않았습니다. 기존 개인용Drive 세부 명세의 같은 문서와 합성 브라우저 검증 화면을 갱신했습니다. 인수인계 문서는 만들거나 갱신하지 않습니다. 다음 시작점은 현재0.16 운영/브라우저 근거와 남은 실제 모바일/터치 범위 확인, 이후 연속 동역학 등 후속 계약의 별도 계획입니다. 이 제어기는 be398→5723290 전용이며 다음 릴리스에 임의 재사용하지 않습니다.
