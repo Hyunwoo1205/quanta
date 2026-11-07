@@ -1,0 +1,98 @@
+name: CP2K ARMv8-A source candidate
+
+on:
+  push:
+    branches-ignore:
+      - ops/oci
+    paths:
+      - '.github/workflows/cp2k-armv8a-build.yml'
+      - 'deploy/cp2k-armv8/**'
+      - 'scripts/build_cp2k_armv8.sh'
+      - 'scripts/smoke_cp2k_armv8.py'
+
+permissions:
+  contents: read
+
+jobs:
+  arm64:
+    name: CP2K ARMv8-A build and He-D (aarch64)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 85
+    env:
+      QUANTA_CANDIDATE_REF: quanta/cp2k-armv8a:source-${{ github.sha }}
+      QUANTA_A03_SOURCE_SHA: ${{ github.sha }}
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Require native ARM64 and record runner capacity
+        run: |
+          test "$(uname -m)" = aarch64
+          mkdir -p .cache/cp2k-armv8-build/evidence
+          {
+            uname -sm
+            nproc
+            awk '/^MemTotal:/ { print }' /proc/meminfo
+            df -Pk .
+            docker version --format '{{.Server.Version}} {{.Server.Os}} {{.Server.Arch}}'
+          } | tee .cache/cp2k-armv8-build/evidence/runner.txt
+      - name: Build the locked ARMv8-A candidate
+        shell: bash
+        run: |
+          set -o pipefail
+          time docker buildx build --load --platform linux/arm64 --progress plain \
+            --build-arg QUANTA_CP2K_BUILD_JOBS=3 \
+            --file deploy/cp2k-armv8/Dockerfile --tag "$QUANTA_CANDIDATE_REF" . \
+            2>&1 | tee .cache/cp2k-armv8-build/evidence/build.log
+      - name: Collect provenance from the resulting image
+        shell: bash
+        run: |
+          evidence=.cache/cp2k-armv8-build/evidence
+          id=$(docker create --platform linux/arm64 "$QUANTA_CANDIDATE_REF")
+          trap 'docker rm -f "$id" >/dev/null' EXIT
+          mkdir -p "$evidence/image"
+          docker cp "$id:/opt/quanta-cp2k/evidence/." "$evidence/image/"
+          docker image inspect "$QUANTA_CANDIDATE_REF" > "$evidence/image-inspect.json"
+      - name: Retry He-D under the existing isolated A03 limits
+        run: |
+          python3 scripts/smoke_cp2k_armv8.py --image "$QUANTA_CANDIDATE_REF" \
+            --output-dir .cache/cp2k-armv8-build/evidence/he-d
+      - name: Export exactly the tested image and its SHA-256
+        shell: bash
+        run: |
+          root=.cache/cp2k-armv8-build
+          docker image save -o "$root/image.tar" "$QUANTA_CANDIDATE_REF"
+          test "$(stat -c %s "$root/image.tar")" -le 805306368
+          (
+            cd "$root"
+            sha256sum image.tar > image.tar.sha256
+          )
+          printf '%s\n' "$QUANTA_CANDIDATE_REF" > "$root/image-ref.txt"
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 --entrypoint /bin/sh \
+            "$QUANTA_CANDIDATE_REF" -c 'sha256sum "$(command -v cp2k)"' > "$root/binary.sha256"
+          cp "$root/image.tar.sha256" "$root/image-ref.txt" "$root/binary.sha256" "$root/evidence/"
+      - name: Preserve actual build and smoke evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cp2k-armv8a-build-evidence-${{ github.sha }}
+          path: .cache/cp2k-armv8-build/evidence/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve the tested candidate image
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cp2k-armv8a-source-image-${{ github.sha }}
+          path: |
+            .cache/cp2k-armv8-build/image.tar
+            .cache/cp2k-armv8-build/image.tar.sha256
+            .cache/cp2k-armv8-build/image-ref.txt
+            .cache/cp2k-armv8-build/binary.sha256
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 1
+          retention-days: 14
