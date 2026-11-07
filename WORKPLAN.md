@@ -12,13 +12,23 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A03 SIGILL 원인 확인 · 범용 ARM 재검증
+## 현재 개발 위치 — 범용 ARMv8-A 후보 A03 격리 실측 통과
+
+2026-11-07 KST, 기존 OCI의 `SIGILL`은 `libcp2k.so.2026.2`의 `FCMLA`에서 발생했습니다. OCI ARM 사용자 공간은 필요한 FCMA를 제공하지 않습니다. CP2K v2026.2와 OpenBLAS·FFTW·ScaLAPACK·DBCSR·LibXC·Libint2를 범용 ARMv8-A로 빌드했고, MPI·OS 런타임은 고정 Ubuntu 스냅샷 패키지로 연결했습니다. [SIGILL 추적](docs/verification/atomistic-a03/oci/42360862172.json) · [재빌드 및 검증 근거](docs/verification/atomistic-a03/armv8a-retry-20261107.json)
+
+소스 `5dd1e90c8332366c1f95f5b58b260ce966af5e84`의 [ARM 빌드42370042984](https://github.com/Hyunwoo1205/quanta/actions/runs/42370042984), [native A03 ARM/x86 42370042995](https://github.com/Hyunwoo1205/quanta/actions/runs/42370042995), [전체 CI ARM/x86 42370042969](https://github.com/Hyunwoo1205/quanta/actions/runs/42370042969)가 모두 성공했습니다. ARM에는 재빌드한 바이너리, x86에는 기존 고정 이미지를 대조군으로 사용했습니다. ARM 바이너리 SHA는 `af665277ebd21d4397448d49a9ce666756a05ebcf401a9967e19c32af9c9b60f`, 보고한 CP2K Git 리비전은 `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`입니다. OCI로 전달된 838,924,288 B 아카이브의 SHA, 플랫폼 매니페스트, 설정 및 순서 있는 레이어 DiffID, 실행 바이너리 SHA를 ARM CI와 대조했습니다. [원본 로그·계산 출력 묶음](https://drive.google.com/file/d/1swkUvxD21AP8CnyRC1SWaLszqf7I_TK0/view?usp=drivesdk)
+
+[OCI 실측42372870103](docs/verification/atomistic-a03/oci/42372870103.json)은 **1 CPU·2 GiB의 단일 격리 실행으로 go**입니다. He-D 32.89초, H₂-D 33.73초, H₂-T 35.20초, 초기화 취소 2.32초, 취소 후 새 H₂-D 33.79초로 다섯 사례를 통과했습니다. 정상 계산의 에너지·힘·전체 전자수밀도 CUBE와 취소 정리를 확인했습니다. 가용 메모리 사전 10.734 GiB·최소 8.882 GiB, 디스크 사전 180.531 GiB, cgroup 메모리 관측 최대 1.784 GiB입니다. 계산 구간 웹 294회에서 최대 21.91 ms, 예상 상태 위반 0회였습니다. 첫 및 최종 보존 비교에서 운영 컨테이너·지정 설정·작업 DB 바이트가 일치하고, 사전/사후 진행 작업이 0건이었습니다. 전달 아카이브를 정리했고 운영 앱 배포/재시작은 수행하지 않았습니다.
+
+**다음 시작점은 A04 후보 검토**입니다. 새 ARM 바이너리와 소스의 연결, 실제 의존성 및 빌드 자료를 검토하고, 같은 후보로 고정 upstream GAPW 회귀를 실행합니다. 기존 공식 이미지의 `revision unknown` 문제는 별개입니다. 단위 변환·bare 핵질량·CUBE 정밀도/밀도 의미와 독립 허용오차를 검토한 뒤 자유 JSON 원자계 계약을 동결합니다. 물리 검증은 `unvalidated`이며 공개 원자계 런타임과 동시 사용자 쿼터는 미승인입니다. [A04 검토 항목](docs/design/atomistic-a04-source-traceability.md)
+
+### SIGILL 원인 확인과 재빌드 경과
 
 2026-11-07 KST, [고정 OCI 추적42360862172](docs/verification/atomistic-a03/oci/42360862172.json)이 기존 He-D 입력과 바이너리의 SHA를 재확인하고 `SIGILL` 정지에서 PC와 신호 주소의 일치를 확인했습니다. 실행 바이트 `78c7de6e`는 `libcp2k.so.2026.2` ELF 오프셋 `0x2754d80`의 바이트와 일치했습니다. LLVM19는 이를 Armv8.3의 `FCMLA v24.2d, v27.2d, v30.2d, #0`로 해석했습니다. 앞선 OCI 사용자 공간 HWCAP에 FCMA는 없습니다. CP2K GNU Release 설정은 native 타깃을 추가합니다. 오류 명령이 들어 있는 CP2K 자체와 주요 계산 의존성을 범용 ARMv8-A로 다시 빌드하기로 했습니다. [LLVM 명령 정의](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/llvm/lib/Target/AArch64/AArch64InstrInfo.td#L1565-L1571) · [CP2K 컴파일러 설정](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/cmake/CompilerConfiguration.cmake)
 
 진단기의 명령 캡처, 정리와 최종 운영 보존 표시는 성공했습니다. 외부 작업은 첫 보존 판정 단계에서 실패했습니다. 최초 스냅샷의 개별 필드가 최종 결과로 덮여 세부 원인은 판별할 수 없습니다. 후속 제어는 최초 및 최종 보존 데이터를 따로 저장합니다. 운영 작업 DB·컨테이너·설정의 최종 비교는 일치했고 진행 중 작업은 0건이었습니다.
 
-[범용 ARM 소스 빌드42360639779](https://github.com/Hyunwoo1205/quanta/actions/runs/42360639779)는 Ubuntu26.04 ARM64 고정 이미지와 날짜 고정 APT, CP2K v2026.2 Git 트리, 6개 소스 배포 파일 SHA를 사용합니다. 소스 빌드는 네트워크를 끈 단계에서 실행하며 컴파일 명령의 ISA 플래그를 검사합니다. Ubuntu 제공 MPI 및 OS 런타임 패키지는 서명된 스냅샷과 패키지 SHA로 고정합니다. 첫 두 빌드는 컨테이너 APT TLS 인증서 오류로 컴파일 이전에 중단됐고, 러너 CA를 빌드 시에만 연결해 재요청했습니다. 같은 He-D를 우선 실행하고, 성공한 소스 이미지로 native A03 전체와 동일 소스 전체 CI를 검증한 후 OCI 재요청을 합니다. 현재 새 후보의 실행·출처 검증과 A04 동결은 진행 중이며 물리 검증은 `unvalidated`입니다.
+[범용 ARM 소스 빌드42360639779](https://github.com/Hyunwoo1205/quanta/actions/runs/42360639779)는 Ubuntu26.04 ARM64 고정 이미지와 날짜 고정 APT, CP2K v2026.2 Git 트리, 6개 소스 배포 파일 SHA를 사용합니다. 소스 빌드는 네트워크를 끈 단계에서 실행하며 컴파일 명령의 ISA 플래그를 검사합니다. Ubuntu 제공 MPI 및 OS 런타임 패키지는 서명된 스냅샷과 패키지 SHA로 고정합니다. 첫 두 빌드는 컨테이너 APT TLS 인증서 오류로 컴파일 이전에 중단됐고, 러너 CA를 빌드 시에만 연결해 재요청했습니다. 같은 He-D를 우선 실행하고, 성공한 소스 이미지로 native A03 전체와 동일 소스 전체 CI를 검증한 후 OCI 재요청을 합니다. 이 시점에는 새 후보의 실행·출처 검증이 진행 중이었고 물리 검증은 `unvalidated`였습니다.
 
 
 ARM 소스 빌드 42360639779는 CA 연결 후 여섯 계산 의존성을 컴파일하고 CP2K 빌드 3992/4153까지 진행했습니다. `grid_miniapp.psmp` 링크에서 GCC 15.2의 `lto1` IPA static-var 내부 오류로 멈췄습니다. CP2K 및 소스 의존성에서 LTO를 명시적으로 끄고, 전체 CP2K 컴파일 전에 해당 miniapp 링크를 재검증합니다. LibXC 빌드 최적화 수준은 시간을 줄이기 위해 O1로 조정하고 기능 플래그는 유지합니다. 새 빌드·native A03·전체 CI는 동일한 커밋에서 실행됩니다. [실패 로그](https://github.com/Hyunwoo1205/quanta/actions/runs/42360639779)

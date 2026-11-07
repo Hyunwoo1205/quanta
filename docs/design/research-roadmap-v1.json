@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.7",
+  "plan_version": "1.0.8",
   "updated_at": "2026-11-07",
   "status": "planned_development",
   "executable": false,
@@ -337,7 +337,7 @@
       "depends_on": [
         "A02"
       ],
-      "status": "OCI_candidate_SIGILL_no_go",
+      "status": "OCI_isolated_ARMv8A_execution_passed",
       "acceptance": [
         "설치/실행·wall time·peak RSS·출력 크기·취소 지연·자식 정리·웹 응답성 측정",
         "공개 가입 한도와 서버 여유를 보존하는 자원 상한을 정하고 go/no-go 기록"
@@ -348,10 +348,13 @@
       "oci_initial_attempt": "docs/verification/atomistic-a03/oci/42333684670.json",
       "oci_image_diagnostic": "docs/verification/atomistic-a03/oci/42335035316.json",
       "retry_native_web_evidence": "docs/verification/atomistic-a03/native-42336172276-web-gate.json",
-      "next_action": "범용 ARMv8-A·소스 추적 가능한 CP2K 및 의존성 후보의 구성/ABI/ISA를 잠그고 새 후보의 native·OCI 격리 실측.",
+      "next_action": "동일 ARMv8-A 후보의 소스·빌드·바이너리 연결 및 실제 의존성 검토, 고정 upstream GAPW 회귀, 엔진→SI·밀도 의미/정밀도·독립 허용오차 검토 뒤 A04 동결 판정.",
       "retry_native_timing_evidence": "docs/verification/atomistic-a03/native-42337645488-timing.json",
       "oci_retry_evidence": "docs/verification/atomistic-a03/oci/42339547954.json",
-      "oci_host_isa_evidence": "docs/verification/atomistic-a03/oci/42340357555.json"
+      "oci_host_isa_evidence": "docs/verification/atomistic-a03/oci/42340357555.json",
+      "oci_sigill_trace_evidence": "docs/verification/atomistic-a03/oci/42360862172.json",
+      "armv8a_retry_evidence": "docs/verification/atomistic-a03/armv8a-retry-20261107.json",
+      "oci_armv8a_execution_evidence": "docs/verification/atomistic-a03/oci/42372870103.json"
     },
     {
       "id": "A04",
@@ -368,7 +371,7 @@
         "사용자 작성 JSON의 계/조건/절차/관측량 규칙과 모델 적합성을 정의하고 내부fixture/기준계 허용목록을 제품 실행 메뉴로 쓰지 않음"
       ],
       "owner_role": "계약·과학",
-      "source_binding_gate": "Blocked until actual binary/source association or a traceable rebuilt binary; reported2026.2/unknown alone is insufficient.",
+      "source_binding_gate": "The rebuilt ARMv8-A candidate reports the pinned Git revision and exact CI/OCI binary SHA. Review source/dependency closure and required upstream regressions before A04 freeze. The official 2026.2/unknown image remains unbound.",
       "candidate_build_plan": "docs/design/atomistic-a04-source-traceability.md",
       "runtime_dependency_evidence": "docs/design/a04_donor_inventory_review.md"
     },

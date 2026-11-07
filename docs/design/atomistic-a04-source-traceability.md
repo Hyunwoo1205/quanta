@@ -1,6 +1,6 @@
 # A04 후보 소스 추적성 검증
 
-다음 작업은 기존 네이티브 CI에서 새 CP2K 후보의 빌드 입력을 잠그고, 실제 바이너리까지 이어지는 증거를 만드는 것이다. 먼저 amd64에서 의존성 준비와 CMake 구성을 확인하고, 같은 레시피를 amd64와 ARM64에서 각각 실행한다. A04 프로필과 자유 JSON 계약 동결은 빌드·실행 증거 검토 뒤에 판단한다.
+이 문서는 CP2K 후보의 빌드 입력과 실제 바이너리의 연결을 검토합니다. ARMv8-A 후보의 실측 결과와 후속 검증 범위를 아래에 기록합니다. A04 프로필과 자유 JSON 계약의 동결은 소스·실행·수치 검증의 근거를 검토한 뒤 판단합니다.
 
 두 A02 고정 이미지의 최신 네이티브 inventory에서 Spack 의존성 경로와 별도 `libcp2k.so.2026.2` 로딩을 확인했다. 아래의 의존성 제공 이미지 검토는 이 경로와 원본 레이어 기록에 근거한다. 헤더·Fortran 모듈·CMake 설정과 링크에 필요한 파일의 존재 및 ABI는 첫 검사에서 확인할 항목이다. [네이티브 의존성 근거](a04_donor_inventory_review.md)
 
@@ -30,6 +30,12 @@ Oracle의 A1은 Ampere Altra Q80-30 계열이다. Ampere는 Altra의 명령어 �
 4. 첫 amd64 의존성 후보는 A02가 고정한 공식 이미지의 Spack 패키지 트리다. ARM64에는 위의 별도 ISA 조건을 적용한다. 매니페스트에서 CP2K 설치와 별도인 트리의 최종 경로·symlink와 CMake package config·헤더·Fortran 모듈을 확인한다. 예를 들어 Libint2의 `Libint2::int2`와 `libint_f.mod`, DBCSR package config의 버전과 MPI 설정을 확인해야 한다. 검증한 의존성 파일의 SHA와 ABI를 잠근 뒤 새 이미지에 필요한 의존성만 복사한다. CP2K 실행 파일, 자체 공유 라이브러리와 설치 데이터는 새 checkout의 설치 결과를 사용한다. 개발 파일이나 호환 컴파일러가 없으면 누락 목록을 남기고 구성을 중단한다. 후속 의존성 빌드의 입력은 고정 Spack 및 packages 커밋, `spack.lock`, 모든 source 또는 buildcache 바이트 SHA와 compiler externals를 포함한다. [공식 의존성 복사 단계](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/Dockerfile.test_spack_psmp-gcc15#L74-L91) · [Spack 개발 빌드](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/docs/getting-started/build-with-spack.md)
 5. 첫 구성은 CPU `psmp`, MPICH, OpenBLAS BLAS/LAPACK, 동일 MPI용 ScaLAPACK·DBCSR, FFTW3, LibXC와 Libint2를 명시한다. 시작 플래그는 `CP2K_USE_ACCEL=NONE`, `CP2K_USE_EVERYTHING=OFF`, `CP2K_USE_MPI=ON`, `CP2K_BLAS_VENDOR=OpenBLAS`, `CP2K_SCALAPACK_VENDOR=GENERIC`, `CP2K_USE_DBCSR_CONFIG=ON`, `CP2K_USE_FFTW3=ON`, `CP2K_USE_LIBXC=ON`, `CP2K_USE_LIBINT2=ON`이다. 이 경로의 DBCSR 요구 버전은 2.9 이상이다. 해석된 전이 의존성과 실제 컴파일 옵션을 확인한 뒤 플랫폼별 잠금에 정확한 버전·해시를 넣는다. [CP2K CMake 옵션](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/CMakeLists.txt)
 
+## 2026-11-07 실제 ARM 후보와 확인 범위
+
+- 기존 OCI 이미지의 `SIGILL`은 CP2K 공유 라이브러리의 `FCMLA`에서 확인했습니다. 새 후보는 Ubuntu 26.04 ARM64 고정 베이스·스냅샷, CP2K v2026.2 Git 전체 SHA, 6개 해시 고정 소스 의존성, GNU `Generic` 및 `-march=armv8-a -mtune=generic -fno-lto`를 사용했습니다. MPICH·운영체제 런타임은 서명된 배포 패키지이며 빌드 전용 래퍼에서 배포 패키징 LTO/ISA 플래그를 제거했습니다. [조사와 빌드 근거](../verification/atomistic-a03/armv8a-retry-20261107.json)
+- 재빌드 ARM 후보는 `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`을 보고합니다. ARM He-D 단독, ARM A03 전체와 OCI 격리 실측에서 같은 바이너리 SHA를 확인했습니다. x86 A03는 기존 이미지 대조군입니다. OCI의 동일 아카이브로 계산·취소·후속 계산 다섯 사례, 이미지 증명, 웹 및 운영 보존 게이트를 통과했습니다. [OCI 영수증](../verification/atomistic-a03/oci/42372870103.json)
+- 다음은 실제 라이브러리 및 도구·출처 증거를 검토하고 이 후보로 고정 GAPW 회귀를 실행하는 일입니다. 새 ARM의 리비전 확인은 기존 공식 이미지의 소스 대응을 입증하지 않습니다. 별도 x86 추적 가능 빌드, 고정 upstream GAPW 회귀, A04 수치·물리 허용오차 검증은 다음 단계이며, 물리 검증 상태는 `unvalidated`입니다.
+
 ## 실행 순서
 
 1. 기존 CI와 같은 `ubuntu-24.04`·`ubuntu-24.04-arm` 네이티브 환경에서 호스트 아키텍처와 여유 RAM·디스크를 기록한다. 첫 amd64 구성으로 컴파일러, 패키지 경로와 ABI를 확인한다. 실제 compile 전 CPU 병렬수, 메모리·디스크·벽시계 상한을 job에 기록하고, 초과 또는 의존성 불일치 시 종료한다. 운영 OCI는 실측을 통과한 후보를 위한 별도 격리 검증 경로다. [기존 네이티브 CI](https://github.com/Hyunwoo1205/quanta/blob/b621e836af61d7b63933ab7802722fa1ee79f531/.github/workflows/atomistic-a03.yml)
@@ -41,4 +47,4 @@ Oracle의 A1은 Ampere Altra Q80-30 계열이다. Ampere는 Altra의 명령어 �
 
 - **소스 추적성**은 플랫폼마다 전체 소스 → 레시피·도구·의존성 → 성공한 native job → 바이너리 SHA → 이미지 manifest/config → 실제 실행 SHA가 이어지고, build-info와 엔진 리비전이 고정 Git SHA와 일치할 때 검토한다. 작은 영수증과 잠금은 GitHub, 큰 로그·원시 CUBE는 실행 아티팩트와 프로젝트 Drive에 보관한다.
 - **실행 검증**은 고정 upstream 회귀와 새 후보 A03 결과가 모두 통과해야 한다. A04 동결 전 연결된 소스로 CODATA2006 엔진→SI, CODATA2022 기준, bare 핵질량과 전체 전자수밀도 의미를 다시 대조한다. 밀도 적분, 음수 및 고정폭 E13.5E3 정밀도는 원본대로 기록한다. 독립 수치·물리 검증은 이후 검증 항목에 남는다.
-- 현재 공식 A02 이미지의 실행 근거에는 CP2K 2026.2와 `revision unknown`이 기록돼 있다. 그 바이너리와 전체 소스의 연결, 새 베이스 다이제스트와 의존성 closure, 빌드 용량·시간, 새 후보 실행은 미확인이다. 공식 CMake가 build timestamp를 넣으므로 비트 단위 재현성은 별도 두 번의 통제된 빌드와 비교가 필요하다. 현재 물리 검증 상태는 `unvalidated`다.
+- 기존 공식 A02 이미지의 실행 근거는 CP2K 2026.2와 `revision unknown`을 보고하며, 그 바이너리와 전체 소스의 대응은 확인되지 않았습니다. 새 ARM 후보의 빌드·실행 근거는 위 실측 절에 있습니다. 공식 CMake는 빌드 시각을 포함합니다. 이미지 단위 재현성을 판단하려면 별도의 통제된 비교가 필요합니다. 물리 검증 상태는 `unvalidated`입니다.
