@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.6",
+  "plan_version": "1.0.7",
   "updated_at": "2026-11-07",
   "status": "planned_development",
   "executable": false,
@@ -348,9 +348,10 @@
       "oci_initial_attempt": "docs/verification/atomistic-a03/oci/42333684670.json",
       "oci_image_diagnostic": "docs/verification/atomistic-a03/oci/42335035316.json",
       "retry_native_web_evidence": "docs/verification/atomistic-a03/native-42336172276-web-gate.json",
-      "next_action": "고정 읽기 전용 HWCAP/저장 실패 로그 대조 후 추적 가능한 범용 ARM 후보를 준비하고 native/OCI 격리 실측을 다시 수행.",
+      "next_action": "범용 ARMv8-A·소스 추적 가능한 CP2K 및 의존성 후보의 구성/ABI/ISA를 잠그고 새 후보의 native·OCI 격리 실측.",
       "retry_native_timing_evidence": "docs/verification/atomistic-a03/native-42337645488-timing.json",
-      "oci_retry_evidence": "docs/verification/atomistic-a03/oci/42339547954.json"
+      "oci_retry_evidence": "docs/verification/atomistic-a03/oci/42339547954.json",
+      "oci_host_isa_evidence": "docs/verification/atomistic-a03/oci/42340357555.json"
     },
     {
       "id": "A04",
