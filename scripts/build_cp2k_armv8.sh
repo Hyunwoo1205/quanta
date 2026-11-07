@@ -7,10 +7,32 @@ prefix=/opt/quanta-cp2k
 evidence="$prefix/evidence"
 source_sha=67b5da876dd6a76b8b021d5a04d1c81ba79a4c50
 source_tree=2e4405ec65578a3d8205bc23adf69249798d98d3
-baseline="-march=armv8-a -mtune=generic -fno-lto"
+architecture="${QUANTA_CP2K_ARCH:-arm64}"
+openblas_isa_options=()
+case "$architecture" in
+    arm64)
+        machine=aarch64
+        isa=armv8-a
+        elf_machine=AArch64
+        openblas_target=ARMV8
+        ;;
+    amd64)
+        machine=x86_64
+        isa=x86-64-v2
+        elf_machine='Advanced Micro Devices X86-64'
+        openblas_target=CORE2
+        openblas_isa_options=(-DNO_AVX=ON -DNO_AVX2=ON -DNO_AVX512=ON)
+        ;;
+    *) echo "Unsupported CP2K build architecture: $architecture" >&2; exit 2 ;;
+esac
+baseline="-march=$isa -mtune=generic -fno-lto"
 mkdir -p "$evidence"
 
-[[ "$(uname -m)" == aarch64 && "$(dpkg --print-architecture)" == arm64 ]]
+[[ "$(uname -m)" == "$machine" && "$(dpkg --print-architecture)" == "$architecture" ]]
+if [[ "$architecture" == amd64 ]]; then
+    /lib64/ld-linux-x86-64.so.2 --help >"$evidence/x86-64-loader-hwcaps.txt"
+    grep -Eq '^[[:space:]]+x86-64-v2 \(supported, searched\)' "$evidence/x86-64-loader-hwcaps.txt"
+fi
 case "${1:?choose fetch or compile}" in
     fetch)
         cd "$inputs"
@@ -62,7 +84,7 @@ export PKG_CONFIG_PATH="$deps/lib/pkgconfig" LD_LIBRARY_PATH="$deps/lib"
     cmake --version
     ninja --version
     mpichversion
-    printf 'ISA=%s\njobs=%s\n' "$baseline" "$jobs"
+    printf 'ISA=%s\nOpenBLAS target=%s\njobs=%s\n' "$baseline" "$openblas_target" "$jobs"
 } >"$evidence/toolchain.txt"
 # Ubuntu's MPICH wrappers export distro packaging flags to consumers.
 # Keep the signed MPI runtime and use build-local wrappers for a consistent ISA and LTO policy.
@@ -94,29 +116,38 @@ unpack() {
 }
 
 check_compile_flags() {
-    python3 - "$1" <<'PY'
+    python3 - "$1" "$isa" <<'PY'
 import json
 import shlex
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
-allowed = {"-march=armv8-a", "-mtune=generic", "-mcpu=generic"}
+isa = sys.argv[2]
+baseline = f"-march={isa}"
+allowed = {baseline, "-mtune=generic", "-mcpu=generic"}
+x86_extensions = {"-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mpopcnt"}
 commands = json.loads(path.read_text())
 if not commands:
     raise SystemExit(f"No compile commands in {path}")
 for command in commands:
     arguments = command.get("arguments") or shlex.split(command["command"])
     flags = {arg for arg in arguments if arg.startswith(("-march=", "-mtune=", "-mcpu="))}
-    if "-march=armv8-a" not in flags or flags - allowed:
+    if baseline not in flags or flags - allowed:
         raise SystemExit(f"Unexpected compiler target flags in {command['file']}: {sorted(flags)}")
+    if isa == "x86-64-v2":
+        extensions = {
+            arg for arg in arguments if arg.startswith(("-mavx", "-mfma", "-mf16c", "-mbmi", "-msse", "-mssse"))
+        }
+        if extensions - x86_extensions:
+            raise SystemExit(f"Unexpected x86 extensions in {command['file']}: {sorted(extensions)}")
     lto_flags = [
         arg for arg in arguments
         if arg in {"-flto", "-ffat-lto-objects"} or arg.startswith("-flto=")
     ]
     if "-fno-lto" not in arguments or lto_flags:
         raise SystemExit(f"Unexpected link-time optimization flags in {command['file']}: {lto_flags}")
-print(path.name, len(commands), "ARMv8-A baseline verified")
+print(path.name, len(commands), isa, "baseline verified")
 PY
 }
 
@@ -158,7 +189,7 @@ cmake_build() {
 
 unpack openblas OpenBLAS-0.3.33.tar.gz
 cmake_build openblas "$inputs/openblas" "$deps" \
-    -DTARGET=ARMV8 -DDYNAMIC_ARCH=OFF -DUSE_OPENMP=ON \
+    "-DTARGET=$openblas_target" "${openblas_isa_options[@]}" -DDYNAMIC_ARCH=OFF -DUSE_OPENMP=ON \
     -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF
 openblas="$deps/lib/libopenblas.so"
 test -e "$openblas"
@@ -234,4 +265,4 @@ rm -rf "$prefix/include" "$deps/include" "$deps/share" "$deps/bin" \
     find bin lib deps/lib share/cp2k/data -type f -print0 | sort -z | xargs -0 -r sha256sum
 ) >"$evidence/installed-files.sha256"
 readelf -h "$prefix/bin/cp2k.psmp" >"$evidence/cp2k-elf-header.txt"
-grep -F AArch64 "$evidence/cp2k-elf-header.txt"
+grep -F "$elf_machine" "$evidence/cp2k-elf-header.txt"

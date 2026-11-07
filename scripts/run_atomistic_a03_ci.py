@@ -122,9 +122,8 @@ def run_independent_web(command, output):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path, required=True)
-    mode = parser.add_mutually_exclusive_group()
-    mode.add_argument('--candidate-dir', type=Path)
-    mode.add_argument('--independent-web-observer', action='store_true')
+    parser.add_argument('--candidate-dir', type=Path)
+    parser.add_argument('--independent-web-observer', action='store_true')
     args = parser.parse_args()
     if args.independent_web_observer and platform.machine() != 'x86_64':
         parser.error('The independent observer is limited to the x86 native CI control')
@@ -160,11 +159,13 @@ def main() -> int:
                     sys.executable, 'scripts/verify_atomistic_a03.py',
                     '--output-dir', str(output), '--case-timeout', '180',
                 ]
-                if args.independent_web_observer:
-                    return run_independent_web(command, output)
-                command.extend(['--web-origin', WEB_ORIGIN])
                 if args.candidate_dir is not None:
                     command.extend(['--candidate-dir', str(args.candidate_dir)])
+                if args.independent_web_observer:
+                    if args.candidate_dir is not None:
+                        command.append('--amd64-candidate')
+                    return run_independent_web(command, output)
+                command.extend(['--web-origin', WEB_ORIGIN])
                 return subprocess.call(command)
             finally:
                 if service.poll() is None:

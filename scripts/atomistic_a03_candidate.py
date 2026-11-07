@@ -25,22 +25,25 @@ SHA = re.compile(r'[0-9a-f]{64}\Z')
 SOURCE = re.compile(r'[0-9a-f]{40}\Z')
 
 
-def image_ref(source_sha):
+def image_ref(source_sha, *, architecture='arm64'):
     if not isinstance(source_sha, str) or not SOURCE.fullmatch(source_sha):
         raise ValueError('Invalid candidate Quanta source SHA')
-    return 'quanta/a03-armv8a:' + source_sha
+    repositories = {'arm64': 'quanta/a03-armv8a:', 'amd64': 'quanta/a03-amd64:'}
+    if architecture not in repositories:
+        raise ValueError('Invalid native candidate architecture')
+    return repositories[architecture] + source_sha
 
 
-def validate_metadata(value, source_sha):
+def validate_metadata(value, source_sha, *, architecture='arm64'):
     fields = {'schema_version', 'source_sha', 'archive_sha256', 'archive_bytes',
               'image_ref', 'config_sha256', 'binary_sha256'}
     if (not isinstance(value, dict) or set(value) != fields
             or type(value['schema_version']) is not int or value['schema_version'] != 1
-            or value['source_sha'] != source_sha or value['image_ref'] != image_ref(source_sha)
+            or value['source_sha'] != source_sha or value['image_ref'] != image_ref(source_sha, architecture=architecture)
             or type(value['archive_bytes']) is not int or not 0 < value['archive_bytes'] <= MAX_ARCHIVE
             or not all(isinstance(value[name], str) and SHA.fullmatch(value[name])
                        for name in ('archive_sha256', 'config_sha256', 'binary_sha256'))):
-        raise ValueError('Invalid source-specific ARMv8-A image metadata')
+        raise ValueError('Invalid source-specific native image metadata')
     return value
 
 
@@ -56,16 +59,16 @@ def open_regular(path, limit):
     return stream
 
 
-def read_metadata(directory, source_sha):
+def read_metadata(directory, source_sha, *, architecture='arm64'):
     if (not directory.is_dir() or directory.is_symlink()
             or {p.name for p in directory.iterdir()} != {ARCHIVE_NAME, METADATA_NAME}):
         raise ValueError('Candidate directory must contain precisely the two native artifact files')
     with open_regular(directory / METADATA_NAME, 2048) as stream:
-        return validate_metadata(json.load(stream), source_sha)
+        return validate_metadata(json.load(stream), source_sha, architecture=architecture)
 
 
-def archive_image(stream, expected_tag):
-    """Check the Docker and OCI tables describe the same single ARM64 image."""
+def archive_image(stream, expected_tag, *, architecture='arm64'):
+    """Check the Docker and OCI tables describe the same single native image."""
     stream.seek(0)
     with tarfile.open(fileobj=stream, mode='r:') as archive:
         entries = {}
@@ -121,14 +124,14 @@ def archive_image(stream, expected_tag):
         layers = manifest.get('layers')
         rootfs = config.get('rootfs')
         if (manifest.get('schemaVersion') != 2 or manifest.get('mediaType') not in (None, OCI_MANIFEST)
-                or docker[0].get('Config') != config_name or config.get('architecture') != 'arm64'
+                or docker[0].get('Config') != config_name or config.get('architecture') != architecture
                 or config.get('os') != 'linux' or not isinstance(config.get('config'), dict)
                 or not isinstance(layers, list) or not isinstance(rootfs, dict) or rootfs.get('type') != 'layers'
                 or not isinstance(rootfs.get('diff_ids'), list) or not layers
                 or len(rootfs['diff_ids']) != len(layers)
                 or not all(isinstance(x, str) and x.startswith('sha256:') and SHA.fullmatch(x[7:])
                            for x in rootfs['diff_ids'])):
-            raise ValueError('Candidate archive must contain one coherent native Linux ARM64 image')
+            raise ValueError('Candidate archive must contain one coherent native Linux image of the selected architecture')
         layer_paths = []
         for layer in layers:
             digest = layer.get('digest', '')
@@ -144,19 +147,19 @@ def archive_image(stream, expected_tag):
         return descriptor, config, manifest['config']['digest']
 
 
-def check_archive(stream, metadata):
+def check_archive(stream, metadata, *, architecture='arm64'):
     if os.fstat(stream.fileno()).st_size != metadata['archive_bytes']:
         raise ValueError('Candidate image archive size differs from native CI')
     if hashlib.file_digest(stream, 'sha256').hexdigest() != metadata['archive_sha256']:
         raise ValueError('Candidate image archive hash differs from native CI')
-    descriptor, config, config_digest = archive_image(stream, metadata['image_ref'])
+    descriptor, config, config_digest = archive_image(stream, metadata['image_ref'], architecture=architecture)
     if config_digest != 'sha256:' + metadata['config_sha256']:
         raise ValueError('Candidate image configuration hash differs from native CI')
     return descriptor, config, config_digest
 
 
-def check_loaded(inspected, metadata, descriptor, config, config_digest):
-    if (inspected.get('Architecture') != 'arm64' or inspected.get('Os') != 'linux'
+def check_loaded(inspected, metadata, descriptor, config, config_digest, *, architecture='arm64'):
+    if (inspected.get('Architecture') != architecture or inspected.get('Os') != 'linux'
             or metadata['image_ref'] not in (inspected.get('RepoTags') or [])):
         raise ValueError('Loaded candidate architecture or exact tag differs')
     image_id = inspected.get('Id')
@@ -180,11 +183,11 @@ def check_loaded(inspected, metadata, descriptor, config, config_digest):
             'ordered_rootfs_diff_ids_match': True, 'runtime_config_projection_matches': True}
 
 
-def load_candidate(directory, source_sha, *, run=subprocess.run):
-    metadata = read_metadata(directory, source_sha)
+def load_candidate(directory, source_sha, *, architecture='arm64', run=subprocess.run):
+    metadata = read_metadata(directory, source_sha, architecture=architecture)
     reference = metadata['image_ref']
     with open_regular(directory / ARCHIVE_NAME, MAX_ARCHIVE) as stream:
-        descriptor, config, config_digest = check_archive(stream, metadata)
+        descriptor, config, config_digest = check_archive(stream, metadata, architecture=architecture)
         inspect = ['docker', 'image', 'inspect', reference]
         inspected = run(inspect, capture_output=True, timeout=30, check=False)
         already_loaded = inspected.returncode == 0
@@ -200,20 +203,20 @@ def load_candidate(directory, source_sha, *, run=subprocess.run):
     images = json.loads(inspected.stdout)
     if not isinstance(images, list) or len(images) != 1 or not isinstance(images[0], dict):
         raise ValueError('Docker did not inspect exactly one candidate image')
-    proof = check_loaded(images[0], metadata, descriptor, config, config_digest)
+    proof = check_loaded(images[0], metadata, descriptor, config, config_digest, architecture=architecture)
     proof['already_loaded_identical_image'] = already_loaded
     return metadata, proof
 
 
-def record(directory, source_sha, binary_sha):
-    reference = image_ref(source_sha)
+def record(directory, source_sha, binary_sha, *, architecture='arm64'):
+    reference = image_ref(source_sha, architecture=architecture)
     with open_regular(directory / ARCHIVE_NAME, MAX_ARCHIVE) as stream:
         size = os.fstat(stream.fileno()).st_size
         digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-        _, _, config_digest = archive_image(stream, reference)
+        _, _, config_digest = archive_image(stream, reference, architecture=architecture)
     metadata = validate_metadata({'schema_version': 1, 'source_sha': source_sha,
         'image_ref': reference, 'archive_bytes': size, 'archive_sha256': digest,
-        'config_sha256': config_digest[7:], 'binary_sha256': binary_sha}, source_sha)
+        'config_sha256': config_digest[7:], 'binary_sha256': binary_sha}, source_sha, architecture=architecture)
     with (directory / METADATA_NAME).open('x', encoding='utf-8') as stream:
         json.dump(metadata, stream, sort_keys=True, separators=(',', ':'))
         stream.write('\n')
@@ -226,8 +229,10 @@ def main():
     parser.add_argument('--directory', required=True, type=Path)
     parser.add_argument('--source-sha', required=True)
     parser.add_argument('--binary-sha256', required=True)
+    parser.add_argument('--architecture', choices=('arm64', 'amd64'), default='arm64')
     args = parser.parse_args()
-    print(json.dumps(record(args.directory, args.source_sha, args.binary_sha256), sort_keys=True))
+    print(json.dumps(record(args.directory, args.source_sha, args.binary_sha256,
+                            architecture=args.architecture), sort_keys=True))
 
 
 if __name__ == '__main__':

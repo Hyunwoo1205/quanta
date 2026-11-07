@@ -3,8 +3,14 @@ set -euo pipefail
 export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 
 phase="${1:?choose runtime or build}"
-if [[ "$(dpkg --print-architecture)" != arm64 || "$(uname -m)" != aarch64 ]]; then
-    echo "Native ARM64 package environment is required" >&2
+architecture="${QUANTA_CP2K_ARCH:-arm64}"
+case "$architecture" in
+    arm64) machine=aarch64 ;;
+    amd64) machine=x86_64 ;;
+    *) echo "Unsupported CP2K package architecture: $architecture" >&2; exit 2 ;;
+esac
+if [[ "$(dpkg --print-architecture)" != "$architecture" || "$(uname -m)" != "$machine" ]]; then
+    echo "Native $architecture package environment is required" >&2
     exit 2
 fi
 case "$phase" in
@@ -24,12 +30,12 @@ test -s "$ca_bundle"
 sha256sum "$ca_bundle" >"$evidence/$phase-network-ca.sha256"
 apt=(apt-get -o "Acquire::https::CaInfo=$ca_bundle" -o Acquire::Retries=3)
 
-cat >/etc/apt/sources.list.d/ubuntu.sources <<'EOF'
+cat >/etc/apt/sources.list.d/ubuntu.sources <<EOF
 Types: deb
 URIs: https://snapshot.ubuntu.com/ubuntu/20261107T000000Z/
 Suites: resolute resolute-updates resolute-security
 Components: main universe
-Architectures: arm64
+Architectures: $architecture
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 Check-Valid-Until: no
 EOF
@@ -51,7 +57,7 @@ for archive in "${archives[@]}"; do
     arch="$(dpkg-deb -f "$archive" Architecture)"
     hash="$(sha256sum "$archive")"
     hash="${hash%% *}"
-    case "$arch" in arm64|all) ;; *) exit 2 ;; esac
+    [[ "$arch" == "$architecture" || "$arch" == all ]] || exit 2
     apt-cache show "$package=$version" | awk -v "expected=$hash" '
         $1 == "SHA256:" && $2 == expected { found = 1 }
         END { exit !found }

@@ -1,6 +1,6 @@
 # Quanta 작업 현황
 
-업데이트: 2026-11-07
+업데이트: 2026-11-08
 
 ## 현재 운영 상태
 
@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 원자계 계약 초안과 사전 검증 기준
+## 현재 개발 위치 — A04 x86 소스 후보 빌드와 검증 경로
+
+2026-11-08 KST, [x86 네이티브 CI](.github/workflows/atomistic-a04-x86.yml)에 CP2K 2026.2 고정 소스, Ubuntu 26.04 amd64 이미지와 날짜 고정 패키지, SHA-256으로 대조하는 6개 계산 의존성을 연결했습니다. 컴파일은 네트워크 없이 실행합니다. 후보는 x86-64-v2, OpenBLAS CORE2, no-LTO를 사용합니다. 컴파일 옵션, 설치 파일 해시, 엔진 리비전, 라이브러리 링크를 기록합니다. [x86 빌드 입력](deploy/cp2k-x86/Dockerfile)
+
+같은 x86 이미지로 고정 A03 격리 실측 5건과 독립 웹 관측을 통과한 뒤 GAPW 회귀 5건을 실행하도록 연결했습니다. 이미지 아카이브·플랫폼 매니페스트·설정·실행 바이너리 SHA가 연결되어야 합니다. 로컬에서는 관련 아카이브·검증·관측 회귀 시험 60건과 셸·워크플로 구문을 확인했습니다. x86 실제 빌드·실행과 회귀는 CI 영수증 대조 뒤 판정합니다. 기존 ARM과 OCI 경로는 기본 ARM 바인딩을 사용하며, 운영 배포 작업은 없습니다.
+
+**다음 시작점은 x86 CI의 실제 결과 대조**입니다. 소스→바이너리→이미지→A03→GAPW 연결을 확인하고 실제 자원 및 제한 조건을 기록합니다. 그 뒤 초기 수치 프로필·유한 셀 허용 조건·격자 세분화 자원 한도를 검토합니다. A04 계약 확정·공개 실행과 물리 검증은 각각 후속 판단이며 현재 물리 검증은 `unvalidated`입니다.
+
+## A04 설계 범위 — 원자계 계약 초안과 사전 검증 기준
 
 2026-11-07 KST, 추적 가능한 ARMv8-A CP2K 후보를 기준으로 [A04 프로필 초안](docs/design/atomistic-a04-v0.1/profile.json)과 [사용자 작성 JSON 스키마 초안](docs/design/atomistic-a04-v0.1/authored-input.schema.json)을 추가했습니다. 지원 후보는 중성 닫힌껍질 2전자·비주기 3D의 단일 정적 계산입니다. 사용자가 원자 ID·동위원소·SI 좌표·기저 후보·관측량을 지정합니다. He/H₂ 검증 입력 ID를 실행 선택에 사용하지 않으며 좌표·ID·배열 순서 및 원본 결과의 출처를 보존하도록 설계했습니다.
 

@@ -819,6 +819,7 @@ def main() -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--trace-old-he", action="store_true")
     mode.add_argument("--candidate-dir", type=Path)
+    parser.add_argument("--amd64-candidate", action="store_true")
     args = parser.parse_args()
     if not 30 <= args.case_timeout <= 180:
         parser.error("case timeout must be 30..180 seconds")
@@ -826,6 +827,9 @@ def main() -> int:
         parser.error("Run the controller as a nonroot user with Docker access")
     if platform.system() != "Linux" or not shutil.which("docker"):
         parser.error("Native Linux Docker is required; no emulation or local fallback")
+    if args.amd64_candidate and (args.candidate_dir is None or args.production_web_boundary
+                                 or native_platform() != "linux/amd64"):
+        parser.error("The AMD64 candidate requires a candidate directory and native, isolated x86 CI")
     validate_web_origin(args.web_origin)
     out = args.output_dir.resolve()
     out.mkdir(mode=0o700, parents=True, exist_ok=False)
@@ -866,10 +870,12 @@ def main() -> int:
         else:
             from atomistic_a03_candidate import load_candidate
 
-            if native_platform() != "linux/arm64":
-                raise ValueError("The rebuilt A03 candidate is native ARM64 only")
+            architecture = "amd64" if args.amd64_candidate else "arm64"
+            if native_platform() != "linux/" + architecture:
+                raise ValueError("The rebuilt A03 candidate requires its selected native architecture")
             started = time.monotonic()
-            candidate, identity = load_candidate(args.candidate_dir, report["source_sha"])
+            candidate, identity = load_candidate(args.candidate_dir, report["source_sha"],
+                                                 architecture=architecture)
             report["image_candidate"] = candidate
             report["image_identity"] = identity
             report["load_wall_seconds"] = time.monotonic() - started

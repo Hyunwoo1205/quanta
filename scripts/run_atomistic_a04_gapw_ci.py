@@ -1,4 +1,4 @@
-"""Run one pinned CP2K upstream GAPW batch against the exact A03 ARM image."""
+"""Run one pinned CP2K upstream GAPW batch against a verified A03 image."""
 
 from __future__ import annotations
 
@@ -54,6 +54,25 @@ def approved_candidate():
     if not arm["passed"] or arm["candidate"]["binary_sha256"] != evidence["source_binary_sha256"]:
         raise ValueError("A03 native ARM result does not establish a passing candidate")
     return artifact, arm["candidate"], arm["image_identity"]
+
+
+def approved_amd64_candidate(source_sha):
+    a03 = json.loads((BASE / "a03" / "report.json").read_text(encoding="utf-8"))
+    required_cases = ("he-dz", "h2-dz", "h2-tz", "h2-cancel", "h2-after-cancel")
+    cases = a03["cases"]
+    candidate = a03["image_candidate"]
+    binary = a03["binary"]
+    if (a03["source_sha"] != source_sha or a03["host"]["machine"] != "x86_64"
+            or a03["passed_execution_gates"] is not True
+            or a03["engine_execution_gates_passed"] is not True
+            or a03["web_responsiveness"]["observer_scope"] != "independent_native_ci_parent"
+            or a03["web_responsiveness"]["observer_complete"] is not True
+            or tuple(case["case"] for case in cases) != required_cases
+            or any(case["passed_execution_gate"] is not True for case in cases)
+            or binary["reported_revision"] != CP2K_SHA or binary["reported_version"] != "2026.2"
+            or binary["binary_sha256"] != candidate["binary_sha256"]):
+        raise ValueError("AMD64 GAPW requires the exact same-source passing isolated A03 candidate")
+    return candidate, a03["image_identity"]
 
 
 def write_evidence(name, content):
@@ -144,10 +163,10 @@ exec python3 -u -B /cp2k-source/tests/do_regtest.py --restrictdir QS/regtest-gap
 """
 
 
-def run_container(image, test_root, work, binary_sha):
+def run_container(image, test_root, work, binary_sha, *, architecture="arm64"):
     name = f"quanta-a04-gapw-{uuid4().hex}"
     command = [
-        "docker", "run", "--rm", "--name", name, "--pull=never", "--platform", "linux/arm64",
+        "docker", "run", "--rm", "--name", name, "--pull=never", "--platform", f"linux/{architecture}",
         "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
         "--user", "65534:65534", "--cpus", "1", "--memory", "4g", "--memory-swap", "4g",
         "--pids-limit", "128", "--ulimit", "fsize=67108864:67108864",
@@ -217,12 +236,15 @@ def verify_result(log, return_code, cases):
     )
 
 
-def run():
+def run(architecture="arm64"):
+    is_amd64 = architecture == "amd64"
+    source_sha = os.environ.get("GITHUB_SHA") if is_amd64 else SOURCE_SHA
     report = {
-        "scope": "pinned_upstream_gapw_regression_on_a03_arm_candidate",
+        "scope": ("pinned_upstream_gapw_regression_on_a03_amd64_candidate" if is_amd64 else
+                  "pinned_upstream_gapw_regression_on_a03_arm_candidate"),
         "status": "failure",
         "physical_validation_status": "unvalidated",
-        "quanta_candidate_source": SOURCE_SHA,
+        "quanta_candidate_source": source_sha,
         "quanta_regression_source": os.environ.get("GITHUB_SHA"),
         "cp2k_source": CP2K_SHA,
         "cp2k_source_tree": CP2K_TREE,
@@ -235,15 +257,21 @@ def run():
         "container_memory_bytes": 4 * 1024**3,
     }
     try:
-        if platform.machine() != "aarch64":
-            raise ValueError("Native ARM64 CI is required")
-        _, approved, identity = approved_candidate()
+        expected_machine = "x86_64" if is_amd64 else "aarch64"
+        if platform.system() != "Linux" or platform.machine() != expected_machine:
+            raise ValueError(f"Native Linux {expected_machine} CI is required")
+        if is_amd64:
+            if not source_sha or not re.fullmatch(r"[0-9a-f]{40}", source_sha):
+                raise ValueError("AMD64 GAPW requires the exact Quanta workflow source SHA")
+            approved, identity = approved_amd64_candidate(source_sha)
+        else:
+            _, approved, identity = approved_candidate()
         upstream = (BASE / "upstream").resolve()
         specs, report["test_files_toml_sha256"] = check_upstream(upstream)
         directory = BASE / "candidate"
-        if read_metadata(directory, SOURCE_SHA) != approved:
-            raise ValueError("Candidate metadata differs from the pinned A03 receipt")
-        metadata, proof = load_candidate(directory, SOURCE_SHA)
+        if read_metadata(directory, source_sha, architecture=architecture) != approved:
+            raise ValueError("Candidate metadata differs from the A03 receipt")
+        metadata, proof = load_candidate(directory, source_sha, architecture=architecture)
         for key in ("locked_platform_manifest_digest", "locked_platform_manifest_bytes", "locked_config_digest"):
             if proof[key] != identity[key]:
                 raise ValueError("A04 Docker image identity differs from the A03 execution")
@@ -252,7 +280,7 @@ def run():
         work.mkdir(mode=0o777)
         work.chmod(0o1777)
         report["return_code"] = run_container(proof["daemon_image_id"], upstream / "tests", work,
-                                              approved["binary_sha256"])
+                                              approved["binary_sha256"], architecture=architecture)
         for name in ("cp2k-version.txt", "runtime-ldd.txt", "build-evidence.sha256", "mpi-version.txt"):
             path = work / name
             if path.is_file() and not path.is_symlink() and path.stat().st_size <= CASE_LOG_LIMIT:
@@ -263,7 +291,7 @@ def run():
         if not verify_result(log, report["return_code"], report["cases"]):
             raise ValueError("Pinned GAPW regression requires exit 0, Status: OK and all five original tests")
         report["status"] = "success"
-    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+    except (KeyError, TypeError, OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         print(str(error), file=sys.stderr)
         report["error"] = str(error)
     finally:
@@ -273,11 +301,12 @@ def run():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=("authorize", "run"))
-    if parser.parse_args().operation == "authorize":
+    parser.add_argument("operation", choices=("authorize", "run", "run-amd64"))
+    operation = parser.parse_args().operation
+    if operation == "authorize":
         authorize()
         return 0
-    return run()
+    return run("amd64") if operation == "run-amd64" else run()
 
 
 if __name__ == "__main__":

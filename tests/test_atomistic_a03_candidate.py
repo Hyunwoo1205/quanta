@@ -35,8 +35,8 @@ def json_bytes(value):
     return json.dumps(value, separators=(',', ':')).encode()
 
 
-def make_archive(directory, *, tags=None, architecture='arm64', index_tag=None):
-    tag = candidate.image_ref(SOURCE)
+def make_archive(directory, *, tags=None, architecture='arm64', index_tag=None, tag_architecture='arm64'):
+    tag = candidate.image_ref(SOURCE, architecture=tag_architecture)
     layer = b'a fixed synthetic layer'
     diff = digest(layer)
     runtime = {'Env': ['PATH=/usr/bin'], 'Entrypoint': None}
@@ -65,7 +65,7 @@ def make_archive(directory, *, tags=None, architecture='arm64', index_tag=None):
             member = tarfile.TarInfo(name)
             member.size = len(data)
             archive.addfile(member, io.BytesIO(data))
-    image = {'Architecture': 'arm64', 'Os': 'linux', 'RepoTags': [tag], 'Id': config_descriptor['digest'],
+    image = {'Architecture': architecture, 'Os': 'linux', 'RepoTags': [tag], 'Id': config_descriptor['digest'],
              'RootFS': {'Type': 'layers', 'Layers': [diff]}, 'Config': runtime}
     return image, descriptor
 
@@ -124,6 +124,50 @@ def test_archive_must_contain_one_native_candidate(tmp_path, case):
         make_archive(tmp_path, index_tag='quanta/production:app')
     with pytest.raises(ValueError):
         candidate.record(tmp_path, SOURCE, BINARY)
+
+
+def test_amd64_requires_explicit_native_archive_binding(tmp_path):
+    image, _ = make_archive(tmp_path, architecture='amd64', tag_architecture='amd64')
+    metadata = candidate.record(tmp_path, SOURCE, BINARY, architecture='amd64')
+    assert metadata['image_ref'] == f'quanta/a03-amd64:{SOURCE}'
+    with pytest.raises(ValueError):
+        candidate.load_candidate(tmp_path, SOURCE, run=lambda *_a, **_k: pytest.fail('Docker invoked'))
+
+    def inspect(command, **_):
+        assert command == ['docker', 'image', 'inspect', metadata['image_ref']]
+        return subprocess.CompletedProcess(command, 0, json_bytes([image]))
+
+    bound, proof = candidate.load_candidate(tmp_path, SOURCE, architecture='amd64', run=inspect)
+    assert bound == metadata
+    assert proof['already_loaded_identical_image'] is True
+    image['Architecture'] = 'arm64'
+    with pytest.raises(ValueError, match='architecture'):
+        candidate.load_candidate(tmp_path, SOURCE, architecture='amd64', run=inspect)
+
+
+def test_amd64_gapw_requires_the_same_passing_a03_execution(tmp_path, monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / 'scripts'))
+    gapw = module('scripts/run_atomistic_a04_gapw_ci.py')
+    monkeypatch.setattr(gapw, 'BASE', tmp_path)
+    report = tmp_path / 'a03' / 'report.json'
+    report.parent.mkdir()
+    cases = ('he-dz', 'h2-dz', 'h2-tz', 'h2-cancel', 'h2-after-cancel')
+    evidence = {'source_sha': SOURCE, 'host': {'machine': 'x86_64'},
+                'passed_execution_gates': True, 'engine_execution_gates_passed': True,
+                'web_responsiveness': {'observer_scope': 'independent_native_ci_parent',
+                                       'observer_complete': True},
+                'image_candidate': {'binary_sha256': BINARY}, 'image_identity': {'source_bound': True},
+                'binary': {'reported_revision': gapw.CP2K_SHA, 'reported_version': '2026.2',
+                           'binary_sha256': BINARY},
+                'cases': [{'case': case, 'passed_execution_gate': True} for case in cases]}
+    report.write_bytes(json_bytes(evidence))
+    assert gapw.approved_amd64_candidate(SOURCE) == (evidence['image_candidate'], evidence['image_identity'])
+    with pytest.raises(ValueError):
+        gapw.approved_amd64_candidate('d' * 40)
+    evidence['cases'][3]['passed_execution_gate'] = False
+    report.write_bytes(json_bytes(evidence))
+    with pytest.raises(ValueError):
+        gapw.approved_amd64_candidate(SOURCE)
 
 
 @pytest.mark.parametrize(('payload', 'failure'), [(b'123', None), (b'12', 'short'),

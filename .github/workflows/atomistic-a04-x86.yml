@@ -1,0 +1,130 @@
+name: Atomistic A04 x86 source candidate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-x86.yml
+      - deploy/cp2k-x86/**
+      - deploy/cp2k-armv8/install-ubuntu-packages.sh
+      - deploy/cp2k-armv8/source-archives.sha256
+      - scripts/build_cp2k_armv8.sh
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  x86-candidate:
+    name: CP2K source build, A03 and GAPW (x86_64)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    env:
+      QUANTA_A03_SOURCE_SHA: ${{ github.sha }}
+      QUANTA_EXPECTED_ARCH: x86_64
+      CANDIDATE_IMAGE: quanta/a03-amd64:${{ github.sha }}
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Verify native host and record build capacity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = x86_64
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python -c 'import platform; assert platform.python_version() == "3.12.14"'
+          test "$(nproc)" -ge 3
+          mkdir -p .cache/atomistic-a04/build
+          docker_root=$(docker info --format '{{.DockerRootDir}}')
+          {
+            uname -sm
+            date -u
+            nproc
+            awk '/^Mem(Total|Available):/ { print }' /proc/meminfo
+            df -Pk .
+            sudo df -Pk "$docker_root"
+            docker version --format '{{.Server.Version}} {{.Server.Os}} {{.Server.Arch}}'
+          } | tee .cache/atomistic-a04/build/runner.txt
+          test "$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)" -ge 6291456
+          test "$(sudo df -Pk "$docker_root" | awk 'NR==2 {print $4}')" -ge 10485760
+          curl --fail --silent --show-error --head --max-time 30 \
+            https://snapshot.ubuntu.com/ubuntu/20261107T000000Z/dists/resolute/InRelease \
+            > .cache/atomistic-a04/build/ubuntu-snapshot-http.txt
+      - name: Build the locked native x86 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          time docker buildx build --load --platform linux/amd64 --progress plain \
+            --secret id=runner_ca,src=/etc/ssl/certs/ca-certificates.crt \
+            --build-arg QUANTA_CP2K_BUILD_JOBS=3 \
+            --file deploy/cp2k-x86/Dockerfile --tag "$CANDIDATE_IMAGE" . \
+            2>&1 | tee .cache/atomistic-a04/build/build.log
+      - name: Bind the archive to the image and executing binary
+        id: candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=.cache/atomistic-a04
+          mkdir -p "$root/build/image" "$root/candidate"
+          id=$(docker create --platform linux/amd64 "$CANDIDATE_IMAGE")
+          trap 'docker rm -f "$id" >/dev/null' EXIT
+          docker cp "$id:/opt/quanta-cp2k/evidence/." "$root/build/image/"
+          docker image inspect "$CANDIDATE_IMAGE" > "$root/build/image-inspect.json"
+          binary=$(docker run --rm --platform linux/amd64 --network none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges --user 65534:65534 \
+            --entrypoint /bin/sh "$CANDIDATE_IMAGE" -c 'sha256sum "$(command -v cp2k)"')
+          docker image save -o "$root/candidate/candidate-image.tar" "$CANDIDATE_IMAGE"
+          python -B scripts/atomistic_a03_candidate.py record --architecture amd64 \
+            --directory "$root/candidate" --source-sha "$GITHUB_SHA" --binary-sha256 "${binary%% *}"
+      - name: Install the existing locked Quanta test environment
+        run: |
+          python -m pip install --only-binary=:all: --require-hashes -r requirements.lock.txt
+          python -m pip install --no-deps --no-build-isolation -e .
+          python -m pip check
+      - name: Run A03 on the pinned x86 image with isolated web observation
+        run: |
+          python -B scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a04/a03 \
+            --candidate-dir .cache/atomistic-a04/candidate --independent-web-observer
+      - name: Check out the exact CP2K upstream test inputs
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: cp2k/cp2k
+          ref: 67b5da876dd6a76b8b021d5a04d1c81ba79a4c50
+          path: .cache/atomistic-a04/upstream
+          sparse-checkout: tests
+          persist-credentials: false
+      - name: Run the five pinned GAPW regressions on the same x86 image
+        run: python -B scripts/run_atomistic_a04_gapw_ci.py run-amd64
+      - name: Preserve x86 build and calculation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a04-x86-evidence-${{ github.sha }}
+          path: |
+            .cache/atomistic-a04/build/
+            .cache/atomistic-a04/a03/
+            .cache/atomistic-a04/evidence/
+            .cache/atomistic-a04/candidate/candidate-image.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve the candidate image for verification and replay
+        if: always() && steps.candidate.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a04-x86-image-${{ github.sha }}
+          path: .cache/atomistic-a04/candidate/
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 1
+          retention-days: 14
