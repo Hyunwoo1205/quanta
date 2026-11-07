@@ -1,11 +1,13 @@
 """Meaningful evidence parsing and fixed isolation boundary checks, no Docker."""
 from pathlib import Path
+import copy
 import importlib.util
 import json
 import io
 import subprocess
 import sys
 import tarfile
+from types import SimpleNamespace
 
 import pytest
 
@@ -63,15 +65,150 @@ def test_cp2k_fixed13_fields_accept_adjacent_negative_exponent_values(tmp_path):
     assert observed["field_significant_digits"] == 5
 
 
-def test_wrong_platform_and_wrong_config_are_rejected():
+def image_fixture(platform, manifest_id=False):
     lock = json.loads((a03.LOCK_DIR / "engine-lock.json").read_text())
-    selected = a03.image_selection(lock, "linux/amd64")
-    observed = {"Architecture": "arm64", "Os": "linux", "Id": selected["config_digest"], "RepoDigests": [selected["immutable_reference"]]}
+    selected = a03.image_selection(lock, platform)
+    config, manifest_size = a03.read_locked_image(selected)
+    observed = {
+        "Architecture": config["architecture"],
+        "Os": config["os"],
+        "Id": selected["config_digest"],
+        "RepoDigests": [selected["immutable_reference"].removeprefix("docker.io/")],
+        "Size": 4_555_398_423,
+        "RootFS": {"Type": config["rootfs"]["type"], "Layers": config["rootfs"]["diff_ids"][:]},
+        "Config": copy.deepcopy(config["config"]),
+    }
+    if manifest_id:
+        observed["Id"] = selected["digest"]
+        observed["Descriptor"] = {
+            "digest": selected["digest"], "mediaType": a03.OCI_IMAGE_MANIFEST, "size": manifest_size,
+        }
+    return observed, selected, config, manifest_size
+
+
+@pytest.mark.parametrize("platform", ["linux/arm64", "linux/amd64"])
+@pytest.mark.parametrize("manifest_id,method", [
+    (False, "daemon_config_id"),
+    (True, "daemon_platform_manifest_descriptor_to_locked_config"),
+])
+def test_both_daemon_identity_paths_use_exact_a02_locks(platform, manifest_id, method):
+    observed, selected, config, manifest_size = image_fixture(platform, manifest_id)
+    evidence = a03.assert_image_identity(observed, selected, config, manifest_size)
+    assert evidence["proof_method"] == method
+    assert evidence["daemon_image_id"] == observed["Id"]
+    assert evidence["locked_config_digest"] == selected["config_digest"]
+    assert evidence["locked_raw_manifest_and_config_verified"] is True
+    assert evidence["local_raw_config_bytes_read"] is False
+    assert evidence["ordered_rootfs_diff_ids_match"] is True
+    assert a03.image_observation(observed, selected)["Size"] == 4_555_398_423
+
+
+def test_wrong_platform_and_wrong_config_are_rejected():
+    observed, selected, config, manifest_size = image_fixture("linux/amd64")
+    observed["Architecture"] = "arm64"
     with pytest.raises(ValueError, match="architecture"):
-        a03.assert_image_identity(observed, selected)
+        a03.assert_image_identity(observed, selected, config, manifest_size)
     observed["Architecture"] = "amd64"; observed["Id"] = "sha256:"+"0"*64
     with pytest.raises(ValueError, match="config digest"):
-        a03.assert_image_identity(observed, selected)
+        a03.assert_image_identity(observed, selected, config, manifest_size)
+
+
+@pytest.mark.parametrize("field,value", [
+    ("digest", "sha256:" + "0"*64),
+    ("mediaType", "application/vnd.oci.image.index.v1+json"),
+    ("size", 4_555_398_423),
+])
+def test_manifest_identity_requires_exact_descriptor(field, value):
+    observed, selected, config, manifest_size = image_fixture("linux/arm64", True)
+    observed["Descriptor"][field] = value
+    with pytest.raises(ValueError, match="manifest descriptor"):
+        a03.assert_image_identity(observed, selected, config, manifest_size)
+
+
+def test_manifest_id_without_descriptor_and_descriptor_with_wrong_id_are_rejected():
+    observed, selected, config, manifest_size = image_fixture("linux/arm64", True)
+    descriptor = observed.pop("Descriptor")
+    with pytest.raises(ValueError, match="config digest"):
+        a03.assert_image_identity(observed, selected, config, manifest_size)
+    observed["Descriptor"] = descriptor
+    observed["Id"] = selected["config_digest"]
+    with pytest.raises(ValueError, match="manifest descriptor"):
+        a03.assert_image_identity(observed, selected, config, manifest_size)
+
+
+@pytest.mark.parametrize("manifest_id", [False, True])
+def test_both_identity_paths_require_repo_layers_and_runtime_config(manifest_id):
+    observed, selected, config, manifest_size = image_fixture("linux/arm64", manifest_id)
+    invalid = copy.deepcopy(observed)
+    invalid["RepoDigests"] = ["another/repo@" + selected["digest"]]
+    with pytest.raises(ValueError, match="repository digest"):
+        a03.assert_image_identity(invalid, selected, config, manifest_size)
+    invalid = copy.deepcopy(observed)
+    invalid["RootFS"]["Layers"].reverse()
+    with pytest.raises(ValueError, match="layer DiffIDs"):
+        a03.assert_image_identity(invalid, selected, config, manifest_size)
+    for replacement in (None, [], ["unlocked environment"]):
+        invalid = copy.deepcopy(observed)
+        invalid["Config"]["Env"] = replacement
+        with pytest.raises(ValueError, match="runtime config differs at Env"):
+            a03.assert_image_identity(invalid, selected, config, manifest_size)
+    invalid = copy.deepcopy(observed)
+    invalid["Config"].pop("Env")
+    with pytest.raises(ValueError, match="runtime config differs at Env"):
+        a03.assert_image_identity(invalid, selected, config, manifest_size)
+
+
+@pytest.mark.parametrize("file_key", ["manifest_file", "config_file"])
+def test_image_metadata_hashes_raw_bytes(file_key, monkeypatch):
+    _, selected, _, _ = image_fixture("linux/arm64")
+    original = Path.read_bytes
+
+    def read_bytes(path):
+        data = original(path)
+        return data + b" " if path == a03.LOCK_DIR / selected[file_key] else data
+
+    monkeypatch.setattr(Path, "read_bytes", read_bytes)
+    with pytest.raises(ValueError, match="locked image file digest or size"):
+        a03.read_locked_image(selected)
+
+
+def test_main_reports_only_public_inspect_metadata_before_failed_gate(tmp_path, monkeypatch):
+    import check_atomistic_a02
+
+    observed, selected, _, manifest_size = image_fixture("linux/arm64", True)
+    observed["Descriptor"]["size"] = manifest_size + 1
+    observed["Descriptor"]["annotations"] = {"private": "hidden-fixture-value"}
+    observed["RepoDigests"].append("private.invalid/internal@" + selected["digest"])
+    observed["Config"]["Env"] = ["PRIVATE=hidden-fixture-value"]
+    observed["GraphDriver"] = {"Data": {"UpperDir": "/private/hidden-fixture-value"}}
+    output = tmp_path / "output"
+    monkeypatch.setattr(sys, "argv", ["verify_atomistic_a03.py", "--output-dir", str(output)])
+    monkeypatch.setattr(a03.os, "getuid", lambda: 1000)
+    monkeypatch.setattr(a03.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(a03, "native_platform", lambda: "linux/arm64")
+    monkeypatch.setattr(a03.shutil, "which", lambda _: "/usr/bin/docker")
+    monkeypatch.setattr(a03.shutil, "disk_usage", lambda _: SimpleNamespace(free=10*1024**3))
+    monkeypatch.setattr(check_atomistic_a02, "verify", lambda: {"passed": True})
+
+    def fake_run(args, **_):
+        if args[:2] == ["docker", "pull"]:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        assert args == ["docker", "image", "inspect", selected["immutable_reference"]]
+        return subprocess.CompletedProcess(args, 0, json.dumps([observed]), "")
+
+    monkeypatch.setattr(a03, "run", fake_run)
+    assert a03.main() == 2
+    raw = (output / "report.json").read_text()
+    report = json.loads(raw)
+    assert report["cases"] == []
+    assert "manifest descriptor" in report["error"]
+    assert "image_identity" not in report
+    assert report["image_observed"]["Id"] == selected["digest"]
+    assert report["image_observed"]["Descriptor"]["size"] == manifest_size + 1
+    assert report["image_observed"]["RootFS"] == observed["RootFS"]
+    assert "Config" not in report["image_observed"]
+    assert "hidden-fixture-value" not in raw
+    assert "private.invalid" not in raw
 
 
 @pytest.mark.parametrize("origin", ["https://127.0.0.1:8765", "http://example.com:8765", "http://127.0.0.1:8765/secrets", "http://key@127.0.0.1:8765", "http://127.0.0.1", "http://127.0.0.1:8765/?token=x"])

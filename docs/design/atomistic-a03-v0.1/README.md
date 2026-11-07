@@ -20,10 +20,10 @@ and personal Drive result archive. Small measurements and provenance belong in
 GitHub. A successful installation or finite electron-density integral does not
 establish scientific convergence or physical validation.
 
-## Measured native execution; OCI pending
+## Measured native execution and OCI evidence
 
 - Native x86/ARM execution: passed at source b621e836af61d7b63933ab7802722fa1ee79f531, run42262528023; see `../../atomistic_a03_native_verification.json`.
-- OCI production headroom and responsiveness: pending.
+- OCI execution and its scope: see the current [WORKPLAN](../../../WORKPLAN.md) and [fixed-request receipts](../../verification/atomistic-a03/oci/). The initial run stopped before engine execution at the Docker image identity check. A separate read-only inspection confirmed Docker 29.9.1's containerd-backed store returned the pinned ARM64 manifest digest as its image ID, with the exact OCI descriptor and ordered layer DiffIDs. The verifier accepts the exact config ID on the classic store or the exact single-platform OCI manifest ID and descriptor on the containerd store, with the pinned raw manifest/config checks, immutable reference, platform, ordered DiffIDs and runtime config projection required for both. This is daemon-linked image identity; it does not verify local raw config bytes or bind the CP2K binary to release source.
 - Actual binary hashes and installed dependency inventories: recorded in execution artifacts. Binary/source identity: unresolved (`revision unknown`); see [binding review](binary-source-binding-review.json).
 - Public atomistic enablement: no-go until contracts, quotas and scientific gates.
 - Physical validation: `unvalidated`.

@@ -43,6 +43,10 @@ HEARTBEAT = 0.5
 NUMBER = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[EeDd][-+]?\d+)?"
 ARCHIVE_MAX_BYTES = LIMITS["work_tmpfs_bytes"] + 8 * 1024**2
 OUTPUT_LOG_MAX_BYTES = 512 * 1024
+OCI_IMAGE_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
+OCI_IMAGE_CONFIG = "application/vnd.oci.image.config.v1+json"
+IMAGE_CONFIG_FIELDS = ("Entrypoint", "Cmd", "WorkingDir", "Env", "Labels")
+IMAGE_DIGEST = r"sha256:[0-9a-f]{64}"
 
 
 def sha256(path: Path) -> str:
@@ -161,17 +165,140 @@ def image_selection(lock: dict, architecture: str) -> dict:
     return image
 
 
-def assert_image_identity(inspected: dict, selected: dict) -> None:
-    arch = selected["platform"].split("/")[1]
-    if inspected.get("Architecture") != arch or inspected.get("Os") != "linux":
-        raise ValueError("Pulled image has wrong native architecture")
-    if inspected.get("Id") != selected["config_digest"]:
-        raise ValueError("Pulled image config digest differs from A02 lock")
-    if selected["immutable_reference"] not in inspected.get("RepoDigests", []):
-        # Docker normalizes docker.io away in RepoDigests.
-        normalized = selected["immutable_reference"].removeprefix("docker.io/")
-        if normalized not in inspected.get("RepoDigests", []):
-            raise ValueError("Pulled image lacks the requested immutable repository digest")
+def read_locked_image(selected: dict) -> tuple[dict, int]:
+    """Bind the exact A02 platform manifest bytes to its config before pulling."""
+    a02_files = json.loads((LOCK_DIR / "manifest.json").read_bytes())["files"]
+    sizes = {row["path"]: row["size_bytes"] for row in a02_files}
+    manifest_path = LOCK_DIR / selected["manifest_file"]
+    config_path = LOCK_DIR / selected["config_file"]
+    manifest_raw = manifest_path.read_bytes()
+    config_raw = config_path.read_bytes()
+    for path, raw, digest in ((manifest_path, manifest_raw, selected["digest"]),
+                              (config_path, config_raw, selected["config_digest"])):
+        if (len(raw) != sizes.get(path.relative_to(ROOT).as_posix())
+                or "sha256:" + hashlib.sha256(raw).hexdigest() != digest):
+            raise ValueError("A02 locked image file digest or size differs: " + path.name)
+
+    manifest = json.loads(manifest_raw)
+    if (manifest.get("schemaVersion") != 2
+            or manifest.get("mediaType") != OCI_IMAGE_MANIFEST
+            or "manifests" in manifest
+            or not isinstance(manifest.get("layers"), list)
+            or not manifest["layers"]):
+        raise ValueError("A02 image lock requires a single OCI platform manifest")
+    descriptor = manifest.get("config")
+    if not isinstance(descriptor, dict) or (
+        descriptor.get("digest"), descriptor.get("mediaType"), descriptor.get("size")
+    ) != (selected["config_digest"], OCI_IMAGE_CONFIG, len(config_raw)):
+        raise ValueError("A02 image manifest does not bind the locked config digest and size")
+
+    config = json.loads(config_raw)
+    os_name, arch = selected["platform"].split("/")
+    if os_name != "linux" or config.get("os") != os_name or config.get("architecture") != arch:
+        raise ValueError("A02 image config does not match the locked platform")
+    rootfs = config.get("rootfs")
+    if (not isinstance(rootfs, dict) or rootfs.get("type") != "layers"
+            or not isinstance(rootfs.get("diff_ids"), list)
+            or len(rootfs["diff_ids"]) != len(manifest["layers"])
+            or not all(isinstance(value, str) and re.fullmatch(IMAGE_DIGEST, value)
+                       for value in rootfs["diff_ids"])):
+        raise ValueError("A02 image config has invalid ordered layer DiffIDs")
+    if (not isinstance(config.get("config"), dict)
+            or any(field not in config["config"] for field in IMAGE_CONFIG_FIELDS)):
+        raise ValueError("A02 image config is missing expected runtime fields")
+    return config, len(manifest_raw)
+
+
+def image_observation(inspected: dict, selected: dict) -> dict:
+    """Report bounded, public image identity fields, including on mismatch."""
+    def token(value, pattern):
+        return value if isinstance(value, str) and re.fullmatch(pattern, value) else None
+
+    def size(value):
+        return value if type(value) is int and value >= 0 else None
+
+    repository = selected["registry_repository"]
+    repo_pattern = r"(?:" + re.escape(repository) + "|" + re.escape(repository.removeprefix("docker.io/")) + r")@" + IMAGE_DIGEST
+    repo_digests = inspected.get("RepoDigests")
+    rootfs = inspected.get("RootFS")
+    rootfs = rootfs if isinstance(rootfs, dict) else {}
+    layers = rootfs.get("Layers")
+    descriptor = inspected.get("Descriptor")
+    observed_descriptor = None
+    if isinstance(descriptor, dict):
+        observed_descriptor = {
+            "digest": token(descriptor.get("digest"), IMAGE_DIGEST),
+            "mediaType": token(descriptor.get("mediaType"), r"application/vnd\.[a-z0-9.+-]{1,100}"),
+            "size": size(descriptor.get("size")),
+        }
+    return {
+        "Id": token(inspected.get("Id"), IMAGE_DIGEST),
+        "RepoDigests": [ref for ref in repo_digests[:128] if token(ref, repo_pattern)]
+        if isinstance(repo_digests, list) else [],
+        "Architecture": token(inspected.get("Architecture"), r"[a-z0-9_]{1,24}"),
+        "Os": token(inspected.get("Os"), r"[a-z0-9_]{1,24}"),
+        "Size": size(inspected.get("Size")),
+        "Descriptor": observed_descriptor,
+        "RootFS": {
+            "Type": token(rootfs.get("Type"), r"[a-z0-9_]{1,24}"),
+            "Layers": [token(value, IMAGE_DIGEST) for value in layers[:128]]
+            if isinstance(layers, list) else None,
+        },
+    }
+
+
+def assert_image_identity(inspected: dict, selected: dict,
+                          locked_config: dict, manifest_size: int) -> dict:
+    os_name, arch = selected["platform"].split("/")
+    if inspected.get("Architecture") != arch or inspected.get("Os") != os_name:
+        raise ValueError("Pulled image has wrong native architecture or OS")
+    repo_digests = inspected.get("RepoDigests")
+    expected = selected["immutable_reference"]
+    # Docker normalizes docker.io away in RepoDigests.
+    if not isinstance(repo_digests, list) or not any(
+        reference in repo_digests for reference in (expected, expected.removeprefix("docker.io/"))
+    ):
+        raise ValueError("Pulled image lacks the requested immutable repository digest")
+
+    image_id = inspected.get("Id")
+    descriptor = inspected.get("Descriptor")
+    if descriptor is None:
+        if image_id != selected["config_digest"]:
+            raise ValueError("Pulled image config digest differs from A02 lock")
+        method = "daemon_config_id"
+    else:
+        # The containerd-backed store identifies an image by its OCI target.
+        # Require the exact platform manifest and never accept an image index.
+        if (image_id != selected["digest"] or not isinstance(descriptor, dict)
+                or (descriptor.get("digest"), descriptor.get("mediaType"), descriptor.get("size"))
+                != (selected["digest"], OCI_IMAGE_MANIFEST, manifest_size)):
+            raise ValueError("Pulled image platform manifest descriptor differs from A02 lock")
+        method = "daemon_platform_manifest_descriptor_to_locked_config"
+
+    rootfs = inspected.get("RootFS")
+    locked_rootfs = locked_config["rootfs"]
+    if not isinstance(rootfs, dict) or (rootfs.get("Type"), rootfs.get("Layers")) != (
+        locked_rootfs["type"], locked_rootfs["diff_ids"]
+    ):
+        raise ValueError("Pulled image ordered layer DiffIDs differ from A02 lock")
+    config = inspected.get("Config")
+    if not isinstance(config, dict):
+        raise ValueError("Pulled image runtime config projection missing")
+    for field in IMAGE_CONFIG_FIELDS:
+        if field not in config or config[field] != locked_config["config"][field]:
+            raise ValueError("Pulled image runtime config differs at " + field)
+
+    return {
+        "proof_method": method,
+        "daemon_image_id": image_id,
+        "locked_platform_manifest_digest": selected["digest"],
+        "locked_platform_manifest_bytes": manifest_size,
+        "locked_config_digest": selected["config_digest"],
+        "locked_raw_manifest_and_config_verified": True,
+        "local_raw_config_bytes_read": False,
+        "ordered_rootfs_diff_ids_match": True,
+        "runtime_config_projection_matches": True,
+    }
 
 
 def parse_version(text: str, release_commit: str) -> dict:
@@ -655,13 +782,17 @@ def main() -> int:
         report["a02_lock_check"] = verify()
         lock = json.loads((LOCK_DIR / "engine-lock.json").read_text())
         selected = image_selection(lock, native_platform()); report["image_candidate"] = selected
+        locked_config, manifest_size = read_locked_image(selected)
         pull_start = time.monotonic()
         pull = run(["docker", "pull", "--platform", native_platform(), selected["immutable_reference"]], timeout=300)
         (out / "pull.txt").write_text(pull.stdout+pull.stderr)
         report["pull_wall_seconds"] = time.monotonic()-pull_start
-        inspected = json.loads(run(["docker", "image", "inspect", selected["immutable_reference"]]).stdout)[0]
-        assert_image_identity(inspected, selected)
-        report["image_observed"] = {k: inspected.get(k) for k in ["Id", "RepoDigests", "Architecture", "Os", "Size", "RootFS"]}
+        images = json.loads(run(["docker", "image", "inspect", selected["immutable_reference"]]).stdout)
+        if not isinstance(images, list) or len(images) != 1 or not isinstance(images[0], dict):
+            raise ValueError("Docker inspect did not return one image")
+        inspected = images[0]
+        report["image_observed"] = image_observation(inspected, selected)
+        report["image_identity"] = assert_image_identity(inspected, selected, locked_config, manifest_size)
         probe = DockerProbe(selected["immutable_reference"], out, args.case_timeout)
         report["binary"] = probe.inventory()
         report["locked_data"] = [{"file": p.name, "sha256": sha256(p), "bytes": p.stat().st_size} for p in sorted((LOCK_DIR / "assets").iterdir()) if p.is_file()]
@@ -705,3 +836,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
