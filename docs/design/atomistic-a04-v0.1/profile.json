@@ -41,7 +41,8 @@
     "isolated_execution": "docs/verification/atomistic-a03/oci/42372870103.json",
     "upstream_regression": "docs/verification/atomistic-a04/gapw-42376916235.json",
     "public_runtime_platforms": [],
-    "x86_64_scope": "A03 legacy control only; reported revision unknown; source-traced build, native A03 and pinned upstream regression remain pending"
+    "x86_64_scope": "Source-traced x86-64-v2 candidate passed isolated A03 and pinned upstream GAPW. The original revision-unknown x86 image remains a historical A03 control.",
+    "x86_64_candidate_evidence": "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json"
   },
   "basis_and_potential": {
     "lock": "docs/design/atomistic-a02-v0.1/manifest.json",
@@ -143,7 +144,6 @@
   "freeze_gates_pending": [
     "Lock one execution profile, admissible geometry and finite-cell transform, and the supported basis and numerical limits before acceptance tests.",
     "Recheck resource admission for the proposed refinement runs; the A03 resource envelope only covers the measured cases.",
-    "Resolve the x86_64 source-linked execution profile and native evidence required for P1 engine selection.",
     "Review the draft input and validation criteria together before assigning a runtime contract version."
   ]
 }

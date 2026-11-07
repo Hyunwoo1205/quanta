@@ -1,8 +1,8 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.10",
-  "updated_at": "2026-11-07",
+  "plan_version": "1.0.11",
+  "updated_at": "2026-11-08",
   "status": "planned_development",
   "executable": false,
   "runtime_contract_version": null,
@@ -364,17 +364,18 @@
         "A01",
         "A03"
       ],
-      "status": "contract_draft_reviewed_pre_freeze",
+      "status": "arm_x86_candidate_execution_and_regression_passed_pre_freeze",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
         "사용자 작성 JSON의 계/조건/절차/관측량 규칙과 모델 적합성을 정의하고 내부fixture/기준계 허용목록을 제품 실행 메뉴로 쓰지 않음"
       ],
       "owner_role": "계약·과학",
-      "source_binding_gate": "The rebuilt ARMv8-A candidate source and dependencies match the CI/OCI binary and the pinned upstream GAPW batch passed 5/5. The official x86_64 2026.2/unknown image remains an exploratory control. A source-linked x86_64 profile and native evidence remain pending for P1 engine selection.",
+      "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate also passed the separate OCI A03 probe. Contract freeze, independent numerical and physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "x86_64의 의존성·ABI와 추적 가능한 빌드/실행을 대조하고, 초기 수치·유한 셀·세분화 자원 기준을 검토한 뒤 계약 동결을 판단.",
+      "next_action": "초기 수치 프로필과 유한 셀 허용 조건을 검토하고, 별도 격리 CI의 계산 메모리·출력 한도에서 격자 세분화를 실측한 뒤 계약 동결을 판단.",
+      "x86_candidate_execution_and_gapw": "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json",
       "arm_candidate_source_review": "docs/verification/atomistic-a04/armv8a-source-dependency-review.json",
       "candidate_units_and_cube_review": "docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json",
       "pinned_gapw_regression": "docs/verification/atomistic-a04/gapw-42376916235.json",

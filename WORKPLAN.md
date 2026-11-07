@@ -12,13 +12,21 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 x86 소스 후보 빌드와 검증 경로
+## 현재 개발 위치 — A04 x86 후보 실측과 GAPW 회귀 통과
+
+2026-11-08 KST, CP2K 2026.2의 추적 가능한 x86-64-v2 후보로 고정 A03 격리 실측 5건과 원본 GAPW 회귀 5건을 모두 통과했습니다. 빌드 소스 `3b0d0bcf15786747a7bab1b4aa015faf80172a16`, CP2K 리비전 `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`, 바이너리 SHA `67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9`를 대조했습니다. [x86 빌드·A03](https://github.com/Hyunwoo1205/quanta/actions/runs/42385227123) · [GAPW 재실행](https://github.com/Hyunwoo1205/quanta/actions/runs/42389732936) · [실측 영수증](docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json)
+
+고정한 원본 이미지와 A03 기록을 다른 x86 러너에서 해시로 대조해 GAPW를 실행했습니다. 종료 코드 0, `Status: OK`, 5/5이며 원시 출력으로 재계산한 상대 오차가 다섯 기준 이내입니다. ARM 네이티브 A03 재실행과 ARM GAPW도 통과했습니다. 이 결과는 두 엔진 후보의 소스·실행 및 고정 회귀 근거입니다. Quanta 어댑터·독립 수치 시험과 밀도장의 공간 수렴은 후속 단계이며 물리 검증은 `unvalidated`입니다.
+
+[빌드·A03·GAPW 원본 증거 묶음](https://drive.google.com/file/d/1ypE1JjnsyqZtErAfF_Uix2zL1F3TBU-x/view?usp=drivesdk)에 원래 ZIP 두 개와 영수증을 보존했습니다.
+
+**다음 시작점은 A04 유한 셀·격자 세분화의 자원 실측 계획 확정**입니다. 기준 조건의 밀도 출력 사용 전후 에너지·힘을 비교하고, 별도 비운영 CI에서 실제 격자·메모리·출력을 측정합니다. 이후 초기 수치 프로필과 유한 셀 허용 조건을 검토해 계약 동결을 판단합니다. [자원 사전 검토](docs/design/atomistic-a04-v0.1/finite-cell-resource-review.md)
+
+## A04 진행 경과 — x86 소스 빌드와 검증 경로
 
 2026-11-08 KST, [x86 네이티브 CI](.github/workflows/atomistic-a04-x86.yml)에 CP2K 2026.2 고정 소스, Ubuntu 26.04 amd64 이미지와 날짜 고정 패키지, SHA-256으로 대조하는 6개 계산 의존성을 연결했습니다. 컴파일은 네트워크 없이 실행합니다. 후보는 x86-64-v2, OpenBLAS CORE2, no-LTO를 사용합니다. 컴파일 옵션, 설치 파일 해시, 엔진 리비전, 라이브러리 링크를 기록합니다. [x86 빌드 입력](deploy/cp2k-x86/Dockerfile)
 
 같은 x86 이미지로 고정 A03 격리 실측 5건과 독립 웹 관측을 통과한 뒤 GAPW 회귀 5건을 실행하도록 연결했습니다. 이미지 아카이브·플랫폼 매니페스트·설정·실행 바이너리 SHA가 연결되어야 합니다. 로컬에서는 관련 아카이브·검증·관측 회귀 시험 60건과 셸·워크플로 구문을 확인했습니다. x86 실제 빌드·실행과 회귀는 CI 영수증 대조 뒤 판정합니다. 기존 ARM과 OCI 경로는 기본 ARM 바인딩을 사용하며, 운영 배포 작업은 없습니다.
-
-**다음 시작점은 x86 CI의 실제 결과 대조**입니다. 소스→바이너리→이미지→A03→GAPW 연결을 확인하고 실제 자원 및 제한 조건을 기록합니다. 그 뒤 초기 수치 프로필·유한 셀 허용 조건·격자 세분화 자원 한도를 검토합니다. A04 계약 확정·공개 실행과 물리 검증은 각각 후속 판단이며 현재 물리 검증은 `unvalidated`입니다.
 
 [첫 x86 시도 42384984467](https://github.com/Hyunwoo1205/quanta/actions/runs/42384984467)은 CPython 3.12.14 설치 후 러너 사전 검사에서 종료됐습니다. 용량 기록 전 종료해 당시 CPU 수는 남지 않았고 컴파일·계산은 시작하지 않았습니다. 재시도는 자원 정보를 먼저 기록하고, CPU가 2개 또는 3개 이상일 때 각각 2개 또는 3개 빌드 작업을 사용합니다. 메모리 6 GiB 및 Docker 디스크 10 GiB 사전 기준과 계산 컨테이너 제한은 유지합니다.
 
