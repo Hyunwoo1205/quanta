@@ -50,6 +50,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12.14'
@@ -63,7 +64,7 @@ jobs:
           python -m pip check
       - name: Test inactive A03 inputs and fixed controls
         run: |
-          python -m pytest tests/test_atomistic_a03_inputs.py tests/test_atomistic_a03_runner.py tests/test_atomistic_a03_candidate.py tests/test_oci_atomistic_probe.py -q
+          python -m pytest tests/test_atomistic_a03_inputs.py tests/test_atomistic_a03_runner.py tests/test_atomistic_a03_candidate.py tests/test_atomistic_a03_independent_observer.py tests/test_oci_atomistic_probe.py -q
           python scripts/check_atomistic_a02.py
       - name: Verify the locked source build's run and artifact
         if: matrix.architecture == 'aarch64'
@@ -76,6 +77,7 @@ jobs:
           import os
           from pathlib import Path
           import re
+          import subprocess
           import time
           from urllib.request import Request, urlopen
 
@@ -87,7 +89,26 @@ jobs:
               with urlopen(Request(root + path, headers=headers), timeout=30) as response:
                   return json.load(response)
 
-          source = os.environ["GITHUB_SHA"]
+          native_source = os.environ["GITHUB_SHA"]
+          carried_build_source = "c1d9fdef1e51d51bce211cb80831cd6b0520e34b"
+          carried_build_run = 42364835821
+          build_paths = [
+              ".dockerignore", ".github/workflows/cp2k-armv8a-build.yml", "deploy/cp2k-armv8/",
+              "scripts/build_cp2k_armv8.sh", "scripts/smoke_cp2k_armv8.py",
+              "scripts/verify_atomistic_a03.py", "scripts/atomistic_a03_inputs.py", "scripts/check_atomistic_a02.py",
+              "docs/design/atomistic-a01-v0.1/", "docs/design/atomistic-a02-v0.1/",
+          ]
+          source = native_source
+          if native_source != carried_build_source and subprocess.run(
+              ["git", "merge-base", "--is-ancestor", carried_build_source, native_source], check=False
+          ).returncode == 0:
+              unchanged = subprocess.run(
+                  ["git", "diff", "--quiet", carried_build_source, native_source, "--", *build_paths], check=False
+              )
+              if unchanged.returncode == 0:
+                  source = carried_build_source
+              elif unchanged.returncode != 1:
+                  raise SystemExit("Could not compare ARM source-build inputs")
           lookup_deadline = time.monotonic() + 120
           deadline = time.monotonic() + 80 * 60
           while time.monotonic() < deadline:
@@ -101,6 +122,8 @@ jobs:
               if len(runs) != 1:
                   raise SystemExit("Expected exactly one ARM source build run")
               run = runs[0]
+              if source == carried_build_source and run["id"] != carried_build_run:
+                  raise SystemExit("Unexpected carried ARM source build run")
               if (run["head_sha"] != source or run["head_branch"] != "main" or run["event"] != "push"
                       or run["path"] != ".github/workflows/cp2k-armv8a-build.yml"):
                   raise SystemExit("Unexpected ARM source build run")
@@ -117,11 +140,12 @@ jobs:
               raise SystemExit("Expected one verified candidate image artifact")
           artifact = matching[0]
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
-              output.write(f"artifact-id={int(artifact['id'])}\nrun-id={int(run['id'])}\n")
+              output.write(f"artifact-id={int(artifact['id'])}\nrun-id={int(run['id'])}\nsource-sha={source}\n")
           proof = Path(".cache/cp2k-armv8-source-proof.json")
           proof.parent.mkdir(exist_ok=True)
-          proof.write_text(json.dumps({"run_id": run["id"], "source_sha": run["head_sha"],
-              "artifact_id": artifact["id"], "artifact_digest": artifact["digest"]}, sort_keys=True) + "\n")
+          proof.write_text(json.dumps({"run_id": run["id"], "build_source_sha": run["head_sha"],
+              "native_source_sha": native_source, "artifact_id": artifact["id"],
+              "artifact_digest": artifact["digest"]}, sort_keys=True) + "\n")
           CHECK
       - name: Download the tested source-built image
         if: matrix.architecture == 'aarch64'
@@ -135,6 +159,8 @@ jobs:
           digest-mismatch: error
       - name: Bind the tested image to this native workflow
         if: matrix.architecture == 'aarch64'
+        env:
+          QUANTA_CP2K_BUILD_SOURCE: ${{ steps.source-build.outputs.source-sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -145,12 +171,12 @@ jobs:
           read -r image_sha archive_name < "$source_dir/image.tar.sha256"
           [[ "$image_sha" =~ ^[0-9a-f]{64}$ && "$archive_name" == image.tar ]]
           printf '%s  %s\n' "$image_sha" "$archive" | sha256sum -c -
-          test "$(cat "$source_dir/image-ref.txt")" = "quanta/cp2k-armv8a:source-$GITHUB_SHA"
+          test "$(cat "$source_dir/image-ref.txt")" = "quanta/cp2k-armv8a:source-$QUANTA_CP2K_BUILD_SOURCE"
           read -r binary_sha binary_path < "$source_dir/binary.sha256"
           [[ "$binary_sha" =~ ^[0-9a-f]{64}$ && "$binary_path" == /opt/quanta-cp2k/bin/cp2k ]]
           docker image load --input "$archive"
           tag="quanta/a03-armv8a:$GITHUB_SHA"
-          docker image tag "quanta/cp2k-armv8a:source-$GITHUB_SHA" "$tag"
+          docker image tag "quanta/cp2k-armv8a:source-$QUANTA_CP2K_BUILD_SOURCE" "$tag"
           mkdir -p .cache/armv8a-candidate
           docker image save --output .cache/armv8a-candidate/candidate-image.tar "$tag"
           python scripts/atomistic_a03_candidate.py record --directory .cache/armv8a-candidate \
@@ -163,7 +189,7 @@ jobs:
             python scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a03 \
               --candidate-dir .cache/armv8a-candidate
           else
-            python scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a03
+            python scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a03 --independent-web-observer
           fi
       - name: Preserve only the tested ARM candidate for the fixed OCI request
         if: matrix.architecture == 'aarch64'

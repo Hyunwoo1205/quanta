@@ -27,6 +27,8 @@ ARM 소스 빌드 42360639779는 CA 연결 후 여섯 계산 의존성을 컴파
 
 같은 소스의 x86 A03 대조군에서 다섯 계산·취소·후속 계산 사례는 통과했습니다. 기존 2초 웹 제한은 CUBE 파싱 중 GET / 응답 2.147초, 2.567초로 실패했습니다. 응답 상태는 모두 예상대로였고 웹 제한을 유지합니다. [x86 원본](https://github.com/Hyunwoo1205/quanta/actions/runs/42364050715/artifacts/13571162001)
 
+[x86 대조군42364835793](https://github.com/Hyunwoo1205/quanta/actions/runs/42364835793)에서도 계산 다섯 건은 통과했습니다. CUBE 처리와 겹친 웹 지연 2.298초 및 2.336초가 기존 2초 기준을 초과했습니다. CI용 x86 웹 관측기를 CUBE 처리 프로세스에서 분리합니다. 같은 서비스·주소·2초 제한과 계산 구간을 유지하며 각 원시 응답과 결합 판정을 저장합니다. ARM과 OCI의 관측 방식은 기존대로입니다. ARM의 고정 소스 빌드가 성공하면 빌드 및 He-D 입력이 동일한지 Git으로 확인한 뒤 해당 바이트를 새 소스의 ARM native A03에서 다시 검증합니다. [ARM 빌드42364835821](https://github.com/Hyunwoo1205/quanta/actions/runs/42364835821)
+
 ### 최초 OCI 후보 no-go와 준비 경과
 
 2026-11-07 KST, 고정 소스 `b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379`의 [전체 CI42337645536](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645536)·[native CI42337645488](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645488)가 ARM/x86 모두 성공했습니다. [계측 요약](docs/verification/atomistic-a03/native-42337645488-timing.json)과 [양쪽 원본 ZIP](https://drive.google.com/file/d/1t_PD30VYOuc6PJcv0zXxNkeRqaW4x11P/view?usp=drivesdk)을 보존했습니다. 웹 중 최대 ARM 1.367초, x86 1.147초입니다. 가장 느린 요청은 CUBE 파싱과 겹치고 응답 헤더 전 시간이 대부분이었으나 앞선 웹 지연의 원인을 확정하지 않습니다. 사용자가 README 표현을 수정한 최신 main 커밋은 보존했고, 실행 파일에 차이가 없는 검증된 소스를 고정해 요청했습니다.
