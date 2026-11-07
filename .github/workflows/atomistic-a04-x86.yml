@@ -37,36 +37,46 @@ jobs:
           python-version: '3.12.14'
           architecture: x64
       - name: Verify native host and record build capacity
+        id: capacity
         shell: bash
         run: |
           set -euo pipefail
-          test "$(uname -m)" = x86_64
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          python -c 'import platform; assert platform.python_version() == "3.12.14"'
-          test "$(nproc)" -ge 3
           mkdir -p .cache/atomistic-a04/build
           docker_root=$(docker info --format '{{.DockerRootDir}}')
+          cores=$(nproc)
+          memory_kib=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+          disk_kib=$(sudo df -Pk "$docker_root" | awk 'NR==2 {print $4}')
           {
             uname -sm
             date -u
-            nproc
+            git rev-parse HEAD
+            python --version
+            printf 'Available CPUs: %s\n' "$cores"
             awk '/^Mem(Total|Available):/ { print }' /proc/meminfo
             df -Pk .
             sudo df -Pk "$docker_root"
             docker version --format '{{.Server.Version}} {{.Server.Os}} {{.Server.Arch}}'
           } | tee .cache/atomistic-a04/build/runner.txt
-          test "$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)" -ge 6291456
-          test "$(sudo df -Pk "$docker_root" | awk 'NR==2 {print $4}')" -ge 10485760
+          test "$(uname -m)" = x86_64 || { echo 'Native x86_64 required'; exit 1; }
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA" || { echo 'Unexpected checkout SHA'; exit 1; }
+          python -c 'import platform; assert platform.python_version() == "3.12.14"'
+          test "$cores" -ge 2 || { echo 'At least two build CPUs required'; exit 1; }
+          test "$memory_kib" -ge 6291456 || { echo 'At least 6 GiB available memory required'; exit 1; }
+          test "$disk_kib" -ge 10485760 || { echo 'At least 10 GiB free Docker storage required'; exit 1; }
+          jobs=$((cores < 3 ? cores : 3))
+          printf 'jobs=%s\n' "$jobs" >> "$GITHUB_OUTPUT"
           curl --fail --silent --show-error --head --max-time 30 \
             https://snapshot.ubuntu.com/ubuntu/20261107T000000Z/dists/resolute/InRelease \
             > .cache/atomistic-a04/build/ubuntu-snapshot-http.txt
       - name: Build the locked native x86 candidate
+        env:
+          BUILD_JOBS: ${{ steps.capacity.outputs.jobs }}
         shell: bash
         run: |
           set -euo pipefail
           time docker buildx build --load --platform linux/amd64 --progress plain \
             --secret id=runner_ca,src=/etc/ssl/certs/ca-certificates.crt \
-            --build-arg QUANTA_CP2K_BUILD_JOBS=3 \
+            --build-arg QUANTA_CP2K_BUILD_JOBS="$BUILD_JOBS" \
             --file deploy/cp2k-x86/Dockerfile --tag "$CANDIDATE_IMAGE" . \
             2>&1 | tee .cache/atomistic-a04/build/build.log
       - name: Bind the archive to the image and executing binary
