@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+from collections import namedtuple
 import fcntl
 import hashlib
 import importlib.util
@@ -73,6 +74,9 @@ FAILURES = frozenset({'configuration_invalid', 'native_root_required', 'lock_una
                       'operation_failed'})
 SHA = re.compile(r'sha256:[0-9a-f]{64}\Z')
 TOKEN = re.compile(r'[0-9A-Za-z_.+-]{1,96}\Z')
+DiagnosticPolicy = namedtuple('DiagnosticPolicy', 'operation request env_prefix scope source_sha source_ci native_ci control_workflow control_jobs')
+IMAGE_POLICY = DiagnosticPolicy(OPERATION, REQUEST, 'QUANTA_IMAGE', 'atomistic_image', SOURCE_SHA,
+                                SOURCE_CI, NATIVE_CI, CONTROL_WORKFLOW, CONTROL_JOBS)
 
 
 def parse(raw):
@@ -95,9 +99,9 @@ def _uuid(value):
     return isinstance(value, str) and str(uuid.UUID(value)) == value and uuid.UUID(value).version == 4
 
 
-def config(value):
+def config(value, *, source_sha=SOURCE_SHA):
     if (not isinstance(value, dict) or set(value) != {'source_sha', 'request_id', 'control_sha'}
-            or value['source_sha'] != SOURCE_SHA or not _uuid(value['request_id'])
+            or value['source_sha'] != source_sha or not _uuid(value['request_id'])
             or not isinstance(value['control_sha'], str) or not re.fullmatch('[0-9a-f]{40}', value['control_sha'])):
         raise ValueError('configuration denied')
     return dict(value)
@@ -112,15 +116,16 @@ def module(name):
     return value
 
 
-def pins(env):
-    sha, run = env.get('QUANTA_IMAGE_CONTROL_SHA'), env.get('QUANTA_IMAGE_CONTROL_CI_RUN')
+def pins(env, *, policy=IMAGE_POLICY):
+    sha, run = env.get(policy.env_prefix + '_CONTROL_SHA'), env.get(policy.env_prefix + '_CONTROL_CI_RUN')
     if (not isinstance(sha, str) or not re.fullmatch('[0-9a-f]{40}', sha)
             or not isinstance(run, str) or not re.fullmatch('[1-9][0-9]{0,18}', run) or int(run) > 2**63 - 1):
         raise ValueError('control pin denied')
     return sha, int(run)
 
 
-def read_request(path=REQUEST, environ=None):
+def read_request(path=None, environ=None, *, policy=IMAGE_POLICY):
+    path = policy.request if path is None else path
     env = os.environ if environ is None else environ
     if (env.get('GITHUB_REPOSITORY') != REPOSITORY or env.get('GITHUB_REF') != 'refs/heads/ops/oci'
             or env.get('GITHUB_EVENT_NAME') != 'push' or any(p.is_symlink() for p in path.parents)):
@@ -138,17 +143,17 @@ def read_request(path=REQUEST, environ=None):
     if (len(raw) > 1024 or not isinstance(value, dict)
             or set(value) != {'schema_version', 'operation', 'source_sha', 'request_id'}
             or type(value['schema_version']) is not int or value['schema_version'] != 1
-            or value['operation'] != OPERATION or value['source_sha'] != SOURCE_SHA or not _uuid(value['request_id'])):
+            or value['operation'] != policy.operation or value['source_sha'] != policy.source_sha or not _uuid(value['request_id'])):
         raise ValueError('request denied')
     return value
 
 
-def authorize(environ=None, *, path=REQUEST, opener=None, runner=None):
+def authorize(environ=None, *, path=None, opener=None, runner=None, policy=IMAGE_POLICY):
     env = os.environ if environ is None else environ
     stage = 'request'
     try:
-        request = read_request(path, env)
-        control_sha, control_run = pins(env)
+        request = read_request(path, env, policy=policy)
+        control_sha, control_run = pins(env, policy=policy)
         base = module('authorize_application_upgrade')
         stage = 'control_checkout'
         mapped = dict(env, QUANTA_APPLICATION_CONTROL_SHA=control_sha,
@@ -156,19 +161,19 @@ def authorize(environ=None, *, path=REQUEST, opener=None, runner=None):
         if not base.control_checkout_matches(mapped, runner=runner, root=ROOT):
             raise ValueError()
         for label, run_id, sha, workflow, names in (
-                ('control_ci', control_run, control_sha, CONTROL_WORKFLOW, CONTROL_JOBS),
-                ('source_ci', SOURCE_CI, SOURCE_SHA, base.APP_WORKFLOW, base.APP_JOB_NAMES),
-                ('native_ci', NATIVE_CI, SOURCE_SHA, NATIVE_WORKFLOW, NATIVE_JOBS)):
+                ('control_ci', control_run, control_sha, policy.control_workflow, policy.control_jobs),
+                ('source_ci', policy.source_ci, policy.source_sha, base.APP_WORKFLOW, base.APP_JOB_NAMES),
+                ('native_ci', policy.native_ci, policy.source_sha, NATIVE_WORKFLOW, NATIVE_JOBS)):
             stage = label
             run = base.api_get('/actions/runs/' + str(run_id), env, opener=opener)
             jobs = base.api_get('/actions/runs/' + str(run_id) + '/jobs?filter=latest&per_page=100', env, opener=opener)
             if not base.successful(run, sha, workflow, run_id=run_id) or not base.successful_jobs(jobs, run_id, names):
                 raise ValueError()
-        return {'scope': 'atomistic_image_request', 'status': 'authorized', **request,
+        return {'scope': policy.scope + '_request', 'status': 'authorized', **request,
                 'control_sha': control_sha, 'control_ci_run': control_run,
-                'source_ci_run': SOURCE_CI, 'native_ci_run': NATIVE_CI}
+                'source_ci_run': policy.source_ci, 'native_ci_run': policy.native_ci}
     except Exception:
-        return {'scope': 'atomistic_image_request', 'status': 'denied', 'stage': stage}
+        return {'scope': policy.scope + '_request', 'status': 'denied', 'stage': stage}
 
 
 class DiagnosticError(Exception):
@@ -306,16 +311,36 @@ def snapshot(run):
     return {'services_active': True, 'container_identity_sha256': hashlib.sha256(raw).hexdigest()}
 
 
-def remote(config_value, *, run=run_readonly):
+def inspect_image(result, run):
+    result['selected_image'] = IMAGE
+    result['expected_config_digest'] = EXPECTED_CONFIG
+    result['default_inspect'] = observe(DEFAULT_COMMAND, image_value, run)
+    result['default_descriptor'] = observe(DESCRIPTOR_COMMAND, descriptor_value, run)
+    help_status, help_raw = run(HELP_COMMAND)
+    supported = help_status == 'observed' and b'--platform' in help_raw
+    result['platform_inspect'] = observe(PLATFORM_COMMAND, image_value, run) if supported else {
+        'status': 'unsupported' if help_status == 'observed' else 'support_unknown'}
+    result['platform_descriptor'] = observe(PLATFORM_DESCRIPTOR_COMMAND, descriptor_value, run) if supported else {
+        'status': 'unsupported' if help_status == 'observed' else 'support_unknown'}
+    result['docker_server'] = observe(SERVER_COMMAND, server_value, run)
+    result['docker_storage'] = observe(INFO_COMMAND, storage_value, run)
+    if result['default_inspect']['status'] == 'observed':
+        image = result['default_inspect']['value']
+        result['observed_id_equals_expected_config'] = image['Id'] == EXPECTED_CONFIG
+        result['selected_repo_digest_present'] = any(d.removeprefix('docker.io/') == IMAGE.removeprefix('docker.io/') for d in image['RepoDigests'])
+    return all(result[key]['status'] == 'observed' for key in ('default_inspect', 'docker_server', 'docker_storage'))
+
+
+def remote(config_value, *, run=run_readonly, policy=IMAGE_POLICY, inspect=inspect_image, failures=FAILURES):
     stage = 'config'
-    result = {'scope': 'oci_atomistic_image_diagnostic', 'operation': OPERATION, 'status': 'failed',
+    result = {'scope': 'oci_' + policy.scope + '_diagnostic', 'operation': policy.operation, 'status': 'failed',
               'stage': stage, 'production_restart_attempted': False, 'production_configuration_written': False,
               'database_read': False, 'private_environment_read': False, 'image_pull_attempted': False,
               'image_execution_attempted': False, 'physical_validation_status': 'unvalidated'}
     fd = None
     before = None
     try:
-        cfg = config(config_value)
+        cfg = config(config_value, source_sha=policy.source_sha)
         result.update(cfg)
         if os.geteuid() != 0 or platform.machine() != 'aarch64':
             raise DiagnosticError('native_root_required')
@@ -334,35 +359,20 @@ def remote(config_value, *, run=run_readonly):
         before = snapshot(run)
         result['before'] = before
         stage = 'inspect'
-        result['selected_image'] = IMAGE
-        result['expected_config_digest'] = EXPECTED_CONFIG
-        result['default_inspect'] = observe(DEFAULT_COMMAND, image_value, run)
-        result['default_descriptor'] = observe(DESCRIPTOR_COMMAND, descriptor_value, run)
-        help_status, help_raw = run(HELP_COMMAND)
-        supported = help_status == 'observed' and b'--platform' in help_raw
-        result['platform_inspect'] = observe(PLATFORM_COMMAND, image_value, run) if supported else {
-            'status': 'unsupported' if help_status == 'observed' else 'support_unknown'}
-        result['platform_descriptor'] = observe(PLATFORM_DESCRIPTOR_COMMAND, descriptor_value, run) if supported else {
-            'status': 'unsupported' if help_status == 'observed' else 'support_unknown'}
-        result['docker_server'] = observe(SERVER_COMMAND, server_value, run)
-        result['docker_storage'] = observe(INFO_COMMAND, storage_value, run)
-        if result['default_inspect']['status'] == 'observed':
-            image = result['default_inspect']['value']
-            result['observed_id_equals_expected_config'] = image['Id'] == EXPECTED_CONFIG
-            result['selected_repo_digest_present'] = any(d.removeprefix('docker.io/') == IMAGE.removeprefix('docker.io/') for d in image['RepoDigests'])
+        complete = inspect(result, run)
         stage = 'after'
         after = snapshot(run)
         result['after'] = after
         result['production_container_preserved'] = after == before
         if after != before:
             raise DiagnosticError('production_changed')
-        if any(result[key]['status'] != 'observed' for key in ('default_inspect', 'docker_server', 'docker_storage')):
+        if not complete:
             raise DiagnosticError('diagnostic_incomplete')
         stage = 'complete'
         result['status'] = 'success'
     except Exception as error:
         reason = str(error) if isinstance(error, DiagnosticError) else ('lock_unavailable' if stage == 'lock' else 'operation_failed')
-        result['failure_reason'] = reason if reason in FAILURES else 'operation_failed'
+        result['failure_reason'] = reason if reason in failures else 'operation_failed'
     finally:
         if before is not None:
             try:
@@ -442,8 +452,8 @@ def sanitize_report(raw):
         return None
 
 
-def remote_command(source, value):
-    value = config(value)
+def remote_command(source, value, *, policy=IMAGE_POLICY):
+    value = config(value, source_sha=policy.source_sha)
     raw = source.encode('utf-8')
     if not 1 <= len(raw) <= MAX_SOURCE or b'\0' in raw:
         raise ValueError('source denied')
@@ -467,20 +477,21 @@ def remote_command(source, value):
     return command
 
 
-def probe(environ=None, *, authorizer=None, runner=None):
+def probe(environ=None, *, authorizer=None, runner=None, policy=IMAGE_POLICY, source=None, sanitizer=sanitize_report):
     env = os.environ if environ is None else environ
-    result = {'scope': 'ssh_atomistic_image_diagnostic', 'operation': OPERATION,
+    result = {'scope': 'ssh_' + policy.scope + '_diagnostic', 'operation': policy.operation,
               'status': 'not_configured', 'authentication_attempted': False}
-    if env.get('QUANTA_OCI_AUTH_CONFIRMED') != 'true' or env.get('QUANTA_IMAGE_OPERATION') != OPERATION:
+    if env.get('QUANTA_OCI_AUTH_CONFIRMED') != 'true' or env.get(policy.env_prefix + '_OPERATION') != policy.operation:
         return result
     try:
-        authorized = authorize(env) if authorizer is None else authorizer(env)
-        if (authorized.get('status') != 'authorized' or authorized.get('operation') != OPERATION
-                or authorized.get('source_sha') != env.get('QUANTA_IMAGE_SOURCE_SHA')
-                or authorized.get('request_id') != env.get('QUANTA_IMAGE_REQUEST_ID')):
+        authorized = authorize(env, policy=policy) if authorizer is None else authorizer(env)
+        if (authorized.get('status') != 'authorized' or authorized.get('operation') != policy.operation
+                or authorized.get('source_sha') != env.get(policy.env_prefix + '_SOURCE_SHA')
+                or authorized.get('request_id') != env.get(policy.env_prefix + '_REQUEST_ID')):
             raise ValueError()
-        cfg = config({key: authorized[key] for key in ('source_sha', 'request_id', 'control_sha')})
-        command = remote_command(Path(__file__).read_text(encoding='utf-8'), cfg)
+        cfg = config({key: authorized[key] for key in ('source_sha', 'request_id', 'control_sha')}, source_sha=policy.source_sha)
+        source_text = Path(__file__).read_text(encoding='utf-8') if source is None else source()
+        command = remote_command(source_text, cfg, policy=policy)
         login, transport = module('probe_login'), module('probe_inventory')
         host, pin = env.get('QUANTA_OCI_HOST'), login._normalized_host_key(env.get('QUANTA_OCI_HOST_KEY'))
         error, key = login._key_bytes(env.get('QUANTA_OCI_PPK'))
@@ -501,7 +512,7 @@ def probe(environ=None, *, authorizer=None, runner=None):
                     '-a', '-x', '-T', '-noshare', '-P', '22', '-l', 'ubuntu', '-i', str(path), '-hostkey', pin, host, command]
             state, raw, attempted = capture(args, {'HOME': directory, 'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}, directory)
             result['authentication_attempted'] = attempted
-            value = sanitize_report(raw) if state in {'success', 'failed'} else None
+            value = sanitizer(raw) if state in {'success', 'failed'} else None
             if value is not None and all(value.get(k) == cfg[k] for k in cfg):
                 result['result'] = value
                 result['status'] = 'success' if state == 'success' and value['status'] == 'success' else 'remote_failed'

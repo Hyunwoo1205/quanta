@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A03 OCI 재실측 보류·x86 웹 지연 계측
+## 현재 개발 위치 — A03 OCI 후보 실행 no-go · ARM 명령어 진단
+
+2026-11-07 KST, 고정 소스 `b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379`의 [전체 CI42337645536](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645536)·[native CI42337645488](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645488)가 ARM/x86 모두 성공했습니다. [계측 요약](docs/verification/atomistic-a03/native-42337645488-timing.json)과 [양쪽 원본 ZIP](https://drive.google.com/file/d/1t_PD30VYOuc6PJcv0zXxNkeRqaW4x11P/view?usp=drivesdk)을 보존했습니다. 웹 중 최대 ARM 1.367초, x86 1.147초입니다. 가장 느린 요청은 CUBE 파싱과 겹치고 응답 헤더 전 시간이 대부분이었으나 앞선 웹 지연의 원인을 확정하지 않습니다. 사용자가 README 표현을 수정한 최신 main 커밋은 보존했고, 실행 파일에 차이가 없는 검증된 소스를 고정해 요청했습니다.
+
+[실제 OCI 재요청42339547954](https://github.com/Hyunwoo1205/quanta/actions/runs/42339547954)의 [영수증](docs/verification/atomistic-a03/oci/42339547954.json)에서 Docker 단일 플랫폼 매니페스트/설정 해시/레이어/실행 설정 증명을 통과했습니다. CP2K 바이너리 SHA는 native ARM의 동일 바이너리와 일치합니다. 사전 메모리 10.756 GiB·디스크 180.533 GiB·진행 0건에서 He-D를 시작했지만 CP2K 자식이 6.433초에 `SIGILL`(wait4 -4, 외부 exit 252)로 끝났습니다. cgroup 정점 1.600 GiB, 호스트 가용 메모리 최솟값 9.367 GiB, 관측된 실행 중 웹 14회 최대 0.0054초(200/401)입니다. SCF·에너지·힘·CUBE 완성 및 후속 H2/취소는 도달하지 않았습니다. 첫 컨테이너/자식은 정리됐고 전후 운영 컨테이너·지정 설정·jobs DB/WAL 바이트 보존과 진행 0건을 확인했습니다. 앱 0.16.0 배포/재시작, 계정·메일·백업 변경은 없었습니다.
+
+이 공식 후보는 현재 OCI 실제 계산에 **no-go**입니다. 빌드의 ARM 확장과 실제 호스트 기능이 맞지 않을 가능성을 검토 중이며 고장 명령은 미확인입니다. 저장된 He 로그와 호스트 ISA만 고정 읽기 전용 진단으로 대조하며 같은 이미지 계산은 반복하지 않습니다. 이어서 [소스 추적이 가능한 범용 ARM 빌드](docs/design/atomistic-a04-source-traceability.md)와 [라이브러리 근거](docs/design/a04_donor_inventory_review.md)를 기준으로 의존성의 호환성을 먼저 확인하고 새 후보로 native 및 OCI 격리 실측을 다시 수행합니다. A04 계약 동결과 공개 원자계 기능은 아직 막혀 있고 물리 검증은 `unvalidated`입니다.
+
+### OCI 재시도 전의 지연 계측 경과
 
 2026-11-07 KST, 이미지 검증 수정 소스 `26bd827899bc5d0e0f7a8b22a3bd8b3b94c8c705`의 [native CI42336172276](https://github.com/Hyunwoo1205/quanta/actions/runs/42336172276)는 ARM 성공, x86 두 시도 실패입니다. x86에서는 두 번 모두 계산 4건·초기화 취소·정리가 통과하고 HTTP 200/401도 유지됐으나, 계산/결과 처리 중 `/` 최대 응답이 각각 2.101초·2.601초로 2초 기준을 넘었습니다. [검증한 웹 원본 요약](docs/verification/atomistic-a03/native-42336172276-web-gate.json)과 [세 native 원본 ZIP](https://drive.google.com/file/d/1nqq52S9HAHNYABP-U939z0V-2kz2d4x0/view?usp=drivesdk)을 보존합니다. 같은 크기의 150³ CUBE를 사용한 로컬 복사·파싱/웹 동시 모의시험에서는 수 초 지연이 재현되지 않았습니다. 이 결과로 파서나 운영 웹을 원인으로 확정하지 않습니다.
 

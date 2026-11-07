@@ -1,0 +1,43 @@
+name: OCI fixed atomistic host ISA diagnostic tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/oci-atomistic-host-isa-tests.yml'
+      - 'deploy/oci/diagnose_atomistic_host_isa.py'
+      - 'deploy/oci/diagnose_atomistic_image.py'
+      - 'deploy/oci/authorize_application_upgrade.py'
+      - 'deploy/oci/probe_inventory.py'
+      - 'deploy/oci/probe_login.py'
+      - 'tests/test_oci_atomistic_host_isa.py'
+      - 'tests/test_oci_atomistic_image_diagnostic.py'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    name: atomistic host ISA diagnostic (${{ matrix.architecture }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x86_64
+            runner: ubuntu-24.04
+          - architecture: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify the actual native architecture
+        env:
+          EXPECTED_ARCHITECTURE: ${{ matrix.architecture }}
+        run: python3 -I -B -c 'import os,platform; assert platform.machine() == os.environ["EXPECTED_ARCHITECTURE"]'
+      - name: Test the diagnostic and shared fixed transport
+        run: |
+          python3 -I -B -m unittest discover -s tests -p test_oci_atomistic_host_isa.py -v
+          python3 -I -B -m unittest discover -s tests -p test_oci_atomistic_image_diagnostic.py -v

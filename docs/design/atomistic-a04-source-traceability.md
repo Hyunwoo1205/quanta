@@ -2,12 +2,30 @@
 
 다음 작업은 기존 네이티브 CI에서 새 CP2K 후보의 빌드 입력을 잠그고, 실제 바이너리까지 이어지는 증거를 만드는 것이다. 먼저 amd64에서 의존성 준비와 CMake 구성을 확인하고, 같은 레시피를 amd64와 ARM64에서 각각 실행한다. A04 프로필과 자유 JSON 계약 동결은 빌드·실행 증거 검토 뒤에 판단한다.
 
+두 A02 고정 이미지의 최신 네이티브 inventory에서 Spack 의존성 경로와 별도 `libcp2k.so.2026.2` 로딩을 확인했다. 아래의 의존성 제공 이미지 검토는 이 경로와 원본 레이어 기록에 근거한다. 헤더·Fortran 모듈·CMake 설정과 링크에 필요한 파일의 존재 및 ABI는 첫 검사에서 확인할 항목이다. [네이티브 의존성 근거](a04_donor_inventory_review.md)
+
+## OCI ARM 실행 신호와 새 후보 기준
+
+OCI 실행 42339547954는 고정 ARM 이미지 식별을 통과했으며, He-D CP2K 자식이 시작 후 6.433초에 `SIGILL`로 종료됐다. 원본 `wait4` 결과는 `-4`, 셸과 컨테이너 결과는 252다. 수렴·에너지·힘·CUBE는 얻지 못했다. 컨테이너 관측 메모리 정점은 1,717,563,392 B, 운영 가드의 호스트 가용 메모리 최솟값은 10,058,166,272 B다. OCI와 통과한 네이티브 ARM 실행의 엔진 SHA는 `aa8cb64079e94aac831588d359c7e7c008a693701de6e3bcdd58491f850ceb7c`로 같다. [OCI 실행](https://github.com/Hyunwoo1205/quanta/actions/runs/42339547954)
+
+그 바이너리의 네이티브 inventory가 기록한 GCC 15.2 ARM 타깃은 다음과 같다.
+
+```text
+-march=armv8-a+flagm2+lse+dotprod+rdma+crc+aes+sha3+fp16fml+jscvt+fcma+rcpc2+frintts+sb+pauth
+```
+
+Oracle의 A1은 Ampere Altra Q80-30 계열이다. Ampere는 Altra의 명령어 호환성을 Armv8.2+로, 컴파일 타깃을 `neoverse-n1`로 설명한다. GCC 15.2의 N1 모델은 Armv8.2-A에 FP16·RCpc·DotProd·profiling을 추가한다. 기존 옵션의 `rcpc2`·`fp16fml`은 GCC Armv8.4-A 기본군이고 `flagm2`·`frintts`·`sb`는 Armv8.5-A 기본군이다. 일부 옵션은 어셈블러에서 허용하는 확장만 제어한다. 이 차이는 ISA 불일치 가설의 근거이며, 현재 증거의 실제 고장 명령·PC·모듈·OCI 게스트 HWCAP은 미확인이다. [Oracle A1 사양](https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm) · [Ampere GCC 가이드](https://amperecomputing.com/tutorials/gcc-guide-ampere-processors) · [GCC 15.2 N1 모델](https://github.com/gcc-mirror/gcc/blob/releases/gcc-15.2.0/gcc/config/aarch64/aarch64-cores.def#L119) · [GCC 15.2 확장 표](https://gcc.gnu.org/onlinedocs/gcc-15.2.0/gcc/AArch64-Options.html)
+
+첫 진단은 이미 저장된 실패 `cp2k.out`의 크기·SHA 확인 및 제한된 끝부분 확인, 같은 OCI 호스트의 ARM CPU 모델과 사용자 공간 `AT_HWCAP`·`AT_HWCAP2` 읽기다. `HWCAP_ILRCPC`, `HWCAP_ASIMDFHM`, `HWCAP_SB`, `HWCAP_PACA/PACG`, `HWCAP2_FLAGM2`, `HWCAP2_FRINT` 등을 실제 관측으로 기록한다. 기존 커널 기록이 PC를 제공하면 해당 이미지의 ELF build ID, 모듈 오프셋과 opcode를 대조한다. 그런 기록이 없을 경우 고장 명령 확인은 별도 격리 디버그에 남긴다. HWCAP 확인 단계에서 기능별 시험 명령을 실행해 신호를 유발할 필요는 없다. [Linux ARM64 HWCAP](https://docs.kernel.org/arch/arm64/elf_hwcaps.html)
+
+새 ARM64 후보의 보수적 기준은 LP64 `-march=armv8-a -mtune=generic`이다. CP2K, 자체 공유 라이브러리와 모든 정적·동적 의존성에 동일한 최소 ISA를 적용하거나 그 기준과 호환되는 배포 바이너리를 근거와 함께 고정한다. 실제 C/C++/Fortran/어셈블리 및 링크 명령, OpenBLAS 커널 선택과 의존성 CPU 옵션을 확인한다. 첫 OpenBLAS 빌드는 고정 버전에서 범용 `TARGET=ARMV8`과 단일 타깃을 검토한다. 호환성 근거가 확보될 때까지 기존 ARM Spack 트리의 재사용은 보류한다. 새 후보의 실제 OCI A1 검증은 동일 He-D부터 시작하고, 성공 후 전체 격리 A03 사례로 진행한다. [GCC 15.2 AArch64 기준](https://gcc.gnu.org/onlinedocs/gcc-15.2.0/gcc/AArch64-Options.html) · [OpenBLAS 빌드 설정](https://www.openmathlib.org/OpenBLAS/docs/build_system/)
+
 ## 소스와 빌드 입력
 
 1. CP2K v2026.2의 전체 Git 커밋 `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`과 트리 `2e4405ec65578a3d8205bc23adf69249798d98d3`을 사용한다. 새 checkout에서 `git rev-parse HEAD HEAD^{tree}`와 clean 상태를 확인하고 소스 입력의 전체 파일 SHA-256 목록과 크기를 남긴다. 추적 파일은 수정 없이 별도 build 디렉터리에서 컴파일한다. 공식 릴리스 tarball의 `REVISION=git:c92cc08`은 그 별도 아카이브의 기록이다. [고정 소스](https://github.com/cp2k/cp2k/tree/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50)
 2. 빌더에서 소스의 `.git`을 읽을 수 있게 하고 `git config --local core.abbrev 40`을 적용한다. 컴파일 전 동일 사용자·경로에서 `git log -1 --format=%h`가 고정 전체 SHA를 출력하는지 확인한다. 공식 CMake가 생성한 `__COMPILE_REVISION`과 설치된 바이너리의 `--version`이 이 SHA를 보고해야 한다. 생성된 헤더 원문을 보관한다. [공식 build-info 생성기](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/cmake/GenerateCp2kBuildInfo.cmake)
-3. 공식 레시피와 같은 Ubuntu 26.04 계열을 출발점으로 삼되, 플랫폼별 build·runtime base manifest/config SHA를 선정해 잠근다. 빌더 이미지와 레시피, 설치 도구, GCC/G++/GFortran·링커·CMake 3.24 이상·Ninja·Python의 버전과 실제 패키지 바이트 SHA를 기록한다. apt 입력은 고정 스냅샷과 필요한 패키지 SHA로 잠그고, 컴파일 전에 모든 입력을 검증한다. [공식 Dockerfile](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/Dockerfile.test_spack_psmp-4x2)
-4. 첫 의존성 후보는 A02가 이미 고정한 플랫폼별 공식 이미지의 Spack 패키지 트리다. 이 트리의 라이브러리, 헤더, Fortran 모듈과 CMake package config를 확인하고 실제 사용하는 트리의 파일 해시와 ABI를 잠근다. 새 이미지에는 필요한 의존성만 복사하고 CP2K 실행 파일, 자체 공유 라이브러리와 설치 데이터는 새 checkout의 설치 결과만 사용한다. 필요한 개발 파일이나 호환 컴파일러가 없으면 구성 시도에서 중단하고 누락 목록을 남긴다. 후속 의존성 빌드의 입력은 고정 Spack 및 packages 커밋, 확정된 `spack.lock`, 모든 source 또는 buildcache 바이트 SHA, compiler externals를 포함한다. [공식 의존성 복사 단계](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/Dockerfile.test_spack_psmp-4x2#L74-L91) · [Spack 개발 빌드](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/docs/getting-started/build-with-spack.md)
+3. 두 이미지의 Ubuntu 26.04 라벨, glibc 2.43 패키지, GCC/GFortran 15 패키지와 config history가 공식 GCC 15 레시피의 runtime 단계에 부합한다. 새 build·runtime base는 Ubuntu 26.04 계열에서 플랫폼별 manifest/config SHA를 별도 선정해 잠근다. 빌더 이미지와 레시피, GCC/G++/GFortran·링커·CMake 3.24 이상·Ninja·Python의 버전과 실제 패키지 바이트 SHA를 기록한다. apt 입력은 고정 스냅샷과 패키지 SHA로 잠그고 컴파일 전에 검증한다. 확인된 설치 구조만으로 과거 바이너리의 소스나 회귀 결과를 확정할 수 없다. [공식 GCC 15 Dockerfile](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/Dockerfile.test_spack_psmp-gcc15)
+4. 첫 amd64 의존성 후보는 A02가 고정한 공식 이미지의 Spack 패키지 트리다. ARM64에는 위의 별도 ISA 조건을 적용한다. 매니페스트에서 CP2K 설치와 별도인 트리의 최종 경로·symlink와 CMake package config·헤더·Fortran 모듈을 확인한다. 예를 들어 Libint2의 `Libint2::int2`와 `libint_f.mod`, DBCSR package config의 버전과 MPI 설정을 확인해야 한다. 검증한 의존성 파일의 SHA와 ABI를 잠근 뒤 새 이미지에 필요한 의존성만 복사한다. CP2K 실행 파일, 자체 공유 라이브러리와 설치 데이터는 새 checkout의 설치 결과를 사용한다. 개발 파일이나 호환 컴파일러가 없으면 누락 목록을 남기고 구성을 중단한다. 후속 의존성 빌드의 입력은 고정 Spack 및 packages 커밋, `spack.lock`, 모든 source 또는 buildcache 바이트 SHA와 compiler externals를 포함한다. [공식 의존성 복사 단계](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tools/docker/Dockerfile.test_spack_psmp-gcc15#L74-L91) · [Spack 개발 빌드](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/docs/getting-started/build-with-spack.md)
 5. 첫 구성은 CPU `psmp`, MPICH, OpenBLAS BLAS/LAPACK, 동일 MPI용 ScaLAPACK·DBCSR, FFTW3, LibXC와 Libint2를 명시한다. 시작 플래그는 `CP2K_USE_ACCEL=NONE`, `CP2K_USE_EVERYTHING=OFF`, `CP2K_USE_MPI=ON`, `CP2K_BLAS_VENDOR=OpenBLAS`, `CP2K_SCALAPACK_VENDOR=GENERIC`, `CP2K_USE_DBCSR_CONFIG=ON`, `CP2K_USE_FFTW3=ON`, `CP2K_USE_LIBXC=ON`, `CP2K_USE_LIBINT2=ON`이다. 이 경로의 DBCSR 요구 버전은 2.9 이상이다. 해석된 전이 의존성과 실제 컴파일 옵션을 확인한 뒤 플랫폼별 잠금에 정확한 버전·해시를 넣는다. [CP2K CMake 옵션](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/CMakeLists.txt)
 
 ## 실행 순서

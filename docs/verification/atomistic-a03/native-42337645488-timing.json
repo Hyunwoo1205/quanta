@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "scope": "temporary_native_GitHub_Actions_web_fixture_not_production_OCI",
+  "run_id": 42337645488,
+  "source_sha": "b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379",
+  "web_gate_seconds": 2,
+  "status": "success",
+  "architectures": [
+    {
+      "architecture": "aarch64",
+      "artifact_id": 13560242687,
+      "artifact_zip_bytes": 25109050,
+      "artifact_zip_sha256": "2b86ef511a458356de8a724d2d7f9ea28745732727f56214d00f48371b81ac6a",
+      "report_sha256": "b261c1cec3130445606b61beccdca9cf0176a1c9a0ed0bb09408a87eac39f417",
+      "web_samples_sha256": "a52bd7512fb0a4d4b34ebb56dabe31eae75fdc17f92a1cd8ab3735578597386b",
+      "case_gates_passed": 5,
+      "web_summary": {
+        "baseline": {
+          "samples": 130,
+          "max_latency_seconds": 0.022524121999992985,
+          "unexpected_statuses": 0
+        },
+        "during": {
+          "samples": 192,
+          "max_latency_seconds": 1.366615534999994,
+          "unexpected_statuses": 0
+        },
+        "after": {
+          "samples": 2,
+          "max_latency_seconds": 0.0011170489999585698,
+          "unexpected_statuses": 0
+        }
+      },
+      "max_during_sample": {
+        "phase": "during",
+        "path": "/",
+        "status": 200,
+        "expected_status": 200,
+        "wall_seconds": 1.366615534999994,
+        "error": null,
+        "timing": {
+          "phase_at_start": "during",
+          "started_monotonic": 347.772039352,
+          "headers_monotonic": 349.138564644,
+          "first_body_byte_monotonic": 349.138584724,
+          "finished_monotonic": 349.138654887,
+          "thread_cpu_seconds": 0.008431951999999993
+        }
+      },
+      "max_during_entirely_overlapped_cube_parse_cases": [
+        "h2-after-cancel"
+      ],
+      "cancel_seconds": 1.0893766240000105,
+      "binary_sha256": "aa8cb64079e94aac831588d359c7e7c008a693701de6e3bcdd58491f850ceb7c",
+      "engine_revision": "unknown"
+    },
+    {
+      "architecture": "x86_64",
+      "artifact_id": 13559349965,
+      "artifact_zip_bytes": 25107853,
+      "artifact_zip_sha256": "0bb9813aca50222232fe20a7c13313900b2b96141ebde42dcb673d3983ccf7dc",
+      "report_sha256": "3112ab9c264c9dd76dab0d6b8429b63c46db69f48575260aa16f2d9912a531e0",
+      "web_samples_sha256": "b2cd3245fa4eef696662ade59aed9cbcbff292f5c16d5835453c83d22862a50f",
+      "case_gates_passed": 5,
+      "web_summary": {
+        "baseline": {
+          "samples": 116,
+          "max_latency_seconds": 0.014221098000000154,
+          "unexpected_statuses": 0
+        },
+        "during": {
+          "samples": 162,
+          "max_latency_seconds": 1.1474959329999876,
+          "unexpected_statuses": 0
+        },
+        "after": {
+          "samples": 2,
+          "max_latency_seconds": 0.0010275500000034299,
+          "unexpected_statuses": 0
+        }
+      },
+      "max_during_sample": {
+        "phase": "during",
+        "path": "/",
+        "status": 200,
+        "expected_status": 200,
+        "wall_seconds": 1.1474959329999876,
+        "error": null,
+        "timing": {
+          "phase_at_start": "during",
+          "started_monotonic": 191.800021686,
+          "headers_monotonic": 192.94747862,
+          "first_body_byte_monotonic": 192.947486773,
+          "finished_monotonic": 192.947517619,
+          "thread_cpu_seconds": 0.014709178000000017
+        }
+      },
+      "max_during_entirely_overlapped_cube_parse_cases": [
+        "h2-after-cancel"
+      ],
+      "cancel_seconds": 1.0787881889999937,
+      "binary_sha256": "5adf67d256e25776162f1d543ff67979a0c147594f944897e3bba977c23b2bdc",
+      "engine_revision": "unknown"
+    }
+  ],
+  "cause_attribution": "Largest in-phase samples coincided with density parsing and waited mainly for HTTP headers; correlation does not distinguish server, client scheduling or host contention.",
+  "physical_validation_status": "unvalidated"
+}
