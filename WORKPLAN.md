@@ -23,6 +23,10 @@
 
 ARM 소스 빌드 42360639779는 CA 연결 후 여섯 계산 의존성을 컴파일하고 CP2K 빌드 3992/4153까지 진행했습니다. `grid_miniapp.psmp` 링크에서 GCC 15.2의 `lto1` IPA static-var 내부 오류로 멈췄습니다. CP2K 및 소스 의존성에서 LTO를 명시적으로 끄고, 전체 CP2K 컴파일 전에 해당 miniapp 링크를 재검증합니다. LibXC 빌드 최적화 수준은 시간을 줄이기 위해 O1로 조정하고 기능 플래그는 유지합니다. 새 빌드·native A03·전체 CI는 동일한 커밋에서 실행됩니다. [실패 로그](https://github.com/Hyunwoo1205/quanta/actions/runs/42360639779)
 
+[ARM 재빌드42364050723](https://github.com/Hyunwoo1205/quanta/actions/runs/42364050723)의 컴파일 플래그 감사가 ScaLAPACK의 첫 C 명령에서 추가 LTO 옵션을 확인하고 중단했습니다. Ubuntu 스냅샷의 MPICH 4.3.2-2 ARM64 래퍼가 `-flto=auto`와 `-ffat-lto-objects`를 제공하고 CMake FindMPI가 래퍼 출력의 `-f...` 옵션을 MPI 대상 컴파일 옵션으로 전달함을 대조했습니다. 이는 이전 miniapp 링크가 명령줄에 `-flto`를 보이지 않고 `lto1`을 실행한 경로를 설명합니다. 빌드에서만 MPI 래퍼 사본을 만들어 패키징 LTO 플래그와 Fortran의 ISA 선택 플래그를 제거하고, 원본·사본 SHA와 실제 래퍼 옵션을 기록합니다. MPI 런타임은 같은 서명된 패키지를 사용합니다. 새 빌드가 miniapp 링크와 같은 He-D를 확인한 후에만 native/OCI 검증을 이어갑니다. [CMake FindMPI 4.2.3](https://github.com/Kitware/CMake/blob/v4.2.3/Modules/FindMPI.cmake#L806-L827)
+
+같은 소스의 x86 A03 대조군에서 다섯 계산·취소·후속 계산 사례는 통과했습니다. 기존 2초 웹 제한은 CUBE 파싱 중 GET / 응답 2.147초, 2.567초로 실패했습니다. 응답 상태는 모두 예상대로였고 웹 제한을 유지합니다. [x86 원본](https://github.com/Hyunwoo1205/quanta/actions/runs/42364050715/artifacts/13571162001)
+
 ### 최초 OCI 후보 no-go와 준비 경과
 
 2026-11-07 KST, 고정 소스 `b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379`의 [전체 CI42337645536](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645536)·[native CI42337645488](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645488)가 ARM/x86 모두 성공했습니다. [계측 요약](docs/verification/atomistic-a03/native-42337645488-timing.json)과 [양쪽 원본 ZIP](https://drive.google.com/file/d/1t_PD30VYOuc6PJcv0zXxNkeRqaW4x11P/view?usp=drivesdk)을 보존했습니다. 웹 중 최대 ARM 1.367초, x86 1.147초입니다. 가장 느린 요청은 CUBE 파싱과 겹치고 응답 헤더 전 시간이 대부분이었으나 앞선 웹 지연의 원인을 확정하지 않습니다. 사용자가 README 표현을 수정한 최신 main 커밋은 보존했고, 실행 파일에 차이가 없는 검증된 소스를 고정해 요청했습니다.

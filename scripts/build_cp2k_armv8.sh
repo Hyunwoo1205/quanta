@@ -64,8 +64,28 @@ export PKG_CONFIG_PATH="$deps/lib/pkgconfig" LD_LIBRARY_PATH="$deps/lib"
     mpichversion
     printf 'ISA=%s\njobs=%s\n' "$baseline" "$jobs"
 } >"$evidence/toolchain.txt"
-mpicc -show >"$evidence/mpicc.txt"
-mpifort -show >"$evidence/mpifort.txt"
+# Ubuntu's MPICH wrappers export distro packaging flags to consumers.
+# Keep the signed MPI runtime and use build-local wrappers for a consistent ISA and LTO policy.
+mpi_wrappers="$inputs/mpi-wrappers"
+mkdir "$mpi_wrappers"
+for name in mpicc mpicxx mpifort; do
+    original="/usr/bin/$name.mpich"
+    adjusted="$mpi_wrappers/$name"
+    "$original" -show >"$evidence/$name-original.txt"
+    sed -e 's/ -flto=auto//g' -e 's/ -ffat-lto-objects//g' \
+        -e 's/ -mbranch-protection=standard//g' "$original" >"$adjusted"
+    chmod 755 "$adjusted"
+    "$adjusted" -show >"$evidence/$name.txt"
+    "$adjusted" -compile-info >>"$evidence/$name.txt"
+    "$adjusted" -link-info >>"$evidence/$name.txt"
+    if grep -Eq '(^|[[:space:]])(-flto(=[^[:space:]]*)?|-ffat-lto-objects|-mbranch-protection=[^[:space:]]*)([[:space:]]|$)' "$evidence/$name.txt"; then
+        cat "$evidence/$name.txt" >&2
+        printf 'Unexpected MPI wrapper options in %s\n' "$name" >&2
+        exit 1
+    fi
+    sha256sum "$original" "$adjusted" >>"$evidence/mpi-wrapper-files.sha256"
+done
+export PATH="$mpi_wrappers:$PATH"
 
 unpack() {
     local package="$1" archive="$2" components="${3:-1}"
@@ -90,8 +110,12 @@ for command in commands:
     flags = {arg for arg in arguments if arg.startswith(("-march=", "-mtune=", "-mcpu="))}
     if "-march=armv8-a" not in flags or flags - allowed:
         raise SystemExit(f"Unexpected compiler target flags in {command['file']}: {sorted(flags)}")
-    if "-fno-lto" not in arguments or any(arg == "-flto" or arg.startswith("-flto=") for arg in arguments):
-        raise SystemExit(f"Unexpected link-time optimization flags in {command['file']}")
+    lto_flags = [
+        arg for arg in arguments
+        if arg in {"-flto", "-ffat-lto-objects"} or arg.startswith("-flto=")
+    ]
+    if "-fno-lto" not in arguments or lto_flags:
+        raise SystemExit(f"Unexpected link-time optimization flags in {command['file']}: {lto_flags}")
 print(path.name, len(commands), "ARMv8-A baseline verified")
 PY
 }
@@ -105,6 +129,8 @@ cmake_build() {
         "-DCMAKE_INSTALL_PREFIX=$destination" -DCMAKE_INSTALL_LIBDIR=lib \
         -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+        "-DMPI_C_COMPILER=$mpi_wrappers/mpicc" "-DMPI_CXX_COMPILER=$mpi_wrappers/mpicxx" \
+        "-DMPI_Fortran_COMPILER=$mpi_wrappers/mpifort" \
         "-DCMAKE_C_FLAGS=$baseline" "-DCMAKE_CXX_FLAGS=$baseline" \
         "-DCMAKE_Fortran_FLAGS=$baseline" "-DCMAKE_ASM_FLAGS=$baseline" \
         -DCMAKE_EXE_LINKER_FLAGS=-fno-lto -DCMAKE_SHARED_LINKER_FLAGS=-fno-lto \
