@@ -7,7 +7,7 @@ prefix=/opt/quanta-cp2k
 evidence="$prefix/evidence"
 source_sha=67b5da876dd6a76b8b021d5a04d1c81ba79a4c50
 source_tree=2e4405ec65578a3d8205bc23adf69249798d98d3
-baseline="-march=armv8-a -mtune=generic"
+baseline="-march=armv8-a -mtune=generic -fno-lto"
 mkdir -p "$evidence"
 
 [[ "$(uname -m)" == aarch64 && "$(dpkg --print-architecture)" == arm64 ]]
@@ -90,6 +90,8 @@ for command in commands:
     flags = {arg for arg in arguments if arg.startswith(("-march=", "-mtune=", "-mcpu="))}
     if "-march=armv8-a" not in flags or flags - allowed:
         raise SystemExit(f"Unexpected compiler target flags in {command['file']}: {sorted(flags)}")
+    if "-fno-lto" not in arguments or any(arg == "-flto" or arg.startswith("-flto=") for arg in arguments):
+        raise SystemExit(f"Unexpected link-time optimization flags in {command['file']}")
 print(path.name, len(commands), "ARMv8-A baseline verified")
 PY
 }
@@ -102,8 +104,10 @@ cmake_build() {
     cmake -S "$source" -B "$build" -G Ninja \
         "-DCMAKE_INSTALL_PREFIX=$destination" -DCMAKE_INSTALL_LIBDIR=lib \
         -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
         "-DCMAKE_C_FLAGS=$baseline" "-DCMAKE_CXX_FLAGS=$baseline" \
         "-DCMAKE_Fortran_FLAGS=$baseline" "-DCMAKE_ASM_FLAGS=$baseline" \
+        -DCMAKE_EXE_LINKER_FLAGS=-fno-lto -DCMAKE_SHARED_LINKER_FLAGS=-fno-lto \
         -DCMAKE_C_FLAGS_RELEASE=-O2 -DCMAKE_CXX_FLAGS_RELEASE=-O2 \
         -DCMAKE_Fortran_FLAGS_RELEASE=-O2 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         "-DCMAKE_PREFIX_PATH=$deps" "-DCMAKE_INSTALL_RPATH=$deps/lib;$prefix/lib" \
@@ -112,6 +116,11 @@ cmake_build() {
     cp "$build/CMakeCache.txt" "$evidence/$name-CMakeCache.txt"
     cp "$build/compile_commands.json" "$evidence/$name-compile_commands.json"
     check_compile_flags "$build/compile_commands.json"
+    if [[ "$name" == cp2k ]]; then
+        cmake --build "$build" --parallel "$jobs" --target grid_miniapp \
+            >"$evidence/cp2k-grid-link.log" 2>&1 \
+            || { tail -n 80 "$evidence/cp2k-grid-link.log"; return 1; }
+    fi
     printf 'Building %s (jobs=%s)\n' "$name" "$jobs"
     cmake --build "$build" --parallel "$jobs" >"$evidence/$name-build.log" 2>&1 \
         || { tail -n 130 "$evidence/$name-build.log"; return 1; }
@@ -153,6 +162,7 @@ cmake_build dbcsr "$inputs/dbcsr" "$deps" \
 unpack libxc libxc-7.0.0.tar.bz2
 cmake_build libxc "$inputs/libxc" "$deps" \
     -DBUILD_SHARED_LIBS=ON -DENABLE_FORTRAN=ON -DDISABLE_KXC=OFF \
+    -DCMAKE_C_FLAGS_RELEASE=-O1 \
     "-DCMAKE_C_FLAGS=$baseline -fno-var-tracking"
 
 unpack libint libint-v2.13.1-cp2k-lmax-5.tar.xz 2

@@ -20,6 +20,9 @@
 
 [범용 ARM 소스 빌드42360639779](https://github.com/Hyunwoo1205/quanta/actions/runs/42360639779)는 Ubuntu26.04 ARM64 고정 이미지와 날짜 고정 APT, CP2K v2026.2 Git 트리, 6개 소스 배포 파일 SHA를 사용합니다. 소스 빌드는 네트워크를 끈 단계에서 실행하며 컴파일 명령의 ISA 플래그를 검사합니다. Ubuntu 제공 MPI 및 OS 런타임 패키지는 서명된 스냅샷과 패키지 SHA로 고정합니다. 첫 두 빌드는 컨테이너 APT TLS 인증서 오류로 컴파일 이전에 중단됐고, 러너 CA를 빌드 시에만 연결해 재요청했습니다. 같은 He-D를 우선 실행하고, 성공한 소스 이미지로 native A03 전체와 동일 소스 전체 CI를 검증한 후 OCI 재요청을 합니다. 현재 새 후보의 실행·출처 검증과 A04 동결은 진행 중이며 물리 검증은 `unvalidated`입니다.
 
+
+ARM 소스 빌드 42360639779는 CA 연결 후 여섯 계산 의존성을 컴파일하고 CP2K 빌드 3992/4153까지 진행했습니다. `grid_miniapp.psmp` 링크에서 GCC 15.2의 `lto1` IPA static-var 내부 오류로 멈췄습니다. CP2K 및 소스 의존성에서 LTO를 명시적으로 끄고, 전체 CP2K 컴파일 전에 해당 miniapp 링크를 재검증합니다. LibXC 빌드 최적화 수준은 시간을 줄이기 위해 O1로 조정하고 기능 플래그는 유지합니다. 새 빌드·native A03·전체 CI는 동일한 커밋에서 실행됩니다. [실패 로그](https://github.com/Hyunwoo1205/quanta/actions/runs/42360639779)
+
 ### 최초 OCI 후보 no-go와 준비 경과
 
 2026-11-07 KST, 고정 소스 `b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379`의 [전체 CI42337645536](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645536)·[native CI42337645488](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645488)가 ARM/x86 모두 성공했습니다. [계측 요약](docs/verification/atomistic-a03/native-42337645488-timing.json)과 [양쪽 원본 ZIP](https://drive.google.com/file/d/1t_PD30VYOuc6PJcv0zXxNkeRqaW4x11P/view?usp=drivesdk)을 보존했습니다. 웹 중 최대 ARM 1.367초, x86 1.147초입니다. 가장 느린 요청은 CUBE 파싱과 겹치고 응답 헤더 전 시간이 대부분이었으나 앞선 웹 지연의 원인을 확정하지 않습니다. 사용자가 README 표현을 수정한 최신 main 커밋은 보존했고, 실행 파일에 차이가 없는 검증된 소스를 고정해 요청했습니다.

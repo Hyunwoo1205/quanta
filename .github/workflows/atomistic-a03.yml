@@ -10,6 +10,8 @@ on:
       - scripts/verify_atomistic_a03.py
       - scripts/run_atomistic_a03_ci.py
       - scripts/atomistic_a03_candidate.py
+      - deploy/cp2k-armv8/**
+      - scripts/build_cp2k_armv8.sh
       - tests/test_atomistic_a03*.py
       - docs/design/atomistic-a03-v0.1/**
   workflow_dispatch:
@@ -85,10 +87,21 @@ jobs:
               with urlopen(Request(root + path, headers=headers), timeout=30) as response:
                   return json.load(response)
 
+          source = os.environ["GITHUB_SHA"]
+          lookup_deadline = time.monotonic() + 120
           deadline = time.monotonic() + 80 * 60
           while time.monotonic() < deadline:
-              run = get("/actions/runs/42360639779")
-              if (run["head_sha"] != "0506aca2952010edcdd804d5fde26f2fe78fe096" or run["head_branch"] != "main" or run["event"] != "push"
+              runs = get("/actions/workflows/cp2k-armv8a-build.yml/runs?head_sha=" + source
+                         + "&branch=main&event=push&per_page=10")["workflow_runs"]
+              if not runs:
+                  if time.monotonic() >= lookup_deadline:
+                      raise SystemExit("No ARM source build on this exact commit")
+                  time.sleep(10)
+                  continue
+              if len(runs) != 1:
+                  raise SystemExit("Expected exactly one ARM source build run")
+              run = runs[0]
+              if (run["head_sha"] != source or run["head_branch"] != "main" or run["event"] != "push"
                       or run["path"] != ".github/workflows/cp2k-armv8a-build.yml"):
                   raise SystemExit("Unexpected ARM source build run")
               if run["status"] == "completed":
@@ -98,13 +111,13 @@ jobs:
               raise SystemExit("ARM source build did not finish before the deadline")
           if run["conclusion"] != "success":
               raise SystemExit("ARM source build did not pass")
-          listed = get("/actions/runs/42360639779/artifacts?per_page=20")["artifacts"]
-          matching = [item for item in listed if item["name"] == "cp2k-armv8a-source-image-0506aca2952010edcdd804d5fde26f2fe78fe096" and not item["expired"]]
+          listed = get(f"/actions/runs/{int(run['id'])}/artifacts?per_page=20")["artifacts"]
+          matching = [item for item in listed if item["name"] == "cp2k-armv8a-source-image-" + source and not item["expired"]]
           if len(matching) != 1 or not re.fullmatch(r"sha256:[0-9a-f]{64}", matching[0]["digest"]):
               raise SystemExit("Expected one verified candidate image artifact")
           artifact = matching[0]
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
-              output.write(f"artifact-id={int(artifact['id'])}\n")
+              output.write(f"artifact-id={int(artifact['id'])}\nrun-id={int(run['id'])}\n")
           proof = Path(".cache/cp2k-armv8-source-proof.json")
           proof.parent.mkdir(exist_ok=True)
           proof.write_text(json.dumps({"run_id": run["id"], "source_sha": run["head_sha"],
@@ -117,7 +130,7 @@ jobs:
           artifact-ids: ${{ steps.source-build.outputs.artifact-id }}
           path: .cache/cp2k-armv8-source
           repository: Hyunwoo1205/quanta
-          run-id: '42360639779'
+          run-id: ${{ steps.source-build.outputs.run-id }}
           github-token: ${{ github.token }}
           digest-mismatch: error
       - name: Bind the tested image to this native workflow
@@ -132,12 +145,12 @@ jobs:
           read -r image_sha archive_name < "$source_dir/image.tar.sha256"
           [[ "$image_sha" =~ ^[0-9a-f]{64}$ && "$archive_name" == image.tar ]]
           printf '%s  %s\n' "$image_sha" "$archive" | sha256sum -c -
-          test "$(cat "$source_dir/image-ref.txt")" = 'quanta/cp2k-armv8a:source-0506aca2952010edcdd804d5fde26f2fe78fe096'
+          test "$(cat "$source_dir/image-ref.txt")" = "quanta/cp2k-armv8a:source-$GITHUB_SHA"
           read -r binary_sha binary_path < "$source_dir/binary.sha256"
           [[ "$binary_sha" =~ ^[0-9a-f]{64}$ && "$binary_path" == /opt/quanta-cp2k/bin/cp2k ]]
           docker image load --input "$archive"
           tag="quanta/a03-armv8a:$GITHUB_SHA"
-          docker image tag 'quanta/cp2k-armv8a:source-0506aca2952010edcdd804d5fde26f2fe78fe096' "$tag"
+          docker image tag "quanta/cp2k-armv8a:source-$GITHUB_SHA" "$tag"
           mkdir -p .cache/armv8a-candidate
           docker image save --output .cache/armv8a-candidate/candidate-image.tar "$tag"
           python scripts/atomistic_a03_candidate.py record --directory .cache/armv8a-candidate \
