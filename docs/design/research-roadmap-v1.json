@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.11",
+  "plan_version": "1.0.12",
   "updated_at": "2026-11-08",
   "status": "planned_development",
   "executable": false,
@@ -376,6 +376,7 @@
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
       "next_action": "초기 수치 프로필과 유한 셀 허용 조건을 검토하고, 별도 격리 CI의 계산 메모리·출력 한도에서 격자 세분화를 실측한 뒤 계약 동결을 판단.",
       "x86_candidate_execution_and_gapw": "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json",
+      "adaptive_resource_measurement": ".github/workflows/atomistic-a04-resource-ci.yml",
       "arm_candidate_source_review": "docs/verification/atomistic-a04/armv8a-source-dependency-review.json",
       "candidate_units_and_cube_review": "docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json",
       "pinned_gapw_regression": "docs/verification/atomistic-a04/gapw-42376916235.json",

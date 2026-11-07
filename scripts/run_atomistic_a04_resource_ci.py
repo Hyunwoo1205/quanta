@@ -1,0 +1,673 @@
+#!/usr/bin/env python3
+"""Measure the pinned native x86 CP2K candidate in isolated GitHub Actions."""
+
+from __future__ import annotations
+
+import argparse
+from dataclasses import dataclass
+import json
+import math
+import os
+from pathlib import Path
+import platform
+import shutil
+import stat
+import subprocess
+import tempfile
+import time
+from uuid import uuid4
+
+from atomistic_a03_candidate import load_candidate
+from atomistic_a03_inputs import generate_input, probe_metadata
+from atomistic_a04_resources import (
+    GIB, MEMORY_RESERVE_BYTES, MEMORY_TIERS_BYTES, available_memory_bytes, memory_budget,
+)
+from verify_atomistic_a03 import (
+    LOCK_DIR, check_density_geometry, parse_cube, parse_force_artifact, parse_output, sha256,
+)
+
+
+ROOT = Path(__file__).resolve().parents[1]
+REPO = "Hyunwoo1205/quanta"
+RECEIPT = ROOT / "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json"
+VALIDATION_PLAN = ROOT / "docs/design/atomistic-a01-v0.1/validation-plan.json"
+PROJECT = "a04_resource_h2"
+CUBE = f"{PROJECT}-TOTAL_ELECTRON_DENSITY-1_0.cube"
+REPORT_LIMIT = 128 * 1024
+LOG_LIMIT = 1024 * 1024
+DIAGNOSTIC_EDGE = 32 * 1024
+WORK_LIMIT = 2 * GIB
+TMPFS_LIMIT = 256 * 1024**2
+DISK_ADMISSION = 10 * GIB
+DISK_GUARD = 6 * GIB
+MEMORY_GUARD = MEMORY_RESERVE_BYTES
+SHM_LIMIT = 64 * 1024**2
+HEARTBEAT = 1.0
+EXPECTED_FILES = {"cp2k.out", "forces.xyz", "engine-resource.json", CUBE}
+SMALL_FILES = {"cp2k.out": LOG_LIMIT, "forces.xyz": 64 * 1024, "engine-resource.json": 8 * 1024}
+TRANSIENT_FILES = {"engine-resource.tmp": 8 * 1024, "release": 1}
+BASELINE_CASE_IDS = ("h2-12a-400ry-density-off", "h2-12a-400ry-density-on")
+
+
+@dataclass(frozen=True)
+class Case:
+    name: str
+    cell: int
+    cutoff: int
+    density: bool
+    wall_seconds: int
+    minimum_memory_bytes: int = 2 * GIB
+    rel_cutoff: int = 40
+
+
+CASES = (
+    Case(BASELINE_CASE_IDS[0], 12, 400, False, 240),
+    Case(BASELINE_CASE_IDS[1], 12, 400, True, 240),
+    Case("h2-20a-800ry-density-on", 20, 800, True, 900, 4 * GIB, rel_cutoff=80),
+)
+
+
+ENGINE_WRAPPER = r"""
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import time
+import traceback
+
+root = Path('/work')
+start = time.monotonic()
+log = root / 'cp2k.out'
+def log_uncaught(exc_type, value, trace):
+    with log.open('a', encoding='utf-8') as stream:
+        traceback.print_exception(exc_type, value, trace, file=stream)
+
+sys.excepthook = log_uncaught
+binary, revision = sys.argv[1:]
+with log.open('wb') as output:
+    exe = shutil.which('cp2k')
+    if exe is None:
+        raise RuntimeError('Pinned CP2K binary is absent')
+    with open(exe, 'rb') as stream:
+        actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+    if actual != binary:
+        raise RuntimeError('CP2K binary hash mismatch')
+    version = subprocess.check_output([exe, '--version'], stderr=subprocess.STDOUT, timeout=30)
+    if not re.search(rb'^\s*CP2K version 2026\.2\s*$', version, re.M) or not re.search(
+        rb'^\s*Source code revision ' + revision.encode('ascii') + rb'\s*$', version, re.M
+    ):
+        raise RuntimeError('CP2K source revision or version mismatch')
+    engine_started = time.monotonic()
+    child = subprocess.Popen([exe, '-i', '/quanta-input/input.inp'], stdout=output, stderr=output)
+    _, status, usage = os.wait4(child.pid, 0)
+    engine_wall_seconds = time.monotonic() - engine_started
+    child.returncode = os.waitstatus_to_exitcode(status)
+
+cgroup = Path('/sys/fs/cgroup')
+def metric(name):
+    try:
+        return int((cgroup / name).read_text())
+    except (OSError, ValueError):
+        return None
+
+def event_counts():
+    try:
+        return {name: int(value) for name, value in
+                (line.split() for line in (cgroup / 'memory.events').read_text().splitlines())}
+    except (OSError, ValueError):
+        return {}
+
+tmp = os.statvfs('/tmp')
+row = {
+    'binary_sha256': actual,
+    'reported_revision': revision,
+    'engine_returncode': child.returncode,
+    'engine_wall_seconds': engine_wall_seconds,
+    'engine_wall_seconds_with_inventory': time.monotonic() - start,
+    'engine_children_peak_rss_kib': usage.ru_maxrss,
+    'engine_user_cpu_seconds': usage.ru_utime,
+    'engine_system_cpu_seconds': usage.ru_stime,
+    'final_cgroup_memory_max_bytes': metric('memory.max'),
+    'final_cgroup_swap_max_bytes': metric('memory.swap.max'),
+    'final_cgroup_memory_peak_bytes': metric('memory.peak'),
+    'final_cgroup_memory_events': event_counts(),
+    'final_tmpfs_used_bytes': (tmp.f_blocks - tmp.f_bfree) * tmp.f_frsize,
+}
+(root / 'engine-resource.tmp').write_text(json.dumps(row, allow_nan=False), encoding='ascii')
+os.replace(root / 'engine-resource.tmp', root / 'engine-resource.json')
+# Hold the cgroup briefly so the controller can sample terminal counters. A
+# parent-side watchdog always removes the container, including on interruption.
+until = time.monotonic() + 35
+while not (root / 'release').is_file() and time.monotonic() < until:
+    time.sleep(0.2)
+sys.exit(child.returncode if child.returncode >= 0 else 128 - child.returncode)
+"""
+
+
+def run_docker(*args: str, timeout: int = 20, check: bool = True) -> subprocess.CompletedProcess:
+    return subprocess.run(["docker", *args], capture_output=True, text=True, timeout=timeout, check=check)
+
+
+def inspect_container(name: str) -> dict:
+    return json.loads(run_docker("inspect", name).stdout)[0]
+
+
+def docker_disk_free(path: Path) -> int:
+    try:
+        return shutil.disk_usage(path).free
+    except PermissionError:
+        # Hosted runner DockerRootDir is sometimes not traversable by the job
+        # user. This only reads filesystem capacity and never changes privileges
+        # for the actual controller or container.
+        result = subprocess.check_output(
+            ["sudo", "-n", "df", "--block-size=1", "--output=avail", "--", str(path)],
+            text=True, timeout=10,
+        ).splitlines()
+        if len(result) != 2 or not result[1].strip().isdigit():
+            raise ValueError("Docker storage capacity could not be read")
+        return int(result[1].strip())
+
+
+def require_native_ci() -> None:
+    expected_env = {
+        "GITHUB_ACTIONS": "true", "GITHUB_REPOSITORY": REPO,
+        "RUNNER_ENVIRONMENT": "github-hosted", "RUNNER_ARCH": "X64",
+    }
+    if (
+        os.geteuid() == 0
+        or platform.system() != "Linux"
+        or platform.machine() != "x86_64"
+        or any(os.environ.get(key) != value for key, value in expected_env.items())
+        or not shutil.which("docker")
+    ):
+        raise ValueError("Only the nonroot native x86-64 GitHub-hosted Quanta runner is permitted")
+    # The process and the container must share the native local host/cgroup view.
+    if os.environ.get("DOCKER_HOST") not in (None, "", "unix:///var/run/docker.sock"):
+        raise ValueError("A remote Docker daemon is unsupported")
+    endpoint = run_docker("context", "inspect", "--format", "{{.Endpoints.docker.Host}}").stdout.strip()
+    if endpoint != "unix:///var/run/docker.sock":
+        raise ValueError("The default native GitHub runner Docker socket is required")
+    info = run_docker("info", "--format", "{{.OSType}} {{.Architecture}} {{.CgroupVersion}} {{.DockerRootDir}}").stdout.strip()
+    parts = info.split(maxsplit=3)
+    if len(parts) != 4 or parts[:3] != ["linux", "x86_64", "2"]:
+        raise ValueError("Native Linux amd64 Docker with cgroup v2 is required")
+    if not parts[3].startswith("/") or docker_disk_free(Path(parts[3])) < DISK_ADMISSION:
+        raise ValueError("Docker storage has insufficient disk headroom before image load")
+
+
+def safe_bind(path: Path, target: str, *, readonly: bool = False) -> str:
+    resolved = path.resolve(strict=True)
+    if any(c in str(resolved) for c in ',\r\n'):
+        raise ValueError("Unsupported bind path")
+    return f"type=bind,source={resolved},target={target}" + (",readonly" if readonly else "")
+
+
+def container_args(name: str, image_id: str, budget: int, work: Path, inputs: Path, candidate: dict) -> list[str]:
+    return [
+        "create", "--name", name, "--pull=never", "--platform", "linux/amd64",
+        "--read-only", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+        "--user", f"{os.getuid()}:{os.getgid()}", "--group-add", "0",
+        "--cpus", "1", "--memory", str(budget), "--memory-swap", str(budget),
+        "--pids-limit", "128", "--cgroupns", "private", "--log-driver", "none", "--shm-size", str(SHM_LIMIT),
+        "--ulimit", "core=0:0", "--ulimit", f"fsize={GIB}:{GIB}",
+        "--tmpfs", f"/tmp:rw,nosuid,nodev,noexec,size={TMPFS_LIMIT},mode=1777", "--workdir", "/work",
+        "--env", "HOME=/tmp", "--env", "TMPDIR=/tmp", "--env", "LC_ALL=C", "--env", "OMP_NUM_THREADS=1",
+        "--env", "OPENBLAS_NUM_THREADS=1", "--env", "MKL_NUM_THREADS=1", "--env", "NUMEXPR_NUM_THREADS=1",
+        "--mount", safe_bind(work, "/work"), "--mount", safe_bind(inputs, "/quanta-input", readonly=True),
+        "--mount", safe_bind(LOCK_DIR / "assets", "/quanta-data", readonly=True),
+        "--entrypoint", "python3", image_id, "-I", "-B", "-c", ENGINE_WRAPPER,
+        candidate["binary_sha256"], candidate["cp2k_source"],
+    ]
+
+
+def checked_controls(inspected: dict, budget: int) -> dict:
+    host = inspected["HostConfig"]
+    for key, expected in {
+        "Memory": budget, "MemorySwap": budget, "NanoCpus": 10**9,
+        "PidsLimit": 128, "NetworkMode": "none", "ReadonlyRootfs": True,
+        "CgroupnsMode": "private", "ShmSize": SHM_LIMIT,
+    }.items():
+        if host.get(key) != expected:
+            raise ValueError(f"Docker did not enforce {key}")
+    if host["LogConfig"]["Type"] != "none":
+        raise ValueError("Docker did not disable unbounded daemon logs")
+    ulimits = {row["Name"]: (row["Soft"], row["Hard"]) for row in host["Ulimits"]}
+    if ulimits.get("fsize") != (GIB, GIB) or ulimits.get("core") != (0, 0):
+        raise ValueError("Docker did not enforce the file and core-dump limits")
+    if host.get("Tmpfs") != {"/tmp": f"rw,nosuid,nodev,noexec,size={TMPFS_LIMIT},mode=1777"}:
+        raise ValueError("Docker did not enforce the bounded /tmp mount")
+    if "ALL" not in host.get("CapDrop", []) or "no-new-privileges" not in host.get("SecurityOpt", []):
+        raise ValueError("Docker did not enforce the process capability controls")
+    mounts = {row["Destination"]: (row["Type"], row["RW"]) for row in inspected["Mounts"] if row["Type"] == "bind"}
+    if mounts != {"/work": ("bind", True), "/quanta-input": ("bind", False), "/quanta-data": ("bind", False)}:
+        raise ValueError("Docker did not enforce the expected bind controls")
+    return {
+        "memory_bytes": budget, "memory_swap_bytes": budget, "cpus": 1, "pids": 128,
+        "work": "disk-backed bind", "network": "none", "tmpfs_max_bytes": TMPFS_LIMIT,
+        "readonly_rootfs": True, "log_driver": "none", "fsize_bytes": GIB, "shm_limit_bytes": SHM_LIMIT,
+    }
+
+
+def read_cgroup(pid: int, budget: int, record: dict) -> None:
+    if not pid:
+        return
+    try:
+        row = next(x for x in Path(f"/proc/{pid}/cgroup").read_text().splitlines() if x.startswith("0::/"))
+        mount = Path("/sys/fs/cgroup")
+        scope = (mount / row[4:]).resolve(strict=True)
+        if scope == mount or not scope.is_relative_to(mount):
+            raise ValueError("Container cgroup is outside the expected v2 mount")
+        if int((scope / "memory.max").read_text()) != budget:
+            raise ValueError("Container cgroup memory.max differs from the granted hard cap")
+        current = int((scope / "memory.current").read_text())
+        peak = int((scope / "memory.peak").read_text())
+        stats = dict(line.split() for line in (scope / "memory.stat").read_text().splitlines())
+        events = dict(line.split() for line in (scope / "memory.events").read_text().splitlines())
+    except (FileNotFoundError, ProcessLookupError, StopIteration, PermissionError):
+        return  # Container can exit concurrently; terminal state is inspected separately.
+    record["samples"] += 1
+    record["cgroup_memory_peak_bytes"] = max(record["cgroup_memory_peak_bytes"] or 0, peak)
+    record["cgroup_sampled_current_peak_bytes"] = max(record["cgroup_sampled_current_peak_bytes"] or 0, current)
+    for key in ("anon", "file", "shmem"):
+        if key in stats:
+            record["cgroup_sampled_stat_peak_bytes"][key] = max(
+                record["cgroup_sampled_stat_peak_bytes"].get(key, 0), int(stats[key])
+            )
+    for key in ("max", "oom", "oom_kill", "oom_group_kill"):
+        if key in events:
+            record["cgroup_memory_events_max"][key] = max(
+                record["cgroup_memory_events_max"].get(key, 0), int(events[key])
+            )
+
+
+def checked_work_files(work: Path, *, successful: bool = False) -> tuple[dict[str, os.stat_result], int, int]:
+    files: dict[str, os.stat_result] = {}
+    logical = allocated = 0
+    with os.scandir(work) as entries:
+        for entry in entries:
+            if len(files) >= 12:
+                raise ValueError("Scratch file count exceeded the fixed measurement envelope")
+            try:
+                item = entry.stat(follow_symlinks=False)
+            except FileNotFoundError:
+                if successful:
+                    raise
+                continue  # Atomic replacement by the wrapper.
+            if not stat.S_ISREG(item.st_mode) or item.st_nlink != 1:
+                raise ValueError("Scratch contains a symlink, special file or hard link")
+            limit = SMALL_FILES.get(entry.name, TRANSIENT_FILES.get(entry.name, GIB))
+            if item.st_size > limit:
+                raise ValueError(f"Scratch file exceeded its output budget: {entry.name}")
+            if successful and entry.name not in EXPECTED_FILES | {"release"}:
+                raise ValueError(f"Unexpected completed measurement output: {entry.name}")
+            logical += item.st_size
+            allocated += item.st_blocks * 512
+            files[entry.name] = item
+            if max(logical, allocated) > WORK_LIMIT:
+                raise ValueError("Aggregate scratch exceeded the sampled 2 GiB work budget")
+    return files, logical, allocated
+
+
+def sample_scratch(work: Path, record: dict) -> None:
+    _, logical, allocated = checked_work_files(work)
+    record["sampled_work_peak_logical_bytes"] = max(record["sampled_work_peak_logical_bytes"], logical)
+    record["sampled_work_peak_allocated_bytes"] = max(record["sampled_work_peak_allocated_bytes"], allocated)
+
+
+def log_excerpt(work: Path, out: Path) -> None:
+    path = work / "cp2k.out"
+    if not path.exists():
+        return
+    item = path.lstat()
+    if not stat.S_ISREG(item.st_mode) or item.st_nlink != 1:
+        return
+    with path.open("rb") as f:
+        content = f.read(DIAGNOSTIC_EDGE * 2)
+        if item.st_size > len(content):
+            f.seek(-DIAGNOSTIC_EDGE, os.SEEK_END)
+            content = content[:DIAGNOSTIC_EDGE] + b"\n[bounded log excerpt]\n" + f.read(DIAGNOSTIC_EDGE)
+    out.write_bytes(content)
+
+
+def clean_container(name: str) -> None:
+    removed = run_docker("rm", "--force", name, check=False)
+    if removed.returncode and "No such container" not in removed.stderr:
+        raise RuntimeError("Failed to remove the isolated measurement container")
+    inspected = run_docker("inspect", name, check=False)
+    if not inspected.returncode or "No such object" not in inspected.stderr:
+        raise RuntimeError("Could not verify isolated container removal")
+
+
+def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate: dict,
+                scratch: Path, diagnostics: Path, record: dict) -> None:
+    name = f"quanta-a04-resource-{uuid4().hex}"
+    started = time.monotonic()
+    with tempfile.TemporaryDirectory(prefix=f"{case.name}-{attempt}-", dir=scratch) as path:
+        work = Path(path) / "work"
+        inputs = Path(path) / "input"
+        work.mkdir(mode=0o700)
+        inputs.mkdir(mode=0o700)
+        options = {
+            "system": "h2", "basis": "cc-pVDZ", "project": PROJECT,
+            "cell_angstrom": case.cell, "cutoff_ry": case.cutoff,
+            "rel_cutoff_ry": case.rel_cutoff, "density": case.density,
+        }
+        (inputs / "input.inp").write_text(generate_input(**options), encoding="ascii")
+        metadata = probe_metadata(**options)
+        record.update({
+            "attempt": attempt, "status": "controller_error", "granted_memory_bytes": budget,
+            "available_memory_at_admission_bytes": available, "minimum_sampled_available_memory_bytes": available,
+            "minimum_sampled_free_disk_bytes": shutil.disk_usage(work).free, "samples": 0,
+            "sampled_work_peak_logical_bytes": 0, "sampled_work_peak_allocated_bytes": 0,
+            "cgroup_memory_peak_bytes": None, "cgroup_sampled_current_peak_bytes": None,
+            "cgroup_sampled_stat_peak_bytes": {}, "cgroup_memory_events_max": {},
+            "input_sha256": sha256(inputs / "input.inp"), "input_metadata": metadata,
+        })
+        state: dict = {}
+        engine: dict = {}
+        try:
+            run_docker(*container_args(name, candidate["image_id"], budget, work, inputs, candidate))
+            record["container_controls"] = checked_controls(inspect_container(name), budget)
+            run_docker("start", name)
+            until = time.monotonic() + case.wall_seconds
+            while True:
+                inspected = inspect_container(name)
+                state = inspected["State"]
+                read_cgroup(state.get("Pid", 0), budget, record)
+                try:
+                    sample_scratch(work, record)
+                except ValueError as exc:
+                    record.update(status="scratch_guard", error=str(exc))
+                    break
+                host_memory = available_memory_bytes()
+                free_disk = shutil.disk_usage(work).free
+                record["minimum_sampled_available_memory_bytes"] = min(
+                    record["minimum_sampled_available_memory_bytes"], host_memory
+                )
+                record["minimum_sampled_free_disk_bytes"] = min(record["minimum_sampled_free_disk_bytes"], free_disk)
+                if host_memory < MEMORY_GUARD:
+                    record["status"] = "host_memory_guard"
+                    break
+                if free_disk < DISK_GUARD:
+                    record["status"] = "host_disk_guard"
+                    break
+                if (work / "engine-resource.json").is_file():
+                    (work / "release").touch()
+                if not state["Running"]:
+                    break
+                if time.monotonic() >= until:
+                    record["status"] = "case_timeout"
+                    break
+                time.sleep(HEARTBEAT)
+            record["container_elapsed_seconds"] = time.monotonic() - started
+            record["container_exit_code"] = state.get("ExitCode") if not state.get("Running") else None
+            record["docker_oom_killed"] = state.get("OOMKilled") is True
+            if record["status"] != "controller_error":
+                return
+            resource = work / "engine-resource.json"
+            if resource.is_file():
+                engine = json.loads(resource.read_bytes())
+                record["engine_resource"] = engine
+                final_peak = engine["final_cgroup_memory_peak_bytes"]
+                if final_peak is not None:
+                    record["cgroup_memory_peak_bytes"] = max(record["cgroup_memory_peak_bytes"] or 0, final_peak)
+                for key, value in engine["final_cgroup_memory_events"].items():
+                    record["cgroup_memory_events_max"][key] = max(
+                        record["cgroup_memory_events_max"].get(key, 0), value
+                    )
+            # Docker and cgroup counters describe only this new container. An
+            # exit code of 137 (including a guard kill) is not OOM evidence.
+            if record["docker_oom_killed"] or record["cgroup_memory_events_max"].get("oom_kill", 0) > 0:
+                record["status"] = "container_oom"
+                return
+            if record["container_exit_code"] != 0:
+                record["status"] = "engine_exit"
+                return
+            record["status"] = "invalid_output"
+            if (
+                engine.get("engine_returncode") != 0
+                or engine.get("binary_sha256") != candidate["binary_sha256"]
+                or engine.get("reported_revision") != candidate["cp2k_source"]
+                or engine.get("final_cgroup_memory_max_bytes") != budget
+                or engine.get("final_cgroup_swap_max_bytes") != 0
+                or not record["cgroup_memory_peak_bytes"]
+                or not engine.get("engine_children_peak_rss_kib")
+            ):
+                raise ValueError("Required engine identity and native cgroup/RSS evidence are incomplete")
+            files, total, allocated = checked_work_files(work, successful=True)
+            expected = EXPECTED_FILES if case.density else EXPECTED_FILES - {CUBE}
+            if set(files) - {"release"} != expected or any(files[k].st_size <= 0 for k in expected):
+                raise ValueError("Completed engine output did not match the fixed artifact set")
+            record["output_bytes"] = total
+            record["output_allocated_bytes"] = allocated
+            text = (work / "cp2k.out").read_text(encoding="utf-8")
+            cp2k = parse_output(text)
+            forces = parse_force_artifact(work / "forces.xyz")
+            if (
+                not cp2k["program_ended"] or not cp2k["scf_converged"]
+                or cp2k["energy_hartree"] is None or not math.isfinite(cp2k["energy_hartree"])
+                or len(forces) != len(metadata["atoms"])
+                or not all(keyword in text for keyword in ("GAPW", "PBE", "cc-pVDZ.cp2k", "ALL_POTENTIALS"))
+            ):
+                raise ValueError("Converged CP2K H2 energy, native forces or locked model evidence is missing")
+            record["engine_energy_hartree"] = cp2k["energy_hartree"]
+            record["engine_forces_hartree_per_bohr"] = forces
+            parsing_start = time.monotonic()
+            if case.density:
+                density = parse_cube(work / CUBE)
+                density["geometry_check"] = check_density_geometry(density, metadata)
+                if density["comments"] != ["-Quickstep-", " TOTAL ELECTRON DENSITY"]:
+                    raise ValueError("Unexpected native CP2K density-field identity")
+                record["density"] = density
+            record["files"] = [
+                {"file": key, "bytes": files[key].st_size,
+                 "sha256": record["density"]["sha256"] if key == CUBE else sha256(work / key)}
+                for key in sorted(expected)
+            ]
+            record["output_analysis_seconds"] = time.monotonic() - parsing_start
+            record["status"] = "measured"
+        except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
+            record["error"] = f"{type(exc).__name__}: {exc}"[:500]
+        finally:
+            try:
+                clean_container(name)
+                record["container_removed"] = True
+            except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+                record["status"] = "cleanup_error"
+                record["container_removed"] = False
+                record["error"] = f"{type(exc).__name__}: {exc}"[:500]
+            try:
+                sample_scratch(work, record)
+                log_excerpt(work, diagnostics / f"{case.name}-attempt-{attempt}.log")
+            except (OSError, ValueError) as exc:
+                if record["status"] in {"container_oom", "measured"}:
+                    record["status"] = "scratch_guard"
+                record["scratch_error"] = f"{type(exc).__name__}: {exc}"[:500]
+            record["total_attempt_seconds"] = time.monotonic() - started
+
+
+def run_case(case: Case, candidate: dict, scratch: Path, diagnostics: Path, result: dict) -> None:
+    result.update({
+        "case": case.name, "attempts": [], "status": "not_measured", "case_timeout_seconds": case.wall_seconds,
+        "minimum_memory_bytes": case.minimum_memory_bytes,
+    })
+    prior_grant = 0
+    for number, tier in enumerate((0, len(MEMORY_TIERS_BYTES) - 1), start=1):
+        available = available_memory_bytes()
+        free = shutil.disk_usage(scratch).free
+        budget = memory_budget(available, tier)
+        if budget is not None and prior_grant:
+            budget = min(budget, prior_grant + 2 * GIB)
+        reason = None
+        if free < DISK_ADMISSION:
+            reason = "insufficient_disk_headroom"
+        elif budget is None or budget < case.minimum_memory_bytes:
+            reason = "insufficient_memory_for_case_minimum"
+        elif budget <= prior_grant:
+            reason = "no_safe_increased_memory_grant"
+        if reason:
+            result.update(
+                status="deferred",
+                admission={
+                    "attempt": number, "available_memory_bytes": available, "free_disk_bytes": free,
+                    "safe_grant_bytes": budget, "prior_grant_bytes": prior_grant or None,
+                    "reason": reason,
+                },
+            )
+            return
+        assert budget is not None
+        attempt: dict = {}
+        result["attempts"].append(attempt)
+        run_attempt(case, number, budget, available, candidate, scratch, diagnostics, attempt)
+        result["status"] = attempt["status"]
+        if attempt["status"] != "container_oom":
+            return
+        prior_grant = budget
+
+
+def baseline_comparison(off: dict, on: dict) -> dict:
+    av01 = next(c for c in json.loads(VALIDATION_PLAN.read_bytes())["checks"] if c["id"] == "AV01")
+    a, b = (r["attempts"][-1] for r in (off, on))
+    f0, f1 = (r["engine_forces_hartree_per_bohr"] for r in (a, b))
+    de = abs(a["engine_energy_hartree"] - b["engine_energy_hartree"])
+    df = max(abs(x-y) for v, w in zip(f0, f1, strict=True) for x, y in zip(v, w, strict=True))
+    return {
+        "scope": "same-engine baseline print off/on; borrows AV01 tolerances; does not execute AV01",
+        "tolerance_source": str(VALIDATION_PLAN.relative_to(ROOT)) + "#AV01",
+        "absolute_energy_difference_hartree": de,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": df,
+        "energy_atol_hartree": av01["energy_atol_hartree"],
+        "force_atol_hartree_per_bohr": av01["force_atol_hartree_per_bohr"],
+        "passes_baseline_observational_comparison": (
+            de <= av01["energy_atol_hartree"] and df <= av01["force_atol_hartree_per_bohr"]
+        ),
+        "density_cube_bytes": b["density"]["bytes"],
+        "total_output_bytes_delta": b["output_bytes"] - a["output_bytes"],
+        "observed_cgroup_peak_bytes_delta": b["cgroup_memory_peak_bytes"] - a["cgroup_memory_peak_bytes"],
+        "wall_seconds_delta": (
+            b["engine_resource"]["engine_wall_seconds"] - a["engine_resource"]["engine_wall_seconds"]
+        ),
+    }
+
+
+def load_locked_candidate(directory: Path) -> dict:
+    if RECEIPT.stat().st_size > REPORT_LIMIT:
+        raise ValueError("Oversized x86 predecessor receipt")
+    receipt = json.loads(RECEIPT.read_bytes())
+    if (
+        receipt["platform"] != "linux/amd64"
+        or receipt["native_build_and_a03"]["a03_passed"] is not True
+        or receipt["upstream_gapw"]["conclusion"] != "success"
+        or receipt["upstream_gapw"]["passed"] != 5
+    ):
+        raise ValueError("x86 predecessor receipt does not authorize the fixed native candidate")
+    source = receipt["quanta_candidate_source"]
+    metadata, image_proof = load_candidate(directory, source, architecture="amd64")
+    if metadata != receipt["candidate"]:
+        raise ValueError("Candidate archive metadata differs from the pinned A03/GAPW receipt")
+    for key, value in receipt["image_identity"].items():
+        if key not in {"already_loaded_identical_image", "daemon_image_id"} and image_proof.get(key) != value:
+            raise ValueError(f"Loaded candidate differs from pinned A03/GAPW image identity: {key}")
+    return {
+        "predecessor_receipt": str(RECEIPT.relative_to(ROOT)), "predecessor_receipt_sha256": sha256(RECEIPT),
+        "source_sha": source, "cp2k_source": receipt["cp2k_source"],
+        "binary_sha256": metadata["binary_sha256"], "image_id": image_proof["daemon_image_id"],
+        "metadata": metadata, "image_proof": image_proof,
+    }
+
+
+def write_report(path: Path, report: dict) -> None:
+    raw = (json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2) + "\n").encode("utf-8")
+    if len(raw) > REPORT_LIMIT:
+        raise ValueError("Resource report exceeded its fixed evidence budget")
+    target = path.with_suffix(".tmp")
+    target.write_bytes(raw)
+    target.replace(path)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--candidate-dir", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path, required=True)
+    args = parser.parse_args()
+    output = args.output_dir.resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    diagnostics = output / "diagnostics"
+    diagnostics.mkdir()
+    report: dict = {
+        "schema_version": 1, "scope": "isolated_native_x86_A04_resource_measurement",
+        "status": "controller_error", "cases": [],
+        "quanta_source": os.environ.get("GITHUB_SHA"),
+        "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
+        "resource_policy": {
+            "case_concurrency": 1, "cpus": 1, "omp_threads": 1, "swap_extra_bytes": 0,
+            "normal_memory_cap_bytes": MEMORY_TIERS_BYTES[0],
+            "retry_memory_cap_bytes": MEMORY_TIERS_BYTES[-1],
+            "retry_maximum_increase_bytes": 2 * GIB,
+            "admission_memory_reserve_bytes": MEMORY_RESERVE_BYTES,
+            "work_logical_and_allocated_bytes_sampled_limit": WORK_LIMIT,
+            "work_filesystem": "disk-backed; sampled aggregate, hard 1 GiB per-file rlimit",
+            "work_sample_interval_seconds": HEARTBEAT, "per_file_rlimit_fsize_bytes": GIB,
+            "tmpfs_limit_bytes": TMPFS_LIMIT, "admission_free_disk_bytes": DISK_ADMISSION,
+            "guard_free_disk_bytes": DISK_GUARD, "guard_available_memory_bytes": MEMORY_GUARD,
+            "oom_retry": "one fresh attempt per case, verified container OOM and strictly larger safe grant only",
+            "raw_cube": "streamed, hashed and measured as written; temporary disk scratch discarded",
+            "engine_rss": "Linux wait4 ru_maxrss, KiB, distinct from cgroup memory",
+        },
+        "verification_scope": {
+            "production_oci_measured": False, "public_execution_support": False, "runtime_contract_frozen": False,
+            "AV01_adapter": "not_executed", "AV03_AV04_convergence": "not_executed",
+            "AV05_AV06_density_acceptance": "not_executed", "density_spatial_convergence": "not_tested",
+            "physical_validation": "unvalidated",
+        },
+    }
+    try:
+        require_native_ci()
+        if shutil.disk_usage(output).free < DISK_ADMISSION:
+            raise ValueError("Work filesystem has insufficient disk headroom before image load")
+        filesystem = subprocess.check_output(
+            ["findmnt", "--noheadings", "--output", "FSTYPE", "--target", str(output)],
+            text=True, timeout=10,
+        ).strip()
+        if filesystem not in {"ext4", "xfs", "btrfs"}:
+            raise ValueError(f"Work scratch must be on the native runner's disk filesystem, got {filesystem}")
+        report["resource_policy"]["observed_work_filesystem_type"] = filesystem
+        if memory_budget(available_memory_bytes(), 0) is None:
+            raise ValueError("Insufficient available memory before image load")
+        candidate = load_locked_candidate(args.candidate_dir)
+        report["candidate"] = candidate
+        # Keep raw scratch outside the evidence path even if the job is killed
+        # before normal cleanup or the artifact step runs after a cancellation.
+        if output.stat().st_dev != output.parent.stat().st_dev:
+            raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
+        with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
+            for case in CASES:
+                row: dict = {}
+                report["cases"].append(row)
+                run_case(case, candidate, Path(directory), diagnostics, row)
+                if row["status"] != "measured":
+                    report["status"] = row["status"]
+                    break
+                if case.name == BASELINE_CASE_IDS[-1]:
+                    comparison = baseline_comparison(*report["cases"][:2])
+                    report["baseline_comparison"] = comparison
+                    if not comparison["passes_baseline_observational_comparison"]:
+                        report["status"] = "baseline_difference"
+                        break
+            else:
+                report["status"] = "measured"
+        report["scratch_removed"] = True
+    except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as exc:
+        report["error"] = f"{type(exc).__name__}: {exc}"[:500]
+    finally:
+        write_report(output / "report.json", report)
+    print(f"A04 native resource measurement: {report['status']}; report.json")
+    return 0 if report["status"] == "measured" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 x86 후보 실측과 GAPW 회귀 통과
+## 현재 개발 위치 — A04 가용 메모리 기반 격리 실측
+
+2026-11-08 KST, [A04 자원 실측 CI](.github/workflows/atomistic-a04-resource-ci.yml)를 추가했습니다. 고정 x86 후보의 이미지 다이제스트와 선행 A03·GAPW 결과를 대조한 뒤 한 번에 한 사례를 실행합니다. 가용 메모리에서 2 GiB를 남긴 범위의 기본 상한은 10 GiB입니다. 컨테이너 메모리 부족이 확인되고 여유가 충분한 경우 같은 입력을 새 임시 경로에서 최대 12 GiB까지 한 번 재실행합니다.
+
+전체 CUBE는 디스크 임시 작업 공간에 기록합니다. 파일당 1 GiB 쓰기 상한, 한 작업 폴더 합계 2 GiB의 주기적 감시, `/tmp` 256 MiB 및 실행 전 10 GiB/실행 중 6 GiB의 디스크 여유 기준을 사용합니다. 기준 H₂의 밀도 출력 사용 전후와 20 Å·800 Ry 전체 밀도를 측정합니다. 현재 경로는 비운영 네이티브 CI이며 OCI 운영 반영, 수렴·물리 합격과는 구분합니다. [자원 정책과 한도](docs/design/atomistic-a04-v0.1/finite-cell-resource-review.md)
+
+**다음 시작점은 새 CI의 실제 가용량·배정 메모리·피크·출력 크기와 재시도 근거를 대조하는 단계**입니다. 실측 결과를 토대로 유한 셀과 격자 세분화의 후속 검증 범위를 판단합니다.
+
+## A04 검증 근거 — x86 후보 실측과 GAPW 회귀 통과
 
 2026-11-08 KST, CP2K 2026.2의 추적 가능한 x86-64-v2 후보로 고정 A03 격리 실측 5건과 원본 GAPW 회귀 5건을 모두 통과했습니다. 빌드 소스 `3b0d0bcf15786747a7bab1b4aa015faf80172a16`, CP2K 리비전 `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`, 바이너리 SHA `67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9`를 대조했습니다. [x86 빌드·A03](https://github.com/Hyunwoo1205/quanta/actions/runs/42385227123) · [GAPW 재실행](https://github.com/Hyunwoo1205/quanta/actions/runs/42389732936) · [실측 영수증](docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json)
 

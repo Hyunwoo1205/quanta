@@ -1,0 +1,119 @@
+name: Atomistic A04 adaptive resource measurement
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-resource-ci.yml
+      - scripts/atomistic_a04_resources.py
+      - scripts/run_atomistic_a04_resource_ci.py
+      - tests/test_atomistic_a04_resources.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  measure:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Verify the locked candidate image and A03 and GAPW results
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = x86_64
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          def get(path):
+              raw = subprocess.check_output(
+                  ["gh", "api", "repos/Hyunwoo1205/quanta/actions/" + path],
+                  timeout=30,
+              )
+              return json.loads(raw)
+
+          receipt = json.loads(Path(
+              "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json"
+          ).read_bytes())
+          assert receipt["platform"] == "linux/amd64"
+          a03 = receipt["native_build_and_a03"]
+          gapw = receipt["upstream_gapw"]
+          source = receipt["quanta_candidate_source"]
+          assert a03["a03_passed"] and gapw["passed"] == 5
+          build_path = f'runs/{a03["run_id"]}/attempts/1'
+          build = get(build_path)
+          assert build["head_sha"] == source and build["head_branch"] == "main"
+          assert build["path"] == ".github/workflows/atomistic-a04-x86.yml"
+          assert build["status"] == "completed" and build["run_attempt"] == 1
+          jobs = get(f"{build_path}/jobs")["jobs"]
+          job = next(item for item in jobs if item["id"] == a03["job_id"])
+          assert job["head_sha"] == source
+          steps = {step["name"]: step["conclusion"] for step in job["steps"]}
+          for name in (
+              "Build the locked native x86 candidate",
+              "Bind the archive to the image and executing binary",
+              "Run A03 on the pinned x86 image with isolated web observation",
+              "Preserve the candidate image for verification and replay",
+          ):
+              assert steps[name] == "success", name
+          replay = get(f'runs/{gapw["run_id"]}/attempts/1')
+          assert replay["head_sha"] == receipt["quanta_regression_source"]
+          assert replay["head_branch"] == "main" and replay["status"] == "completed"
+          assert replay["path"] == ".github/workflows/atomistic-a04-x86-gapw-replay.yml"
+          assert replay["conclusion"] == "success"
+          locked = next(item for item in receipt["artifacts"] if item["kind"] == "candidate_image")
+          candidates = get(f'runs/{build["id"]}/artifacts')["artifacts"]
+          artifact = next((item for item in candidates if item["id"] == locked["id"]), None)
+          if artifact is None or artifact["expired"]:
+              raise SystemExit("The verified x86 candidate image artifact is missing or expired")
+          assert artifact["name"] == f"atomistic-a04-x86-image-{source}"
+          assert artifact["workflow_run"]["id"] == build["id"]
+          assert artifact["workflow_run"]["head_sha"] == source
+          assert artifact["digest"] == "sha256:" + locked["zip_sha256"]
+          assert artifact["size_in_bytes"] == locked["zip_bytes"]
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+              f.write(f'run-id={build["id"]}\nartifact-id={artifact["id"]}\n')
+          PY
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ steps.candidate.outputs.run-id }}
+          artifact-ids: ${{ steps.candidate.outputs.artifact-id }}
+          path: .cache/atomistic-a04-resource/candidate
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Check the locked basis and potential bytes
+        run: |
+          python -B scripts/check_atomistic_a02.py \
+            --output .cache/atomistic-a04-resource/evidence/a02-lock-check.json
+      - name: Measure baseline and enlarged-grid cases with adaptive memory
+        run: |
+          python -B scripts/run_atomistic_a04_resource_ci.py \
+            --candidate-dir .cache/atomistic-a04-resource/candidate \
+            --output-dir .cache/atomistic-a04-resource/evidence
+      - name: Preserve the resource report and bounded diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a04-adaptive-resource-${{ github.sha }}
+          path: .cache/atomistic-a04-resource/evidence/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
