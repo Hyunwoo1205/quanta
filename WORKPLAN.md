@@ -33,6 +33,8 @@ ARM 소스 빌드 42360639779는 CA 연결 후 여섯 계산 의존성을 컴파
 
 [분리한 x86 관측42365484714](https://github.com/Hyunwoo1205/quanta/actions/runs/42365484714/artifacts/13571373918)은 기존 이미지 대조군으로 다섯 사례를 모두 통과했습니다. 실행 구간 276개 요청의 최대는 2.347 ms이며 예상 상태 위반은 0건입니다.
 
+[ARM He-D 42367516634](https://github.com/Hyunwoo1205/quanta/actions/runs/42367516634/artifacts/13572454300)는 고정 입력을 그대로 사용해 엔진 종료 0, 실행 게이트 통과, 에너지·힘·CUBE 출력과 전체 CP2K 리비전 `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`을 확인했습니다. 이미지 inspect 크기는 823,367,714 B이며 Docker 저장 아카이브가 소스 CI의 768 MiB 한도를 넘겨 전달 아티팩트가 생성되지 않았습니다. 소스·native CI의 아카이브 제한을 1 GiB로 맞추고 실제 바이트 수를 기록합니다. 기존 OCI의 2 GiB 상한·디스크·메모리·웹 조건과 해시/매니페스트 검사는 그대로 적용됩니다. 다시 만든 후보로 native 전체를 통과한 뒤에만 같은 이미지를 OCI에 전달합니다.
+
 ### 최초 OCI 후보 no-go와 준비 경과
 
 2026-11-07 KST, 고정 소스 `b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379`의 [전체 CI42337645536](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645536)·[native CI42337645488](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645488)가 ARM/x86 모두 성공했습니다. [계측 요약](docs/verification/atomistic-a03/native-42337645488-timing.json)과 [양쪽 원본 ZIP](https://drive.google.com/file/d/1t_PD30VYOuc6PJcv0zXxNkeRqaW4x11P/view?usp=drivesdk)을 보존했습니다. 웹 중 최대 ARM 1.367초, x86 1.147초입니다. 가장 느린 요청은 CUBE 파싱과 겹치고 응답 헤더 전 시간이 대부분이었으나 앞선 웹 지연의 원인을 확정하지 않습니다. 사용자가 README 표현을 수정한 최신 main 커밋은 보존했고, 실행 파일에 차이가 없는 검증된 소스를 고정해 요청했습니다.

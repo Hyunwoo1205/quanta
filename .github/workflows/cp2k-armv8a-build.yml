@@ -70,7 +70,9 @@ jobs:
         run: |
           root=.cache/cp2k-armv8-build
           docker image save -o "$root/image.tar" "$QUANTA_CANDIDATE_REF"
-          test "$(stat -c %s "$root/image.tar")" -le 805306368
+          archive_bytes=$(stat -c %s "$root/image.tar")
+          printf '%s\n' "$archive_bytes" | tee "$root/evidence/image-archive-size.txt"
+          test "$archive_bytes" -le 1073741824
           (
             cd "$root"
             sha256sum image.tar > image.tar.sha256

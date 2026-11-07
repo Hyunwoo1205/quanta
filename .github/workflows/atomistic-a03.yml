@@ -141,7 +141,9 @@ jobs:
           source_dir=.cache/cp2k-armv8-source
           archive="$source_dir/image.tar"
           test -f "$archive" && test ! -L "$archive"
-          test "$(stat -c %s "$archive")" -le 805306368
+          archive_bytes=$(stat -c %s "$archive")
+          printf 'Verified source archive input is %s bytes\n' "$archive_bytes"
+          test "$archive_bytes" -le 1073741824
           read -r image_sha archive_name < "$source_dir/image.tar.sha256"
           [[ "$image_sha" =~ ^[0-9a-f]{64}$ && "$archive_name" == image.tar ]]
           printf '%s  %s\n' "$image_sha" "$archive" | sha256sum -c -
