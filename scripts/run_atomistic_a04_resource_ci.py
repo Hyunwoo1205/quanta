@@ -63,7 +63,7 @@ class Case:
 CASES = (
     Case(BASELINE_CASE_IDS[0], 12, 400, False, 240),
     Case(BASELINE_CASE_IDS[1], 12, 400, True, 240),
-    Case("h2-20a-800ry-density-on", 20, 800, True, 900, 4 * GIB, rel_cutoff=80),
+    Case("h2-16a-800ry-density-on", 16, 800, True, 900, 4 * GIB, rel_cutoff=80),
 )
 
 
@@ -601,6 +601,12 @@ def main() -> int:
     report: dict = {
         "schema_version": 1, "scope": "isolated_native_x86_A04_resource_measurement",
         "status": "controller_error", "cases": [],
+        "known_unadmitted_cases": {
+            "h2-20a-800ry-density-on": {
+                "reason": "Measured OOM at both 10 GiB and 12 GiB; needs a separately qualified envelope",
+                "receipt": "docs/verification/atomistic-a04/resource-42392008763.json",
+            },
+        },
         "quanta_source": os.environ.get("GITHUB_SHA"),
         "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
         "resource_policy": {

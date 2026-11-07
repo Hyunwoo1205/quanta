@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "scope": "native_x86_resource_measurement_and_memory_admission",
+  "workflow_run_id": 42392008763,
+  "workflow_job_id": 128461361502,
+  "quanta_source": "d1a2111d1e5948d9aef57ec8b022978b5b818a15",
+  "workflow_conclusion": "failure",
+  "raw_artifact": {
+    "id": 13581882987,
+    "bytes": 37942,
+    "sha256": "3a889a8b1a0697b8d5e56bdde0e56716f76a9e42e55388fb2dcdaf914a891bcb",
+    "report_sha256": "130fbbffb4e62f4d44794242394b915be658a8f22ef14e38670c2852e8c7b4c8"
+  },
+  "candidate_source": "3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "resource_policy": {
+    "case_concurrency": 1,
+    "cpus": 1,
+    "omp_threads": 1,
+    "swap_extra_bytes": 0,
+    "normal_memory_cap_bytes": 10737418240,
+    "retry_memory_cap_bytes": 12884901888,
+    "retry_maximum_increase_bytes": 2147483648,
+    "admission_memory_reserve_bytes": 2147483648,
+    "work_logical_and_allocated_bytes_sampled_limit": 2147483648,
+    "work_filesystem": "disk-backed; sampled aggregate, hard 1 GiB per-file rlimit",
+    "work_sample_interval_seconds": 1.0,
+    "per_file_rlimit_fsize_bytes": 1073741824,
+    "tmpfs_limit_bytes": 268435456,
+    "admission_free_disk_bytes": 10737418240,
+    "guard_free_disk_bytes": 6442450944,
+    "guard_available_memory_bytes": 2147483648,
+    "oom_retry": "one fresh attempt per case, verified container OOM and strictly larger safe grant only",
+    "raw_cube": "streamed, hashed and measured as written; temporary disk scratch discarded",
+    "engine_rss": "Linux wait4 ru_maxrss, KiB, distinct from cgroup memory",
+    "observed_work_filesystem_type": "ext4"
+  },
+  "cases": [
+    {
+      "case": "h2-12a-400ry-density-off",
+      "status": "measured",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "measured",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 14776168448,
+          "minimum_sampled_available_memory_bytes": 13213351936,
+          "cgroup_memory_peak_bytes": 1845874688,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 1833730048,
+            "file": 6668288,
+            "shmem": 6467584
+          },
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": false,
+          "output_bytes": 48072,
+          "container_elapsed_seconds": 31.825551887999993,
+          "input_sha256": "d42f71398cbbf2187d4f4c88bafabfe4b946f60d57c3b24ce3e3f7376e0cfa25",
+          "container_removed": true
+        }
+      ]
+    },
+    {
+      "case": "h2-12a-400ry-density-on",
+      "status": "measured",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "measured",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15394779136,
+          "minimum_sampled_available_memory_bytes": 13586415616,
+          "cgroup_memory_peak_bytes": 1891487744,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 1833738240,
+            "file": 50946048,
+            "shmem": 6467584
+          },
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": false,
+          "output_bytes": 44486535,
+          "container_elapsed_seconds": 32.784385799999995,
+          "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "container_removed": true
+        }
+      ]
+    },
+    {
+      "case": "h2-20a-800ry-density-on",
+      "status": "container_oom",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "container_oom",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15638286336,
+          "minimum_sampled_available_memory_bytes": 6134042624,
+          "cgroup_memory_peak_bytes": 10737418240,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 9527980032,
+            "file": 8695808,
+            "shmem": 8667136
+          },
+          "cgroup_memory_events_max": {
+            "max": 21,
+            "oom": 1,
+            "oom_kill": 1,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": true,
+          "container_elapsed_seconds": 76.60642669500004,
+          "input_sha256": "d17d656bb1e97d4aa68fdb1f1e56fb4e3d30bde91a103a65393970d81b0cd0c9",
+          "container_removed": true
+        },
+        {
+          "attempt": 2,
+          "status": "container_oom",
+          "granted_memory_bytes": 12884901888,
+          "available_memory_at_admission_bytes": 15338725376,
+          "minimum_sampled_available_memory_bytes": 3346890752,
+          "cgroup_memory_peak_bytes": 12884901888,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 12348325888,
+            "file": 8695808,
+            "shmem": 8667136
+          },
+          "cgroup_memory_events_max": {
+            "max": 21,
+            "oom": 1,
+            "oom_kill": 1,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": true,
+          "container_elapsed_seconds": 84.77624497400001,
+          "input_sha256": "d17d656bb1e97d4aa68fdb1f1e56fb4e3d30bde91a103a65393970d81b0cd0c9",
+          "container_removed": true
+        }
+      ]
+    }
+  ],
+  "baseline_comparison": {
+    "scope": "same-engine baseline print off/on; borrows AV01 tolerances; does not execute AV01",
+    "tolerance_source": "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+    "absolute_energy_difference_hartree": 0.0,
+    "absolute_maximum_force_component_difference_hartree_per_bohr": 0.0,
+    "energy_atol_hartree": 1e-08,
+    "force_atol_hartree_per_bohr": 1e-07,
+    "passes_baseline_observational_comparison": true,
+    "density_cube_bytes": 44437812,
+    "total_output_bytes_delta": 44438463,
+    "observed_cgroup_peak_bytes_delta": 45613056,
+    "wall_seconds_delta": 1.7508293380000168
+  },
+  "large_case_outcome": "Confirmed container OOM at 10 GiB and 12 GiB before full CUBE completion; required total memory remains unmeasured.",
+  "verification_scope": {
+    "production_oci_measured": false,
+    "public_execution_support": false,
+    "runtime_contract_frozen": false,
+    "AV01_adapter": "not_executed",
+    "AV03_AV04_convergence": "not_executed",
+    "AV05_AV06_density_acceptance": "not_executed",
+    "density_spatial_convergence": "not_tested",
+    "physical_validation": "unvalidated"
+  }
+}
