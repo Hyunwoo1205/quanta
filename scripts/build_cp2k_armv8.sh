@@ -73,6 +73,27 @@ unpack() {
     tar -xf "archives/$archive" --directory "$package" --strip-components=1
 }
 
+check_compile_flags() {
+    python3 - "$1" <<'PY'
+import json
+import shlex
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+allowed = {"-march=armv8-a", "-mtune=generic", "-mcpu=generic"}
+commands = json.loads(path.read_text())
+if not commands:
+    raise SystemExit(f"No compile commands in {path}")
+for command in commands:
+    arguments = command.get("arguments") or shlex.split(command["command"])
+    flags = {arg for arg in arguments if arg.startswith(("-march=", "-mtune=", "-mcpu="))}
+    if "-march=armv8-a" not in flags or flags - allowed:
+        raise SystemExit(f"Unexpected compiler target flags in {command['file']}: {sorted(flags)}")
+print(path.name, len(commands), "ARMv8-A baseline verified")
+PY
+}
+
 cmake_build() {
     local name="$1" source="$2" destination="$3"
     shift 3
@@ -90,6 +111,7 @@ cmake_build() {
         >"$evidence/$name-configure.log" 2>&1 || { cat "$evidence/$name-configure.log"; return 1; }
     cp "$build/CMakeCache.txt" "$evidence/$name-CMakeCache.txt"
     cp "$build/compile_commands.json" "$evidence/$name-compile_commands.json"
+    check_compile_flags "$build/compile_commands.json"
     printf 'Building %s (jobs=%s)\n' "$name" "$jobs"
     cmake --build "$build" --parallel "$jobs" >"$evidence/$name-build.log" 2>&1 \
         || { tail -n 130 "$evidence/$name-build.log"; return 1; }
@@ -139,6 +161,7 @@ cmake_build libint "$inputs/libint" "$deps" \
     -DCMAKE_DISABLE_FIND_PACKAGE_Boost=ON -DCMAKE_CXX_FLAGS_RELEASE=-O1
 
 cmake_build cp2k "$inputs/cp2k" "$prefix" \
+    -DCMAKE_BUILD_TYPE=Generic \
     "-DCP2K_DATA_DIR=$prefix/share/cp2k/data" \
     -DCP2K_USE_ACCEL=NONE -DCP2K_USE_EVERYTHING=OFF -DCP2K_USE_MPI=ON \
     -DCP2K_BLAS_VENDOR=OpenBLAS -DCP2K_SCALAPACK_VENDOR=GENERIC \
@@ -163,24 +186,3 @@ rm -rf "$prefix/include" "$deps/include" "$deps/share" "$deps/bin" \
 ) >"$evidence/installed-files.sha256"
 readelf -h "$prefix/bin/cp2k.psmp" >"$evidence/cp2k-elf-header.txt"
 grep -F AArch64 "$evidence/cp2k-elf-header.txt"
-
-python3 - "$evidence" <<'PY'
-import json
-import shlex
-import sys
-from pathlib import Path
-
-directory = Path(sys.argv[1])
-allowed = {"-march=armv8-a", "-mtune=generic", "-mcpu=generic"}
-for path in sorted(directory.glob("*-compile_commands.json")):
-    commands = json.loads(path.read_text())
-    if not commands:
-        raise SystemExit(f"No compile commands in {path.name}")
-    observed = set()
-    for command in commands:
-        arguments = command.get("arguments") or shlex.split(command["command"])
-        observed.update(arg for arg in arguments if arg.startswith(("-march=", "-mtune=", "-mcpu=")))
-    if "-march=armv8-a" not in observed or observed - allowed:
-        raise SystemExit(f"Unexpected compiler target flags in {path.name}: {sorted(observed)}")
-    print(path.name, len(commands), " ".join(sorted(observed)))
-PY
