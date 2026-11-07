@@ -1,0 +1,72 @@
+name: OCI fixed atomistic A03 probe
+
+on:
+  push:
+    branches:
+      - ops/oci
+    paths:
+      - .github/oci/atomistic-request.json
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: quanta-oci-installation
+  cancel-in-progress: false
+
+jobs:
+  atomistic:
+    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/ops/oci' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    environment: oci-preflight
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Checkout independently verified fixed control
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 'b621e836af61d7b63933ab7802722fa1ee79f531'
+          path: verified-atomistic-control
+          persist-credentials: false
+      - name: Require successful same-source full and native engine CI
+        id: authorize
+        env:
+          QUANTA_ATOMISTIC_CONTROL_SHA: 'b621e836af61d7b63933ab7802722fa1ee79f531'
+          QUANTA_ATOMISTIC_CONTROL_CI_RUN: '42262527946'
+          QUANTA_ATOMISTIC_SOURCE_CI_RUN: '42262527946'
+          QUANTA_ATOMISTIC_NATIVE_CI_RUN: '42262528023'
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+        run: python3 -I -B verified-atomistic-control/deploy/oci/authorize_atomistic_probe.py
+      - name: Install existing-key SSH transport
+        run: |
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
+      - name: Execute only the fixed isolated benchmark
+        env:
+          QUANTA_ATOMISTIC_CONTROL_SHA: 'b621e836af61d7b63933ab7802722fa1ee79f531'
+          QUANTA_ATOMISTIC_CONTROL_CI_RUN: '42262527946'
+          QUANTA_ATOMISTIC_SOURCE_CI_RUN: '42262527946'
+          QUANTA_ATOMISTIC_NATIVE_CI_RUN: '42262528023'
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+          QUANTA_ATOMISTIC_OPERATION: ${{ steps.authorize.outputs.operation }}
+          QUANTA_ATOMISTIC_SOURCE_SHA: ${{ steps.authorize.outputs.source_sha }}
+          QUANTA_ATOMISTIC_REQUEST_ID: ${{ steps.authorize.outputs.request_id }}
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+          QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
+          QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
+        run: |
+          mkdir -p .cache
+          python3 -I -B verified-atomistic-control/deploy/oci/probe_atomistic.py > .cache/oci-atomistic-report.json
+      - name: Preserve the sanitized benchmark receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oci-atomistic-a03-${{ github.sha }}
+          path: .cache/oci-atomistic-report.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
