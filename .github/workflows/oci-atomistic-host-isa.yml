@@ -1,0 +1,68 @@
+name: OCI fixed A03 host ISA diagnostic
+
+on:
+  push:
+    branches:
+      - ops/oci
+    paths:
+      - .github/oci/atomistic-host-isa-request.json
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: quanta-oci-installation
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/ops/oci' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    environment: oci-preflight
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Checkout independently tested fixed host ISA diagnostic
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 'bea7132b61d92f7e65f1ff7953e0b1c6ee5ef90a'
+          path: verified-host-isa-control
+          persist-credentials: false
+      - name: Validate request and independent successful CI
+        id: authorize
+        env:
+          QUANTA_HOST_ISA_CONTROL_SHA: 'bea7132b61d92f7e65f1ff7953e0b1c6ee5ef90a'
+          QUANTA_HOST_ISA_CONTROL_CI_RUN: '42340286714'
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+        run: python3 -I -B verified-host-isa-control/deploy/oci/diagnose_atomistic_host_isa.py --authorize
+      - name: Install existing-key SSH transport on the runner
+        run: |
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
+      - name: Read only host ISA features and fixed failed-case evidence
+        env:
+          QUANTA_HOST_ISA_CONTROL_SHA: 'bea7132b61d92f7e65f1ff7953e0b1c6ee5ef90a'
+          QUANTA_HOST_ISA_CONTROL_CI_RUN: '42340286714'
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+          QUANTA_HOST_ISA_OPERATION: ${{ steps.authorize.outputs.operation }}
+          QUANTA_HOST_ISA_SOURCE_SHA: ${{ steps.authorize.outputs.source_sha }}
+          QUANTA_HOST_ISA_REQUEST_ID: ${{ steps.authorize.outputs.request_id }}
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+          QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
+          QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
+        run: |
+          mkdir -p .cache
+          python3 -I -B verified-host-isa-control/deploy/oci/diagnose_atomistic_host_isa.py > .cache/oci-atomistic-host-isa.json
+      - name: Preserve the sanitized diagnostic receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oci-atomistic-host-isa-${{ github.sha }}
+          path: .cache/oci-atomistic-host-isa.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
