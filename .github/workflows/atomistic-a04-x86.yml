@@ -43,7 +43,8 @@ jobs:
           set -euo pipefail
           mkdir -p .cache/atomistic-a04/build
           docker_root=$(docker info --format '{{.DockerRootDir}}')
-          cores=$(nproc)
+          # GNU nproc observes OpenMP limits. These limit calculation threads, not compiler jobs.
+          cores=$(env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT nproc)
           memory_kib=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
           disk_kib=$(sudo df -Pk "$docker_root" | awk 'NR==2 {print $4}')
           {

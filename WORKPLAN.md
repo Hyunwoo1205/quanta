@@ -22,6 +22,8 @@
 
 [첫 x86 시도 42384984467](https://github.com/Hyunwoo1205/quanta/actions/runs/42384984467)은 CPython 3.12.14 설치 후 러너 사전 검사에서 종료됐습니다. 용량 기록 전 종료해 당시 CPU 수는 남지 않았고 컴파일·계산은 시작하지 않았습니다. 재시도는 자원 정보를 먼저 기록하고, CPU가 2개 또는 3개 이상일 때 각각 2개 또는 3개 빌드 작업을 사용합니다. 메모리 6 GiB 및 Docker 디스크 10 GiB 사전 기준과 계산 컨테이너 제한은 유지합니다.
 
+[두 번째 시도 42385120843](https://github.com/Hyunwoo1205/quanta/actions/runs/42385120843)은 가용 메모리 15,154,448 KiB, Docker 여유 89,215,724 KiB를 기록한 뒤 CPU 수 1에서 종료됐습니다. GNU `nproc`가 워크플로의 계산용 `OMP_NUM_THREADS=1`을 CPU 상한에 반영하는 동작을 별도로 재현했습니다. CPU 용량 조회에만 OpenMP 환경 변수를 제외하고 계산 스레드·자원 한도는 유지한 채 재시도합니다.
+
 ## A04 설계 범위 — 원자계 계약 초안과 사전 검증 기준
 
 2026-11-07 KST, 추적 가능한 ARMv8-A CP2K 후보를 기준으로 [A04 프로필 초안](docs/design/atomistic-a04-v0.1/profile.json)과 [사용자 작성 JSON 스키마 초안](docs/design/atomistic-a04-v0.1/authored-input.schema.json)을 추가했습니다. 지원 후보는 중성 닫힌껍질 2전자·비주기 3D의 단일 정적 계산입니다. 사용자가 원자 ID·동위원소·SI 좌표·기저 후보·관측량을 지정합니다. He/H₂ 검증 입력 ID를 실행 선택에 사용하지 않으며 좌표·ID·배열 순서 및 원본 결과의 출처를 보존하도록 설계했습니다.
