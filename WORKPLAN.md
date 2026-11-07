@@ -12,15 +12,23 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 ARM 후보 출처 대조 및 GAPW 회귀 통과
+## 현재 개발 위치 — A04 원자계 계약 초안과 사전 검증 기준
+
+2026-11-07 KST, 추적 가능한 ARMv8-A CP2K 후보를 기준으로 [A04 프로필 초안](docs/design/atomistic-a04-v0.1/profile.json)과 [사용자 작성 JSON 스키마 초안](docs/design/atomistic-a04-v0.1/authored-input.schema.json)을 추가했습니다. 지원 후보는 중성 닫힌껍질 2전자·비주기 3D의 단일 정적 계산입니다. 사용자가 원자 ID·동위원소·SI 좌표·기저 후보·관측량을 지정합니다. He/H₂ 검증 입력 ID를 실행 선택에 사용하지 않으며 좌표·ID·배열 순서 및 원본 결과의 출처를 보존하도록 설계했습니다.
+
+CP2K CODATA 2006의 Bohr·Hartree·힘·전자수밀도 환산값을 binary64로 명시하고, CODATA 2022 bare 핵질량을 CP2K의 질량 단위로 표현하는 십진 반올림을 구분했습니다. CUBE의 E13.5E3 유효 5자리 필드와 F12.6 헤더 좌표를 분리했습니다. 기록된 격자 벡터와 음수를 포함한 원시값으로 적분하며, 음수 표본 수·최솟값·음수 적분을 보존합니다. A01의 AV01~AV12와 허용오차는 유지하고, 독립 수치 비교와 밀도장 해상도 검증을 구분했습니다. 원자 격자의 추가 세분화 후보는 radial 100/150/200 및 Lebedev 110/146/194이며 실행 전 자원 검토 대상입니다. [단위·밀도 근거](docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json) · [사전 검증 기준](docs/design/atomistic-a01-v0.1/validation-plan.json)
+
+설계 시험 6건에서 작성한 여러 배치의 스키마 적합성, 범위 밖 입력 거부, 후보 출처·자료 해시·단위/질량 반올림, CUBE 정밀도와 검증 상태 분리를 확인했습니다. 원자계의 새 엔진 실행·어댑터 검증·수렴 시험은 후속 범위이며 물리 검증은 `unvalidated`입니다. 공개 런타임 계약 버전은 미지정입니다.
+
+**다음 시작점은 x86_64의 추적 가능한 후보 준비와 A04 동결 조건 확인**입니다. 기존 x86 공식 이미지는 리비전 `unknown`인 A03 대조군입니다. x86 빌드 입력·의존성 ABI를 확인하고 동일 소스의 빌드·격리 A03·고정 GAPW를 대조합니다. 이어 초기 수치 프로필·유한 셀 허용 조건과 좌표 변환·세분화 자원 한도를 검토하고 A04 동결을 판단합니다. A05는 원본/파생 데이터와 공간·시각 계약, A06은 작성 JSON을 실행에 연결하는 정적 어댑터입니다. [x86 후보 준비](docs/design/atomistic-a04-source-traceability.md) · [개발 로드맵](docs/design/research-roadmap-v1.json)
+
+## A04 완료 범위 — ARM 후보 출처 대조 및 GAPW 회귀 통과
 
 2026-11-07 KST, A03 OCI에서 검증한 ARMv8-A 이미지의 소스·빌드·의존성·바이너리와 실제 native/OCI 실행을 대조했습니다. CP2K `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`과 실행 바이너리 SHA `af665277ebd21d4397448d49a9ce666756a05ebcf401a9967e19c32af9c9b60f`를 확인했습니다. [소스·의존성 기록](docs/verification/atomistic-a04/armv8a-source-dependency-review.json) · [단위·핵질량·CUBE 소스 대조](docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json)
 
 동일 이미지로 네이티브 ARM CI에서 고정 CP2K `QS/regtest-gapw-2` 5건을 원래 순서대로 실행했습니다. 1 CPU·4 GiB 격리 환경에서 MPI 1 rank·OpenMP 1 thread·테스트 worker 1을 사용했습니다. 종료 코드 0, `Status: OK`, 5/5를 확인했습니다. 최초 실행의 영수증에 상대 허용오차 단위를 잘못 표기한 것을 고쳤고, 재실행에서 원본 에너지로 upstream의 상대 오차를 별도 재계산해 다섯 건이 모두 기준 이내임을 확인했습니다. [실행 결과](https://github.com/Hyunwoo1205/quanta/actions/runs/42376916235) · [검증 영수증](docs/verification/atomistic-a04/gapw-42376916235.json)
 
 개인용 Drive 프로젝트 폴더의 `Quanta — 구현한 물리 법칙과 모형`은 계산식·가정·단위·적용 범위와 검증 근거를 설명합니다. 관련 구현과 검증이 바뀌면 같은 작업에서 해당 절을 갱신하며, 후속 변경 감시도 같은 문서 ID를 사용합니다.
-
-**다음 시작점은 A04 계약의 수치·단위·검증 기준 검토**입니다. CP2K CODATA2006 단위 변환과 CODATA2022 bare 핵질량의 적용 범위를 구분하고 CUBE의 전자수밀도 의미·원본 정밀도·수렴 및 독립 기준/허용오차를 정합니다. 지원 플랫폼과 독립 x86 후보 검증 범위를 명시한 뒤 자유 JSON 원자계 계약의 동결을 판단합니다. 원자계 어댑터의 공개 실행과 물리 검증은 후속 단계이며 현재 `unvalidated`입니다. [A04 설계](docs/design/atomistic-a04-source-traceability.md)
 
 ## A03 완료 범위 — 범용 ARMv8-A 후보의 OCI 격리 실측
 

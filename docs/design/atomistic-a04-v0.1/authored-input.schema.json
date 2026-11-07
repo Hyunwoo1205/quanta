@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Quanta A04 atomistic authored input draft",
+  "description": "Design-only shape for a single static operation. Shape validation alone does not establish model compatibility, resource admission or runtime support.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "model", "numerics", "operation", "observables"],
+  "properties": {
+    "system": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["atoms", "boundary", "charge_e", "multiplicity"],
+      "properties": {
+        "atoms": {
+          "type": "array",
+          "oneOf": [
+            {"minItems": 1, "maxItems": 1, "items": {"$ref": "#/$defs/helium4"}},
+            {"minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/hydrogen1"}}
+          ]
+        },
+        "boundary": {"const": "isolated_nonperiodic_3d"},
+        "charge_e": {"type": "integer", "const": 0},
+        "multiplicity": {"type": "integer", "const": 1}
+      }
+    },
+    "model": {"const": "all_electron_pbe_gapw"},
+    "numerics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis_set"],
+      "properties": {
+        "basis_set": {"enum": ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"]}
+      }
+    },
+    "operation": {"const": "single_point_energy_forces"},
+    "observables": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "total_energy_j",
+          "forces_n",
+          "nuclear_positions_m",
+          "electron_number_density_per_m3"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "atom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "element", "isotope_mass_number", "position_m"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "element": {"type": "string"},
+        "isotope_mass_number": {"type": "integer"},
+        "position_m": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {"type": "number"}
+        }
+      }
+    },
+    "hydrogen1": {
+      "$ref": "#/$defs/atom",
+      "properties": {
+        "element": {"const": "H"},
+        "isotope_mass_number": {"const": 1}
+      }
+    },
+    "helium4": {
+      "$ref": "#/$defs/atom",
+      "properties": {
+        "element": {"const": "He"},
+        "isotope_mass_number": {"const": 4}
+      }
+    }
+  }
+}

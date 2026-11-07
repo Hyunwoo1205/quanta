@@ -1,0 +1,148 @@
+{
+  "document_kind": "inactive_atomistic_contract_draft",
+  "version": "0.1.0",
+  "status": "pre_freeze_review",
+  "executable": false,
+  "runtime_contract_version": null,
+  "physical_validation_status": "unvalidated",
+  "source_basis_commit": "c0e28cc8a3b08d9972499464b4153b5a5d753b97",
+  "input_schema": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
+  "authoring_requirements": "docs/design/atomistic-a02-v0.1/authoring-requirements.json",
+  "semantic_validation": [
+    "Use strict JSON parsing and finite binary64 coordinates. Reject duplicate keys, duplicate atom IDs, unsupported fields and incompatible model inputs explicitly.",
+    "Derive atomic numbers, nuclear masses and electron count from the species, isotope and charge. For H-1 pairs check the candidate distance interval in SI; the interval is a proposed model restriction, not a measured capacity.",
+    "Keep authored coordinates and atom order immutable. The engine mapping must record the finite-cell transform and atom IDs; reject positions or density extent outside the admitted model and cell conditions. The transform, finite-cell admission and field mapping remain pending.",
+    "Resolve the named model and numerical settings explicitly before execution. Reject unsupported settings and platforms; do not fall back to another method, precision, asset, image or geometry.",
+    "Hash the authored revision, execution plan and resolved scientific state separately using RFC 8785. Raw engine inputs, logs, field files, engine images and basis assets retain exact byte identities."
+  ],
+  "model": {
+    "id": "all_electron_pbe_gapw",
+    "theory": "nonrelativistic Kohn-Sham DFT",
+    "functional": "PBE",
+    "electron_treatment": "all-electron GAPW, POTENTIAL ALL",
+    "electronic_state": "restricted closed-shell singlet ground state",
+    "reference_energy": "electronic energy plus nuclear repulsion, excluding rest, zero-point and thermal terms",
+    "forces": "negative Cartesian gradient of the total energy at fixed model and numerical settings",
+    "boundary": "isolated_nonperiodic_3d",
+    "atomic_numbers": {"H": 1, "He": 2},
+    "electron_count": 2,
+    "electron_count_rule": "sum(atomic_number) - charge_e",
+    "h2_candidate_distance_m": [6e-11, 1e-10]
+  },
+  "candidate_platform": {
+    "platform": "linux/arm64",
+    "cp2k_release": "2026.2",
+    "cp2k_commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "quanta_build_commit": "5dd1e90c8332366c1f95f5b58b260ce966af5e84",
+    "binary_sha256": "af665277ebd21d4397448d49a9ce666756a05ebcf401a9967e19c32af9c9b60f",
+    "manifest_digest": "sha256:ad3350e1fa394ab34b406fdab4131fbe2d814ede5b1e6ef2f444ac0d04ff770c",
+    "config_digest": "sha256:3c31b88484c7d077a5c3d2cabb4985b77b6e79ac3d0512a8dbb7f7fa9c05b792",
+    "provenance": "docs/verification/atomistic-a04/armv8a-source-dependency-review.json",
+    "isolated_execution": "docs/verification/atomistic-a03/oci/42372870103.json",
+    "upstream_regression": "docs/verification/atomistic-a04/gapw-42376916235.json",
+    "public_runtime_platforms": [],
+    "x86_64_scope": "A03 legacy control only; reported revision unknown; source-traced build, native A03 and pinned upstream regression remain pending"
+  },
+  "basis_and_potential": {
+    "lock": "docs/design/atomistic-a02-v0.1/manifest.json",
+    "candidate_basis_sets": ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"],
+    "potential_file": "ALL_POTENTIALS",
+    "target_basis": "cc-pVTZ subject to conditioning, numerical convergence and resource gates"
+  },
+  "units": {
+    "arithmetic": "IEEE 754 binary64, roundTiesToEven; use the pinned multiplier for each engine output",
+    "conversion_evidence": "docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json",
+    "engine_constants_edition": "CODATA 2006",
+    "engine_to_si_binary64_hex": {
+      "bohr_to_m": "0x1.d1781d2d3325ep-35",
+      "hartree_to_j": "0x1.41b13c0f9420bp-58",
+      "hartree_per_bohr_to_n": "0x1.61d9b4fc3f0fdp-24",
+      "electrons_per_bohr_cubed_to_electrons_per_m_cubed": "0x1.54b42e22f90c3p+102",
+      "amu_to_kg": "0x1.071f749a3df1dp-89"
+    },
+    "nuclear_masses_edition": "CODATA 2022",
+    "nuclear_masses_source": "https://physics.nist.gov/cuu/Constants/Table/allascii.txt",
+    "nuclear_mass_engine_input_rule": "Divide the decimal bare mass in kg by CP2K 2006 decimal atomic mass unit 1.660538782e-27 kg at 40 significant decimal digits, round half even; CP2K parses the emitted MASS in engine u to binary64.",
+    "bare_nuclei": {
+      "H-1": {"mass_kg": "1.67262192595e-27", "engine_mass_u": "1.007276640618683243737694287708602279426", "engine_mass_u_binary64_hex": "0x1.01dce1c57b63bp+0"},
+      "He-4": {"mass_kg": "6.6446573450e-27", "engine_mass_u": "4.001506870557389968866141182362340032357", "engine_mass_u_binary64_hex": "0x1.0018b045f0d9dp+2"}
+    },
+    "energy_native_unit": "hartree",
+    "forces_native_unit": "hartree/bohr",
+    "forces_format": "CP2K ATOMIC FORCES, NDIGITS 15"
+  },
+  "cube": {
+    "quantity": "electron_number_density_hard_plus_soft",
+    "native_unit": "electrons/bohr^3",
+    "si_unit": "electrons/m^3",
+    "density_include": "TOTAL_DENSITY",
+    "stride": [1, 1, 1],
+    "xrd_interface": false,
+    "append": false,
+    "axis_loop_order": ["x", "y", "z"],
+    "field_format": "E13.5E3",
+    "field_significant_digits": 5,
+    "geometry_format": "F12.6",
+    "geometry_rounding_bound_bohr_per_written_component": 5e-7,
+    "integral_rule": "compensated sum of signed serialized samples times abs(det(serialized step vectors in bohr))",
+    "diagnostics": ["integral_electrons", "minimum_raw_sample", "negative_sample_count", "negative_integral_electrons"],
+    "preserve_raw_file_bytes": true,
+    "allow_clipping_smoothing_or_renormalization": false,
+    "field_shape_convergence_status": "not_tested"
+  },
+  "exploratory_a03_baseline": {
+    "source": "scripts/atomistic_a03_inputs.py",
+    "cell_length_angstrom": 12,
+    "cutoff_ry": 400,
+    "relative_cutoff_ry": 40,
+    "ngrids": 4,
+    "eps_scf": 1e-8,
+    "max_scf": 80,
+    "scf_guess": "ATOMIC",
+    "scf_method": "OT/DIIS/FULL_ALL",
+    "poisson_solver": "MT",
+    "eps_default": 1e-12,
+    "eps_pgf_orb": 1e-10,
+    "epsfit": 1e-4,
+    "epsiso": 1e-12,
+    "epssvd": 1e-8,
+    "epsrho0": 1e-8,
+    "lmaxn0": 2,
+    "lmaxn1": 6,
+    "quadrature": "GC_LOG",
+    "radial_grid": 100,
+    "lebedev_grid": 110
+  },
+  "validation": {
+    "plan": "docs/design/atomistic-a01-v0.1/validation-plan.json",
+    "reference_data": "docs/design/atomistic-a01-v0.1/reference-data.json",
+    "criteria_status": "A01 predeclared tolerances unchanged",
+    "adapter_status": "not_implemented",
+    "numerical_acceptance_status": "not_tested",
+    "resolution_acceptance_status": "not_tested",
+    "independent_physical_acceptance_status": "unvalidated",
+    "proposal_unexecuted": {
+      "sweeps": {
+        "eps_scf": [1e-8, 1e-9, 1e-10],
+        "cutoff_ry": [400, 600, 800],
+        "relative_cutoff_ry": [40, 60, 80],
+        "cell_length_angstrom": [12, 16, 20],
+        "radial_grid": [100, 150, 200],
+        "lebedev_grid": [110, 146, 194],
+        "basis_set": ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"]
+      },
+      "atomic_grid_source": [
+        "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_subsys.F#L1283-L1294",
+        "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/lebedev.F#L358-L365"
+      ],
+      "grid_policy": "Vary one family at a time with others fixed at checked fine settings; compare the finest two by AV03 and AV04, then cross-check selected joint settings. Review limits before executing larger grids.",
+      "cube_policy": "Check AV06 on each of the two finest export grids and record their difference and negative-sample diagnostics. A matching electron count does not establish spatial field-shape convergence."
+    }
+  },
+  "freeze_gates_pending": [
+    "Lock one execution profile, admissible geometry and finite-cell transform, and the supported basis and numerical limits before acceptance tests.",
+    "Recheck resource admission for the proposed refinement runs; the A03 resource envelope only covers the measured cases.",
+    "Resolve the x86_64 source-linked execution profile and native evidence required for P1 engine selection.",
+    "Review the draft input and validation criteria together before assigning a runtime contract version."
+  ]
+}
