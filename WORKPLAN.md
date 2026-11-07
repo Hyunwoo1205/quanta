@@ -22,6 +22,12 @@
 
 **다음 시작점은 A04 후보 검토**입니다. 새 ARM 바이너리와 소스의 연결, 실제 의존성 및 빌드 자료를 검토하고, 같은 후보로 고정 upstream GAPW 회귀를 실행합니다. 기존 공식 이미지의 `revision unknown` 문제는 별개입니다. 단위 변환·bare 핵질량·CUBE 정밀도/밀도 의미와 독립 허용오차를 검토한 뒤 자유 JSON 원자계 계약을 동결합니다. 물리 검증은 `unvalidated`이며 공개 원자계 런타임과 동시 사용자 쿼터는 미승인입니다. [A04 검토 항목](docs/design/atomistic-a04-source-traceability.md)
 
+### A04 후보 검토 및 고정 회귀 시작
+
+이전 A03 성공 ARM 후보의 OCI·native·빌드 증거를 대조했습니다. 실제 바이너리와 CP2K Git 소스 및 설치 라이브러리의 연결은 [A04 출처 대조 기록](docs/verification/atomistic-a04/armv8a-source-dependency-review.json)에 있습니다. 엔진 단위·핵질량 기준·CUBE 출력 형식은 [고정 소스 대조](docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json)에 기록했습니다. 고정 CP2K `QS/regtest-gapw-2` 5건을 동일한 ARM 이미지로 네이티브 ARM CI에서 실행합니다. OCI 운영은 기존 검증 범위를 사용합니다.
+
+개인용 Drive 프로젝트 폴더에 `Quanta — 구현한 물리 법칙과 모형`을 만들었습니다. 현재 계산식·가정·단위·적용 한계와 실제 검증을 정리했으며, 관련 구현 또는 검증이 바뀌는 작업에서 같은 문서의 해당 절을 갱신합니다.
+
 ### SIGILL 원인 확인과 재빌드 경과
 
 2026-11-07 KST, [고정 OCI 추적42360862172](docs/verification/atomistic-a03/oci/42360862172.json)이 기존 He-D 입력과 바이너리의 SHA를 재확인하고 `SIGILL` 정지에서 PC와 신호 주소의 일치를 확인했습니다. 실행 바이트 `78c7de6e`는 `libcp2k.so.2026.2` ELF 오프셋 `0x2754d80`의 바이트와 일치했습니다. LLVM19는 이를 Armv8.3의 `FCMLA v24.2d, v27.2d, v30.2d, #0`로 해석했습니다. 앞선 OCI 사용자 공간 HWCAP에 FCMA는 없습니다. CP2K GNU Release 설정은 native 타깃을 추가합니다. 오류 명령이 들어 있는 CP2K 자체와 주요 계산 의존성을 범용 ARMv8-A로 다시 빌드하기로 했습니다. [LLVM 명령 정의](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/llvm/lib/Target/AArch64/AArch64InstrInfo.td#L1565-L1571) · [CP2K 컴파일러 설정](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/cmake/CompilerConfiguration.cmake)

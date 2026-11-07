@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "kind": "quanta_a04_arm64_source_dependency_provenance_review",
+  "scope": "Existing ARMv8-A A03 candidate and evidence chain, build 42370042984 to native 42370042995 and OCI 42372870103",
+  "quanta_build_commit": "5dd1e90c8332366c1f95f5b58b260ce966af5e84",
+  "artifacts": {
+    "source_build_evidence": {
+      "run_id": 42370042984,
+      "artifact_id": 13574656579,
+      "zip_sha256": "cfb3a2bd8ccbbc5d983399a2b122facb0a67d746ca8a9450b1788ef91fe6964b"
+    },
+    "native_a03_evidence": {
+      "run_id": 42370042995,
+      "artifact_id": 13573948937,
+      "zip_sha256": "862bd8604a2fa800512ee21ac2f68db6d84aef68482d0c2dc30ba7912829f87b"
+    },
+    "oci_a03_evidence": {
+      "run_id": 42372870103,
+      "artifact_id": 13574363519,
+      "zip_sha256": "33c42335ebd573164011b3b5815ee05dd89534dcec473b88a7ee7d7035d022c8"
+    },
+    "source_build_image": {
+      "run_id": 42370042984,
+      "artifact_id": 13574357276,
+      "zip_sha256": "a6e16947665e834fc2012b47f58dbef24d1b28d63adf212fb631cdd41a247ddf",
+      "image_tar_sha256": "fb8beba3428b65c17c0ecd4a48343bdeda9149fe35fcf37deb72efbb210911b2",
+      "image_tar_bytes": 838924288,
+      "config_digest": "sha256:3c31b88484c7d077a5c3d2cabb4985b77b6e79ac3d0512a8dbb7f7fa9c05b792"
+    },
+    "native_a03_image": {
+      "run_id": 42370042995,
+      "artifact_id": 13573889644,
+      "zip_sha256": "bb1e80caeb62e989a44e95d9b739b99ecffdf23191241c6802fc687d6b37538c"
+    }
+  },
+  "source": {
+    "upstream_repository": "https://github.com/cp2k/cp2k",
+    "upstream_release": "2026.2",
+    "upstream_commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "upstream_git_tree": "2e4405ec65578a3d8205bc23adf69249798d98d3",
+    "git_tree_matches_pinned_upstream_commit": true,
+    "tracked_source_manifest_sha256": "cca0b9ab8ed44890390720ea5c0d7c07f6dfe08643e7bff2ced48f8e8a10d13c",
+    "tracked_source_manifest_entries": 8999,
+    "embedded_and_executed_revision_match": true
+  },
+  "build": {
+    "architecture": "aarch64",
+    "compiler": "GCC 15.2.0",
+    "architecture_and_lto_flags": [
+      "-fno-lto",
+      "-march=armv8-a",
+      "-mtune=generic"
+    ],
+    "cmake_compile_command_counts": {
+      "cp2k": 1469,
+      "dbcsr": 98,
+      "libint": 869,
+      "libxc": 324,
+      "openblas": 7104,
+      "scalapack": 1430
+    },
+    "fftw_autotools_build_flags_checked_separately": true,
+    "openblas_cpu_target": "ARMV8",
+    "openblas_dynamic_arch": false,
+    "ubuntu_arm64_base_digest": "sha256:86eb1bc1059720a19a777ba5a109e9ee3690d5dfe3e319871a6d6beb86fb7f85",
+    "ubuntu_apt_snapshot": "20261107T000000Z",
+    "source_archive_sha256": {
+      "OpenBLAS-0.3.33.tar.gz": "6761af1d9f5d353ab4f0b7497be2643313b36c8f31caec0144bfef198e71e6ab",
+      "fftw-3.3.11.tar.gz": "5630c24cdeb33b131612f7eb4b1a9934234754f9f388ff8617458d0be6f239a1",
+      "scalapack-2.2.3.tar.gz": "5d93701eca663925e98010dd8d0f45fd79b2191d74e5afa5711d587370a8b9dd",
+      "dbcsr-2.10.0.tar.gz": "3d897220fbb4498215331efad6905eb7744881b4cf04eb5c5fb4db7c48a56ef9",
+      "libxc-7.0.0.tar.bz2": "e9ae69f8966d8de6b7585abd9fab588794ada1fab8f689337959a35abbf9527d",
+      "libint-v2.13.1-cp2k-lmax-5.tar.xz": "527000f915bea9879391273b96689a8c2b98beeec37cb64637e3c11dd421a5e8"
+    },
+    "installed_executable_and_shared_library_sha256": {
+      "bin/cp2k.psmp": "af665277ebd21d4397448d49a9ce666756a05ebcf401a9967e19c32af9c9b60f",
+      "deps/lib/libdbcsr.so.2.10.0": "0665815a181df18c15ca7b858139f92a73aa090c421e77194cc5ac2f29f4f8b2",
+      "deps/lib/libdbcsr_c.so.2.10.0": "7eb167d15ec4b18a3ccdf997bfd192338c6021a6ac5983aafb900338322d764a",
+      "deps/lib/libfftw3.so.3.7.11": "d3a598bdd617b71ab3b6f9ae78e0ac41ed808a706a2d8d0fa3cd0fb1af1a96dc",
+      "deps/lib/libfftw3_mpi.so.3.7.11": "5e0efaede5f55922a61c850797718360c3a472c3a1078f03bfb0e8602d816e23",
+      "deps/lib/libfftw3_omp.so.3.7.11": "b7bff23f0306f341fe0397a6b0d214cda24843bfe767286cd8ad5838069651c2",
+      "deps/lib/libint2.so": "d395fbd61b91857bac4cc67f20c1d16a5fb423b5d0e55b51cbb8a2c01471a900",
+      "deps/lib/libopenblas.so.0.3": "33901912e2356b9ff640d9154f99dcc6008e799f5a8f03090042f7c16e1c1409",
+      "deps/lib/libscalapack.so.2.2.3": "9c9c9c120d8175a013a818ce78844b2e65f2c99abada768d07fbb8c81e394a09",
+      "deps/lib/libxc.so.15": "458ba029acddd8b30d5e57e60c0f0e450221b4a1a98c8d0dc05df8bbad2ae10e",
+      "deps/lib/libxcf03.so.15": "420e7ea39cd56112c371c6b10045158fb132b7ea0c802bd1037a9c380bfa3e4f",
+      "lib/libcp2k.so.2026.2": "5626adf6b8b41aa7c23f925875aa3a73e7e81f8aeab0f665cc10fccd9b118b47"
+    },
+    "runtime_dynamic_link_inventory_has_no_unresolved_library": true,
+    "snapshot_runtime_package_versions": {
+      "libc6": "2.43-2ubuntu2.4",
+      "mpich": "4.3.2-2",
+      "libmpich12": "4.3.2-2",
+      "libhwloc15": "2.13.0-2",
+      "libucx0": "1.20.0+ds-4ubuntu2"
+    }
+  },
+  "candidate": {
+    "native_to_oci_archive_bytes": 838924288,
+    "native_to_oci_archive_sha256": "c7a60fc4da430a40d60af0fa18ad5c4d1dc1f727dceb84752b7a8471f33e0ec0",
+    "binary_sha256": "af665277ebd21d4397448d49a9ce666756a05ebcf401a9967e19c32af9c9b60f",
+    "locked_platform_manifest_digest": "sha256:ad3350e1fa394ab34b406fdab4131fbe2d814ede5b1e6ef2f444ac0d04ff770c",
+    "locked_config_digest": "sha256:3c31b88484c7d077a5c3d2cabb4985b77b6e79ac3d0512a8dbb7f7fa9c05b792",
+    "ordered_rootfs_diff_ids_match": true,
+    "runtime_config_projection_matches": true
+  },
+  "a03_cases": [
+    {
+      "case": "he-dz",
+      "input_sha256": "6c91137086d77321edc954e4f316a2a837078b088260f7b3ae00c73691df8bc8",
+      "native_execution_gate_passed": true,
+      "oci_execution_gate_passed": true
+    },
+    {
+      "case": "h2-dz",
+      "input_sha256": "ce719dd7706b0d2723152bf90e46b3ff94e5f13e634cae17ac72c388356129ac",
+      "native_execution_gate_passed": true,
+      "oci_execution_gate_passed": true
+    },
+    {
+      "case": "h2-tz",
+      "input_sha256": "80cd05926a0798dc7261951a84b811ab83a49a4228539f31ed4f512d62891621",
+      "native_execution_gate_passed": true,
+      "oci_execution_gate_passed": true
+    },
+    {
+      "case": "h2-cancel",
+      "input_sha256": "0ca52d486b74a446cda24aadd6f0f112925a192027e8b1e8f51b8927ea51ed9e",
+      "native_execution_gate_passed": true,
+      "oci_execution_gate_passed": true
+    },
+    {
+      "case": "h2-after-cancel",
+      "input_sha256": "8e8c6acdaacce754bf8a7a0aace807ccb0a98f8a9c9e565f154bc0db59e8ec80",
+      "native_execution_gate_passed": true,
+      "oci_execution_gate_passed": true
+    }
+  ],
+  "limits": {
+    "source_identity_attested": false,
+    "independent_reproducible_rebuild_verified": false,
+    "entire_machine_code_isa_audited": false,
+    "original_x86_control_source_binding_verified": false,
+    "a04_gapw_regression_covered_by_this_audit": false,
+    "a04_contract_frozen": false,
+    "physical_validation_status": "unvalidated",
+    "public_quota_capacity_verified": false
+  }
+}

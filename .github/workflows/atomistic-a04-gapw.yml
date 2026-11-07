@@ -1,0 +1,60 @@
+name: Atomistic A04 pinned GAPW regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-gapw.yml
+      - scripts/run_atomistic_a04_gapw_ci.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  gapw:
+    name: CP2K pinned GAPW regression (aarch64)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: arm64
+      - name: Verify exact successful A03 ARM artifact
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -B scripts/run_atomistic_a04_gapw_ci.py authorize
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ steps.candidate.outputs.run-id }}
+          artifact-ids: ${{ steps.candidate.outputs.artifact-id }}
+          path: .cache/atomistic-a04/candidate
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Check out the pinned upstream CP2K tests
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: cp2k/cp2k
+          ref: 67b5da876dd6a76b8b021d5a04d1c81ba79a4c50
+          path: .cache/atomistic-a04/upstream
+          persist-credentials: false
+          sparse-checkout: tests
+      - name: Run the original five GAPW regressions in isolated ARM CI
+        run: python -B scripts/run_atomistic_a04_gapw_ci.py run
+      - name: Preserve GAPW report and raw test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a04-gapw-${{ github.sha }}
+          path: .cache/atomistic-a04/evidence/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

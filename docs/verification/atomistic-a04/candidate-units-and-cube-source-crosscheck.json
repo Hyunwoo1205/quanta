@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "kind": "quanta_a04_candidate_units_and_cube_source_crosscheck",
+  "source_build_run_id": 42370042984,
+  "upstream_cp2k_git_commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "upstream_raw_source_matches_build_tracked_file_sha256": {
+    "src/common/cp_units.F": "e853a2e91a4949b81a034de949bb7a03d511da01e2753baac7e7ca8efaca7c3a",
+    "src/common/physcon.F": "b7c6a5d2c98ddc90652460059049919fc08512ecfcd32861790c6fd2a928cffb",
+    "src/cp_realspace_grid_cube.F": "c2ede3efa3b45d9f94343686c6ae61df5e6e9bc182605ca16ee19c7eddde0c57",
+    "src/input_cp2k_print_dft.F": "2cef0bc8e85f0ec6c291a5c5101da55fea0658440c15647d42220f530c0aa2bc",
+    "src/pw/cube_utils.F": "c0d4062c39c6b69b87f0c1ea00b9b8f95392122b49d137f9f4c739aad777bb80",
+    "src/pw/realspace_grid_cube.F": "c349dcfd603fd29fa738d90bafd2cc608251caa6466b1172dfa046da5ec1058a",
+    "src/qs_scf_post_gpw.F": "51c6456557b3cc5f95b2cfa2cee2b514739b80ccee7d32caa905f510d89e4fdc"
+  },
+  "engine_conversion_candidate": {
+    "constants_edition": "CODATA 2006",
+    "expression_order": "binary64 left-to-right product of 2, Rydberg constant, Planck constant and speed of light",
+    "derived_values": {
+      "bohr_to_m": 5.2917720859e-11,
+      "hartree_to_j": 4.3597439393705876e-18,
+      "hartree_per_bohr_to_n": 8.2387220549184e-08,
+      "electrons_per_bohr_cubed_to_electrons_per_m_cubed": 6.748334583089999e+30,
+      "amu_to_kg": 1.660538782e-27
+    },
+    "binary64_hex": {
+      "bohr_to_m": "0x1.d1781d2d3325ep-35",
+      "hartree_to_j": "0x1.41b13c0f9420bp-58",
+      "hartree_per_bohr_to_n": "0x1.61d9b4fc3f0fdp-24",
+      "electrons_per_bohr_cubed_to_electrons_per_m_cubed": "0x1.54b42e22f90c3p+102",
+      "amu_to_kg": "0x1.071f749a3df1dp-89"
+    },
+    "code_evidence": {
+      "src/common/physcon.F": [
+        84,
+        132,
+        136,
+        159,
+        162
+      ]
+    }
+  },
+  "independent_reference_nuclear_masses": {
+    "constants_edition": "CODATA 2022",
+    "source": "https://physics.nist.gov/cuu/Constants/Table/allascii.txt",
+    "H1_bare_proton_mass_kg": "1.67262192595e-27",
+    "He4_bare_alpha_particle_mass_kg": "6.6446573450e-27",
+    "scope": "Particle masses for physical model, separate from CP2K atomic-unit output conversion."
+  },
+  "cube_candidate": {
+    "observable": "electron_number_density_hard_plus_soft",
+    "engine_setting": "GAPW DENSITY_INCLUDE TOTAL_DENSITY",
+    "field_format": "E13.5E3",
+    "field_significant_digits": 5,
+    "code_evidence": {
+      "src/input_cp2k_print_dft.F": [
+        2611,
+        2630
+      ],
+      "src/qs_scf_post_gpw.F": [
+        2759,
+        2824
+      ],
+      "src/pw/realspace_grid_cube.F": [
+        32,
+        36
+      ]
+    },
+    "oci_raw_density_diagnostics": [
+      {
+        "case": "he-dz",
+        "cube_sha256": "0c950d4571bc8560e001f70565c8fca3785449e1dfcc33e9daf8def45fa1d061",
+        "electron_integral": 1.9999961714030179,
+        "minimum_electrons_per_bohr3": -0.0001289,
+        "negative_samples": 1599969,
+        "clipped_smoothed_or_renormalized": false
+      },
+      {
+        "case": "h2-dz",
+        "cube_sha256": "991b8f164d9c776ab77fc95c55161ac6c6a6dddb53095d6623833d3f25965d79",
+        "electron_integral": 1.9999968833696176,
+        "minimum_electrons_per_bohr3": -4.6765e-07,
+        "negative_samples": 1113228,
+        "clipped_smoothed_or_renormalized": false
+      },
+      {
+        "case": "h2-tz",
+        "cube_sha256": "3e0c3c82c8aa53bb2bbb808f241c922543045e68315332ec4e215876b5bf4b45",
+        "electron_integral": 1.9999975710244664,
+        "minimum_electrons_per_bohr3": -4.7129e-06,
+        "negative_samples": 1212052,
+        "clipped_smoothed_or_renormalized": false
+      },
+      {
+        "case": "h2-after-cancel",
+        "cube_sha256": "991b8f164d9c776ab77fc95c55161ac6c6a6dddb53095d6623833d3f25965d79",
+        "electron_integral": 1.9999968833696176,
+        "minimum_electrons_per_bohr3": -4.6765e-07,
+        "negative_samples": 1113228,
+        "clipped_smoothed_or_renormalized": false
+      }
+    ]
+  },
+  "scope_limits": {
+    "independent_science_tolerances_evaluated": false,
+    "density_spatial_convergence_tested": false,
+    "contract_frozen": false,
+    "physical_validation_status": "unvalidated"
+  }
+}
