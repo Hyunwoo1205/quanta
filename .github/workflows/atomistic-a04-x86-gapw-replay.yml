@@ -1,0 +1,128 @@
+name: Atomistic A04 x86 pinned GAPW replay
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-x86-gapw-replay.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  gapw:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      CANDIDATE_SOURCE: 3b0d0bcf15786747a7bab1b4aa015faf80172a16
+      CANDIDATE_RUN: '42385227123'
+      IMAGE_ARTIFACT: '13579899979'
+      EVIDENCE_ARTIFACT: '13581045928'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Verify the pinned build, isolated A03 and artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          path="repos/Hyunwoo1205/quanta/actions/runs/$CANDIDATE_RUN"
+          root=.cache/atomistic-a04/evidence
+          mkdir -p "$root"
+          gh api "$path" > "$root/predecessor-run.json"
+          gh api "$path/jobs" > "$root/predecessor-jobs.json"
+          gh api "$path/artifacts" > "$root/predecessor-artifacts.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(".cache/atomistic-a04/evidence")
+          def read(name):
+              return json.loads((root / f"predecessor-{name}.json").read_bytes())
+
+          source = os.environ["CANDIDATE_SOURCE"]
+          run_id = int(os.environ["CANDIDATE_RUN"])
+          run = read("run")
+          assert (run["id"], run["head_sha"], run["head_branch"], run["path"], run["run_attempt"]) == (
+              run_id, source, "main", ".github/workflows/atomistic-a04-x86.yml", 1,
+          )
+          assert run["status"] == "completed" and run["conclusion"] == "failure"
+          job, = read("jobs")["jobs"]
+          assert job["id"] == 128441073271 and job["head_sha"] == source
+          steps = {step["name"]: step["conclusion"] for step in job["steps"]}
+          assert {name for name, result in steps.items() if result == "failure"} == {
+              "Run the five pinned GAPW regressions on the same x86 image"
+          }
+          for name in (
+              "Build the locked native x86 candidate",
+              "Bind the archive to the image and executing binary",
+              "Run A03 on the pinned x86 image with isolated web observation",
+              "Check out the exact CP2K upstream test inputs",
+              "Preserve x86 build and calculation evidence",
+              "Preserve the candidate image for verification and replay",
+          ):
+              assert steps[name] == "success", name
+
+          artifacts = {item["id"]: item for item in read("artifacts")["artifacts"]}
+          for env, label, digest, size in (
+              ("IMAGE_ARTIFACT", "image", "5b46797159bbc1dbe129b6e97f2dd5eacd4b135ba1d00f05ca0f3adec1a96ee1", 335997073),
+              ("EVIDENCE_ARTIFACT", "evidence", "bf9b511aca28892481bb11c348bc1308c193f9f63de55b855842faa839037211", 26022327),
+          ):
+              item = artifacts[int(os.environ[env])]
+              assert item["name"] == f"atomistic-a04-x86-{label}-{source}"
+              assert not item["expired"] and item["workflow_run"]["id"] == run_id
+              assert item["workflow_run"]["head_sha"] == source
+              assert item["digest"] == "sha256:" + digest and item["size_in_bytes"] == size
+          PY
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ env.CANDIDATE_RUN }}
+          artifact-ids: ${{ env.IMAGE_ARTIFACT }}
+          path: .cache/atomistic-a04/candidate
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ env.CANDIDATE_RUN }}
+          artifact-ids: ${{ env.EVIDENCE_ARTIFACT }}
+          path: .cache/atomistic-a04/predecessor
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Bind the prior A03 receipt to the candidate archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd .cache/atomistic-a04
+          cmp predecessor/candidate/candidate-image.json candidate/candidate-image.json
+          install -D predecessor/a03/report.json a03/report.json
+      - name: Check out the exact CP2K upstream test inputs
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: cp2k/cp2k
+          ref: 67b5da876dd6a76b8b021d5a04d1c81ba79a4c50
+          path: .cache/atomistic-a04/upstream
+          sparse-checkout: tests
+          persist-credentials: false
+      - name: Run GAPW on the exact A03 image
+        run: python -B scripts/run_atomistic_a04_gapw_ci.py run-amd64 --candidate-source "$CANDIDATE_SOURCE"
+      - name: Preserve the replay report and raw GAPW outputs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a04-x86-gapw-replay-${{ github.sha }}
+          path: .cache/atomistic-a04/evidence/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

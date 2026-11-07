@@ -177,6 +177,7 @@ def run_container(image, test_root, work, binary_sha, *, architecture="arm64"):
         "--mount", f"type=bind,src={work},dst=/work", "--entrypoint", "/bin/sh", image,
         "-c", CONTAINER_SCRIPT, "quanta-a04", binary_sha, CP2K_SHA, CP2K_TREE,
     ]
+    EVIDENCE.mkdir(parents=True, exist_ok=True)
     with (EVIDENCE / "regtest.log").open("wb") as log:
         try:
             return subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, timeout=CONTAINER_TIMEOUT).returncode
@@ -236,9 +237,9 @@ def verify_result(log, return_code, cases):
     )
 
 
-def run(architecture="arm64"):
+def run(architecture="arm64", *, candidate_source=None):
     is_amd64 = architecture == "amd64"
-    source_sha = os.environ.get("GITHUB_SHA") if is_amd64 else SOURCE_SHA
+    source_sha = (candidate_source or os.environ.get("GITHUB_SHA")) if is_amd64 else SOURCE_SHA
     report = {
         "scope": ("pinned_upstream_gapw_regression_on_a03_amd64_candidate" if is_amd64 else
                   "pinned_upstream_gapw_regression_on_a03_arm_candidate"),
@@ -302,11 +303,16 @@ def run(architecture="arm64"):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("operation", choices=("authorize", "run", "run-amd64"))
-    operation = parser.parse_args().operation
-    if operation == "authorize":
+    parser.add_argument("--candidate-source")
+    args = parser.parse_args()
+    if args.candidate_source is not None and args.operation != "run-amd64":
+        parser.error("--candidate-source requires run-amd64")
+    if args.operation == "authorize":
         authorize()
         return 0
-    return run("amd64") if operation == "run-amd64" else run()
+    if args.operation == "run-amd64":
+        return run("amd64", candidate_source=args.candidate_source)
+    return run()
 
 
 if __name__ == "__main__":
