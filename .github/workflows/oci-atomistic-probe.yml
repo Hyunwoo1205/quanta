@@ -28,16 +28,16 @@ jobs:
       - name: Checkout independently verified fixed control
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: 'b621e836af61d7b63933ab7802722fa1ee79f531'
+          ref: 'b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379'
           path: verified-atomistic-control
           persist-credentials: false
       - name: Require successful same-source full and native engine CI
         id: authorize
         env:
-          QUANTA_ATOMISTIC_CONTROL_SHA: 'b621e836af61d7b63933ab7802722fa1ee79f531'
-          QUANTA_ATOMISTIC_CONTROL_CI_RUN: '42262527946'
-          QUANTA_ATOMISTIC_SOURCE_CI_RUN: '42262527946'
-          QUANTA_ATOMISTIC_NATIVE_CI_RUN: '42262528023'
+          QUANTA_ATOMISTIC_CONTROL_SHA: 'b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379'
+          QUANTA_ATOMISTIC_CONTROL_CI_RUN: '42337645536'
+          QUANTA_ATOMISTIC_SOURCE_CI_RUN: '42337645536'
+          QUANTA_ATOMISTIC_NATIVE_CI_RUN: '42337645488'
           QUANTA_CI_READ_TOKEN: ${{ github.token }}
         run: python3 -I -B verified-atomistic-control/deploy/oci/authorize_atomistic_probe.py
       - name: Install existing-key SSH transport
@@ -46,10 +46,10 @@ jobs:
           sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
       - name: Execute only the fixed isolated benchmark
         env:
-          QUANTA_ATOMISTIC_CONTROL_SHA: 'b621e836af61d7b63933ab7802722fa1ee79f531'
-          QUANTA_ATOMISTIC_CONTROL_CI_RUN: '42262527946'
-          QUANTA_ATOMISTIC_SOURCE_CI_RUN: '42262527946'
-          QUANTA_ATOMISTIC_NATIVE_CI_RUN: '42262528023'
+          QUANTA_ATOMISTIC_CONTROL_SHA: 'b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379'
+          QUANTA_ATOMISTIC_CONTROL_CI_RUN: '42337645536'
+          QUANTA_ATOMISTIC_SOURCE_CI_RUN: '42337645536'
+          QUANTA_ATOMISTIC_NATIVE_CI_RUN: '42337645488'
           QUANTA_CI_READ_TOKEN: ${{ github.token }}
           QUANTA_ATOMISTIC_OPERATION: ${{ steps.authorize.outputs.operation }}
           QUANTA_ATOMISTIC_SOURCE_SHA: ${{ steps.authorize.outputs.source_sha }}
