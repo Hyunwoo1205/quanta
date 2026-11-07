@@ -1,0 +1,453 @@
+{
+  "schema_version": 1,
+  "scope": "native_x86_resource_measurement_and_memory_admission",
+  "workflow_run_id": 42392583423,
+  "workflow_job_id": 128463077750,
+  "quanta_source": "51ae1aacd8f9214136999fc6a8a893127f9abcfd",
+  "workflow_conclusion": "success",
+  "raw_artifact": {
+    "id": 13582288020,
+    "bytes": 43825,
+    "sha256": "503550fc3465101a542a23694f0d41cb95cceaa02e6860bfd37791017f79bed0",
+    "report_sha256": "791a79441835507597cbd3d93f74cedd458f56c02be8c1aa828d644db97fd2fa"
+  },
+  "candidate_source": "3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "resource_policy": {
+    "case_concurrency": 1,
+    "cpus": 1,
+    "omp_threads": 1,
+    "swap_extra_bytes": 0,
+    "normal_memory_cap_bytes": 10737418240,
+    "retry_memory_cap_bytes": 12884901888,
+    "retry_maximum_increase_bytes": 2147483648,
+    "admission_memory_reserve_bytes": 2147483648,
+    "work_logical_and_allocated_bytes_sampled_limit": 2147483648,
+    "work_filesystem": "disk-backed; sampled aggregate, hard 1 GiB per-file rlimit",
+    "work_sample_interval_seconds": 1.0,
+    "per_file_rlimit_fsize_bytes": 1073741824,
+    "tmpfs_limit_bytes": 268435456,
+    "admission_free_disk_bytes": 10737418240,
+    "guard_free_disk_bytes": 6442450944,
+    "guard_available_memory_bytes": 2147483648,
+    "oom_retry": "one fresh attempt per case, verified container OOM and strictly larger safe grant only",
+    "raw_cube": "streamed, hashed and measured as written; temporary disk scratch discarded",
+    "engine_rss": "Linux wait4 ru_maxrss, KiB, distinct from cgroup memory",
+    "observed_work_filesystem_type": "ext4"
+  },
+  "cases": [
+    {
+      "case": "h2-12a-400ry-density-off",
+      "status": "measured",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "measured",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15231287296,
+          "minimum_sampled_available_memory_bytes": 13485830144,
+          "minimum_sampled_free_disk_bytes": 89578741760,
+          "cgroup_memory_peak_bytes": 1846259712,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 1833750528,
+            "file": 6647808,
+            "shmem": 6467584
+          },
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": false,
+          "output_bytes": 48153,
+          "container_elapsed_seconds": 22.549431415999997,
+          "input_sha256": "d42f71398cbbf2187d4f4c88bafabfe4b946f60d57c3b24ce3e3f7376e0cfa25",
+          "container_removed": true,
+          "files": [
+            {
+              "file": "cp2k.out",
+              "bytes": 47065,
+              "sha256": "6403a7d7ef46cf3cca80690df5ce528cec4579b44cb92ccc412e786526e9a52f"
+            },
+            {
+              "file": "engine-resource.json",
+              "bytes": 677,
+              "sha256": "f966215d31d5b6d7dd221696e3f89ba1c76cba9d9ea44b6b60df0448ba7d8b23"
+            },
+            {
+              "file": "forces.xyz",
+              "bytes": 411,
+              "sha256": "a888c55a047cbd31b20eac8e521d994adf31c1ddf288b8efa2e2caec70e71845"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "h2-12a-400ry-density-on",
+      "status": "measured",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "measured",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15487205376,
+          "minimum_sampled_available_memory_bytes": 13610807296,
+          "minimum_sampled_free_disk_bytes": 89534291968,
+          "cgroup_memory_peak_bytes": 1891348480,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 1833746432,
+            "file": 50962432,
+            "shmem": 6467584
+          },
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": false,
+          "output_bytes": 44486697,
+          "container_elapsed_seconds": 23.518264059000003,
+          "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "container_removed": true,
+          "files": [
+            {
+              "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+              "bytes": 44437812,
+              "sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9"
+            },
+            {
+              "file": "cp2k.out",
+              "bytes": 47796,
+              "sha256": "b515d8380b02a4e2a752d86ca7abf73be818b5435b9f1fb13424908393089931"
+            },
+            {
+              "file": "engine-resource.json",
+              "bytes": 678,
+              "sha256": "903e88c97c70983ae9e33c7b56519290ca910471573a1856001e157e1575eb11"
+            },
+            {
+              "file": "forces.xyz",
+              "bytes": 411,
+              "sha256": "a888c55a047cbd31b20eac8e521d994adf31c1ddf288b8efa2e2caec70e71845"
+            }
+          ],
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 44437812,
+            "sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 2,
+            "atoms_bohr_rounded": [
+              [
+                1.0,
+                1.0,
+                10.582466,
+                11.338357,
+                11.338357
+              ],
+              [
+                1.0,
+                1.0,
+                12.094247,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              150,
+              150,
+              150
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.151178,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.151178,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.151178
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                7.999995204021903e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                7.999995204021903e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                7.999995204021903e-12
+              ]
+            ],
+            "samples": 3375000,
+            "voxel_volume_bohr3_from_rounded_header": 0.0034551410924917522,
+            "electron_integral": 1.9999968833696253,
+            "electron_count_error_from_2": -3.1166303746665847e-06,
+            "minimum_electrons_per_bohr3": -4.6765e-07,
+            "maximum_electrons_per_bohr3": 0.32671,
+            "negative_samples": 1113228,
+            "negative_integral": -9.425397988740914e-07,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 3.4415960215028463e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case": "h2-16a-800ry-density-on",
+      "status": "measured",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "container_oom",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15637483520,
+          "minimum_sampled_available_memory_bytes": 4867641344,
+          "minimum_sampled_free_disk_bytes": 89578684416,
+          "cgroup_memory_peak_bytes": 10737418240,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 10619748352,
+            "file": 8695808,
+            "shmem": 8667136
+          },
+          "cgroup_memory_events_max": {
+            "max": 39,
+            "oom": 1,
+            "oom_kill": 1,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": true,
+          "container_elapsed_seconds": 42.815516629,
+          "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+          "container_removed": true
+        },
+        {
+          "attempt": 2,
+          "status": "measured",
+          "granted_memory_bytes": 12884901888,
+          "available_memory_at_admission_bytes": 15145283584,
+          "minimum_sampled_available_memory_bytes": 3847970816,
+          "minimum_sampled_free_disk_bytes": 89263931392,
+          "cgroup_memory_peak_bytes": 12138184704,
+          "cgroup_sampled_stat_peak_bytes": {
+            "anon": 11780546560,
+            "file": 323239936,
+            "shmem": 8667136
+          },
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "docker_oom_killed": false,
+          "output_bytes": 314572357,
+          "container_elapsed_seconds": 210.587559912,
+          "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+          "container_removed": true,
+          "files": [
+            {
+              "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+              "bytes": 314523960,
+              "sha256": "e319ce400659c4924e802924c3b3cf69ef6379d699566b649912d83237d2a7cd"
+            },
+            {
+              "file": "cp2k.out",
+              "bytes": 47310,
+              "sha256": "75e9e5e796f24b64211ab1b64c4515d61ad99bf5f256c529cd82810eb5b33c5c"
+            },
+            {
+              "file": "engine-resource.json",
+              "bytes": 676,
+              "sha256": "6219000ae9bfd5fc497b5c6d01b14ca152ed81c0ef5f2a11e60478ad0fb6b7aa"
+            },
+            {
+              "file": "forces.xyz",
+              "bytes": 411,
+              "sha256": "ac6085e5b1bb6057ba8cd282f28561dc9d0e8cc8fa3b1bd10da40070b08d9f89"
+            }
+          ],
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 314523960,
+            "sha256": "e319ce400659c4924e802924c3b3cf69ef6379d699566b649912d83237d2a7cd",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 2,
+            "atoms_bohr_rounded": [
+              [
+                1.0,
+                1.0,
+                14.361919,
+                15.117809,
+                15.117809
+              ],
+              [
+                1.0,
+                1.0,
+                15.8737,
+                15.117809,
+                15.117809
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              288,
+              288,
+              288
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.104985,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.104985,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.104985
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                5.5555669243821144e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.5555669243821144e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                5.5555669243821144e-12
+              ]
+            ],
+            "samples": 23887872,
+            "voxel_volume_bohr3_from_rounded_header": 0.0011571289458716248,
+            "electron_integral": 2.0000125432081415,
+            "electron_count_error_from_2": 1.2543208141480022e-05,
+            "minimum_electrons_per_bohr3": -5.4223e-09,
+            "maximum_electrons_per_bohr3": 0.32956,
+            "negative_samples": 9049808,
+            "negative_integral": -8.025956937773297e-09,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 4.837605960261726e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "baseline_comparison": {
+    "scope": "same-engine baseline print off/on; borrows AV01 tolerances; does not execute AV01",
+    "tolerance_source": "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+    "absolute_energy_difference_hartree": 0.0,
+    "absolute_maximum_force_component_difference_hartree_per_bohr": 0.0,
+    "energy_atol_hartree": 1e-08,
+    "force_atol_hartree_per_bohr": 1e-07,
+    "passes_baseline_observational_comparison": true,
+    "density_cube_bytes": 44437812,
+    "total_output_bytes_delta": 44438544,
+    "observed_cgroup_peak_bytes_delta": 45088768,
+    "wall_seconds_delta": 1.0216987619999998
+  },
+  "known_unadmitted_cases": {
+    "h2-20a-800ry-density-on": {
+      "reason": "Measured OOM at both 10 GiB and 12 GiB; needs a separately qualified envelope",
+      "receipt": "docs/verification/atomistic-a04/resource-42392008763.json"
+    }
+  },
+  "verification_scope": {
+    "production_oci_measured": false,
+    "public_execution_support": false,
+    "runtime_contract_frozen": false,
+    "AV01_adapter": "not_executed",
+    "AV03_AV04_convergence": "not_executed",
+    "AV05_AV06_density_acceptance": "not_executed",
+    "density_spatial_convergence": "not_tested",
+    "physical_validation": "unvalidated"
+  }
+}
