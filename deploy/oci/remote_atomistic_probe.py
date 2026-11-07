@@ -23,6 +23,9 @@ import time
 import uuid
 
 OPERATION = 'benchmark-atomistic'
+TRACE_OPERATION = 'trace-atomistic-old-he'
+TRACE_SUBJECT_SHA = 'b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379'
+TRACE_SCRIPT = 'scripts/trace_cp2k_sigill.py'
 PARENT = Path('/srv/quanta/atomistic-probes')
 DATABASE = Path('/srv/quanta/data/jobs.sqlite3')
 DOCKER = ['/usr/bin/docker', '--host', 'unix:///var/run/docker.sock']
@@ -179,14 +182,14 @@ def snapshot():
             'database_sha': database_sha, 'active_jobs': active_jobs(), 'web': web_boundary()}
 
 
-def allowed_path(name):
+def allowed_path(name, *, trace=False):
     path = PurePosixPath(name)
     return (str(path) == name and not path.is_absolute() and '..' not in path.parts
-        and (name in REQUIRED or name.startswith('docs/design/atomistic-a01-v0.1/')
+        and (name in REQUIRED or trace and name == TRACE_SCRIPT or name.startswith('docs/design/atomistic-a01-v0.1/')
              or name.startswith('docs/design/atomistic-a02-v0.1/')))
 
 
-def archive_files(raw, expected):
+def archive_files(raw, expected, *, trace=False):
     if not isinstance(raw, bytes) or not 1 <= len(raw) <= MAX_ARCHIVE or hashlib.sha256(raw).hexdigest() != expected:
         raise ProbeError('archive_hash')
     result = {}
@@ -194,7 +197,7 @@ def archive_files(raw, expected):
     with tarfile.open(fileobj=io.BytesIO(raw), mode='r:gz') as archive:
         for member in archive:
             if (len(result) >= 160 or member.name in result or not member.isfile()
-                    or not allowed_path(member.name) or member.size > MAX_FILE or member.size < 1
+                    or not allowed_path(member.name, trace=trace) or member.size > MAX_FILE or member.size < 1
                     or member.pax_headers):
                 raise ProbeError('archive_member')
             size += member.size
@@ -205,12 +208,13 @@ def archive_files(raw, expected):
             if len(value) != member.size:
                 raise ProbeError('archive_member_size')
             result[member.name] = value
-    if not REQUIRED <= result.keys():
+    required = REQUIRED | {TRACE_SCRIPT} if trace else REQUIRED
+    if not required <= result.keys():
         raise ProbeError('archive_required')
     return result
 
 
-def prepare(config, archive, user):
+def prepare(config, archive, user, *, trace=False):
     _parents(PARENT)
     if not PARENT.exists():
         PARENT.mkdir(mode=0o755)
@@ -221,7 +225,7 @@ def prepare(config, archive, user):
     # New UUID only: never overwrite an existing or partial result.
     directory.mkdir(mode=0o700)
     os.chown(directory, user.pw_uid, user.pw_gid)
-    files = archive_files(archive, config['archive_sha256'])
+    files = archive_files(archive, config['archive_sha256'], trace=trace)
     source = directory / 'source'
     source.mkdir(mode=0o700)
     os.chown(source, user.pw_uid, user.pw_gid)
@@ -251,9 +255,10 @@ def cleanup_containers(output):
     return len(identifiers)
 
 
-def execute(config, archive):
+def execute(config, archive, *, trace=False):
     stage = 'config'
-    value = {'scope': 'oci_atomistic_a03', 'operation': OPERATION, 'status': 'failed',
+    value = {'scope': 'oci_atomistic_sigill' if trace else 'oci_atomistic_a03',
+        'operation': TRACE_OPERATION if trace else OPERATION, 'status': 'failed',
         'stage': stage, 'production_restart_attempted': False, 'production_configuration_written': False,
         'private_environment_read': False, 'physical_validation_status': 'unvalidated'}
     directory = output = process = None
@@ -261,8 +266,12 @@ def execute(config, archive):
     baseline = None
     try:
         config = validate_config(config)
+        if trace and config['source_sha'] != TRACE_SUBJECT_SHA:
+            raise ProbeError('trace_subject_mismatch')
         value['source_sha'] = config['source_sha']
         value['request_id'] = config['request_id']
+        if trace:
+            value['archive_sha256'] = config['archive_sha256']
         if os.geteuid() != 0 or platform.machine() != 'aarch64':
             raise ProbeError('native_root_required')
         stage = 'lock'
@@ -287,7 +296,7 @@ def execute(config, archive):
         value['docker_socket_verified'] = True
         value['ephemeral_docker_group_added'] = added_group
         stage = 'archive'
-        directory, source = prepare(config, archive, user)
+        directory, source = prepare(config, archive, user, trace=trace)
         output = directory / 'run'
         stage = 'benchmark'
         def demote():
@@ -297,16 +306,19 @@ def execute(config, archive):
             os.umask(0o077)
             os.nice(10)
         with (directory / 'runner.stdout').open('xb') as stdout, (directory / 'runner.stderr').open('xb') as stderr:
-            process = subprocess.Popen(['/usr/bin/python3', '-I', '-B', str(source / 'scripts/verify_atomistic_a03.py'),
-                '--output-dir', str(output), '--case-timeout', '180', '--web-origin', 'http://127.0.0.1:8765',
-                '--production-web-boundary'],
+            command = ['/usr/bin/python3', '-I', '-B', str(source / 'scripts/verify_atomistic_a03.py'),
+                '--output-dir', str(output), '--case-timeout', '105' if trace else '180',
+                '--web-origin', 'http://127.0.0.1:8765', '--production-web-boundary']
+            if trace:
+                command.append('--trace-old-he')
+            process = subprocess.Popen(command,
                 cwd=source, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr, shell=False,
                 start_new_session=True, preexec_fn=demote,
                 env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'HOME': str(directory),
                     'DOCKER_CONFIG': str(directory / 'docker-config'), 'DOCKER_HOST': 'unix:///var/run/docker.sock',
                     'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1',
                     'QUANTA_A03_SOURCE_SHA': config['source_sha']})
-            deadline = time.monotonic() + 900
+            deadline = time.monotonic() + (180 if trace else 900)
             samples = 0
             minimum_memory = available
             while process.poll() is None:
@@ -333,7 +345,7 @@ def execute(config, archive):
         report = json.loads(raw, parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
         if not isinstance(report, dict):
             raise ProbeError('report_shape')
-        value['benchmark'] = report
+        value['diagnostic' if trace else 'benchmark'] = report
         value['report_sha256'] = hashlib.sha256(raw).hexdigest()
         value['report_bytes'] = len(raw)
         stage = 'preservation'
@@ -343,7 +355,8 @@ def execute(config, archive):
         value['configuration_preserved'] = after['config_sha'] == baseline['config_sha']
         value['database_bytes_preserved'] = after['database_sha'] == baseline['database_sha']
         value['postflight'] = {'active_jobs': after['active_jobs'], 'web': after['web']}
-        if (process.returncode != 0 or not value['container_preserved'] or not value['configuration_preserved']
+        if (process.returncode != 0 or trace and report.get('trace_diagnostic_passed') is not True
+                or not value['container_preserved'] or not value['configuration_preserved']
                 or not value['database_bytes_preserved'] or after['active_jobs'] != 0):
             raise ProbeError('benchmark_or_preservation')
         stage = 'complete'
@@ -397,13 +410,13 @@ def execute(config, archive):
     return value
 
 
-def sanitize_report(raw):
+def sanitize_report(raw, *, trace=False):
     try:
         if not isinstance(raw, bytes) or len(raw) > 196608:
             return None
         value = json.loads(raw, parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
-        if (not isinstance(value, dict) or value.get('scope') != 'oci_atomistic_a03'
-                or value.get('operation') != OPERATION or value.get('status') not in {'success', 'failed'}
+        if (not isinstance(value, dict) or value.get('scope') != ('oci_atomistic_sigill' if trace else 'oci_atomistic_a03')
+                or value.get('operation') != (TRACE_OPERATION if trace else OPERATION) or value.get('status') not in {'success', 'failed'}
                 or value.get('stage') not in STAGES or value.get('physical_validation_status') != 'unvalidated'):
             return None
         return value
@@ -412,8 +425,9 @@ def sanitize_report(raw):
 
 
 def main():
+    trace = len(sys.argv) >= 2 and sys.argv[1] == TRACE_OPERATION
     try:
-        if len(sys.argv) != 4 or sys.argv[1] != OPERATION or len(sys.argv[2]) > 2048 or len(sys.argv[3]) > 87384:
+        if len(sys.argv) != 4 or sys.argv[1] not in (OPERATION, TRACE_OPERATION) or len(sys.argv[2]) > 2048 or len(sys.argv[3]) > 87384:
             raise ValueError()
         config_raw = base64.b64decode(sys.argv[2], validate=True)
         config = validate_config(json.loads(config_raw))
@@ -424,9 +438,10 @@ def main():
             raise ProbeError('interrupted')
         for sig in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
             signal.signal(sig, interrupted)
-        result = execute(config, archive)
+        result = execute(config, archive, trace=trace)
     except Exception:
-        result = {'scope': 'oci_atomistic_a03', 'operation': OPERATION, 'status': 'failed', 'stage': 'config',
+        result = {'scope': 'oci_atomistic_sigill' if trace else 'oci_atomistic_a03',
+            'operation': TRACE_OPERATION if trace else OPERATION, 'status': 'failed', 'stage': 'config',
             'physical_validation_status': 'unvalidated'}
     print(json.dumps(result, sort_keys=True, separators=(',', ':'), allow_nan=False))
     return 0 if result['status'] == 'success' else 2
@@ -434,3 +449,4 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

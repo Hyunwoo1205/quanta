@@ -15,6 +15,7 @@ import tempfile
 import zlib
 
 OPERATION = 'benchmark-atomistic'
+TRACE_OPERATION = 'trace-atomistic-old-he'
 MAX_ARGUMENT = 120000
 MAX_SOURCE = 65536
 MAX_COMPRESSED = 32768
@@ -39,15 +40,17 @@ def module(name):
     return value
 
 
-def bundle(root=ROOT):
+def bundle(root=ROOT, *, trace=False):
     controller = module('remote_atomistic_probe')
     paths = [root / p for p in controller.REQUIRED if not p.startswith('docs/design/atomistic-a01-') and not p.startswith('docs/design/atomistic-a02-')]
+    if trace:
+        paths.append(root / controller.TRACE_SCRIPT)
     for name in ('atomistic-a01-v0.1', 'atomistic-a02-v0.1'):
         paths.extend(p for p in (root / 'docs/design' / name).rglob('*') if p.is_file())
     members = {}
     for path in paths:
         relative = path.relative_to(root).as_posix()
-        if (not controller.allowed_path(relative) or any(p.is_symlink() for p in path.parents)
+        if (not controller.allowed_path(relative, trace=trace) or any(p.is_symlink() for p in path.parents)
                 or path.is_symlink() or not path.is_file()):
             raise ValueError('bundle file denied')
         raw = path.read_bytes()
@@ -64,16 +67,16 @@ def bundle(root=ROOT):
             archive.addfile(info, io.BytesIO(raw))
     result = stream.getvalue()
     digest = hashlib.sha256(result).hexdigest()
-    controller.archive_files(result, digest)
+    controller.archive_files(result, digest, trace=trace)
     return result, digest
 
 
-def remote_command(source, config, archive):
+def remote_command(source, config, archive, *, trace=False):
     controller = module('remote_atomistic_probe')
     if not isinstance(source, str) or not isinstance(config, dict) or not isinstance(archive, bytes):
         raise ValueError('fixed program denied')
     config = controller.validate_config(config)
-    controller.archive_files(archive, config['archive_sha256'])
+    controller.archive_files(archive, config['archive_sha256'], trace=trace)
     raw = source.encode('utf-8')
     if not 1 <= len(raw) <= MAX_SOURCE or b'\0' in raw:
         raise ValueError('fixed program denied')
@@ -82,7 +85,7 @@ def remote_command(source, config, archive):
     if len(packed) > MAX_COMPRESSED:
         raise ValueError('fixed program denied')
     bootstrap = BOOTSTRAP.replace('__SOURCE_SHA256__', hashlib.sha256(raw).hexdigest())
-    args = [base64.b64encode(packed).decode(), OPERATION,
+    args = [base64.b64encode(packed).decode(), TRACE_OPERATION if trace else OPERATION,
             base64.b64encode(controller.encoded(config)).decode(), base64.b64encode(archive).decode()]
     command = '/usr/bin/sudo -n /usr/bin/python3 -I -B -c ' + shlex.quote(bootstrap)
     command += ' ' + ' '.join(shlex.quote(argument) for argument in args)
@@ -91,43 +94,46 @@ def remote_command(source, config, archive):
     return command
 
 
-def report(status, attempted=False, result=None):
-    value = {'scope': 'ssh_atomistic_probe', 'operation': OPERATION, 'status': status,
+def report(status, attempted=False, result=None, *, trace=False):
+    value = {'scope': 'ssh_atomistic_sigill' if trace else 'ssh_atomistic_probe',
+             'operation': TRACE_OPERATION if trace else OPERATION, 'status': status,
              'authentication_attempted': attempted}
     if result is not None:
         value['result'] = result
     return value
 
 
-def probe(environ=None, *, runner=None, authorizer=None, root=ROOT):
+def probe(environ=None, *, runner=None, authorizer=None, root=ROOT, trace=False):
     env = os.environ if environ is None else environ
-    if env.get('QUANTA_OCI_AUTH_CONFIRMED') != 'true' or env.get('QUANTA_ATOMISTIC_OPERATION') != OPERATION:
-        return report('not_configured')
+    prefix = 'QUANTA_ATOMISTIC_SIGILL' if trace else 'QUANTA_ATOMISTIC'
+    operation = TRACE_OPERATION if trace else OPERATION
+    if (env.get('QUANTA_OCI_AUTH_CONFIRMED') != 'true' or env.get(prefix + '_OPERATION') != operation
+            or trace and authorizer is None):
+        return report('not_configured', trace=trace)
     try:
-        gate = module('authorize_atomistic_probe')
         # Recheck CI and the clean pinned checkout immediately before using SSH keys.
-        authorized = gate.authorize(env) if authorizer is None else authorizer(env)
+        authorized = module('authorize_atomistic_probe').authorize(env) if authorizer is None else authorizer(env)
         if (authorized.get('status') != 'authorized'
-                or authorized.get('source_sha') != env.get('QUANTA_ATOMISTIC_SOURCE_SHA')
-                or authorized.get('request_id') != env.get('QUANTA_ATOMISTIC_REQUEST_ID')
-                or authorized.get('operation') != OPERATION):
+                or authorized.get('source_sha') != env.get(prefix + '_SOURCE_SHA')
+                or authorized.get('request_id') != env.get(prefix + '_REQUEST_ID')
+                or authorized.get('operation') != operation):
             raise ValueError()
-        archive, digest = bundle(root)
+        archive, digest = bundle(root, trace=trace)
         controller = module('remote_atomistic_probe')
         config = {'source_sha': authorized['source_sha'], 'request_id': authorized['request_id'], 'archive_sha256': digest}
         source = (Path(__file__).with_name('remote_atomistic_probe.py')).read_text()
-        remote = remote_command(source, config, archive)
+        remote = remote_command(source, config, archive, trace=trace)
         login = module('probe_login')
         transport = module('probe_inventory')
         host = env.get('QUANTA_OCI_HOST')
         pin = login._normalized_host_key(env.get('QUANTA_OCI_HOST_KEY'))
         error, key = login._key_bytes(env.get('QUANTA_OCI_PPK'))
         if not login._global_ipv4(host) or pin is None or error is not None:
-            return report('not_configured')
+            return report('not_configured', trace=trace)
     except Exception:
-        return report('configuration_invalid')
+        return report('configuration_invalid', trace=trace)
     capture = (lambda cmd, environ, directory: transport._capture(cmd, environ, directory,
-        timeout=960, limit=196608)) if runner is None else runner
+        timeout=240 if trace else 960, limit=196608)) if runner is None else runner
     attempted = False
     try:
         with tempfile.TemporaryDirectory(prefix='quanta-a03-') as directory:
@@ -140,12 +146,12 @@ def probe(environ=None, *, runner=None, authorizer=None, root=ROOT):
                 '-a', '-x', '-T', '-noshare', '-P', '22', '-l', 'ubuntu', '-i', str(path), '-hostkey', pin, host, remote]
             environment = {'HOME': directory, 'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
             status, raw, attempted = capture(command, environment, directory)
-            value = controller.sanitize_report(raw) if status in {'success', 'failed'} else None
+            value = controller.sanitize_report(raw, trace=trace) if status in {'success', 'failed'} else None
             if value is not None and value.get('source_sha') == authorized['source_sha'] and value.get('request_id') == authorized['request_id']:
-                return report('success' if status == 'success' and value['status'] == 'success' else 'remote_failed', attempted, value)
-            return report(status if status in {'timeout', 'output_limit'} else 'remote_failed', attempted)
+                return report('success' if status == 'success' and value['status'] == 'success' else 'remote_failed', attempted, value, trace=trace)
+            return report(status if status in {'timeout', 'output_limit'} else 'remote_failed', attempted, trace=trace)
     except Exception:
-        return report('failed', attempted)
+        return report('failed', attempted, trace=trace)
 
 
 def main():
@@ -156,3 +162,4 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

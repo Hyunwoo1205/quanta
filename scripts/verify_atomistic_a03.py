@@ -47,6 +47,7 @@ OCI_IMAGE_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
 OCI_IMAGE_CONFIG = "application/vnd.oci.image.config.v1+json"
 IMAGE_CONFIG_FIELDS = ("Entrypoint", "Cmd", "WorkingDir", "Env", "Labels")
 IMAGE_DIGEST = r"sha256:[0-9a-f]{64}"
+OLD_ARM_IMAGE_DIGEST = "sha256:ab4826caab2833c856df3455781fe57771ec04da7988588e0b0b6f0e687ecade"
 
 
 def sha256(path: Path) -> str:
@@ -553,6 +554,12 @@ printf '%s\n' "$quanta_rc" > /work/quanta_exit_code
 while [ ! -f /work/quanta_release ]; do sleep 0.2; done
 exit "$quanta_rc"
 '''
+TRACE_WRAPPER = r'''python3 -I -B /quanta-input/trace_cp2k_sigill.py > /work/cp2k.out 2>&1
+quanta_rc=$?
+printf '%s\n' "$quanta_rc" > /work/quanta_exit_code
+while [ ! -f /work/quanta_release ]; do sleep 0.2; done
+exit "$quanta_rc"
+'''
 
 
 class DockerProbe:
@@ -659,12 +666,19 @@ class DockerProbe:
                 pass
         return alive
 
-    def execute(self, case: str, inp: str, metadata: dict, cancel: bool = False) -> dict:
+    def execute(self, case: str, inp: str, metadata: dict, cancel: bool = False, *, trace: bool = False) -> dict:
         timing = {"case_started_monotonic": time.monotonic()}
         target = self.out / case; target.mkdir()
         (target / "input.inp").write_text(inp)
+        if trace:
+            from trace_cp2k_sigill import INPUT_SHA256
+            if (case != "he-dz" or cancel or native_platform() != "linux/arm64"
+                    or not self.image.endswith("@"+OLD_ARM_IMAGE_DIGEST)
+                    or sha256(target / "input.inp") != INPUT_SHA256):
+                raise ValueError("Fixed SIGILL diagnostic image/input mismatch")
+            shutil.copyfile(ROOT / "scripts/trace_cp2k_sigill.py", target / "trace_cp2k_sigill.py")
         name = "quanta-a03-"+uuid.uuid4().hex
-        run(self.create_args(name, target)+[self.image, "/bin/sh", "-c", PROBE_WRAPPER]); self.names.add(name)
+        run(self.create_args(name, target)+[self.image, "/bin/sh", "-c", TRACE_WRAPPER if trace else PROBE_WRAPPER]); self.names.add(name)
         record = {"case": case, "input_sha256": sha256(target / "input.inp"), "input_metadata": metadata,
                   "limits": dict(LIMITS, case_timeout_seconds=self.timeout), "cancel_requested": cancel,
                   "timing": timing,
@@ -690,7 +704,7 @@ class DockerProbe:
                     timing["engine_completion_observed_monotonic"] = time.monotonic()
                     if cancel:
                         raise RuntimeError("Cancellation probe completed before an active engine could be cancelled")
-                    record["engine_returncode"] = int(done.stdout.strip())
+                    record["trace_wrapper_returncode" if trace else "engine_returncode"] = int(done.stdout.strip())
                     # copy_work streams the tar, extracts it and hashes the tar bytes.
                     timing["archive_transfer_started_monotonic"] = time.monotonic()
                     record["artifact_transport"] = self.copy_work(name, target / "raw")
@@ -729,7 +743,19 @@ class DockerProbe:
                     raise TimeoutError("Declared engine case deadline exceeded")
                 time.sleep(HEARTBEAT)
             record["wall_seconds"] = time.monotonic()-start
-            if not cancel:
+            if trace:
+                from trace_cp2k_sigill import validated_report
+                path = target / "raw/trace-sigill.json"
+                if not path.is_file() or path.stat().st_size > 4096:
+                    raise ValueError("Missing or oversized SIGILL diagnostic report")
+                row = validated_report(json.loads(path.read_bytes()))
+                if row is None:
+                    raise ValueError("Invalid SIGILL diagnostic report")
+                record["sigill_trace"] = row
+                record["trace_diagnostic_passed"] = (row["status"] == "sigill_captured"
+                    and row["pc_matches_signal_address"] and row["module"] is not None
+                    and record["trace_wrapper_returncode"] == record["container_returncode"] == 0)
+            elif not cancel:
                 raw = target / "raw"
                 text = (raw / "cp2k.out").read_text(errors="replace")
                 record["output"] = parse_output(text)
@@ -762,10 +788,12 @@ class DockerProbe:
                     raise RuntimeError("Actual GAPW/PBE and supplied locked data use could not be observed")
                 if not record.get("engine_resource", {}).get("engine_children_peak_rss_kib"):
                     raise RuntimeError("Actual completed engine peak RSS was not recorded")
-            record["passed_execution_gate"] = True
+            record["passed_execution_gate"] = not trace
         except Exception as exc:
             record["error"] = type(exc).__name__+": "+str(exc)
             record["passed_execution_gate"] = False
+            if trace:
+                record["trace_diagnostic_passed"] = False
             record["wall_seconds"] = time.monotonic()-start
             self.read_output(name, target / "failed-cp2k.out")
         finally:
@@ -775,6 +803,8 @@ class DockerProbe:
             record["tracked_processes_remaining_after_remove"] = self.remaining_pids(tracked)
             if record["tracked_processes_remaining_after_remove"]:
                 record["passed_execution_gate"] = False
+            if trace and (not record["container_removed"] or record["tracked_processes_remaining_after_remove"]):
+                record["trace_diagnostic_passed"] = False
             timing["cleanup_finished_monotonic"] = time.monotonic()
         (target / "evidence.json").write_text(json.dumps(record, indent=2)+"\n")
         return record
@@ -786,6 +816,7 @@ def main() -> int:
     parser.add_argument("--case-timeout", type=int, default=180)
     parser.add_argument("--web-origin")
     parser.add_argument("--production-web-boundary", action="store_true")
+    parser.add_argument("--trace-old-he", action="store_true")
     args = parser.parse_args()
     if not 30 <= args.case_timeout <= 180:
         parser.error("case timeout must be 30..180 seconds")
@@ -801,6 +832,10 @@ def main() -> int:
               "limits": dict(LIMITS, case_timeout_seconds=args.case_timeout), "physical_validation_status": "unvalidated",
               "runtime_contract_implemented": False, "production_deployment_changed": False, "cases": []}
     report["source_sha"] = os.environ.get("QUANTA_A03_SOURCE_SHA")
+    success_key = "trace_diagnostic_passed" if args.trace_old_he else "passed_execution_gates"
+    if args.trace_old_he:
+        report["probe"] = "quanta.atomistic-old-he-sigill"
+        report["passed_execution_gates"] = False
     sampler = WebSampler(args.web_origin, args.production_web_boundary); sampler.start(); probe = None
     try:
         if shutil.disk_usage(out).free < 8*1024**3:
@@ -810,10 +845,14 @@ def main() -> int:
         lock = json.loads((LOCK_DIR / "engine-lock.json").read_text())
         selected = image_selection(lock, native_platform()); report["image_candidate"] = selected
         locked_config, manifest_size = read_locked_image(selected)
-        pull_start = time.monotonic()
-        pull = run(["docker", "pull", "--platform", native_platform(), selected["immutable_reference"]], timeout=300)
-        (out / "pull.txt").write_text(pull.stdout+pull.stderr)
-        report["pull_wall_seconds"] = time.monotonic()-pull_start
+        if args.trace_old_he:
+            if native_platform() != "linux/arm64" or selected["digest"] != OLD_ARM_IMAGE_DIGEST:
+                raise ValueError("SIGILL diagnosis requires the cached original ARM64 image")
+        else:
+            pull_start = time.monotonic()
+            pull = run(["docker", "pull", "--platform", native_platform(), selected["immutable_reference"]], timeout=300)
+            (out / "pull.txt").write_text(pull.stdout+pull.stderr)
+            report["pull_wall_seconds"] = time.monotonic()-pull_start
         images = json.loads(run(["docker", "image", "inspect", selected["immutable_reference"]]).stdout)
         if not isinstance(images, list) or len(images) != 1 or not isinstance(images[0], dict):
             raise ValueError("Docker inspect did not return one image")
@@ -825,22 +864,28 @@ def main() -> int:
         report["locked_data"] = [{"file": p.name, "sha256": sha256(p), "bytes": p.stat().st_size} for p in sorted((LOCK_DIR / "assets").iterdir()) if p.is_file()]
         from atomistic_a03_inputs import generate_input, probe_metadata
         sampler.phase = "during"
-        for case, system, basis in [("he-dz", "he", "cc-pVDZ"), ("h2-dz", "h2", "cc-pVDZ"), ("h2-tz", "h2", "cc-pVTZ")]:
-            kwargs = dict(system=system, basis=basis, project=case.replace("-", "_"), data_dir="/quanta-data")
-            row = probe.execute(case, generate_input(**kwargs), probe_metadata(**kwargs)); report["cases"].append(row)
+        if args.trace_old_he:
+            kwargs = dict(system="he", basis="cc-pVDZ", project="he_dz", data_dir="/quanta-data")
+            row = probe.execute("he-dz", generate_input(**kwargs), probe_metadata(**kwargs), trace=True)
+            report["cases"].append(row)
+            report[success_key] = row["trace_diagnostic_passed"]
+        else:
+            for case, system, basis in [("he-dz", "he", "cc-pVDZ"), ("h2-dz", "h2", "cc-pVDZ"), ("h2-tz", "h2", "cc-pVTZ")]:
+                kwargs = dict(system=system, basis=basis, project=case.replace("-", "_"), data_dir="/quanta-data")
+                row = probe.execute(case, generate_input(**kwargs), probe_metadata(**kwargs)); report["cases"].append(row)
+                if not row["passed_execution_gate"]:
+                    raise RuntimeError("A03 case failed: "+case)
+            kwargs = dict(system="h2", basis="cc-pVQZ", project="h2_cancel", data_dir="/quanta-data", cell_angstrom=20, cutoff_ry=800, rel_cutoff_ry=80)
+            row = probe.execute("h2-cancel", generate_input(**kwargs), probe_metadata(**kwargs), cancel=True); report["cases"].append(row)
             if not row["passed_execution_gate"]:
-                raise RuntimeError("A03 case failed: "+case)
-        kwargs = dict(system="h2", basis="cc-pVQZ", project="h2_cancel", data_dir="/quanta-data", cell_angstrom=20, cutoff_ry=800, rel_cutoff_ry=80)
-        row = probe.execute("h2-cancel", generate_input(**kwargs), probe_metadata(**kwargs), cancel=True); report["cases"].append(row)
-        if not row["passed_execution_gate"]:
-            raise RuntimeError("Active engine cancellation failed")
-        kwargs = dict(system="h2", basis="cc-pVDZ", project="h2_after_cancel", data_dir="/quanta-data")
-        row = probe.execute("h2-after-cancel", generate_input(**kwargs), probe_metadata(**kwargs)); report["cases"].append(row)
-        if not row["passed_execution_gate"]:
-            raise RuntimeError("Fresh engine execution after cancellation failed")
-        report["passed_execution_gates"] = True
+                raise RuntimeError("Active engine cancellation failed")
+            kwargs = dict(system="h2", basis="cc-pVDZ", project="h2_after_cancel", data_dir="/quanta-data")
+            row = probe.execute("h2-after-cancel", generate_input(**kwargs), probe_metadata(**kwargs)); report["cases"].append(row)
+            if not row["passed_execution_gate"]:
+                raise RuntimeError("Fresh engine execution after cancellation failed")
+            report["passed_execution_gates"] = True
     except Exception as exc:
-        report["error"] = type(exc).__name__+": "+str(exc); report["passed_execution_gates"] = False
+        report["error"] = type(exc).__name__+": "+str(exc); report[success_key] = False
     finally:
         if probe:
             for name in list(probe.names):
@@ -848,7 +893,7 @@ def main() -> int:
         report["web_responsiveness"] = sampler.finish()
         web = report["web_responsiveness"]
         if web["configured"] and (any(s["status"] != s["expected_status"] or s["wall_seconds"] > 2 for s in web["samples"]) or not web["summary"]["during"]["samples"]):
-            report["passed_execution_gates"] = False
+            report[success_key] = False
             report["web_gate_error"] = "Unexpected web status/timeout or missing during-compute samples"
         (out / "web-samples.json").write_text(json.dumps(web["samples"], indent=2)+"\n")
         web["raw_samples_file"] = "web-samples.json"
@@ -861,7 +906,7 @@ def main() -> int:
         report["finished_at"] = datetime.now(timezone.utc).isoformat()
         (out / "report.json").write_text(json.dumps(report, indent=2)+"\n")
         print(json.dumps({"report": str(out / "report.json"), "passed_execution_gates": report.get("passed_execution_gates", False), "error": report.get("error")}))
-    return 0 if report.get("passed_execution_gates") else 2
+    return 0 if report.get(success_key) else 2
 
 
 if __name__ == "__main__":

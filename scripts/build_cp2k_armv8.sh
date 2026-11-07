@@ -68,9 +68,9 @@ mpicc -show >"$evidence/mpicc.txt"
 mpifort -show >"$evidence/mpifort.txt"
 
 unpack() {
-    local package="$1" archive="$2"
+    local package="$1" archive="$2" components="${3:-1}"
     mkdir "$package"
-    tar -xf "archives/$archive" --directory "$package" --strip-components=1
+    tar -xf "archives/$archive" --directory "$package" --strip-components="$components"
 }
 
 check_compile_flags() {
@@ -155,7 +155,7 @@ cmake_build libxc "$inputs/libxc" "$deps" \
     -DBUILD_SHARED_LIBS=ON -DENABLE_FORTRAN=ON -DDISABLE_KXC=OFF \
     "-DCMAKE_C_FLAGS=$baseline -fno-var-tracking"
 
-unpack libint libint-v2.13.1-cp2k-lmax-5.tar.xz
+unpack libint libint-v2.13.1-cp2k-lmax-5.tar.xz 2
 cmake_build libint "$inputs/libint" "$deps" \
     -DBUILD_SHARED_LIBS=ON -DLIBINT2_ENABLE_FORTRAN=ON \
     -DCMAKE_DISABLE_FIND_PACKAGE_Boost=ON -DCMAKE_CXX_FLAGS_RELEASE=-O1

@@ -28,21 +28,27 @@ jobs:
         with:
           persist-credentials: false
       - name: Require native ARM64 and record runner capacity
+        shell: bash
         run: |
           test "$(uname -m)" = aarch64
           mkdir -p .cache/cp2k-armv8-build/evidence
           {
             uname -sm
+            date -u
             nproc
             awk '/^MemTotal:/ { print }' /proc/meminfo
             df -Pk .
             docker version --format '{{.Server.Version}} {{.Server.Os}} {{.Server.Arch}}'
           } | tee .cache/cp2k-armv8-build/evidence/runner.txt
+          curl --fail --silent --show-error --head --max-time 30 \
+            https://snapshot.ubuntu.com/ubuntu/20261107T000000Z/dists/resolute/InRelease \
+            > .cache/cp2k-armv8-build/evidence/ubuntu-snapshot-http.txt
       - name: Build the locked ARMv8-A candidate
         shell: bash
         run: |
           set -o pipefail
           time docker buildx build --load --platform linux/arm64 --progress plain \
+            --secret id=runner_ca,src=/etc/ssl/certs/ca-certificates.crt \
             --build-arg QUANTA_CP2K_BUILD_JOBS=3 \
             --file deploy/cp2k-armv8/Dockerfile --tag "$QUANTA_CANDIDATE_REF" . \
             2>&1 | tee .cache/cp2k-armv8-build/evidence/build.log

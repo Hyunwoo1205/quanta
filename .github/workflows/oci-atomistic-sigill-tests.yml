@@ -1,0 +1,58 @@
+name: OCI fixed atomistic SIGILL diagnostic tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/oci-atomistic-sigill-tests.yml'
+      - 'deploy/oci/diagnose_atomistic_sigill.py'
+      - 'deploy/oci/diagnose_atomistic_image.py'
+      - 'deploy/oci/probe_atomistic.py'
+      - 'deploy/oci/remote_atomistic_probe.py'
+      - 'scripts/trace_cp2k_sigill.py'
+      - 'scripts/verify_atomistic_a03.py'
+      - 'tests/test_atomistic_sigill.py'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    name: atomistic SIGILL diagnostic (${{ matrix.architecture }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x86_64
+            runner: ubuntu-24.04
+          - architecture: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Require a native host and verify the synchronous fault tracer
+        env:
+          EXPECTED_ARCHITECTURE: ${{ matrix.architecture }}
+          QUANTA_REQUIRE_NATIVE_PTRACE: '1'
+        run: |
+          python3 -I -B -c 'import os,platform; assert platform.machine() == os.environ["EXPECTED_ARCHITECTURE"]'
+          python3 -I -B -m unittest discover -s tests -p test_atomistic_sigill.py -v
+      - name: Verify native ARM64 child tracing with the A03 Docker security options
+        if: matrix.architecture == 'aarch64'
+        run: |
+          set -eu
+          trace_dir=$(mktemp -d)
+          trap 'rm -rf "$trace_dir"' EXIT
+          printf '%s\n' 'int main(void) { __asm__ volatile(".inst 0"); return 0; }' | gcc -static -x c - -o "$trace_dir/fault"
+          cp scripts/trace_cp2k_sigill.py "$trace_dir/"
+          docker run --rm --platform linux/arm64 --user "$(id -u):$(id -g)" --group-add 0 \
+            --read-only --network none --cap-drop ALL --security-opt no-new-privileges \
+            --cpus 1 --memory 2g --memory-swap 2g --pids-limit 128 --ulimit core=0 \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=134217728,mode=1777 \
+            --tmpfs /work:rw,nosuid,nodev,noexec,size=268435456,mode=1777 \
+            --workdir /work --mount "type=bind,source=$trace_dir,target=/opt/cp2k/trace-test,readonly" \
+            python:3.12.14-slim-bookworm@sha256:eb5be8e5b4d0a159c237946bbdd06356dda5d19c30fc4f7843e8046d3a590333 \
+            python3 -I -B -c 'import sys;sys.path.insert(0,"/opt/cp2k/trace-test");import trace_cp2k_sigill as t;r=t.trace(["/opt/cp2k/trace-test/fault"],"aarch64",10); print(r); assert r["status"]=="sigill_captured" and r["instruction_bytes"]=="00000000" and r["pc_matches_signal_address"] and r["module"]["file_bytes_equal"]'
