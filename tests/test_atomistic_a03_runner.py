@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tarfile
 from types import SimpleNamespace
+from urllib.error import HTTPError
 
 import pytest
 
@@ -252,6 +253,91 @@ def test_production_boundary_headers_are_fixed_to_oci_loopback():
     assert sampler.headers == {"Host": "quanta.kro.kr", "Origin": "https://quanta.kro.kr"}
     with pytest.raises(ValueError, match="fixed OCI loopback"):
         a03.WebSampler("http://127.0.0.1:9999", True)
+
+
+def test_web_and_case_timings_share_ordered_phase_evidence(tmp_path, monkeypatch):
+    ticks = iter(range(100))
+    cpu_ticks = iter((1.0, 1.125, 2.0, 2.25))
+    monkeypatch.setattr(a03, "time", SimpleNamespace(monotonic=ticks.__next__, thread_time=cpu_ticks.__next__))
+    sampler = a03.WebSampler("http://127.0.0.1:8765", True)
+    sampler.phase = "during"
+    requests, reads = [], []
+
+    class Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return None
+
+        def read(self, size):
+            reads.append(size)
+            sampler.phase = "after"
+            return b"x"
+
+    def fake_urlopen(request, *, timeout):
+        requests.append((request.full_url, timeout))
+        if request.full_url.endswith("/v1/capabilities"):
+            raise HTTPError(request.full_url, 401, "fixture", {}, None)
+        return Response()
+
+    monkeypatch.setattr(a03, "urlopen", fake_urlopen)
+    probe = a03.DockerProbe("fixed-image", tmp_path, 180)
+    monkeypatch.setattr(probe, "sample", lambda *_: [])
+    monkeypatch.setattr(probe, "inspect", lambda _: {
+        "State": {"Running": True}, "HostConfig": {}, "Config": {"User": "1000:1000"},
+    })
+
+    def fake_run(args, **_):
+        if args[:2] == ["docker", "inspect"]:
+            return subprocess.CompletedProcess(args, 1, "", "")
+        return subprocess.CompletedProcess(args, 0, "0\n", "")
+
+    def fake_copy_work(_, destination):
+        sampler.sample()
+        destination.mkdir()
+        (destination / "cp2k.out").write_text(
+            "GAPW PBE cc-pVDZ.cp2k ALL_POTENTIALS\n"
+            " ENERGY| Total FORCE_EVAL ( QS ) energy [hartree] -2.8\n"
+            " *** SCF run converged in 9 steps ***\n PROGRAM ENDED AT timestamp\n"
+        )
+        (destination / "forces.xyz").write_text("1\n Forces (a.u.)\n He 0 0 0\n")
+        (destination / "he-TOTAL_ELECTRON_DENSITY.cube").write_bytes(cube(tmp_path).read_bytes())
+        (destination / "engine-resource.json").write_text('{"engine_children_peak_rss_kib": 1}')
+        return {"transport": "fixture"}
+
+    monkeypatch.setattr(a03, "run", fake_run)
+    monkeypatch.setattr(probe, "copy_work", fake_copy_work)
+    record = probe.execute("he", "fixture", {
+        "atoms": [{"element": "He", "engine_position_angstrom": [0, 0, 0]}], "basis": "cc-pVDZ",
+    })
+    assert record["passed_execution_gate"]
+    assert record["container_removed"]
+    ok, unauthorized = sampler.samples
+    assert requests == [("http://127.0.0.1:8765/", 2), ("http://127.0.0.1:8765/v1/capabilities", 2)]
+    assert reads == [1]
+    assert (ok["status"], unauthorized["status"]) == (200, 401)
+    assert ok["timing"]["phase_at_start"] == "during"
+    assert ok["phase"] == "after"
+    assert unauthorized["timing"]["phase_at_start"] == "after"
+    assert unauthorized["timing"]["first_body_byte_monotonic"] is None
+    assert ok["timing"]["thread_cpu_seconds"] == 0.125
+    assert unauthorized["timing"]["thread_cpu_seconds"] == 0.25
+    case = record["timing"]
+    first, second = ok["timing"], unauthorized["timing"]
+    ordered = [
+        case["case_started_monotonic"], case["engine_start_requested_monotonic"],
+        case["engine_completion_observed_monotonic"], case["archive_transfer_started_monotonic"],
+        first["started_monotonic"], first["headers_monotonic"], first["first_body_byte_monotonic"],
+        first["finished_monotonic"], second["started_monotonic"], second["headers_monotonic"],
+        second["finished_monotonic"], case["archive_transfer_finished_monotonic"],
+        case["artifact_hashing_started_monotonic"], case["artifact_hashing_finished_monotonic"],
+        case["cube_parsing_started_monotonic"], case["cube_parsing_finished_monotonic"],
+        case["cleanup_started_monotonic"], case["cleanup_finished_monotonic"],
+    ]
+    assert all(before < after for before, after in zip(ordered, ordered[1:]))
 
 
 def make_archive(path, name="cp2k.out", content=b"CP2K actual tmpfs output\n", kind=tarfile.REGTYPE, pax=None, declared_size=None):

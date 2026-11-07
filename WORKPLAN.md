@@ -12,7 +12,11 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A03 격리 설치·자원/취소 실측 진행 중
+## 현재 개발 위치 — A03 OCI 재실측 보류·x86 웹 지연 계측
+
+2026-11-07 KST, 이미지 검증 수정 소스 `26bd827899bc5d0e0f7a8b22a3bd8b3b94c8c705`의 [native CI42336172276](https://github.com/Hyunwoo1205/quanta/actions/runs/42336172276)는 ARM 성공, x86 두 시도 실패입니다. x86에서는 두 번 모두 계산 4건·초기화 취소·정리가 통과하고 HTTP 200/401도 유지됐으나, 계산/결과 처리 중 `/` 최대 응답이 각각 2.101초·2.601초로 2초 기준을 넘었습니다. [검증한 웹 원본 요약](docs/verification/atomistic-a03/native-42336172276-web-gate.json)과 [세 native 원본 ZIP](https://drive.google.com/file/d/1nqq52S9HAHNYABP-U939z0V-2kz2d4x0/view?usp=drivesdk)을 보존합니다. 같은 크기의 150³ CUBE를 사용한 로컬 복사·파싱/웹 동시 모의시험에서는 수 초 지연이 재현되지 않았습니다. 이 결과로 파서나 운영 웹을 원인으로 확정하지 않습니다.
+
+현 커밋은 기준·동작을 유지하고 웹 요청 시작/응답 헤더/첫 바이트/완료와 케이스 시작·엔진 완료·아카이브 전송·파일 해시·CUBE 파싱·정리의 단조 시각을 추가합니다. 새 native CI에서 구간을 대조하고, 같은 소스의 전체 및 native CI 성공 전에는 `ops/oci` 재요청을 제출하지 않습니다. 실패가 재현되면 그 구간의 독립 HTTP 관측과 호스트 CPU/I/O 대조가 다음 진단입니다. 실제 OCI 원자계 계산·계산 중 웹 지연·취소는 아직 미검증입니다. A04 후보 [추적 가능한 소스 빌드의 시작점](docs/design/atomistic-a04-source-traceability.md)은 정리했으며, 기존 `revision unknown` 바이너리의 계약은 동결하지 않습니다.
 
 [OCI 첫 요청42333684670](docs/verification/atomistic-a03/oci/42333684670.json)은 이미지 식별 검증 단계에서 중단됐습니다. [별도 읽기 전용 진단42335035316](docs/verification/atomistic-a03/oci/42335035316.json)에서 Docker29.9.1의 containerd 저장소가 고정 ARM 매니페스트를 `Id`로 반환하고 매니페스트 descriptor(2842바이트)·11개 순서 있는 레이어가 A02 잠금과 일치함을 확인했습니다. 고정 플랫폼/참조/원본 파일 SHA·크기/실행 설정 확인을 유지하면서 두 Docker 식별 방식에 맞게 검증기를 수정했습니다. 변경 소스의 전체 CI·native CI가 모두 성공하면 새 UUID로 OCI 격리 실측을 재요청합니다. 이 수정은 엔진 이미지/수치조건 변경·운영 배포·A04 소스 연결이 아닙니다.
 

@@ -482,16 +482,28 @@ class WebSampler:
             return
         for path, expected in [("/", 200), ("/v1/capabilities", 401)]:
             t = time.monotonic(); code = None; error = None
+            cpu_start = time.thread_time()
+            phase_at_start = self.phase
+            headers_at = first_byte_at = None
             try:
                 from urllib.request import Request
                 with urlopen(Request(self.origin+path, headers=self.headers), timeout=2) as r:
-                    code = r.status; r.read(1)
+                    headers_at = time.monotonic()
+                    code = r.status
+                    if r.read(1):
+                        first_byte_at = time.monotonic()
             except HTTPError as exc:
+                headers_at = time.monotonic()
                 code = exc.code
             except Exception as exc:
                 error = type(exc).__name__
+            finished_at = time.monotonic()
             self.samples.append({"phase": self.phase, "path": path, "status": code,
-                                 "expected_status": expected, "wall_seconds": time.monotonic()-t, "error": error})
+                                 "expected_status": expected, "wall_seconds": finished_at-t, "error": error,
+                                 "timing": {"phase_at_start": phase_at_start, "started_monotonic": t,
+                                            "headers_monotonic": headers_at, "first_body_byte_monotonic": first_byte_at,
+                                            "finished_monotonic": finished_at,
+                                            "thread_cpu_seconds": time.thread_time()-cpu_start}})
 
     def start(self) -> None:
         self.sample()
@@ -648,16 +660,19 @@ class DockerProbe:
         return alive
 
     def execute(self, case: str, inp: str, metadata: dict, cancel: bool = False) -> dict:
+        timing = {"case_started_monotonic": time.monotonic()}
         target = self.out / case; target.mkdir()
         (target / "input.inp").write_text(inp)
         name = "quanta-a03-"+uuid.uuid4().hex
         run(self.create_args(name, target)+[self.image, "/bin/sh", "-c", PROBE_WRAPPER]); self.names.add(name)
         record = {"case": case, "input_sha256": sha256(target / "input.inp"), "input_metadata": metadata,
                   "limits": dict(LIMITS, case_timeout_seconds=self.timeout), "cancel_requested": cancel,
+                  "timing": timing,
                   "metrics": {"sampled_process_rss_sum_peak_kib": 0, "samples": 0,
                               "observed_cgroup_memory_peak_bytes": None,
                               "rss_metric": "Sampled sum of docker-top per-process resident pages; shared pages may be counted more than once; not exact peak RSS."}}
         start = time.monotonic(); tracked = []; cancellation = None
+        timing["engine_start_requested_monotonic"] = start
         try:
             run(["docker", "start", name]); record["container_controls"] = self.inspect(name)["HostConfig"]
             record["container_user"] = self.inspect(name)["Config"]["User"]
@@ -672,10 +687,14 @@ class DockerProbe:
                 tracked = self.sample(name, record["metrics"])
                 done = run(["docker", "exec", name, "/bin/sh", "-c", "test -f /work/quanta_exit_code && cat /work/quanta_exit_code"], check=False)
                 if done.returncode == 0:
+                    timing["engine_completion_observed_monotonic"] = time.monotonic()
                     if cancel:
                         raise RuntimeError("Cancellation probe completed before an active engine could be cancelled")
                     record["engine_returncode"] = int(done.stdout.strip())
+                    # copy_work streams the tar, extracts it and hashes the tar bytes.
+                    timing["archive_transfer_started_monotonic"] = time.monotonic()
                     record["artifact_transport"] = self.copy_work(name, target / "raw")
+                    timing["archive_transfer_finished_monotonic"] = time.monotonic()
                     run(["docker", "exec", name, "touch", "/work/quanta_release"])
                     wait = run(["docker", "wait", name], timeout=15)
                     record["container_returncode"] = int(wait.stdout.strip())
@@ -685,12 +704,14 @@ class DockerProbe:
                     if "CP2K|" in text and "PROGRAM ENDED AT" not in text:
                         active_rows = [r for r in tracked if "cp2k" in r["comm"].lower()]
                         t = time.monotonic()
+                        timing["active_cancel_started_monotonic"] = t
                         stop = run(["docker", "stop", "--time", "1", name], timeout=10, check=False)
                         if stop.returncode:
                             run(["docker", "kill", name], check=False)
                         run(["docker", "wait", name], timeout=10, check=False)
                         state = self.inspect(name)["State"]
                         alive = self.remaining_pids(tracked)
+                        timing["active_cancel_finished_monotonic"] = time.monotonic()
                         cancellation = {"active_cp2k_processes_before_stop": active_rows,
                                         "partial_output_contains_cp2k_banner": True,
                                         "program_had_ended_before_cancel": False,
@@ -719,10 +740,14 @@ class DockerProbe:
                     record["output"]["forces_n_candidate_engine2006"] = [[v*factor for v in row] for row in record["output"]["forces_hartree_per_bohr"]]
                     record["output"]["force_artifact"] = "forces.xyz"
                     record["output"]["force_units_policy"] = "CP2K native PRINT FORCES default atomic units; A04 actual-source binding remains required."
+                timing["artifact_hashing_started_monotonic"] = time.monotonic()
                 record["files"] = [{"file": str(p.relative_to(target)), "bytes": p.stat().st_size, "sha256": sha256(p)} for p in sorted(raw.rglob("*")) if p.is_file()]
+                timing["artifact_hashing_finished_monotonic"] = time.monotonic()
                 record["output_bytes"] = sum(f["bytes"] for f in record["files"])
                 cubes = sorted(raw.glob("*TOTAL_ELECTRON_DENSITY*.cube"))
+                timing["cube_parsing_started_monotonic"] = time.monotonic()
                 record["density"] = [parse_cube(p) for p in cubes]
+                timing["cube_parsing_finished_monotonic"] = time.monotonic()
                 resource_file = raw / "engine-resource.json"
                 if resource_file.exists():
                     record["engine_resource"] = json.loads(resource_file.read_text())
@@ -744,11 +769,13 @@ class DockerProbe:
             record["wall_seconds"] = time.monotonic()-start
             self.read_output(name, target / "failed-cp2k.out")
         finally:
+            timing["cleanup_started_monotonic"] = time.monotonic()
             self.remove(name)
             record["container_removed"] = run(["docker", "inspect", name], check=False).returncode != 0
             record["tracked_processes_remaining_after_remove"] = self.remaining_pids(tracked)
             if record["tracked_processes_remaining_after_remove"]:
                 record["passed_execution_gate"] = False
+            timing["cleanup_finished_monotonic"] = time.monotonic()
         (target / "evidence.json").write_text(json.dumps(record, indent=2)+"\n")
         return record
 
@@ -826,6 +853,9 @@ def main() -> int:
         (out / "web-samples.json").write_text(json.dumps(web["samples"], indent=2)+"\n")
         web["raw_samples_file"] = "web-samples.json"
         web["raw_samples_sha256"] = sha256(out / "web-samples.json")
+        # Include bounded timings for gate failures even when they fall outside the excerpt.
+        web["timing_outliers"] = [s for s in web["samples"]
+                                  if s["status"] != s["expected_status"] or s["wall_seconds"] > 2][:8]
         web["samples"] = web["samples"][:4]+web["samples"][-4:] if len(web["samples"]) > 8 else web["samples"]
         web["report_samples_are_excerpt"] = True
         report["finished_at"] = datetime.now(timezone.utc).isoformat()

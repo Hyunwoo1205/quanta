@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "scope": "temporary_x86_GitHub_Actions_web_fixture_only",
+  "run_id": 42336172276,
+  "source_sha": "26bd827899bc5d0e0f7a8b22a3bd8b3b94c8c705",
+  "web_gate_seconds": 2,
+  "attempts": [
+    {
+      "run_attempt": 1,
+      "job_id": 128293494443,
+      "artifact_id": 13559772313,
+      "artifact_zip_digest": "sha256:b788702ddb00708cec28f88822aaa4d372bb7e7b5f223d46c6b840c690f5ca1a",
+      "raw_report_sha256": "29dea18178b877c19214d72631e8ab5749905f688d9611be4e415c5bf3d93e24",
+      "raw_web_samples_sha256": "b5c9db1a750db5d4ec80eb6e2436e2e36a9ade691af4bc7968efd1e57f6ab0ba",
+      "cases_passed": [
+        "he-dz",
+        "h2-dz",
+        "h2-tz",
+        "h2-cancel",
+        "h2-after-cancel"
+      ],
+      "web_summary": {
+        "baseline": {
+          "samples": 110,
+          "max_latency_seconds": 0.021653696000001332,
+          "unexpected_statuses": 0
+        },
+        "during": {
+          "samples": 242,
+          "max_latency_seconds": 2.1013059060000217,
+          "unexpected_statuses": 0
+        },
+        "after": {
+          "samples": 2,
+          "max_latency_seconds": 0.001152292999989868,
+          "unexpected_statuses": 0
+        }
+      },
+      "violations": [
+        {
+          "phase": "during",
+          "path": "/",
+          "status": 200,
+          "expected_status": 200,
+          "wall_seconds": 2.0509491130000015,
+          "error": null
+        },
+        {
+          "phase": "during",
+          "path": "/",
+          "status": 200,
+          "expected_status": 200,
+          "wall_seconds": 2.1013059060000217,
+          "error": null
+        }
+      ],
+      "image_proof_method": "daemon_config_id"
+    },
+    {
+      "run_attempt": 2,
+      "job_id": 128295359237,
+      "artifact_id": 13559658951,
+      "artifact_zip_digest": "sha256:f6446f99e3d2caac2638844daa82a95d7f8af15544778a550126a94278d99657",
+      "raw_report_sha256": "a26384d1030837caafc2ea242352ebf09b31367e088fefd1217cad4aaa04a268",
+      "raw_web_samples_sha256": "07e64aba781e0b00d966493e4bbeb93b4e1b2ce48c6ed279d53f7ba3d7b167d9",
+      "cases_passed": [
+        "he-dz",
+        "h2-dz",
+        "h2-tz",
+        "h2-cancel",
+        "h2-after-cancel"
+      ],
+      "web_summary": {
+        "baseline": {
+          "samples": 108,
+          "max_latency_seconds": 0.02135370799999947,
+          "unexpected_statuses": 0
+        },
+        "during": {
+          "samples": 234,
+          "max_latency_seconds": 2.601044009999981,
+          "unexpected_statuses": 0
+        },
+        "after": {
+          "samples": 2,
+          "max_latency_seconds": 0.0011063970000009249,
+          "unexpected_statuses": 0
+        }
+      },
+      "violations": [
+        {
+          "phase": "during",
+          "path": "/",
+          "status": 200,
+          "expected_status": 200,
+          "wall_seconds": 2.601044009999981,
+          "error": null
+        }
+      ],
+      "image_proof_method": "daemon_config_id"
+    }
+  ],
+  "root_cause_status": "unresolved",
+  "physical_validation_status": "unvalidated",
+  "decision": "no-go for a corrected OCI retry with this native CI result"
+}
