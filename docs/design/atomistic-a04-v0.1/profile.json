@@ -135,6 +135,7 @@
         "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_subsys.F#L1283-L1294",
         "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/lebedev.F#L358-L365"
       ],
+      "finite_cell_resource_review": "docs/design/atomistic-a04-v0.1/finite-cell-resource-review.md",
       "grid_policy": "Vary one family at a time with others fixed at checked fine settings; compare the finest two by AV03 and AV04, then cross-check selected joint settings. Review limits before executing larger grids.",
       "cube_policy": "Check AV06 on each of the two finest export grids and record their difference and negative-sample diagnostics. A matching electron count does not establish spatial field-shape convergence."
     }

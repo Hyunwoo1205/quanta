@@ -24,6 +24,10 @@
 
 [두 번째 시도 42385120843](https://github.com/Hyunwoo1205/quanta/actions/runs/42385120843)은 가용 메모리 15,154,448 KiB, Docker 여유 89,215,724 KiB를 기록한 뒤 CPU 수 1에서 종료됐습니다. GNU `nproc`가 워크플로의 계산용 `OMP_NUM_THREADS=1`을 CPU 상한에 반영하는 동작을 별도로 재현했습니다. CPU 용량 조회에만 OpenMP 환경 변수를 제외하고 계산 스레드·자원 한도는 유지한 채 재시도합니다.
 
+[x86 재실행 42385227123](https://github.com/Hyunwoo1205/quanta/actions/runs/42385227123)은 사전 검사를 통과해 고정 소스를 빌드 중입니다. 별도로 공유 스크립트 변경 후 [전체 ARM/x86 CI](https://github.com/Hyunwoo1205/quanta/actions/runs/42384984410)와 [ARM 후보 빌드 및 He-D](https://github.com/Hyunwoo1205/quanta/actions/runs/42384984344)는 성공했습니다. [ARM 네이티브 A03 최초 시도](https://github.com/Hyunwoo1205/quanta/actions/runs/42384984431/attempts/1)는 계산·취소·후속 계산 5건을 통과했고, 계산 구간 웹 요청 188건 중 한 건이 2.005초로 2초 기준을 넘었습니다. 해당 요청은 H₂-D의 CUBE 파싱 구간과 겹쳤습니다. 같은 소스·기준으로 ARM 작업만 재실행합니다.
+
+후속 [유한 셀·출력 용량 사전 검토](docs/design/atomistic-a04-v0.1/finite-cell-resource-review.md)를 추가했습니다. 고정 소스의 격자 계산과 CUBE 직렬화 길이로 추정한 16 Å·800 Ry, 20 Å·600 Ry, 20 Å·800 Ry의 출력 데이터는 각각 261.15, 329.00, 538.45 MiB로 A03 작업 공간 상한을 넘습니다. 기준 12 Å·400 Ry의 계산값과 실제 출력은 헤더를 포함해 일치합니다. 후속 수렴 시험은 별도 격리 자원 한도에서 실제 격자·메모리·출력을 확인합니다. 원자 좌표 평행 이동은 후보이며 전자밀도까지 포함한 유한 셀 적합성은 별도 검증 대상입니다.
+
 ## A04 설계 범위 — 원자계 계약 초안과 사전 검증 기준
 
 2026-11-07 KST, 추적 가능한 ARMv8-A CP2K 후보를 기준으로 [A04 프로필 초안](docs/design/atomistic-a04-v0.1/profile.json)과 [사용자 작성 JSON 스키마 초안](docs/design/atomistic-a04-v0.1/authored-input.schema.json)을 추가했습니다. 지원 후보는 중성 닫힌껍질 2전자·비주기 3D의 단일 정적 계산입니다. 사용자가 원자 ID·동위원소·SI 좌표·기저 후보·관측량을 지정합니다. He/H₂ 검증 입력 ID를 실행 선택에 사용하지 않으며 좌표·ID·배열 순서 및 원본 결과의 출처를 보존하도록 설계했습니다.
