@@ -18,6 +18,8 @@ Oracle의 A1은 Ampere Altra Q80-30 계열이다. Ampere는 Altra의 명령어 �
 
 [OCI 읽기 전용 진단 42340357555](../verification/atomistic-a03/oci/42340357555.json)는 실제 호스트의 `AT_HWCAP`과 `AT_HWCAP2`를 읽었다. 원본 옵션의 `flagm2`·`frintts`·`rcpc2`·`fp16fml`·`sb`·`pauth` 및 일부 다른 확장은 각각의 HWCAP에서 확인되지 않았다. 같은 실행의 He 로그는 SHA·27,762 B로 검증했고 SIGILL·Quickstep 초기화와 백트레이스의 `qs_scf` 표지를 확인했다. 다른 이미지를 받거나 계산을 실행하지 않았고 운영 컨테이너를 보존했다. 컴파일 타깃과 호스트 기능 차이는 ISA 호환성 문제를 강하게 뒷받침한다. 이 진단은 fault PC/opcode 또는 실제 고장 ELF 모듈을 특정하지 않는다. [Linux ARM64 HWCAP](https://docs.kernel.org/arch/arm64/elf_hwcaps.html)
 
+후속 [OCI 동기 SIGILL 추적](../verification/atomistic-a03/oci/42360862172.json)은 PC와 fault 주소가 일치하고 `libcp2k.so.2026.2` ELF의 오프셋 `0x2754d80`에서 읽은 네 바이트가 실제 ELF 파일과 일치함을 확인했다. `78c7de6e`는 LLVM19에서 `FCMLA v24.2d, v27.2d, v30.2d, #0`이며 Armv8.3 FCMA가 필요하다. 실제 호스트 HWCAP에 FCMA가 없다. CP2K 소스 GNU Release의 native 타깃 추가를 피하기 위해 후보는 공식 Generic 설정과 LP64 ARMv8-A를 사용한다. [LLVM19 정의](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/llvm/lib/Target/AArch64/AArch64InstrInfo.td#L1565-L1571)
+
 새 ARM64 후보의 보수적 기준은 LP64 `-march=armv8-a -mtune=generic`이다. CP2K, 자체 공유 라이브러리와 모든 정적·동적 의존성에 동일한 최소 ISA를 적용하거나 그 기준과 호환되는 배포 바이너리를 근거와 함께 고정한다. 실제 C/C++/Fortran/어셈블리 및 링크 명령, OpenBLAS 커널 선택과 의존성 CPU 옵션을 확인한다. 첫 OpenBLAS 빌드는 고정 버전에서 범용 `TARGET=ARMV8`과 단일 타깃을 검토한다. 호환성 근거가 확보될 때까지 기존 ARM Spack 트리의 재사용은 보류한다. 새 후보의 실제 OCI A1 검증은 동일 He-D부터 시작하고, 성공 후 전체 격리 A03 사례로 진행한다. [GCC 15.2 AArch64 기준](https://gcc.gnu.org/onlinedocs/gcc-15.2.0/gcc/AArch64-Options.html) · [OpenBLAS 빌드 설정](https://www.openmathlib.org/OpenBLAS/docs/build_system/)
 
 ## 소스와 빌드 입력

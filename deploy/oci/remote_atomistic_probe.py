@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath
 import platform
 import pwd
 import re
+import selectors
 import shutil
 import signal
 import sqlite3
@@ -26,6 +27,7 @@ OPERATION = 'benchmark-atomistic'
 TRACE_OPERATION = 'trace-atomistic-old-he'
 TRACE_SUBJECT_SHA = 'b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379'
 TRACE_SCRIPT = 'scripts/trace_cp2k_sigill.py'
+CANDIDATE_SCRIPT = 'scripts/atomistic_a03_candidate.py'
 PARENT = Path('/srv/quanta/atomistic-probes')
 DATABASE = Path('/srv/quanta/data/jobs.sqlite3')
 DOCKER = ['/usr/bin/docker', '--host', 'unix:///var/run/docker.sock']
@@ -33,6 +35,8 @@ MAX_ARCHIVE = 65536
 MAX_EXPANDED = 3 * 1024**2
 MAX_FILE = 512 * 1024
 MAX_REPORT = 131072
+MAX_CANDIDATE = 2 * 1024**3
+CANDIDATE_TIMEOUT = 240
 REQUIRED = frozenset({'scripts/verify_atomistic_a03.py', 'scripts/atomistic_a03_inputs.py',
     'scripts/check_atomistic_a02.py', 'docs/design/atomistic-a01-v0.1/profile.json',
     'docs/design/atomistic-a02-v0.1/manifest.json', 'docs/design/atomistic-a02-v0.1/engine-lock.json',
@@ -49,7 +53,8 @@ def encoded(value):
 
 
 def validate_config(value):
-    if (not isinstance(value, dict) or set(value) != {'source_sha', 'request_id', 'archive_sha256'}
+    required = {'source_sha', 'request_id', 'archive_sha256'}
+    if (not isinstance(value, dict) or set(value) not in (required, required | {'candidate'})
             or not isinstance(value['source_sha'], str) or not re.fullmatch('[0-9a-f]{40}', value['source_sha'])
             or not isinstance(value['archive_sha256'], str) or not re.fullmatch('[0-9a-f]{64}', value['archive_sha256'])
             or not isinstance(value['request_id'], str)):
@@ -57,6 +62,17 @@ def validate_config(value):
     identifier = uuid.UUID(value['request_id'])
     if str(identifier) != value['request_id'] or identifier.version != 4:
         raise ValueError('fixed configuration denied')
+    if 'candidate' in value:
+        candidate = value['candidate']
+        if (not isinstance(candidate, dict) or set(candidate) != {'schema_version', 'source_sha',
+                'archive_sha256', 'archive_bytes', 'image_ref', 'config_sha256', 'binary_sha256'}
+                or type(candidate['schema_version']) is not int or candidate['schema_version'] != 1
+                or candidate['source_sha'] != value['source_sha']
+                or candidate['image_ref'] != 'quanta/a03-armv8a:' + value['source_sha']
+                or type(candidate['archive_bytes']) is not int or not 0 < candidate['archive_bytes'] <= MAX_CANDIDATE
+                or not all(isinstance(candidate[key], str) and re.fullmatch('[0-9a-f]{64}', candidate[key])
+                           for key in ('archive_sha256', 'config_sha256', 'binary_sha256'))):
+            raise ValueError('candidate configuration denied')
     return dict(value)
 
 
@@ -182,14 +198,17 @@ def snapshot():
             'database_sha': database_sha, 'active_jobs': active_jobs(), 'web': web_boundary()}
 
 
-def allowed_path(name, *, trace=False):
+def allowed_path(name, *, trace=False, candidate=False):
     path = PurePosixPath(name)
     return (str(path) == name and not path.is_absolute() and '..' not in path.parts
-        and (name in REQUIRED or trace and name == TRACE_SCRIPT or name.startswith('docs/design/atomistic-a01-v0.1/')
+        and (name in REQUIRED or trace and name == TRACE_SCRIPT or candidate and name == CANDIDATE_SCRIPT
+             or name.startswith('docs/design/atomistic-a01-v0.1/')
              or name.startswith('docs/design/atomistic-a02-v0.1/')))
 
 
-def archive_files(raw, expected, *, trace=False):
+def archive_files(raw, expected, *, trace=False, candidate=False):
+    if trace and candidate:
+        raise ProbeError('candidate_and_trace_are_exclusive')
     if not isinstance(raw, bytes) or not 1 <= len(raw) <= MAX_ARCHIVE or hashlib.sha256(raw).hexdigest() != expected:
         raise ProbeError('archive_hash')
     result = {}
@@ -197,7 +216,7 @@ def archive_files(raw, expected, *, trace=False):
     with tarfile.open(fileobj=io.BytesIO(raw), mode='r:gz') as archive:
         for member in archive:
             if (len(result) >= 160 or member.name in result or not member.isfile()
-                    or not allowed_path(member.name, trace=trace) or member.size > MAX_FILE or member.size < 1
+                    or not allowed_path(member.name, trace=trace, candidate=candidate) or member.size > MAX_FILE or member.size < 1
                     or member.pax_headers):
                 raise ProbeError('archive_member')
             size += member.size
@@ -209,6 +228,8 @@ def archive_files(raw, expected, *, trace=False):
                 raise ProbeError('archive_member_size')
             result[member.name] = value
     required = REQUIRED | {TRACE_SCRIPT} if trace else REQUIRED
+    if candidate:
+        required = required | {CANDIDATE_SCRIPT}
     if not required <= result.keys():
         raise ProbeError('archive_required')
     return result
@@ -225,7 +246,7 @@ def prepare(config, archive, user, *, trace=False):
     # New UUID only: never overwrite an existing or partial result.
     directory.mkdir(mode=0o700)
     os.chown(directory, user.pw_uid, user.pw_gid)
-    files = archive_files(archive, config['archive_sha256'], trace=trace)
+    files = archive_files(archive, config['archive_sha256'], trace=trace, candidate='candidate' in config)
     source = directory / 'source'
     source.mkdir(mode=0o700)
     os.chown(source, user.pw_uid, user.pw_gid)
@@ -244,6 +265,51 @@ def prepare(config, archive, user, *, trace=False):
     return directory, source
 
 
+def relay_candidate(directory, metadata, input_stream, user):
+    if input_stream is None:
+        raise ProbeError('candidate_stream_missing')
+    directory.mkdir(mode=0o700)
+    image = directory / 'candidate-image.tar'
+    remaining = metadata['archive_bytes']
+    digest = hashlib.sha256()
+    deadline = time.monotonic() + CANDIDATE_TIMEOUT
+    next_guard = 0
+    fd = os.open(image, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'wb') as output, selectors.DefaultSelector() as selector:
+        stream_fd = input_stream.fileno()
+        selector.register(stream_fd, selectors.EVENT_READ)
+        while remaining:
+            now = time.monotonic()
+            if now >= deadline:
+                raise ProbeError('candidate_transfer_timeout')
+            if now >= next_guard:
+                if memory_available() < 2 * 1024**3 or active_jobs() != 0:
+                    raise ProbeError('resource_guard')
+                if shutil.disk_usage('/srv/quanta').free < 10 * 1024**3:
+                    raise ProbeError('disk_guard')
+                web_boundary()
+                next_guard = now + 2
+            if not selector.select(min(1, deadline - now)):
+                continue
+            chunk = os.read(stream_fd, min(1024 * 1024, remaining))
+            if not chunk:
+                raise ProbeError('candidate_transfer_short')
+            output.write(chunk)
+            digest.update(chunk)
+            remaining -= len(chunk)
+        if not selector.select(min(2, max(0, deadline - time.monotonic()))) or os.read(stream_fd, 1):
+            raise ProbeError('candidate_transfer_length')
+        if digest.hexdigest() != metadata['archive_sha256']:
+            raise ProbeError('candidate_transfer_hash')
+        os.fchown(output.fileno(), user.pw_uid, user.pw_gid)
+    manifest = directory / 'candidate-image.json'
+    fd = os.open(manifest, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'wb') as output:
+        output.write(encoded(metadata))
+        os.fchown(output.fileno(), user.pw_uid, user.pw_gid)
+    os.chown(directory, user.pw_uid, user.pw_gid)
+
+
 def cleanup_containers(output):
     # Every runner container is labeled with this exact newly-created output path.
     raw = _run(DOCKER + ['ps', '-aq', '--filter', 'label=org.quanta.atomistic-a03=' + str(output)])
@@ -255,18 +321,18 @@ def cleanup_containers(output):
     return len(identifiers)
 
 
-def execute(config, archive, *, trace=False):
+def execute(config, archive, input_stream=None, *, trace=False):
     stage = 'config'
     value = {'scope': 'oci_atomistic_sigill' if trace else 'oci_atomistic_a03',
         'operation': TRACE_OPERATION if trace else OPERATION, 'status': 'failed',
         'stage': stage, 'production_restart_attempted': False, 'production_configuration_written': False,
         'private_environment_read': False, 'physical_validation_status': 'unvalidated'}
-    directory = output = process = None
+    directory = output = process = candidate_archive = None
     lockfd = None
     baseline = None
     try:
         config = validate_config(config)
-        if trace and config['source_sha'] != TRACE_SUBJECT_SHA:
+        if trace and (config['source_sha'] != TRACE_SUBJECT_SHA or 'candidate' in config):
             raise ProbeError('trace_subject_mismatch')
         value['source_sha'] = config['source_sha']
         value['request_id'] = config['request_id']
@@ -287,6 +353,9 @@ def execute(config, archive, *, trace=False):
         available = memory_available()
         disk = shutil.disk_usage('/srv/quanta').free
         resource_preflight(baseline['active_jobs'], available, disk)
+        candidate = config.get('candidate')
+        if candidate is not None and disk - 2 * candidate['archive_bytes'] < 10 * 1024**3:
+            raise ProbeError('candidate_disk_preflight')
         value['preflight'] = {'active_jobs': 0, 'memory_available_bytes': available, 'disk_free_bytes': disk,
             'web': baseline['web']}
         user = pwd.getpwnam('ubuntu')
@@ -298,6 +367,18 @@ def execute(config, archive, *, trace=False):
         stage = 'archive'
         directory, source = prepare(config, archive, user, trace=trace)
         output = directory / 'run'
+        command = ['/usr/bin/python3', '-I', '-B', str(source / 'scripts/verify_atomistic_a03.py'),
+                   '--output-dir', str(output), '--case-timeout', '105' if trace else '180', '--web-origin', 'http://127.0.0.1:8765',
+                   '--production-web-boundary']
+        if trace:
+            command.append('--trace-old-he')
+        if candidate is not None:
+            candidate_dir = directory / 'candidate'
+            candidate_archive = candidate_dir / 'candidate-image.tar'
+            relay_candidate(candidate_dir, candidate, input_stream, user)
+            value['candidate_transfer'] = {'archive_sha256': candidate['archive_sha256'],
+                                           'archive_bytes': candidate['archive_bytes']}
+            command.extend(['--candidate-dir', str(candidate_dir)])
         stage = 'benchmark'
         def demote():
             os.setgroups(groups)
@@ -306,11 +387,6 @@ def execute(config, archive, *, trace=False):
             os.umask(0o077)
             os.nice(10)
         with (directory / 'runner.stdout').open('xb') as stdout, (directory / 'runner.stderr').open('xb') as stderr:
-            command = ['/usr/bin/python3', '-I', '-B', str(source / 'scripts/verify_atomistic_a03.py'),
-                '--output-dir', str(output), '--case-timeout', '105' if trace else '180',
-                '--web-origin', 'http://127.0.0.1:8765', '--production-web-boundary']
-            if trace:
-                command.append('--trace-old-he')
             process = subprocess.Popen(command,
                 cwd=source, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr, shell=False,
                 start_new_session=True, preexec_fn=demote,
@@ -329,7 +405,7 @@ def execute(config, archive, *, trace=False):
                     raise ProbeError('resource_guard')
                 if shutil.disk_usage('/srv/quanta').free < 2 * 1024**3:
                     raise ProbeError('disk_guard')
-                if sum(p.stat().st_size for p in directory.rglob('*') if p.is_file()) > 512 * 1024**2:
+                if sum(p.stat().st_size for p in directory.rglob('*') if p != candidate_archive and p.is_file()) > 512 * 1024**2:
                     raise ProbeError('output_guard')
                 web_boundary()
                 samples += 1
@@ -355,6 +431,13 @@ def execute(config, archive, *, trace=False):
         value['configuration_preserved'] = after['config_sha'] == baseline['config_sha']
         value['database_bytes_preserved'] = after['database_sha'] == baseline['database_sha']
         value['postflight'] = {'active_jobs': after['active_jobs'], 'web': after['web']}
+        value['first_postflight_gate'] = {
+            'runner_exit_code': process.returncode,
+            'active_jobs': after['active_jobs'],
+            'container_preserved': value['container_preserved'],
+            'configuration_preserved': value['configuration_preserved'],
+            'database_bytes_preserved': value['database_bytes_preserved'],
+        }
         if (process.returncode != 0 or trace and report.get('trace_diagnostic_passed') is not True
                 or not value['container_preserved'] or not value['configuration_preserved']
                 or not value['database_bytes_preserved'] or after['active_jobs'] != 0):
@@ -381,6 +464,13 @@ def execute(config, archive, *, trace=False):
                 value['remaining_probe_containers_removed'] = cleanup_containers(output)
             except Exception:
                 value['probe_cleanup_failed'] = True
+                value['status'] = 'failed'
+        if candidate_archive is not None:
+            try:
+                candidate_archive.unlink(missing_ok=True)
+                value['candidate_transfer_archive_removed'] = True
+            except OSError:
+                value['candidate_transfer_archive_removed'] = False
                 value['status'] = 'failed'
         if baseline is not None:
             try:
@@ -438,7 +528,7 @@ def main():
             raise ProbeError('interrupted')
         for sig in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
             signal.signal(sig, interrupted)
-        result = execute(config, archive, trace=trace)
+        result = execute(config, archive, sys.stdin.buffer if 'candidate' in config else None, trace=trace)
     except Exception:
         result = {'scope': 'oci_atomistic_sigill' if trace else 'oci_atomistic_a03',
             'operation': TRACE_OPERATION if trace else OPERATION, 'status': 'failed', 'stage': 'config',
@@ -449,4 +539,3 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
-

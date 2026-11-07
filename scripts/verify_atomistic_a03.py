@@ -816,7 +816,9 @@ def main() -> int:
     parser.add_argument("--case-timeout", type=int, default=180)
     parser.add_argument("--web-origin")
     parser.add_argument("--production-web-boundary", action="store_true")
-    parser.add_argument("--trace-old-he", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--trace-old-he", action="store_true")
+    mode.add_argument("--candidate-dir", type=Path)
     args = parser.parse_args()
     if not 30 <= args.case_timeout <= 180:
         parser.error("case timeout must be 30..180 seconds")
@@ -843,24 +845,42 @@ def main() -> int:
         from check_atomistic_a02 import verify
         report["a02_lock_check"] = verify()
         lock = json.loads((LOCK_DIR / "engine-lock.json").read_text())
-        selected = image_selection(lock, native_platform()); report["image_candidate"] = selected
-        locked_config, manifest_size = read_locked_image(selected)
-        if args.trace_old_he:
-            if native_platform() != "linux/arm64" or selected["digest"] != OLD_ARM_IMAGE_DIGEST:
-                raise ValueError("SIGILL diagnosis requires the cached original ARM64 image")
+        if args.candidate_dir is None:
+            selected = image_selection(lock, native_platform()); report["image_candidate"] = selected
+            locked_config, manifest_size = read_locked_image(selected)
+            if args.trace_old_he:
+                if native_platform() != "linux/arm64" or selected["digest"] != OLD_ARM_IMAGE_DIGEST:
+                    raise ValueError("SIGILL diagnosis requires the cached original ARM64 image")
+            else:
+                pull_start = time.monotonic()
+                pull = run(["docker", "pull", "--platform", native_platform(), selected["immutable_reference"]], timeout=300)
+                (out / "pull.txt").write_text(pull.stdout+pull.stderr)
+                report["pull_wall_seconds"] = time.monotonic()-pull_start
+            images = json.loads(run(["docker", "image", "inspect", selected["immutable_reference"]]).stdout)
+            if not isinstance(images, list) or len(images) != 1 or not isinstance(images[0], dict):
+                raise ValueError("Docker inspect did not return one image")
+            inspected = images[0]
+            report["image_observed"] = image_observation(inspected, selected)
+            report["image_identity"] = assert_image_identity(inspected, selected, locked_config, manifest_size)
+            image = selected["immutable_reference"]
         else:
-            pull_start = time.monotonic()
-            pull = run(["docker", "pull", "--platform", native_platform(), selected["immutable_reference"]], timeout=300)
-            (out / "pull.txt").write_text(pull.stdout+pull.stderr)
-            report["pull_wall_seconds"] = time.monotonic()-pull_start
-        images = json.loads(run(["docker", "image", "inspect", selected["immutable_reference"]]).stdout)
-        if not isinstance(images, list) or len(images) != 1 or not isinstance(images[0], dict):
-            raise ValueError("Docker inspect did not return one image")
-        inspected = images[0]
-        report["image_observed"] = image_observation(inspected, selected)
-        report["image_identity"] = assert_image_identity(inspected, selected, locked_config, manifest_size)
-        probe = DockerProbe(selected["immutable_reference"], out, args.case_timeout)
+            from atomistic_a03_candidate import load_candidate
+
+            if native_platform() != "linux/arm64":
+                raise ValueError("The rebuilt A03 candidate is native ARM64 only")
+            started = time.monotonic()
+            candidate, identity = load_candidate(args.candidate_dir, report["source_sha"])
+            report["image_candidate"] = candidate
+            report["image_identity"] = identity
+            report["load_wall_seconds"] = time.monotonic() - started
+            image = identity["daemon_image_id"]
+        probe = DockerProbe(image, out, args.case_timeout)
         report["binary"] = probe.inventory()
+        if args.candidate_dir is not None and (
+                report["binary"]["binary_sha256"] != candidate["binary_sha256"]
+                or report["binary"]["reported_revision"] != lock["source_commit"]
+                or report["binary"]["reported_version"] != "2026.2"):
+            raise RuntimeError("The loaded CP2K binary SHA, release or source revision differs from the native candidate lock")
         report["locked_data"] = [{"file": p.name, "sha256": sha256(p), "bytes": p.stat().st_size} for p in sorted((LOCK_DIR / "assets").iterdir()) if p.is_file()]
         from atomistic_a03_inputs import generate_input, probe_metadata
         sampler.phase = "during"

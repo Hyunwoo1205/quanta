@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A03 OCI 후보 실행 no-go · 범용 ARM 빌드 준비
+## 현재 개발 위치 — A03 SIGILL 원인 확인 · 범용 ARM 재검증
+
+2026-11-07 KST, [고정 OCI 추적42360862172](docs/verification/atomistic-a03/oci/42360862172.json)이 기존 He-D 입력과 바이너리의 SHA를 재확인하고 `SIGILL` 정지에서 PC와 신호 주소의 일치를 확인했습니다. 실행 바이트 `78c7de6e`는 `libcp2k.so.2026.2` ELF 오프셋 `0x2754d80`의 바이트와 일치했습니다. LLVM19는 이를 Armv8.3의 `FCMLA v24.2d, v27.2d, v30.2d, #0`로 해석했습니다. 앞선 OCI 사용자 공간 HWCAP에 FCMA는 없습니다. CP2K GNU Release 설정은 native 타깃을 추가합니다. 오류 명령이 들어 있는 CP2K 자체와 주요 계산 의존성을 범용 ARMv8-A로 다시 빌드하기로 했습니다. [LLVM 명령 정의](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/llvm/lib/Target/AArch64/AArch64InstrInfo.td#L1565-L1571) · [CP2K 컴파일러 설정](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/cmake/CompilerConfiguration.cmake)
+
+진단기의 명령 캡처, 정리와 최종 운영 보존 표시는 성공했습니다. 외부 작업은 첫 보존 판정 단계에서 실패했습니다. 최초 스냅샷의 개별 필드가 최종 결과로 덮여 세부 원인은 판별할 수 없습니다. 후속 제어는 최초 및 최종 보존 데이터를 따로 저장합니다. 운영 작업 DB·컨테이너·설정의 최종 비교는 일치했고 진행 중 작업은 0건이었습니다.
+
+[범용 ARM 소스 빌드42360639779](https://github.com/Hyunwoo1205/quanta/actions/runs/42360639779)는 Ubuntu26.04 ARM64 고정 이미지와 날짜 고정 APT, CP2K v2026.2 Git 트리, 6개 소스 배포 파일 SHA를 사용합니다. 소스 빌드는 네트워크를 끈 단계에서 실행하며 컴파일 명령의 ISA 플래그를 검사합니다. Ubuntu 제공 MPI 및 OS 런타임 패키지는 서명된 스냅샷과 패키지 SHA로 고정합니다. 첫 두 빌드는 컨테이너 APT TLS 인증서 오류로 컴파일 이전에 중단됐고, 러너 CA를 빌드 시에만 연결해 재요청했습니다. 같은 He-D를 우선 실행하고, 성공한 소스 이미지로 native A03 전체와 동일 소스 전체 CI를 검증한 후 OCI 재요청을 합니다. 현재 새 후보의 실행·출처 검증과 A04 동결은 진행 중이며 물리 검증은 `unvalidated`입니다.
+
+### 최초 OCI 후보 no-go와 준비 경과
 
 2026-11-07 KST, 고정 소스 `b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379`의 [전체 CI42337645536](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645536)·[native CI42337645488](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645488)가 ARM/x86 모두 성공했습니다. [계측 요약](docs/verification/atomistic-a03/native-42337645488-timing.json)과 [양쪽 원본 ZIP](https://drive.google.com/file/d/1t_PD30VYOuc6PJcv0zXxNkeRqaW4x11P/view?usp=drivesdk)을 보존했습니다. 웹 중 최대 ARM 1.367초, x86 1.147초입니다. 가장 느린 요청은 CUBE 파싱과 겹치고 응답 헤더 전 시간이 대부분이었으나 앞선 웹 지연의 원인을 확정하지 않습니다. 사용자가 README 표현을 수정한 최신 main 커밋은 보존했고, 실행 파일에 차이가 없는 검증된 소스를 고정해 요청했습니다.
 

@@ -30,14 +30,14 @@ def _module(name):
     return module
 
 
-def _capture(command, environment, directory, *, timeout=TIMEOUT, limit=MAX_OUTPUT):
+def _capture(command, environment, directory, *, timeout=TIMEOUT, limit=MAX_OUTPUT, input_stream=None):
     """Read at most limit+1 bytes under one deadline; discard client stderr."""
     process = None
     output = bytearray()
     deadline = time.monotonic() + timeout
     try:
         process = subprocess.Popen(
-            command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+            command, stdin=subprocess.DEVNULL if input_stream is None else input_stream, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL, shell=False, env=environment, cwd=directory,
         )
         with selectors.DefaultSelector() as selector:

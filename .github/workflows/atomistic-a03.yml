@@ -9,12 +9,14 @@ on:
       - scripts/atomistic_a03_inputs.py
       - scripts/verify_atomistic_a03.py
       - scripts/run_atomistic_a03_ci.py
+      - scripts/atomistic_a03_candidate.py
       - tests/test_atomistic_a03*.py
       - docs/design/atomistic-a03-v0.1/**
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   native:
@@ -27,12 +29,14 @@ jobs:
             runner: ubuntu-24.04
             python_architecture: x64
             lock_file: requirements.lock.txt
+            timeout_minutes: 25
           - architecture: aarch64
             runner: ubuntu-24.04-arm
             python_architecture: arm64
             lock_file: requirements.aarch64.lock.txt
+            timeout_minutes: 95
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 25
+    timeout-minutes: ${{ matrix.timeout_minutes }}
     env:
       OMP_NUM_THREADS: '1'
       OPENBLAS_NUM_THREADS: '1'
@@ -57,10 +61,115 @@ jobs:
           python -m pip check
       - name: Test inactive A03 inputs and fixed controls
         run: |
-          python -m pytest tests/test_atomistic_a03_inputs.py tests/test_atomistic_a03_runner.py tests/test_oci_atomistic_probe.py -q
+          python -m pytest tests/test_atomistic_a03_inputs.py tests/test_atomistic_a03_runner.py tests/test_atomistic_a03_candidate.py tests/test_oci_atomistic_probe.py -q
           python scripts/check_atomistic_a02.py
+      - name: Verify the locked source build's run and artifact
+        if: matrix.architecture == 'aarch64'
+        id: source-build
+        env:
+          QUANTA_ARTIFACT_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'CHECK'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import time
+          from urllib.request import Request, urlopen
+
+          root = "https://api.github.com/repos/Hyunwoo1205/quanta"
+          headers = {"Authorization": "Bearer " + os.environ["QUANTA_ARTIFACT_TOKEN"],
+                     "Accept": "application/vnd.github+json"}
+
+          def get(path):
+              with urlopen(Request(root + path, headers=headers), timeout=30) as response:
+                  return json.load(response)
+
+          deadline = time.monotonic() + 80 * 60
+          while time.monotonic() < deadline:
+              run = get("/actions/runs/42360639779")
+              if (run["head_sha"] != "0506aca2952010edcdd804d5fde26f2fe78fe096" or run["head_branch"] != "main" or run["event"] != "push"
+                      or run["path"] != ".github/workflows/cp2k-armv8a-build.yml"):
+                  raise SystemExit("Unexpected ARM source build run")
+              if run["status"] == "completed":
+                  break
+              time.sleep(30)
+          else:
+              raise SystemExit("ARM source build did not finish before the deadline")
+          if run["conclusion"] != "success":
+              raise SystemExit("ARM source build did not pass")
+          listed = get("/actions/runs/42360639779/artifacts?per_page=20")["artifacts"]
+          matching = [item for item in listed if item["name"] == "cp2k-armv8a-source-image-0506aca2952010edcdd804d5fde26f2fe78fe096" and not item["expired"]]
+          if len(matching) != 1 or not re.fullmatch(r"sha256:[0-9a-f]{64}", matching[0]["digest"]):
+              raise SystemExit("Expected one verified candidate image artifact")
+          artifact = matching[0]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"artifact-id={int(artifact['id'])}\n")
+          proof = Path(".cache/cp2k-armv8-source-proof.json")
+          proof.parent.mkdir(exist_ok=True)
+          proof.write_text(json.dumps({"run_id": run["id"], "source_sha": run["head_sha"],
+              "artifact_id": artifact["id"], "artifact_digest": artifact["digest"]}, sort_keys=True) + "\n")
+          CHECK
+      - name: Download the tested source-built image
+        if: matrix.architecture == 'aarch64'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          artifact-ids: ${{ steps.source-build.outputs.artifact-id }}
+          path: .cache/cp2k-armv8-source
+          repository: Hyunwoo1205/quanta
+          run-id: '42360639779'
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Bind the tested image to this native workflow
+        if: matrix.architecture == 'aarch64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir=.cache/cp2k-armv8-source
+          archive="$source_dir/image.tar"
+          test -f "$archive" && test ! -L "$archive"
+          test "$(stat -c %s "$archive")" -le 805306368
+          read -r image_sha archive_name < "$source_dir/image.tar.sha256"
+          [[ "$image_sha" =~ ^[0-9a-f]{64}$ && "$archive_name" == image.tar ]]
+          printf '%s  %s\n' "$image_sha" "$archive" | sha256sum -c -
+          test "$(cat "$source_dir/image-ref.txt")" = 'quanta/cp2k-armv8a:source-0506aca2952010edcdd804d5fde26f2fe78fe096'
+          read -r binary_sha binary_path < "$source_dir/binary.sha256"
+          [[ "$binary_sha" =~ ^[0-9a-f]{64}$ && "$binary_path" == /opt/quanta-cp2k/bin/cp2k ]]
+          docker image load --input "$archive"
+          tag="quanta/a03-armv8a:$GITHUB_SHA"
+          docker image tag 'quanta/cp2k-armv8a:source-0506aca2952010edcdd804d5fde26f2fe78fe096' "$tag"
+          mkdir -p .cache/armv8a-candidate
+          docker image save --output .cache/armv8a-candidate/candidate-image.tar "$tag"
+          python scripts/atomistic_a03_candidate.py record --directory .cache/armv8a-candidate \
+            --source-sha "$GITHUB_SHA" --binary-sha256 "$binary_sha"
+          docker image rm "$tag"
       - name: Run real isolated engine with a separate Quanta web service
-        run: python scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a03
+        shell: bash
+        run: |
+          if [[ "$QUANTA_EXPECTED_ARCH" == aarch64 ]]; then
+            python scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a03 \
+              --candidate-dir .cache/armv8a-candidate
+          else
+            python scripts/run_atomistic_a03_ci.py --output-dir .cache/atomistic-a03
+          fi
+      - name: Preserve only the tested ARM candidate for the fixed OCI request
+        if: matrix.architecture == 'aarch64'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a03-armv8a-image-${{ github.sha }}
+          path: |
+            .cache/armv8a-candidate/candidate-image.tar
+            .cache/armv8a-candidate/candidate-image.json
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 1
+          retention-days: 14
+      - name: Associate the source build evidence with the ARM report
+        if: always() && matrix.architecture == 'aarch64'
+        run: |
+          if test -f .cache/cp2k-armv8-source-proof.json && test -d .cache/atomistic-a03; then
+            cp .cache/cp2k-armv8-source-proof.json .cache/atomistic-a03/source-build-proof.json
+          fi
       - name: Preserve actual measurements and raw engine output
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -16,6 +16,9 @@ REPOSITORY = 'Hyunwoo1205/quanta'
 OPERATION = 'benchmark-atomistic'
 NATIVE_WORKFLOW = '.github/workflows/atomistic-a03.yml'
 NATIVE_JOBS = frozenset({'atomistic A03 (x86_64)', 'atomistic A03 (aarch64)'})
+CANDIDATE_MODE = 'armv8a'
+CANDIDATE_ARTIFACT_PREFIX = 'atomistic-a03-armv8a-image-'
+MAX_CANDIDATE_ZIP = 2 * 1024**3 + 16 * 1024**2
 
 
 def _base():
@@ -77,6 +80,25 @@ def checkout_matches(environ, *, runner=None):
         return False
 
 
+def candidate_artifact(value, sha, native):
+    if not isinstance(value, dict) or not isinstance(value.get('artifacts'), list):
+        raise ValueError('candidate artifact list denied')
+    name = CANDIDATE_ARTIFACT_PREFIX + sha
+    matches = [row for row in value['artifacts'] if isinstance(row, dict) and row.get('name') == name]
+    if len(matches) != 1:
+        raise ValueError('require one candidate artifact from the exact native run')
+    item = matches[0]
+    workflow = item.get('workflow_run')
+    digest = item.get('digest')
+    if (type(item.get('id')) is not int or item['id'] <= 0 or item.get('expired') is not False
+            or type(item.get('size_in_bytes')) is not int or not 0 < item['size_in_bytes'] <= MAX_CANDIDATE_ZIP
+            or not isinstance(digest, str) or not re.fullmatch(r'sha256:[0-9a-f]{64}', digest)
+            or not isinstance(workflow, dict) or workflow.get('id') != native
+            or workflow.get('head_sha') != sha or workflow.get('head_branch') != 'main'):
+        raise ValueError('candidate artifact identity denied')
+    return {'candidate_artifact_id': item['id'], 'candidate_artifact_digest': digest}
+
+
 def authorize(environ=None, *, path=REQUEST, opener=None, runner=None):
     env = os.environ if environ is None else environ
     stage = 'request'
@@ -95,8 +117,16 @@ def authorize(environ=None, *, path=REQUEST, opener=None, runner=None):
             jobs = base.api_get('/actions/runs/' + str(run_id) + '/jobs?filter=latest&per_page=100', env, opener=opener)
             if not base.successful(run, sha, workflow, run_id=run_id) or not base.successful_jobs(jobs, run_id, names):
                 raise ValueError()
-        return {'scope': 'atomistic_probe_request', 'status': 'authorized', **request,
-                'source_ci_run': source, 'native_ci_run': native}
+        result = {'scope': 'atomistic_probe_request', 'status': 'authorized', **request,
+                  'source_ci_run': source, 'native_ci_run': native}
+        mode = env.get('QUANTA_ATOMISTIC_CANDIDATE_MODE')
+        if mode is not None:
+            stage = 'candidate_artifact'
+            if mode != CANDIDATE_MODE:
+                raise ValueError('candidate mode denied')
+            artifact = base.api_get('/actions/runs/' + str(native) + '/artifacts?per_page=100', env, opener=opener)
+            result.update(candidate_artifact(artifact, sha, native))
+        return result
     except Exception:
         return {'scope': 'atomistic_probe_request', 'status': 'denied', 'stage': stage}
 
@@ -106,7 +136,11 @@ def main():
     if result['status'] == 'authorized':
         try:
             with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as stream:
-                for key in ('operation', 'source_sha', 'request_id', 'source_ci_run', 'native_ci_run'):
+                keys = ('operation', 'source_sha', 'request_id', 'source_ci_run', 'native_ci_run',
+                        'candidate_artifact_id', 'candidate_artifact_digest')
+                for key in keys:
+                    if key not in result:
+                        continue
                     stream.write(key + '=' + str(result[key]) + '\n')
         except Exception:
             result = {'scope': 'atomistic_probe_request', 'status': 'denied', 'stage': 'output'}

@@ -18,6 +18,7 @@ import urllib.request
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path, required=True)
+    parser.add_argument('--candidate-dir', type=Path)
     args = parser.parse_args()
     output = args.output_dir.resolve()
     if output.exists():
@@ -47,11 +48,14 @@ def main() -> int:
                     time.sleep(0.1)
                 if not ready:
                     raise RuntimeError('independent Quanta service did not become ready')
-                return subprocess.call([
+                command = [
                     sys.executable, 'scripts/verify_atomistic_a03.py',
                     '--output-dir', str(output), '--case-timeout', '180',
                     '--web-origin', 'http://127.0.0.1:8765',
-                ])
+                ]
+                if args.candidate_dir is not None:
+                    command.extend(['--candidate-dir', str(args.candidate_dir)])
+                return subprocess.call(command)
             finally:
                 if service.poll() is None:
                     os.killpg(service.pid, signal.SIGTERM)
