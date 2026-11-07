@@ -6,6 +6,7 @@ import argparse
 from decimal import Decimal, InvalidOperation
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -171,7 +172,7 @@ def capture_case_logs(work, specs):
     results = []
     for case, (spec,) in specs.items():
         result = {"case": case, "matcher": spec["matcher"], "reference_hartree": str(spec["ref"]),
-                  "tolerance_hartree": str(spec["tol"])}
+                  "upstream_relative_tolerance": str(spec["tol"])}
         path = case_dir / (case + ".out") if case_dir else None
         if path and path.is_file() and not path.is_symlink() and path.stat().st_size <= CASE_LOG_LIMIT:
             raw = path.read_bytes()
@@ -184,6 +185,12 @@ def capture_case_logs(work, specs):
                     if value.is_finite():
                         result["reported_hartree"] = str(value)
                         result["absolute_difference_hartree"] = str(abs(value - spec["ref"]))
+                        # Match upstream GenericMatcher's binary64 relative comparison.
+                        reference = float(spec["ref"])
+                        difference = float(value) - reference
+                        relative_error = abs(difference / reference if reference != 0.0 else difference)
+                        if math.isfinite(relative_error):
+                            result["upstream_relative_error_binary64"] = relative_error
                 except InvalidOperation:
                     pass
         results.append(result)
@@ -204,7 +211,9 @@ def verify_result(log, return_code, cases):
         return_code == 0 and status == ["OK"] and len(counts) == 1 and counts[0][:2] == ("5", "5")
         and not any(word in counts[0][2] for word in ("wrong:", "failed:", "n/a:"))
         and statuses == [(case, "OK") for case in CASES]
-        and all("reported_hartree" in row for row in cases)
+        and all("upstream_relative_error_binary64" in row
+                and row["upstream_relative_error_binary64"] <= float(row["upstream_relative_tolerance"])
+                for row in cases)
     )
 
 
