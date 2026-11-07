@@ -12,7 +12,17 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — 범용 ARMv8-A 후보 A03 격리 실측 통과
+## 현재 개발 위치 — A04 ARM 후보 출처 대조 및 GAPW 회귀 통과
+
+2026-11-07 KST, A03 OCI에서 검증한 ARMv8-A 이미지의 소스·빌드·의존성·바이너리와 실제 native/OCI 실행을 대조했습니다. CP2K `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`과 실행 바이너리 SHA `af665277ebd21d4397448d49a9ce666756a05ebcf401a9967e19c32af9c9b60f`를 확인했습니다. [소스·의존성 기록](docs/verification/atomistic-a04/armv8a-source-dependency-review.json) · [단위·핵질량·CUBE 소스 대조](docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json)
+
+동일 이미지로 네이티브 ARM CI에서 고정 CP2K `QS/regtest-gapw-2` 5건을 원래 순서대로 실행했습니다. 1 CPU·4 GiB 격리 환경에서 MPI 1 rank·OpenMP 1 thread·테스트 worker 1을 사용했습니다. 종료 코드 0, `Status: OK`, 5/5를 확인했습니다. 최초 실행의 영수증에 상대 허용오차 단위를 잘못 표기한 것을 고쳤고, 재실행에서 원본 에너지로 upstream의 상대 오차를 별도 재계산해 다섯 건이 모두 기준 이내임을 확인했습니다. [실행 결과](https://github.com/Hyunwoo1205/quanta/actions/runs/42376916235) · [검증 영수증](docs/verification/atomistic-a04/gapw-42376916235.json)
+
+개인용 Drive 프로젝트 폴더의 `Quanta — 구현한 물리 법칙과 모형`은 계산식·가정·단위·적용 범위와 검증 근거를 설명합니다. 관련 구현과 검증이 바뀌면 같은 작업에서 해당 절을 갱신하며, 후속 변경 감시도 같은 문서 ID를 사용합니다.
+
+**다음 시작점은 A04 계약의 수치·단위·검증 기준 검토**입니다. CP2K CODATA2006 단위 변환과 CODATA2022 bare 핵질량의 적용 범위를 구분하고 CUBE의 전자수밀도 의미·원본 정밀도·수렴 및 독립 기준/허용오차를 정합니다. 지원 플랫폼과 독립 x86 후보 검증 범위를 명시한 뒤 자유 JSON 원자계 계약의 동결을 판단합니다. 원자계 어댑터의 공개 실행과 물리 검증은 후속 단계이며 현재 `unvalidated`입니다. [A04 설계](docs/design/atomistic-a04-source-traceability.md)
+
+## A03 완료 범위 — 범용 ARMv8-A 후보의 OCI 격리 실측
 
 2026-11-07 KST, 기존 OCI의 `SIGILL`은 `libcp2k.so.2026.2`의 `FCMLA`에서 발생했습니다. OCI ARM 사용자 공간은 필요한 FCMA를 제공하지 않습니다. CP2K v2026.2와 OpenBLAS·FFTW·ScaLAPACK·DBCSR·LibXC·Libint2를 범용 ARMv8-A로 빌드했고, MPI·OS 런타임은 고정 Ubuntu 스냅샷 패키지로 연결했습니다. [SIGILL 추적](docs/verification/atomistic-a03/oci/42360862172.json) · [재빌드 및 검증 근거](docs/verification/atomistic-a03/armv8a-retry-20261107.json)
 
@@ -20,13 +30,7 @@
 
 [OCI 실측42372870103](docs/verification/atomistic-a03/oci/42372870103.json)은 **1 CPU·2 GiB의 단일 격리 실행으로 go**입니다. He-D 32.89초, H₂-D 33.73초, H₂-T 35.20초, 초기화 취소 2.32초, 취소 후 새 H₂-D 33.79초로 다섯 사례를 통과했습니다. 정상 계산의 에너지·힘·전체 전자수밀도 CUBE와 취소 정리를 확인했습니다. 가용 메모리 사전 10.734 GiB·최소 8.882 GiB, 디스크 사전 180.531 GiB, cgroup 메모리 관측 최대 1.784 GiB입니다. 계산 구간 웹 294회에서 최대 21.91 ms, 예상 상태 위반 0회였습니다. 첫 및 최종 보존 비교에서 운영 컨테이너·지정 설정·작업 DB 바이트가 일치하고, 사전/사후 진행 작업이 0건이었습니다. 전달 아카이브를 정리했고 운영 앱 배포/재시작은 수행하지 않았습니다.
 
-**다음 시작점은 A04 후보 검토**입니다. 새 ARM 바이너리와 소스의 연결, 실제 의존성 및 빌드 자료를 검토하고, 같은 후보로 고정 upstream GAPW 회귀를 실행합니다. 기존 공식 이미지의 `revision unknown` 문제는 별개입니다. 단위 변환·bare 핵질량·CUBE 정밀도/밀도 의미와 독립 허용오차를 검토한 뒤 자유 JSON 원자계 계약을 동결합니다. 물리 검증은 `unvalidated`이며 공개 원자계 런타임과 동시 사용자 쿼터는 미승인입니다. [A04 검토 항목](docs/design/atomistic-a04-source-traceability.md)
-
-### A04 후보 검토 및 고정 회귀 시작
-
-이전 A03 성공 ARM 후보의 OCI·native·빌드 증거를 대조했습니다. 실제 바이너리와 CP2K Git 소스 및 설치 라이브러리의 연결은 [A04 출처 대조 기록](docs/verification/atomistic-a04/armv8a-source-dependency-review.json)에 있습니다. 엔진 단위·핵질량 기준·CUBE 출력 형식은 [고정 소스 대조](docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json)에 기록했습니다. 고정 CP2K `QS/regtest-gapw-2` 5건을 동일한 ARM 이미지로 네이티브 ARM CI에서 실행합니다. OCI 운영은 기존 검증 범위를 사용합니다.
-
-개인용 Drive 프로젝트 폴더에 `Quanta — 구현한 물리 법칙과 모형`을 만들었습니다. 현재 계산식·가정·단위·적용 한계와 실제 검증을 정리했으며, 관련 구현 또는 검증이 바뀌는 작업에서 같은 문서의 해당 절을 갱신합니다.
+**A03 종료 당시의 다음 시작점은 A04 후보 검토**였습니다. 해당 후보의 소스·의존성 대조와 고정 upstream GAPW 회귀 결과는 위의 현재 개발 위치에 있습니다. 기존 공식 이미지의 `revision unknown` 문제는 별개입니다. 단위 변환·bare 핵질량·CUBE 정밀도/밀도 의미와 독립 허용오차를 검토한 뒤 자유 JSON 원자계 계약을 동결합니다. 물리 검증은 `unvalidated`이며 공개 원자계 런타임과 동시 사용자 쿼터는 미승인입니다. [A04 검토 항목](docs/design/atomistic-a04-source-traceability.md)
 
 ### SIGILL 원인 확인과 재빌드 경과
 

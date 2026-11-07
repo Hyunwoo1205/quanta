@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.8",
+  "plan_version": "1.0.9",
   "updated_at": "2026-11-07",
   "status": "planned_development",
   "executable": false,
@@ -348,7 +348,7 @@
       "oci_initial_attempt": "docs/verification/atomistic-a03/oci/42333684670.json",
       "oci_image_diagnostic": "docs/verification/atomistic-a03/oci/42335035316.json",
       "retry_native_web_evidence": "docs/verification/atomistic-a03/native-42336172276-web-gate.json",
-      "next_action": "동일 ARMv8-A 후보의 소스·빌드·바이너리 연결 및 실제 의존성 검토, 고정 upstream GAPW 회귀, 엔진→SI·밀도 의미/정밀도·독립 허용오차 검토 뒤 A04 동결 판정.",
+      "next_action": "A04에서 확인한 ARM 소스·의존성 및 GAPW 회귀 결과를 바탕으로 엔진→SI·밀도 의미/정밀도·독립 허용오차와 자유 JSON 계약 검토.",
       "retry_native_timing_evidence": "docs/verification/atomistic-a03/native-42337645488-timing.json",
       "oci_retry_evidence": "docs/verification/atomistic-a03/oci/42339547954.json",
       "oci_host_isa_evidence": "docs/verification/atomistic-a03/oci/42340357555.json",
@@ -364,14 +364,17 @@
         "A01",
         "A03"
       ],
-      "status": "planned",
+      "status": "ARM_candidate_provenance_and_pinned_GAPW_passed_pre_freeze",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
         "사용자 작성 JSON의 계/조건/절차/관측량 규칙과 모델 적합성을 정의하고 내부fixture/기준계 허용목록을 제품 실행 메뉴로 쓰지 않음"
       ],
       "owner_role": "계약·과학",
-      "source_binding_gate": "The rebuilt ARMv8-A candidate reports the pinned Git revision and exact CI/OCI binary SHA. Review source/dependency closure and required upstream regressions before A04 freeze. The official 2026.2/unknown image remains unbound.",
+      "source_binding_gate": "The rebuilt ARMv8-A candidate source and dependency records match the CI/OCI binary and the pinned upstream GAPW batch passed 5/5. Contract and scientific acceptance remain under review. The official 2026.2/unknown image remains unbound.",
+      "arm_candidate_source_review": "docs/verification/atomistic-a04/armv8a-source-dependency-review.json",
+      "candidate_units_and_cube_review": "docs/verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json",
+      "pinned_gapw_regression": "docs/verification/atomistic-a04/gapw-42376916235.json",
       "candidate_build_plan": "docs/design/atomistic-a04-source-traceability.md",
       "runtime_dependency_evidence": "docs/design/a04_donor_inventory_review.md"
     },

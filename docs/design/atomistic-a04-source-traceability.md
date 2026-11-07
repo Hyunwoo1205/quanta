@@ -34,7 +34,13 @@ Oracle의 A1은 Ampere Altra Q80-30 계열이다. Ampere는 Altra의 명령어 �
 
 - 기존 OCI 이미지의 `SIGILL`은 CP2K 공유 라이브러리의 `FCMLA`에서 확인했습니다. 새 후보는 Ubuntu 26.04 ARM64 고정 베이스·스냅샷, CP2K v2026.2 Git 전체 SHA, 6개 해시 고정 소스 의존성, GNU `Generic` 및 `-march=armv8-a -mtune=generic -fno-lto`를 사용했습니다. MPICH·운영체제 런타임은 서명된 배포 패키지이며 빌드 전용 래퍼에서 배포 패키징 LTO/ISA 플래그를 제거했습니다. [조사와 빌드 근거](../verification/atomistic-a03/armv8a-retry-20261107.json)
 - 재빌드 ARM 후보는 `67b5da876dd6a76b8b021d5a04d1c81ba79a4c50`을 보고합니다. ARM He-D 단독, ARM A03 전체와 OCI 격리 실측에서 같은 바이너리 SHA를 확인했습니다. x86 A03는 기존 이미지 대조군입니다. OCI의 동일 아카이브로 계산·취소·후속 계산 다섯 사례, 이미지 증명, 웹 및 운영 보존 게이트를 통과했습니다. [OCI 영수증](../verification/atomistic-a03/oci/42372870103.json)
-- 다음은 실제 라이브러리 및 도구·출처 증거를 검토하고 이 후보로 고정 GAPW 회귀를 실행하는 일입니다. 새 ARM의 리비전 확인은 기존 공식 이미지의 소스 대응을 입증하지 않습니다. 별도 x86 추적 가능 빌드, 고정 upstream GAPW 회귀, A04 수치·물리 허용오차 검증은 다음 단계이며, 물리 검증 상태는 `unvalidated`입니다.
+- 이 후보의 실제 라이브러리·도구·출처 증거 및 고정 GAPW 회귀 결과는 아래에 있습니다. 새 ARM의 리비전 확인은 기존 공식 이미지의 소스 대응을 입증하지 않습니다. 별도 x86 추적 가능 후보와 A04 수치·물리 허용오차 검토는 후속 범위이며, 물리 검증 상태는 `unvalidated`입니다.
+
+## 고정 GAPW 회귀 실측 결과
+
+ARMv8-A 후보의 소스·빌드·라이브러리 SHA와 A03 이미지/바이너리 증거를 대조했습니다. 동일 이미지의 네이티브 ARM CI에서 고정 `QS/regtest-gapw-2`가 종료 코드 0과 `Status: OK`로 **5/5 통과**했습니다. H₂ 재시작 쌍은 원래 순서를 유지했습니다. CP2K의 `E_total` 비교는 기준 에너지로 나눈 상대 오차를 사용합니다. 영수증에 원시 에너지·상대 오차·원래 허용오차를 구분해 기록했습니다. [출처 대조](../verification/atomistic-a04/armv8a-source-dependency-review.json) · [실행 영수증](../verification/atomistic-a04/gapw-42376916235.json) · [원본 오차 판정](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/tests/matcher_classes.py#L60-L73)
+
+고정 소스에서 CODATA2006 엔진 단위, GAPW 전체 전자수밀도 및 CUBE E13.5E3 출력 형식을 확인했습니다. CODATA2022의 bare H-1·He-4 핵질량은 별도 출처와 대조했습니다. 다음은 이 값의 적용과 반올림 규칙, 밀도 수렴·독립 오차 기준, 초기 자유 JSON 계약을 검토하는 일입니다. 물리 검증은 `unvalidated`입니다. [단위·밀도 근거](../verification/atomistic-a04/candidate-units-and-cube-source-crosscheck.json)
 
 ## 실행 순서
 
