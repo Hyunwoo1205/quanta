@@ -29,6 +29,10 @@ ARM 소스 빌드 42360639779는 CA 연결 후 여섯 계산 의존성을 컴파
 
 [x86 대조군42364835793](https://github.com/Hyunwoo1205/quanta/actions/runs/42364835793)에서도 계산 다섯 건은 통과했습니다. CUBE 처리와 겹친 웹 지연 2.298초 및 2.336초가 기존 2초 기준을 초과했습니다. CI용 x86 웹 관측기를 CUBE 처리 프로세스에서 분리합니다. 같은 서비스·주소·2초 제한과 계산 구간을 유지하며 각 원시 응답과 결합 판정을 저장합니다. ARM과 OCI의 관측 방식은 기존대로입니다. ARM의 고정 소스 빌드가 성공하면 빌드 및 He-D 입력이 동일한지 Git으로 확인한 뒤 해당 바이트를 새 소스의 ARM native A03에서 다시 검증합니다. [ARM 빌드42364835821](https://github.com/Hyunwoo1205/quanta/actions/runs/42364835821)
 
+[ARM 빌드42364835821](https://github.com/Hyunwoo1205/quanta/actions/runs/42364835821)는 ScaLAPACK 1430개, CP2K 1469개 컴파일 명령의 플래그 감사와 `grid_miniapp` 링크, 전체 CP2K 빌드·설치를 마쳤습니다. 패키징은 설치 후 `/opt/quanta-cp2k/lib` 경로가 없어 중단됐습니다. 고정 소스는 공유 라이브러리 기본값이 ON이며, `set(CMAKE_INSTALL_LIBDIR ... CACHE PATH)`가 타입 없는 `-DCMAKE_INSTALL_LIBDIR=lib`를 현재 작업 디렉터리 기준 절대경로로 바꾸는 동작을 CMake 4.2.3으로 재현했습니다. `-DCMAKE_INSTALL_LIBDIR:PATH=lib`로 설치 prefix 하위 상대경로를 유지하고 CP2K 공유 라이브러리 설정과 설치 manifest를 확인합니다. 전달 용량을 위해 CP2K 두 ELF의 디버그 섹션을 제거하고 제거 전후 SHA를 남깁니다. 새 ARM 빌드와 native/전체 CI가 같은 소스에서 실행됩니다.
+
+[분리한 x86 관측42365484714](https://github.com/Hyunwoo1205/quanta/actions/runs/42365484714/artifacts/13571373918)은 기존 이미지 대조군으로 다섯 사례를 모두 통과했습니다. 실행 구간 276개 요청의 최대는 2.347 ms이며 예상 상태 위반은 0건입니다.
+
 ### 최초 OCI 후보 no-go와 준비 경과
 
 2026-11-07 KST, 고정 소스 `b7bfa8f90a7d5d05e74f7d8fefefe3be72cfc379`의 [전체 CI42337645536](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645536)·[native CI42337645488](https://github.com/Hyunwoo1205/quanta/actions/runs/42337645488)가 ARM/x86 모두 성공했습니다. [계측 요약](docs/verification/atomistic-a03/native-42337645488-timing.json)과 [양쪽 원본 ZIP](https://drive.google.com/file/d/1t_PD30VYOuc6PJcv0zXxNkeRqaW4x11P/view?usp=drivesdk)을 보존했습니다. 웹 중 최대 ARM 1.367초, x86 1.147초입니다. 가장 느린 요청은 CUBE 파싱과 겹치고 응답 헤더 전 시간이 대부분이었으나 앞선 웹 지연의 원인을 확정하지 않습니다. 사용자가 README 표현을 수정한 최신 main 커밋은 보존했고, 실행 파일에 차이가 없는 검증된 소스를 고정해 요청했습니다.

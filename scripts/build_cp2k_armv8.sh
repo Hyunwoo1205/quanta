@@ -126,7 +126,7 @@ cmake_build() {
     local build="$inputs/build-$name"
     printf 'Configuring %s\n' "$name"
     cmake -S "$source" -B "$build" -G Ninja \
-        "-DCMAKE_INSTALL_PREFIX=$destination" -DCMAKE_INSTALL_LIBDIR=lib \
+        "-DCMAKE_INSTALL_PREFIX=$destination" -DCMAKE_INSTALL_LIBDIR:PATH=lib \
         -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
         "-DMPI_C_COMPILER=$mpi_wrappers/mpicc" "-DMPI_CXX_COMPILER=$mpi_wrappers/mpicxx" \
@@ -143,6 +143,8 @@ cmake_build() {
     cp "$build/compile_commands.json" "$evidence/$name-compile_commands.json"
     check_compile_flags "$build/compile_commands.json"
     if [[ "$name" == cp2k ]]; then
+        grep -Fx 'CMAKE_INSTALL_LIBDIR:PATH=lib' "$build/CMakeCache.txt"
+        grep -Fx 'BUILD_SHARED_LIBS:BOOL=ON' "$build/CMakeCache.txt"
         cmake --build "$build" --parallel "$jobs" --target grid_miniapp \
             >"$evidence/cp2k-grid-link.log" 2>&1 \
             || { tail -n 80 "$evidence/cp2k-grid-link.log"; return 1; }
@@ -197,7 +199,7 @@ cmake_build libint "$inputs/libint" "$deps" \
     -DCMAKE_DISABLE_FIND_PACKAGE_Boost=ON -DCMAKE_CXX_FLAGS_RELEASE=-O1
 
 cmake_build cp2k "$inputs/cp2k" "$prefix" \
-    -DCMAKE_BUILD_TYPE=Generic \
+    -DCMAKE_BUILD_TYPE=Generic -DBUILD_SHARED_LIBS:BOOL=ON \
     "-DCP2K_DATA_DIR=$prefix/share/cp2k/data" \
     -DCP2K_USE_ACCEL=NONE -DCP2K_USE_EVERYTHING=OFF -DCP2K_USE_MPI=ON \
     -DCP2K_BLAS_VENDOR=OpenBLAS -DCP2K_SCALAPACK_VENDOR=GENERIC \
@@ -212,6 +214,17 @@ while IFS= read -r path; do
     cat "$path"
 done <"$evidence/cp2k-build-info-locations.txt" >"$evidence/cp2k-build-info.h"
 [[ -z "$(git -C cp2k status --porcelain)" ]]
+
+cp "$inputs/build-cp2k/install_manifest.txt" "$evidence/cp2k-install-manifest.txt"
+libcp2k="$prefix/lib/libcp2k.so.2026.2"
+grep -Fx "$libcp2k" "$evidence/cp2k-install-manifest.txt"
+test -f "$libcp2k"
+# GNU Generic includes -g. Drop debug sections in the transferred image and
+# keep before/after file hashes for the exact executable and shared library.
+engine_files=("$prefix/bin/cp2k.psmp" "$libcp2k")
+sha256sum "${engine_files[@]}" >"$evidence/cp2k-before-debug-strip.sha256"
+strip --strip-debug "${engine_files[@]}"
+sha256sum "${engine_files[@]}" >"$evidence/cp2k-after-debug-strip.sha256"
 
 find "$prefix/lib" "$deps/lib" -type f -name '*.a' -delete
 rm -rf "$prefix/include" "$deps/include" "$deps/share" "$deps/bin" \
