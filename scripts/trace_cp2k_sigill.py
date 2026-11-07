@@ -22,8 +22,11 @@ INPUT = Path('/quanta-input/input.inp')
 INPUT_SHA256 = '6c91137086d77321edc954e4f316a2a837078b088260f7b3ae00c73691df8bc8'
 TRACE_REPORT = Path('/work/trace-sigill.json')
 PTRACE_TRACEME, PTRACE_PEEKTEXT, PTRACE_CONT = 0, 1, 7
-PTRACE_SETOPTIONS, PTRACE_GETEVENTMSG, PTRACE_GETSIGINFO, PTRACE_GETREGSET = range(0x4200, 0x4204)
-PTRACE_OPTIONS = 0x100000 | 0x1C  # EXITKILL, TRACEFORK, TRACEVFORK, TRACECLONE
+PTRACE_SETOPTIONS = 0x4200
+PTRACE_GETEVENTMSG = 0x4201
+PTRACE_GETSIGINFO = 0x4202
+PTRACE_GETREGSET = 0x4204
+PTRACE_OPTIONS = 0x100000 | 0x0E  # EXITKILL, TRACEFORK, TRACEVFORK, TRACECLONE
 WALL = 0x40000000
 NT_PRSTATUS = 1
 ELF_MACHINE = {'aarch64': 183, 'x86_64': 62}
@@ -140,7 +143,9 @@ def capture_sigill(pid, machine):
     pc = struct.unpack_from('=Q', regs, offset)[0]
     if not pc or machine == 'aarch64' and pc % 4:
         raise ValueError('Invalid fault PC')
-    word = (ptrace(PTRACE_PEEKTEXT, pid, pc) & ((1 << 64) - 1)).to_bytes(8, 'little')[:4]
+    read_pc = pc & ~7 if machine == 'aarch64' else pc
+    start = pc - read_pc
+    word = (ptrace(PTRACE_PEEKTEXT, pid, read_pc) & ((1 << 64) - 1)).to_bytes(8, 'little')[start:start + 4]
     result = {'signal': 'SIGILL', 'si_code': code, 'synchronous': True,
               'pc_matches_signal_address': pc == struct.unpack_from('=Q', info, 16)[0],
               'instruction_bytes': word.hex(), 'opcode_little_endian': f'0x{int.from_bytes(word, "little"):08x}'}
