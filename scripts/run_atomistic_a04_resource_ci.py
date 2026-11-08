@@ -391,11 +391,11 @@ def log_excerpt(work: Path, out: Path) -> None:
 
 
 def clean_container(name: str) -> None:
-    removed = run_docker("rm", "--force", name, check=False)
-    if removed.returncode and "No such container" not in removed.stderr:
-        raise RuntimeError("Failed to remove the isolated measurement container")
-    inspected = run_docker("inspect", name, check=False)
-    if not inspected.returncode or "No such object" not in inspected.stderr:
+    # An already-absent container can produce different errors by Docker version.
+    run_docker("rm", "--force", name, check=False)
+    remaining = run_docker("container", "ls", "--all", "--filter", f"name=^/{re.escape(name)}$",
+                           "--format", "{{.Names}}", check=False)
+    if remaining.returncode or remaining.stdout:
         raise RuntimeError("Could not verify isolated container removal")
 
 

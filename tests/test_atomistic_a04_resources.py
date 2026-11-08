@@ -153,6 +153,36 @@ def test_only_oom_gets_a_larger_safe_retry(monkeypatch, tmp_path, available, out
     assert grants == expected and result["status"] == status
 
 
+@pytest.mark.parametrize(("list_code", "list_stdout", "verified"), [
+    (0, "", True),
+    (0, "quanta-a04-resource-abc\n", False),
+    (1, "", False),
+])
+def test_container_cleanup_requires_a_successful_exact_absence_query(monkeypatch, list_code, list_stdout, verified):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    runner = importlib.import_module("run_atomistic_a04_resource_ci")
+    name = "quanta-a04-resource-abc"
+    calls = []
+
+    def docker(*args, check):
+        calls.append(args)
+        assert check is False
+        if args[0] == "rm":
+            return SimpleNamespace(returncode=1, stderr="Version-specific missing-container text")
+        return SimpleNamespace(returncode=list_code, stdout=list_stdout)
+
+    monkeypatch.setattr(runner, "run_docker", docker)
+    if verified:
+        runner.clean_container(name)
+    else:
+        with pytest.raises(RuntimeError, match="Could not verify isolated container removal"):
+            runner.clean_container(name)
+    assert calls == [
+        ("rm", "--force", name),
+        ("container", "ls", "--all", "--filter", r"name=^/quanta\-a04\-resource\-abc$", "--format", "{{.Names}}"),
+    ]
+
+
 def test_unverified_cgroup_v1_memory_fails_closed(tmp_path):
     proc, _ = _proc(tmp_path)
     (proc / "self/cgroup").write_text("3:memory:/runner\n0::/runner\n")

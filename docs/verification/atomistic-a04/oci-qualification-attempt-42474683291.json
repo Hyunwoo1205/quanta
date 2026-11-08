@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "status": "trial_failed_after_first_calculation",
+  "scope": "isolated_oci_arm_A04_same_input_qualification",
+  "workflow_run_id": 42474683291,
+  "workflow_job_id": 128713233013,
+  "workflow_conclusion": "failure",
+  "quanta_source": "1344339c5023a73543971b414b6b2b944ebc7308",
+  "ops_request_commit": "6d089b92b72d54f639a9adb304ba71b4826b9879",
+  "request_id": "8dd1d67a-82ef-45f0-a725-45c57c00ef24",
+  "control_ci_run": 42471501127,
+  "qualification_run": 42456722645,
+  "artifact": {
+    "id": 13615057189,
+    "name": "oci-atomistic-a04-6d089b92b72d54f639a9adb304ba71b4826b9879",
+    "digest": "sha256:615c191cc9834e0dde9ae345e6bb8517d87024e951438344b4612bcfa2497c9d"
+  },
+  "plan_sha256": "173ec544cb72e9526c2ca5942df62243e494394c98e429d8833f02f72749fd5b",
+  "benchmark_exit_code": 1,
+  "failure_stage": "preservation",
+  "failure_reason": "benchmark_or_preservation",
+  "observed_case": {
+    "system": "h2-short",
+    "fixture": "A04-H2-short",
+    "settings": [
+      12,
+      400,
+      40
+    ],
+    "cap_bytes": 3221225472,
+    "status": "cleanup_error",
+    "input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+    "submitted_input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+    "engine_returncode": 0,
+    "engine_wall_seconds": 31.806412910984363,
+    "total_attempt_seconds": 37.28255524401902,
+    "cgroup_memory_peak_bytes": 1905573888,
+    "oom_events": 0,
+    "swap_peak_bytes": 0,
+    "density_grid_counts": [
+      150,
+      150,
+      150
+    ],
+    "cube_sha256": "4a44bccedbd1dbdd116ab81c2167e635b998229265cc53d407aec896b6aeb22b",
+    "error": "RuntimeError: Could not verify isolated container removal"
+  },
+  "unstarted_systems": [
+    "h2-reference",
+    "h2",
+    "h2-long",
+    "he"
+  ],
+  "host_protection": {
+    "preflight": {
+      "active_jobs": 0,
+      "disk_free_bytes": 191896698880,
+      "memory_available_bytes": 11545927680,
+      "web": {
+        "anonymous_capabilities_status": 401,
+        "latency_seconds": [
+          0.002892263000831008,
+          0.0017580130079295486
+        ],
+        "web_status": 200
+      }
+    },
+    "admission": {
+      "active_jobs": 0,
+      "disk_free_bytes": 191057281024,
+      "memory_available_bytes": 11489918976,
+      "web": {
+        "anonymous_capabilities_status": 401,
+        "latency_seconds": [
+          0.001648333010962233,
+          0.0016590119921602309
+        ],
+        "web_status": 200
+      }
+    },
+    "postflight": {
+      "active_jobs": 0,
+      "web": {
+        "anonymous_capabilities_status": 401,
+        "latency_seconds": [
+          0.0015485720068681985,
+          0.0016569730069022626
+        ],
+        "web_status": 200
+      }
+    },
+    "load_guard_samples": 19,
+    "minimum_memory_available_bytes": 9642713088,
+    "minimum_disk_free_bytes": 191012634624,
+    "maximum_sampled_web_latency_seconds": 0.0030506640032399446,
+    "configuration_preserved": true,
+    "container_preserved": true,
+    "database_bytes_preserved": true,
+    "candidate_image_tag_preserved": true,
+    "candidate_transfer_archive_removed": true,
+    "remaining_probe_containers_removed_at_final_sweep": 0,
+    "remaining_probe_scratch_removed_at_final_sweep": 0,
+    "postflight_verified": true
+  },
+  "verification_scope": {
+    "same_input_numeric_gate_completed": false,
+    "public_execution_support": false,
+    "physical_validation": "unvalidated"
+  }
+}

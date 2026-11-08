@@ -12,7 +12,13 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 고정 H₂·He 네이티브 ARM 실측 완료
+## 현재 개발 위치 — A04 OCI 정리 판정 수정과 재검증
+
+[첫 OCI 시험 42474683291](https://github.com/Hyunwoo1205/quanta/actions/runs/42474683291)에서 가용 RAM 약 10.75 GiB와 운영 작업 0건 등 사전 조건을 충족했습니다. 첫 H₂ 0.60 Å는 31.81초에 정상 종료했으며 cgroup RAM 피크는 1.77 GiB, 스왑과 OOM은 0이었습니다. 개별 컨테이너 정리 확인이 Docker 오류 문구에 의존해 실패했고 후속 4건을 시작하지 않았습니다. 사후 점검은 운영 컨테이너·설정·DB/WAL 보존과 웹 응답을 확인했으며, 마지막 정리 조회에 시험 컨테이너가 남아 있지 않았습니다. [실패 기록](docs/verification/atomistic-a04/oci-qualification-attempt-42474683291.json)
+
+정리 확인을 정확한 컨테이너 이름으로 조회해 빈 목록을 확인하는 방식으로 고쳤습니다. **다음 시작점은** 새 제어 커밋의 x86·ARM 전체 CI를 확인하고, 새 UUID로 [고정 OCI 시험](docs/design/atomistic-a04-v0.1/oci-isolated-qualification.md) 다섯 건을 처음부터 순차 실행하는 것입니다. 이전 첫 사례의 실행 기록과 전체 시험 통과는 별도입니다.
+
+## 이전 개발 기록 — A04 고정 H₂·He 네이티브 ARM 실측 완료
 
 2026-11-08 KST [실행 42456722645](https://github.com/Hyunwoo1205/quanta/actions/runs/42456722645)에서 추적 가능한 CP2K 2026.2 ARMv8-A 이미지를 사용하여, [사전 계획](docs/design/atomistic-a04-v0.1/native-arm-qualification.json)의 다섯 입력을 GitHub aarch64 러너에서 1랭크·1스레드로 순차 실행했습니다. H₂ 0.60·0.74144·0.80·1.00 Å는 12 Å·400 Ry·REL_CUTOFF 40 Ry에서 22.47–26.28초·최대 cgroup RAM 1.77 GiB였고, He 12 Å·800 Ry·REL_CUTOFF 80 Ry는 71.34초·4.72 GiB였습니다. 다섯 실행 모두 스왑과 OOM 발생 없이 완료했습니다. [실행 영수증](docs/verification/atomistic-a04/native-arm-qualification-42456722645.json)
 
