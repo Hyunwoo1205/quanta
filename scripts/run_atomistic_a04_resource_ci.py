@@ -74,6 +74,8 @@ MPI_CASES = (
     CASES[1],
 )
 REFINEMENT_RECEIPTS = RECEIPT.parent
+ACCURACY_REFERENCE = REFINEMENT_RECEIPTS / "memory-recovery-42438533750.json"
+ACCURACY_PLAN = ROOT / "docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json"
 
 
 ENGINE_WRAPPER = r"""
@@ -506,6 +508,11 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 raise ValueError("Converged CP2K H2 energy, native forces or locked model evidence is missing")
             record["engine_energy_hartree"] = cp2k["energy_hartree"]
             record["engine_forces_hartree_per_bohr"] = forces
+            hard_soft_charge = re.findall(
+                r"(?m)^[ \t]*Total Rho_soft \+ Rho1_hard - Rho1_soft[ \t]+(-\d+\.\d+)[ \t]*$", text
+            )
+            if len(hard_soft_charge) == 1:
+                record["engine_hard_soft_electron_count"] = -float(hard_soft_charge[0])
             parsing_start = time.monotonic()
             if case.density:
                 density = parse_cube(work / CUBE)
@@ -769,11 +776,124 @@ def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
         return "measured" if comparisons_passed else "comparison_incomplete_or_failed"
 
 
+def accuracy_scalars(reference: dict, candidate: dict, checks: dict) -> dict:
+    left = reference["engine_forces_hartree_per_bohr"]
+    right = candidate["engine_forces_hartree_per_bohr"]
+    if len(left) != 2 or len(right) != 2 or any(len(row) != 3 for row in (*left, *right)):
+        raise ValueError("Expected two ordered Cartesian force rows")
+    energy = abs(candidate["engine_energy_hartree"] - reference["engine_energy_hartree"])
+    force = max(abs(a - b) for lrow, rrow in zip(left, right) for a, b in zip(lrow, rrow))
+    ref_count = reference["density"]["electron_integral"]
+    count = candidate["density"]["electron_integral"]
+    ref_engine_count = reference["engine_hard_soft_electron_count"]
+    engine_count = candidate["engine_hard_soft_electron_count"]
+    if not all(math.isfinite(x) for x in (energy, force, ref_count, count, ref_engine_count, engine_count)) or not all(
+        math.isfinite(value) for row in (*left, *right) for value in row
+    ):
+        raise ValueError("Nonfinite scalar comparison")
+    return {
+        "absolute_energy_difference_hartree": energy,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": force,
+        "reference_exported_electron_count": ref_count,
+        "candidate_exported_electron_count": count,
+        "absolute_exported_electron_count_difference": abs(count - ref_count),
+        "reference_engine_hard_soft_electron_count": ref_engine_count,
+        "candidate_engine_hard_soft_electron_count": engine_count,
+        "engine_electron_counts_passed": max(abs(engine_count - 2), abs(ref_engine_count - 2)) <= checks["AV05"]["atol"],
+        "energy_passed": energy <= checks["AV03"]["energy_atol_hartree"],
+        "force_passed": force <= checks["AV03"]["force_atol_hartree_per_bohr"],
+        "exported_electron_counts_passed": max(abs(count - 2), abs(ref_count - 2)) <= checks["AV06"]["atol"],
+    }
+
+
+def run_accuracy(candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
+    from atomistic_a04_runner_swap import bounded_ci_swap
+    from compare_atomistic_a04_accuracy import compare_density
+
+    previous = json.loads(ACCURACY_REFERENCE.read_bytes())
+    plan = json.loads(ACCURACY_PLAN.read_bytes())
+    checks = {check["id"]: check for check in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    for case, planned in zip(MPI_CASES, [plan["reference"], *plan["candidates"]], strict=True):
+        if (case.cell, case.cutoff, case.rel_cutoff) != (
+            planned["cell_angstrom"], planned["cutoff_ry"], planned["rel_cutoff_ry"]
+        ):
+            raise ValueError("Fixed execution cases differ from the preregistered comparison")
+    if any(previous[key] != candidate[key] for key in ("binary_sha256", "image_id")):
+        raise ValueError("Accuracy run requires the same CP2K image and binary as the recorded reference")
+    prior = {row["case"]: row["attempts"][0] for row in previous["cases"]}
+    if any(prior[case.name]["status"] != "measured" for case in MPI_CASES):
+        raise ValueError("A completed prior observation is required for every fixed input")
+    report["reference_workflow_run_id"] = previous["workflow_run_id"]
+    report["comparison_plan_sha256"] = sha256(ACCURACY_PLAN)
+    report["thresholds"] = {
+        "energy_hartree": checks["AV03"]["energy_atol_hartree"],
+        "maximum_force_component_hartree_per_bohr": checks["AV03"]["force_atol_hartree_per_bohr"],
+        "engine_hard_soft_count_from_two_electrons": checks["AV05"]["atol"],
+        "exported_count_from_two_electrons": checks["AV06"]["atol"],
+        "exploratory_spatial_l1_electrons": plan["spatial_l1_atol_electrons"],
+    }
+    reference_case = MPI_CASES[0]
+    reference_path = scratch / "reference.cube"
+    report["comparisons"] = []
+    with bounded_ci_swap(scratch.parent, minimum_free_bytes=DISK_ADMISSION) as swap:
+        reference = refinement_attempt(
+            reference_case, candidate, scratch, diagnostics, ranks=1, swap=swap,
+            expected_input=prior[reference_case.name]["input_sha256"], cube=reference_path,
+        )
+        report["cases"].append({"case": reference_case.name, "attempts": [reference]})
+        if reference["status"] != "measured":
+            return reference["status"]
+        for case in MPI_CASES[1:]:
+            path = scratch / f"{case.name}.cube"
+            attempt = refinement_attempt(
+                case, candidate, scratch, diagnostics, ranks=1, swap=0,
+                expected_input=prior[case.name]["input_sha256"], cube=path,
+            )
+            row = {"case": case.name, "attempts": [attempt]}
+            report["cases"].append(row)
+            if attempt["status"] != "measured":
+                continue
+            try:
+                result = accuracy_scalars(reference, attempt, checks)
+                result["case"] = case.name
+                result["reference_case"] = reference_case.name
+                result["candidate_cell_angstrom"] = case.cell
+                result["candidate_cutoff_ry"] = case.cutoff
+                result["candidate_rel_cutoff_ry"] = case.rel_cutoff
+                result["spatial_density"] = compare_density(
+                    reference, attempt, reference_path, path, reference_case.cell, case.cell
+                )
+                methods = [result["spatial_density"]["primary"]]
+                if result["spatial_density"].get("sensitivity") is not None:
+                    methods.append(result["spatial_density"]["sensitivity"])
+                result["spatial_l1_screen_passed"] = all(
+                    method["zero_extended_absolute_density_difference_integral_electrons"]
+                    <= plan["spatial_l1_atol_electrons"]
+                    for method in methods
+                )
+                result["within_all_endpoint_thresholds"] = all(
+                    result[key] for key in (
+                        "energy_passed", "force_passed", "engine_electron_counts_passed",
+                        "exported_electron_counts_passed", "spatial_l1_screen_passed",
+                    )
+                )
+                report["comparisons"].append(result)
+            except (OSError, ValueError, KeyError) as exc:
+                row["comparison_error"] = f"{type(exc).__name__}: {exc}"[:500]
+            finally:
+                path.unlink(missing_ok=True)
+    complete = len(report["comparisons"]) == len(MPI_CASES) - 1
+    report["verification_scope"]["cross_grid_endpoint_screen"] = "measured" if complete else "incomplete"
+    return "measured" if complete else "comparison_incomplete"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--mpi-refinement-serial-report", type=Path)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--mpi-refinement-serial-report", type=Path)
+    mode.add_argument("--cross-grid-accuracy", action="store_true")
     args = parser.parse_args()
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -812,7 +932,18 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.mpi_refinement_serial_report:
+    if args.cross_grid_accuracy:
+        report["scope"] = "isolated_native_x86_A04_cross_grid_endpoint_accuracy"
+        report.pop("known_unadmitted_cases")
+        report["resource_policy"].update({
+            "normal_memory_cap_bytes": MEMORY_TIERS_BYTES[-1],
+            "retry_maximum_increase_bytes": 0,
+            "swap_extra_bytes": "16 GiB for the reference only; zero for candidates",
+            "oom_retry": "none; sequential fixed one-rank inputs",
+            "raw_cube": "original samples compared on runner disk and removed with scratch",
+        })
+        report["verification_scope"]["cross_grid_endpoint_screen"] = "incomplete"
+    elif args.mpi_refinement_serial_report:
         report["scope"] = "isolated_native_x86_A04_same_input_memory_refinement"
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update({
@@ -843,7 +974,9 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.mpi_refinement_serial_report:
+            if args.cross_grid_accuracy:
+                report["status"] = run_accuracy(candidate, Path(directory), diagnostics, report)
+            elif args.mpi_refinement_serial_report:
                 report["status"] = run_refinement(candidate, Path(directory), diagnostics,
                                                   args.mpi_refinement_serial_report, report)
             else:

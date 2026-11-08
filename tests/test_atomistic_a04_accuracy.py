@@ -1,0 +1,123 @@
+"""Independent synthetic fields exercise the fixed A04 comparison geometry."""
+
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BOHR_PER_ANGSTROM = 1e-10 / json.loads(
+    (ROOT / "docs/design/atomistic-a02-v0.1/density-and-units.json").read_bytes()
+)["engine_unit_profile"]["a_bohr_m"]
+
+
+@pytest.fixture
+def comparison(monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    from compare_atomistic_a04_accuracy import compare_density
+    from verify_atomistic_a03 import parse_cube
+    return compare_density, parse_cube
+
+
+def _field(value):
+    mantissa, exponent = f"{value: .5E}".split("E")
+    return f"{mantissa}E{int(exponent):+04d}"
+
+
+def _cube(path, parse, values, cell, *, atom_offset=0):
+    axis = values.shape[0]
+    step = cell * BOHR_PER_ANGSTROM / axis
+    center = cell * BOHR_PER_ANGSTROM / 2
+    with path.open("w", encoding="ascii", newline="\n") as output:
+        output.write("-Quickstep-\n TOTAL ELECTRON DENSITY\n 2 0 0 0\n")
+        for i in range(3):
+            direction = np.eye(3)[i] * step
+            output.write(f" {axis} " + " ".join(f"{v:.6f}" for v in direction) + "\n")
+        for delta in (-0.25, 0.25):
+            output.write(f" 1 1 {center + delta + atom_offset:.6f} {center:.6f} {center:.6f}\n")
+        for row in values.reshape(-1, axis):
+            for start in range(0, axis, 6):
+                output.write("".join(_field(v) for v in row[start:start + 6]) + "\n")
+    return {"status": "measured", "density": parse(path)}
+
+
+def test_native_crop_counts_shell_without_cancellation(tmp_path, comparison):
+    compare, parse = comparison
+    ref = np.zeros((12,) * 3)
+    ref[0, 0, 0] = -3
+    ref[-1, -1, -1] = 2
+    ref[3, 2, 3] = -5
+    ref[3, 3, 9] = 6
+    ref[3, 3, 3] = -2
+    cand = ref[3:9, 3:9, 3:9].copy()
+    cand[0, 0, 0] += 1
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, ref, 4)
+    candidate = _cube(candidate_cube, parse, cand, 2)
+    result = compare(reference, candidate, reference_cube, candidate_cube, 4, 2)
+    dv = (4 * BOHR_PER_ANGSTROM / 12) ** 3
+    assert result["method"] == "native_aligned_crop"
+    assert result["reference_overlap_start_index"] == [3] * 3
+    assert result["reference_outer_shell_samples"] == 12**3 - 6**3
+    assert result["reference_outer_shell_absolute_integral_electrons"] == pytest.approx(16 * dv)
+    assert result["reference_outer_shell_signed_integral_electrons"] == pytest.approx(0)
+    primary = result["primary"]
+    assert primary["overlap_absolute_density_difference_integral_electrons"] == pytest.approx(dv)
+    assert primary["overlap_signed_density_difference_integral_electrons"] == pytest.approx(dv)
+    assert primary["overlap_maximum_absolute_density_difference_electron_per_bohr3"] == pytest.approx(1)
+    assert primary["overlap_rms_density_difference_electron_per_bohr3"] == pytest.approx(1 / math.sqrt(6**3))
+    assert primary["zero_extended_absolute_density_difference_integral_electrons"] == pytest.approx(17 * dv)
+    assert result["sensitivity"] is None
+
+
+@pytest.mark.parametrize("power", [3, 4])
+def test_noncoincident_grids_recover_polynomial_and_expose_sensitivity(tmp_path, comparison, power):
+    compare, parse = comparison
+
+    def polynomial(axis):
+        x, y, z = np.meshgrid(axis, axis, axis, indexing="ij")
+        return x**power + y + z - 10 + x * y * z
+
+    ref = np.zeros((16,) * 3)
+    ref[4:12, 4:12, 4:12] = polynomial(np.arange(8) * 3)
+    cand = polynomial(np.arange(6) * 4)
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, ref, 4)
+    candidate = _cube(candidate_cube, parse, cand, 2)
+    result = compare(reference, candidate, reference_cube, candidate_cube, 4, 2)
+    assert result["method"] == "separable_lagrange_4pt_and_6pt"
+    assert result["reference_overlap_grid_counts"] == [8] * 3
+    assert result["interpolation_right_extrapolated_planes_per_axis"] == 1
+    assert result["sensitivity"]["overlap_absolute_density_difference_integral_electrons"] < 1e-7
+    if power == 3:
+        assert result["primary"]["overlap_absolute_density_difference_integral_electrons"] < 1e-7
+        assert result["interpolants_overlap_l1_electrons"] < 1e-7
+    else:
+        assert result["primary"]["overlap_absolute_density_difference_integral_electrons"] > 1
+        assert result["interpolants_overlap_l1_electrons"] > 1
+
+
+def test_rejects_changed_cube_digest(tmp_path, comparison):
+    compare, parse = comparison
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, np.zeros((12,) * 3), 4)
+    candidate = _cube(candidate_cube, parse, np.zeros((6,) * 3), 2)
+    _cube(candidate_cube, parse, np.ones((6,) * 3), 2)
+    with pytest.raises(ValueError, match="digest differs"):
+        compare(reference, candidate, reference_cube, candidate_cube, 4, 2)
+
+
+def test_rejects_nonmatching_atoms(tmp_path, comparison):
+    compare, parse = comparison
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, np.zeros((12,) * 3), 4)
+    candidate = _cube(candidate_cube, parse, np.zeros((6,) * 3), 2, atom_offset=0.001)
+    with pytest.raises(ValueError, match="Ordered CUBE atoms do not align"):
+        compare(reference, candidate, reference_cube, candidate_cube, 4, 2)

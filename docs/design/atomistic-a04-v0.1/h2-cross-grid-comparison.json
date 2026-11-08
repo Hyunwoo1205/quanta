@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "scope": "preregistered_fixed_h2_endpoint_comparison",
+  "input_and_engine_receipt": "../../verification/atomistic-a04/memory-recovery-42438533750.json",
+  "reference": {"cell_angstrom": 20, "cutoff_ry": 800, "rel_cutoff_ry": 80},
+  "candidates": [
+    {"cell_angstrom": 16, "cutoff_ry": 800, "rel_cutoff_ry": 80},
+    {"cell_angstrom": 12, "cutoff_ry": 400, "rel_cutoff_ry": 40}
+  ],
+  "scalar_thresholds": {
+    "energy_and_maximum_cartesian_force_component": "../atomistic-a01-v0.1/validation-plan.json#AV03",
+    "engine_hard_plus_soft_electron_count_from_two": "../atomistic-a01-v0.1/validation-plan.json#AV05",
+    "native_exported_electron_count_from_two": "../atomistic-a01-v0.1/validation-plan.json#AV06"
+  },
+  "spatial_l1_atol_electrons": 0.001,
+  "spatial_l1_scope": "Exploratory absolute full-domain density error screen at the AV06 tolerance magnitude. It is a separate endpoint criterion, not AV06, a bound on interpolation error, or physical validation.",
+  "spatial_method": {
+    "domain": "Center-align both cells, use the reference sample grid in the smaller cell and separately count the absolute reference density outside it. The outside contribution measures excluded reference mass, not a computed candidate field.",
+    "same_step": "Compare the aligned original samples directly.",
+    "different_step": "Evaluate the candidate at reference points by separable four-point and six-point Lagrange interpolation with one-sided edge support. Report both and require both padded-domain L1 results to meet the threshold.",
+    "weight": "Use the nominal reference cell length divided by its sample count after confirming the rounded native axes against CP2K's locked units.",
+    "samples": "Use full signed STRIDE 1 values. No clipping, fitted alignment, density renormalization or extrapolation outside the smaller physical cell."
+  },
+  "limits": [
+    "One fixed H2 geometry and one locked x86 CP2K/PBE/GAPW/cc-pVDZ setup.",
+    "The 20 angstrom result is a comparison reference, not a converged continuum solution.",
+    "The 12 angstrom endpoint changes the cell, CUTOFF and REL_CUTOFF together. AV03 family refinement, AV04 basis convergence, and complete AV05/AV06 acceptance are separate.",
+    "The density threshold is defined before measuring cross-grid differences and is limited to this engineering screen.",
+    "No production OCI or physical validation."
+  ]
+}

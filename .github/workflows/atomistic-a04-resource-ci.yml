@@ -8,15 +8,18 @@ on:
       - scripts/atomistic_a04_resources.py
       - scripts/atomistic_a04_runner_swap.py
       - scripts/compare_atomistic_a04_mpi.py
+      - scripts/compare_atomistic_a04_accuracy.py
       - scripts/run_atomistic_a04_resource_ci.py
       - tests/test_atomistic_a04_resources.py
+      - tests/test_atomistic_a04_accuracy.py
+      - docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json
   workflow_dispatch:
     inputs:
       experiment:
         description: "Choose a fixed A04 experiment"
         type: choice
         default: mpi-refinement
-        options: [mpi-refinement, serial-resource]
+        options: [mpi-refinement, serial-resource, cross-grid-accuracy]
 
 permissions:
   contents: read
@@ -112,7 +115,7 @@ jobs:
           python -B scripts/check_atomistic_a02.py \
             --output .cache/atomistic-a04-resource/evidence/a02-lock-check.json
       - name: Retrieve the recorded 12 and 16 angstrom serial references
-        if: inputs.experiment != 'serial-resource'
+        if: inputs.experiment == 'mpi-refinement'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           repository: Hyunwoo1205/quanta
@@ -128,12 +131,26 @@ jobs:
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence
       - name: Retry the unchanged 20 angstrom input and compare numerical reproducibility
-        if: inputs.experiment != 'serial-resource'
+        if: inputs.experiment == 'mpi-refinement'
         run: |
           python -B scripts/run_atomistic_a04_resource_ci.py \
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence \
             --mpi-refinement-serial-report .cache/atomistic-a04-resource/serial-reference/report.json
+      - name: Compare candidate energy, force and full density against the 20 angstrom reference
+        if: github.event_name == 'push' || inputs.experiment == 'cross-grid-accuracy'
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          set -euo pipefail
+          numpy_lock="$(mktemp)"
+          grep '^numpy==' requirements.lock.txt > "$numpy_lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
+          python -B scripts/run_atomistic_a04_resource_ci.py \
+            --candidate-dir .cache/atomistic-a04-resource/candidate \
+            --output-dir .cache/atomistic-a04-resource/evidence \
+            --cross-grid-accuracy
       - name: Preserve the resource report and bounded diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

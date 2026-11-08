@@ -12,7 +12,11 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 해상도 유지·메모리 복구 및 재현성 확인
+## 현재 개발 위치 — A04 고정 H₂ 조건의 설정별 정확도 비교
+
+동일 x86 CP2K 이미지·원본 입력으로 20 Å·800 Ry 기준과 16 Å·800 Ry, 12 Å·400 Ry 후보를 대조합니다. [사전 비교 조건](docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json)은 에너지·힘, 엔진 및 원본 CUBE 전자 수, 셀 중심을 맞춘 밀도장의 절대 차이 적분을 별도 판정합니다. 12 Å 후보는 셀·주 격자·보조 격자 설정이 함께 달라지며, 이번 시험 범위는 고정 H₂ 구조의 두 후보가 기준과 얼마나 일치하는지입니다. 실행 전 원본 CUBE가 보존된 자료는 없으므로 동일 입력의 원본 격자를 한 러너에서 다시 생성합니다. 자원 실측과 동일 입력 재현성은 아래 기록을 유지합니다.
+
+## 이전 개발 기록 — A04 해상도 유지·메모리 복구 및 재현성 확인
 
 2026-11-08 KST, [실행 42438533750](https://github.com/Hyunwoo1205/quanta/actions/runs/42438533750)에서 같은 x86 CP2K 바이너리와 원본 1랭크 입력으로 H₂ 20 Å·800 Ry를 완주했습니다. 2 GiB의 호스트 여유를 남긴 컨테이너에서 RAM 피크는 11.87 GiB, 스왑 피크는 10.26 GiB였으며 엔진은 1,158.57초에 수렴했습니다. 기본·보조 격자 설정과 전체 밀도 출력은 그대로이며 CUBE 격자는 360³, 적분은 2.0000125431873355 전자입니다. 이전 2랭크 분산 실행은 스왑을 추가해도 OOM이었으므로, 이번 실행 근거는 단일 랭크와 스왑에 해당합니다.
 
