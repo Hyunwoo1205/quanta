@@ -18,6 +18,11 @@ on:
       - docs/design/atomistic-a04-v0.1/fixed-fixture-refinement.json
       - docs/design/atomistic-a04-v0.1/boundary-fixtures.json
       - docs/design/atomistic-a04-v0.1/h2-boundary-refinement.json
+  workflow_call:
+    inputs:
+      experiment:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       experiment:
@@ -37,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ${{ fromJSON((github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
+        track: ${{ fromJSON(inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -161,6 +166,7 @@ jobs:
           mode=(--cross-grid-accuracy)
           case "$A04_TRACK" in
             fixture-*) mode=(--fixture-accuracy "${A04_TRACK#fixture-}") ;;
+            scf-*) mode=(--scf-refinement "${A04_TRACK#scf-}") ;;
             cell|cutoff|relative) mode=(--one-factor "$A04_TRACK") ;;
           esac
           python -B scripts/run_atomistic_a04_resource_ci.py \

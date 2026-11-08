@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "scope": "preregistered_fixed_fixture_scf_refinement",
+  "predecessor": {
+    "oci_receipt": "oci-qualification-42483814045.json",
+    "workflow_run_id": 42483814045,
+    "control_source": "bcea12caf1cb8717825186095061c37750c5893c"
+  },
+  "eps_scf": [
+    1e-8,
+    1e-9,
+    1e-10
+  ],
+  "cases": [
+    {
+      "system": "h2-short",
+      "fixture": "A04-H2-short",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "baseline_input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+      "cap_gib": 3,
+      "deadline_seconds": 240
+    },
+    {
+      "system": "h2-reference",
+      "fixture": "C02-H2-reference",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "baseline_input_sha256": "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9",
+      "cap_gib": 3,
+      "deadline_seconds": 240
+    },
+    {
+      "system": "h2",
+      "fixture": "C03-H2-stretched",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "baseline_input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+      "cap_gib": 3,
+      "deadline_seconds": 240
+    },
+    {
+      "system": "h2-long",
+      "fixture": "A04-H2-long",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "baseline_input_sha256": "b0dab8fa3832e2b2e5f8306a9eea1899f88dc658b0130a6cf812bef5b0254af4",
+      "cap_gib": 3,
+      "deadline_seconds": 240
+    },
+    {
+      "system": "he",
+      "fixture": "C01-He",
+      "settings": [
+        12,
+        800,
+        80
+      ],
+      "baseline_input_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef",
+      "cap_gib": 6,
+      "deadline_seconds": 360
+    }
+  ],
+  "fixed_conditions": "Preserve the qualified baseline deck bytes apart from the one EPS_SCF line. Use the pinned x86 CP2K candidate, fresh scratch, one rank and thread, no swap, and no retry. Hold basis, cell, MGRID, atom-centered grid, SCF guess and MAX_SCF fixed.",
+  "admission": {
+    "host_reserve_gib": 2,
+    "disk_free_gib": 10
+  },
+  "comparison": {
+    "threshold_source": "../atomistic-a01-v0.1/validation-plan.json",
+    "energy_hartree": 0.000001,
+    "max_force_component_hartree_per_bohr": 0.00001,
+    "engine_count_from_two_electrons": 0.000001,
+    "cube_count_from_two_electrons": 0.001,
+    "same_grid_cube_l1_electrons": 0.001,
+    "rule": "Require explicit CP2K convergence for every level. Compare each looser level to 1e-10 on the same native CUBE grid. The 1e-9 pair must pass before considering retention of 1e-8. If 1e-8 fails with 1e-9 passing, keep 1e-9 as the tighter candidate for later validation."
+  },
+  "scope_limits": "Fixed geometry and numerical settings on an isolated native x86 runner. This is SCF sensitivity and not the full AV03/AV06, independent physical validation, OCI retest or public profile freeze.",
+  "cp2k_reference": "https://manual.cp2k.org/cp2k-2026_2-branch/CP2K_INPUT/FORCE_EVAL/DFT/SCF.html#EPS_SCF"
+}

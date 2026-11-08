@@ -62,6 +62,7 @@ class Case:
     minimum_memory_bytes: int = 2 * GIB
     rel_cutoff: int = 40
     system: str = "h2"
+    eps_scf: float = 1e-8
 
 
 CASES = (
@@ -87,6 +88,8 @@ BOUNDARY_PLAN = FIXTURE_PLAN.with_name("h2-boundary-refinement.json")
 BOUNDARY_PREDECESSOR = ACCURACY_REFERENCE.with_name("fixed-fixture-accuracy-42448653582.json")
 BOUNDARY_SYSTEMS = ("h2-short", "h2-long")
 FIXTURE_SYSTEMS = ("he", "h2-reference", *BOUNDARY_SYSTEMS)
+SCF_SYSTEMS = (*FIXTURE_SYSTEMS, "h2")
+SCF_PLAN = FIXTURE_PLAN.with_name("scf-refinement.json")
 
 
 ENGINE_WRAPPER = r"""
@@ -414,7 +417,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
         options = {
             "system": case.system, "basis": "cc-pVDZ", "project": PROJECT,
             "cell_angstrom": case.cell, "cutoff_ry": case.cutoff,
-            "rel_cutoff_ry": case.rel_cutoff, "density": case.density,
+            "rel_cutoff_ry": case.rel_cutoff, "density": case.density, "eps_scf": case.eps_scf,
         }
         base_input = generate_input(**options).encode("ascii")
         submitted_input = base_input
@@ -540,6 +543,9 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 or not all(keyword in text for keyword in ("GAPW", "PBE", "cc-pVDZ.cp2k", "ALL_POTENTIALS"))
             ):
                 raise ValueError("Converged CP2K fixture energy, native forces or locked model evidence is missing")
+            iterations = re.findall(r"SCF run converged in\s+(\d+)\s+steps", text)
+            if len(iterations) == 1:
+                record["engine_scf_iterations"] = int(iterations[0])
             record["engine_energy_hartree"] = cp2k["energy_hartree"]
             record["engine_forces_hartree_per_bohr"] = forces
             hard_soft_charge = re.findall(
@@ -1067,6 +1073,98 @@ def run_fixed_fixture(system: str, candidate: dict, scratch: Path, diagnostics: 
     return "measured" if complete else "comparison_incomplete"
 
 
+def run_scf_screen(system: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
+    plan = json.loads(SCF_PLAN.read_bytes())
+    profile = json.loads(SCF_PLAN.with_name("profile.json").read_bytes())
+    levels = plan["eps_scf"]
+    sweep = profile["validation"]["proposal_unexecuted"]["sweeps"]["eps_scf"]
+    if levels != sweep or levels != [1e-8, 1e-9, 1e-10]:
+        raise ValueError("Unexpected preregistered SCF sweep")
+    specs = {row["system"]: row for row in plan["cases"]}
+    if len(plan["cases"]) != len(SCF_SYSTEMS) or set(specs) != set(SCF_SYSTEMS):
+        raise ValueError("SCF plan must contain all five qualified fixtures exactly once")
+    spec = specs[system]
+    cell, cutoff, relative = spec["settings"]
+    cap = spec["cap_gib"] * GIB
+    checks = {c["id"]: c for c in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    tolerances = plan["comparison"]
+    if (
+        tolerances["energy_hartree"] != checks["AV03"]["energy_atol_hartree"]
+        or tolerances["max_force_component_hartree_per_bohr"] != checks["AV03"]["force_atol_hartree_per_bohr"]
+        or tolerances["engine_count_from_two_electrons"] != checks["AV05"]["atol"]
+        or tolerances["cube_count_from_two_electrons"] != checks["AV06"]["atol"]
+        or tolerances["same_grid_cube_l1_electrons"] != json.loads(FIXTURE_PLAN.read_bytes())["spatial_l1_atol_electrons"]
+        or plan["admission"]["host_reserve_gib"] * GIB != MEMORY_RESERVE_BYTES
+        or plan["admission"]["disk_free_gib"] * GIB != DISK_ADMISSION
+    ):
+        raise ValueError("SCF plan differs from the predeclared numerical or resource limits")
+    report.update(
+        system=system, fixture_id=spec["fixture"], settings=spec["settings"], eps_scf_levels=levels,
+        comparison_plan_sha256=sha256(SCF_PLAN), thresholds=tolerances, comparisons=[],
+        baseline_input_sha256=spec["baseline_input_sha256"],
+    )
+    report["resource_policy"].update(normal_memory_cap_bytes=cap, retry_memory_cap_bytes=cap)
+    options = dict(system=system, basis="cc-pVDZ", project=PROJECT, cell_angstrom=cell,
+                   cutoff_ry=cutoff, rel_cutoff_ry=relative, density=True)
+    baseline = generate_input(**options, eps_scf=levels[0])
+    if hashlib.sha256(baseline.encode("ascii")).hexdigest() != spec["baseline_input_sha256"]:
+        raise ValueError("SCF baseline deck does not match the qualified input")
+    expected_hashes = {}
+    for level in levels:
+        deck = generate_input(**options, eps_scf=level)
+        old_line = f"      EPS_SCF {levels[0]:.12E}\n"
+        new_line = f"      EPS_SCF {level:.12E}\n"
+        if baseline.count(old_line) != 1 or deck != baseline.replace(old_line, new_line, 1):
+            raise ValueError("SCF refinement may change only the EPS_SCF line")
+        expected_hashes[level] = hashlib.sha256(deck.encode("ascii")).hexdigest()
+
+    rows = {}
+    for level in levels:
+        case = Case(f"{system}-scf-{level:.0e}", cell, cutoff, True, spec["deadline_seconds"],
+                    rel_cutoff=relative, system=system, eps_scf=level)
+        cube = scratch / f"{case.name}.cube"
+        attempt: dict = {}
+        available = available_memory_bytes()
+        free = shutil.disk_usage(scratch).free
+        if available < cap + MEMORY_RESERVE_BYTES or free < DISK_ADMISSION:
+            attempt.update(status="deferred_headroom", available_memory_bytes=available, free_disk_bytes=free)
+        else:
+            run_attempt(case, 1, cap, available, candidate, scratch, diagnostics, attempt,
+                        expected_input=expected_hashes[level], retained_cube=cube)
+        report["cases"].append({"case": case.name, "eps_scf": level, "attempt": attempt})
+        if attempt["status"] != "measured":
+            return "measurement_incomplete"
+        if (
+            attempt["input_metadata"]["source_fixture"] != spec["fixture"]
+            or attempt["submitted_input_sha256"] != expected_hashes[level]
+            or not 1 <= attempt.get("engine_scf_iterations", 0) <= 80
+        ):
+            raise ValueError("The completed SCF measurement lacks matching input or convergence evidence")
+        rows[level] = (case, attempt, cube)
+
+    reference_case, reference, reference_cube = rows[levels[-1]]
+    for level in levels[:-1]:
+        case, attempt, cube = rows[level]
+        left, right = reference["density"], attempt["density"]
+        if any(left[key] != right[key] for key in ("grid_counts", "origin_bohr_rounded", "grid_axes_bohr_rounded", "atoms_bohr_rounded")):
+            raise ValueError("The SCF sweep requires the same native CUBE lattice and atom order")
+        result = compare_accuracy_pair(
+            reference_case, case, reference, attempt, reference_cube, cube, checks,
+            tolerances["same_grid_cube_l1_electrons"],
+        )
+        if result["spatial_density"]["method"] != "native_aligned_crop":
+            raise ValueError("The SCF sweep must compare native CUBE samples directly")
+        report["comparisons"].append({"eps_scf": level, "reference_eps_scf": levels[-1], "result": result})
+    looser, finer = (row["result"]["within_all_endpoint_thresholds"] for row in report["comparisons"])
+    report["scf_screen"] = {
+        "two_finest_passed": finer,
+        "baseline_vs_finest_passed": looser,
+        "candidate_eps_scf": (levels[0] if looser else levels[1]) if finer else None,
+    }
+    report["verification_scope"]["fixed_fixture_scf_screen"] = "measured"
+    return "measured"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-dir", type=Path, required=True)
@@ -1076,6 +1174,7 @@ def main() -> int:
     mode.add_argument("--cross-grid-accuracy", action="store_true")
     mode.add_argument("--one-factor", choices=ONE_FACTOR_AXES)
     mode.add_argument("--fixture-accuracy", choices=FIXTURE_SYSTEMS)
+    mode.add_argument("--scf-refinement", choices=SCF_SYSTEMS)
     args = parser.parse_args()
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -1114,7 +1213,15 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.one_factor or args.fixture_accuracy:
+    if args.scf_refinement:
+        report["scope"] = "isolated_native_x86_A04_fixed_fixture_scf_refinement"
+        report.pop("known_unadmitted_cases")
+        report["resource_policy"].update(
+            retry_maximum_increase_bytes=0, oom_retry="none; fixed sequential one-rank cases",
+            raw_cube="original samples compared on runner disk and removed with scratch",
+        )
+        report["verification_scope"]["fixed_fixture_scf_screen"] = "incomplete"
+    elif args.one_factor or args.fixture_accuracy:
         screen = (
             "h2_boundary_accuracy" if args.fixture_accuracy in BOUNDARY_SYSTEMS
             else "fixed_fixture_accuracy" if args.fixture_accuracy else "fixed_h2_one_factor"
@@ -1172,7 +1279,9 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.fixture_accuracy:
+            if args.scf_refinement:
+                report["status"] = run_scf_screen(args.scf_refinement, candidate, Path(directory), diagnostics, report)
+            elif args.fixture_accuracy:
                 report["status"] = run_fixed_fixture(args.fixture_accuracy, candidate, Path(directory), diagnostics, report)
             elif args.one_factor:
                 report["status"] = run_one_factor(args.one_factor, candidate, Path(directory), diagnostics, report)
@@ -1203,6 +1312,38 @@ def main() -> int:
     finally:
         write_report(output / "report.json", report)
     print(f"A04 native resource measurement: {report['status']}; report.json")
+    if args.scf_refinement:
+        summary = {key: report[key] for key in (
+            "system", "status", "comparison_plan_sha256", "scf_screen", "error",
+        ) if key in report}
+        summary["report_sha256"] = sha256(output / "report.json")
+        summary["levels"] = [
+            {
+                "eps_scf": row["eps_scf"], "status": row["attempt"]["status"],
+                "input_sha256": row["attempt"].get("input_sha256"),
+                "iterations": row["attempt"].get("engine_scf_iterations"),
+                "engine_seconds": row["attempt"].get("engine_resource", {}).get("engine_wall_seconds"),
+                "cgroup_peak_bytes": row["attempt"].get("cgroup_memory_peak_bytes"),
+                "cgroup_memory_events_max": row["attempt"].get("cgroup_memory_events_max"),
+                "engine_count": row["attempt"].get("engine_hard_soft_electron_count"),
+                "cube_electron_count": row["attempt"].get("density", {}).get("electron_integral"),
+                "cube_sha256": row["attempt"].get("density", {}).get("sha256"),
+            }
+            for row in report["cases"]
+        ]
+        summary["comparisons"] = [
+            {
+                "eps_scf": row["eps_scf"], "reference_eps_scf": row["reference_eps_scf"],
+                "passed": row["result"]["within_all_endpoint_thresholds"],
+                "energy_delta_hartree": row["result"]["absolute_energy_difference_hartree"],
+                "force_delta_hartree_per_bohr": row["result"]["absolute_maximum_force_component_difference_hartree_per_bohr"],
+                "density_l1_electrons": row["result"]["spatial_density"]["primary"][
+                    "zero_extended_absolute_density_difference_integral_electrons"
+                ],
+            }
+            for row in report.get("comparisons", [])
+        ]
+        print("QUANTA_SCF_RESULT " + json.dumps(summary, allow_nan=False, separators=(",", ":")))
     return 0 if report["status"] == "measured" else 1
 
 
