@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 H₂·He 고정 기준계 설정 비교 완료
+## 현재 개발 위치 — A04 H₂ 결합 길이 경계 시험 완료
+
+2026-11-08 KST [실행 42450193275](https://github.com/Hyunwoo1205/quanta/actions/runs/42450193275)에서 H₂ 0.60 Å와 1.00 Å의 [고정 경계 입력](docs/design/atomistic-a04-v0.1/boundary-fixtures.json)을 각각 같은 구조의 16 Å·800 Ry·REL_CUTOFF 80 Ry와 비교했습니다. 동일 x86 CP2K/PBE/GAPW/cc-pVDZ로 두 러너에서 8개 계산을 완료했습니다. 모두 스왑을 쓰지 않았으며, [사전 기준](docs/design/atomistic-a04-v0.1/h2-boundary-refinement.json)에 따른 6개 비교가 에너지·힘·전자 수·밀도 L1 기준을 통과했습니다. [실행 영수증](docs/verification/atomistic-a04/h2-boundary-accuracy-42450193275.json)
+
+12 Å·400 Ry·REL_CUTOFF 40 Ry에서 0.60 Å와 1.00 Å의 에너지 차이는 각각 3.23×10⁻⁸·3.36×10⁻⁸ Hartree, 최대 힘 성분 차이는 3.27×10⁻⁷·3.24×10⁻⁷ Hartree/Bohr였습니다. 두 보간법의 밀도 L1은 0.60 Å에서 8.94×10⁻⁴·3.49×10⁻⁴전자, 1.00 Å에서 6.77×10⁻⁴·2.74×10⁻⁴전자였으며, 0.60 Å의 더 큰 값은 0.001전자 한도의 약 89%였습니다. 실행 시간은 각각 28.87초·33.36초, RAM 피크는 모두 1.76 GiB였습니다. 이번 결과와 앞선 0.74144 Å·0.80 Å 결과는 네 개의 고정 구조에 대한 수치 근거입니다. 결합 길이 구간 전체와 독립 물리 정확도는 별도입니다.
+
+**다음 시작점은** 동일 모델의 ARMv8-A 이미지로 H₂ 12 Å·400 Ry·REL_CUTOFF 40 Ry와 He 12 Å·800 Ry·REL_CUTOFF 80 Ry를 네이티브 ARM에서 순차 실측하고 x86 근거와 대조하는 것입니다. 검증한 ARM 후보 [빌드 42370042984](https://github.com/Hyunwoo1205/quanta/actions/runs/42370042984)의 이미지 아티팩트를 다시 확인했습니다. He의 x86 RAM 피크 4.71 GiB는 기존 A03 OCI 실행의 2 GiB 한도를 넘으므로, ARM 실측 이후 별도 A04 고정 격리 시험에서 메모리 한도와 호스트 여유를 정합니다. OCI에서 운영 작업이 없는 상태, 자원·웹 응답 사전 점검, 실행 중 중단 조건과 사후 상태 확인을 유지합니다. 운영 배포와 공개 지원 판정은 별도입니다.
+
+## 이전 개발 기록 — A04 H₂·He 고정 기준계 설정 비교 완료
 
 2026-11-08 KST [실행 42448653582](https://github.com/Hyunwoo1205/quanta/actions/runs/42448653582)에서 C02 H₂(결합 길이 0.74144 Å)와 C01 He의 고정 x86 CP2K/PBE/GAPW/cc-pVDZ 입력을 대조했습니다. 각 계의 16 Å·800 Ry·REL_CUTOFF 80 Ry를 비교 기준으로 두고, [사전 계획](docs/design/atomistic-a04-v0.1/fixed-fixture-refinement.json)의 세 설정을 같은 러너에서 비교했습니다. 두 작업에서 8개 계산이 완료됐고 스왑 사용량은 0이었습니다. 6개 비교 모두 에너지·힘·전자 수 기준 이내였으며, 밀도 L1까지 충족한 비교는 4개였습니다. [실행 영수증](docs/verification/atomistic-a04/fixed-fixture-accuracy-42448653582.json)
 
