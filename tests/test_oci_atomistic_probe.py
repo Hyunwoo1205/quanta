@@ -3,6 +3,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import stat
 import tarfile
@@ -190,7 +191,8 @@ def test_failed_resource_preflight_still_checks_service_preservation(tmp_path, m
     monkeypatch.setattr(remote,'_parents',lambda p:None)
     monkeypatch.setattr(remote.fcntl,'flock',lambda *args:None)
     count=[]
-    def snapshot():
+    def snapshot(*, a04=False):
+        assert not a04
         count.append(True)
         return {'identity':'same','config_sha':['same'],'database_sha':['same'],'active_jobs':0,
                 'web':{'web_status':200,'anonymous_capabilities_status':401}}
@@ -328,3 +330,231 @@ def test_a04_report_requires_all_cases_and_observed_caps():
     assert not remote.a04_benchmark_passed(dict(report, all_cross_build_checks_passed=False), source)
     report['cases'][-1]['attempt']['engine_resource']['final_cgroup_swap_max_bytes'] = 1
     assert not remote.a04_benchmark_passed(report, source)
+
+
+def _digest(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _a04_snapshot(database):
+    return {'identity': 'same container', 'config_sha': ['same configuration'], 'database': database}
+
+
+@pytest.mark.parametrize('wal_before,wal_after,wal_preserved,empty_transition', [
+    (('absent', None), ('absent', None), True, False),
+    (('empty', _digest(b'')), ('empty', _digest(b'')), True, False),
+    (('absent', None), ('empty', _digest(b'')), True, True),
+    (('empty', _digest(b'')), ('absent', None), True, True),
+    (('nonempty', _digest(b'one')), ('nonempty', _digest(b'one')), True, False),
+    (('nonempty', _digest(b'one')), ('nonempty', _digest(b'two')), False, False),
+    (('nonempty', _digest(b'one')), ('absent', None), False, False),
+    (('absent', None), ('nonempty', _digest(b'one')), False, False),
+    (('nonempty', _digest(b'one')), ('empty', _digest(b'')), False, False),
+    (('empty', _digest(b'')), ('nonempty', _digest(b'one')), False, False),
+])
+def test_a04_preservation_only_normalizes_an_empty_wal_transition(
+        wal_before, wal_after, wal_preserved, empty_transition):
+    remote = load('remote_atomistic_probe')
+    main = _digest(b'jobs')
+    before = _a04_snapshot((main, *wal_before))
+    after = _a04_snapshot((main, *wal_after))
+    flags = remote.preservation(before, after, a04=True)
+    assert flags['container_preserved'] is True
+    assert flags['configuration_preserved'] is True
+    assert flags['database_bytes_preserved'] is wal_preserved
+    assert flags['database_preservation'] == {
+        'main_bytes_preserved': True,
+        'wal_content_preserved': wal_preserved,
+        'before_wal_state': wal_before[0],
+        'after_wal_state': wal_after[0],
+        'empty_wal_transition': empty_transition,
+    }
+
+
+def test_a04_db_change_blocks_even_if_wal_transition_is_allowed():
+    remote = load('remote_atomistic_probe')
+    before = _a04_snapshot((_digest(b'original jobs'), 'empty', _digest(b'')))
+    after = _a04_snapshot((_digest(b'updated jobs'), 'absent', None))
+    flags = remote.preservation(before, after, a04=True)
+    assert flags['database_bytes_preserved'] is False
+    assert flags['database_preservation']['main_bytes_preserved'] is False
+    assert flags['database_preservation']['wal_content_preserved'] is True
+    assert flags['database_preservation']['empty_wal_transition'] is True
+
+
+def test_legacy_preservation_still_distinguishes_empty_and_absent_wal():
+    remote = load('remote_atomistic_probe')
+    before = {'identity': 'same', 'config_sha': ['same'], 'database_sha': [_digest(b'jobs'), None]}
+    after = dict(before, database_sha=[_digest(b'jobs'), _digest(b'')])
+    assert remote.preservation(before, after) == {
+        'container_preserved': True, 'configuration_preserved': True, 'database_bytes_preserved': False,
+    }
+
+
+@pytest.fixture
+def a04_db_fixture(tmp_path, monkeypatch):
+    remote = load('remote_atomistic_probe')
+    database = tmp_path / 'jobs.sqlite3'
+    database.write_bytes(b'private jobs bytes')
+    wal = tmp_path / 'jobs.sqlite3-wal'
+    monkeypatch.setattr(remote, '_parents', lambda path: None)
+
+    def metadata(path):
+        try:
+            return path.lstat()
+        except FileNotFoundError:
+            return None
+
+    monkeypatch.setattr(remote, '_database_metadata', metadata)
+    return remote, database, wal, metadata
+
+
+@pytest.mark.parametrize('wal_bytes,wal_state', [(None, 'absent'), (b'', 'empty'), (b'wal frames', 'nonempty')])
+def test_a04_database_snapshot_reads_exact_stable_bytes_without_atime_updates(a04_db_fixture, wal_bytes, wal_state):
+    remote, database, wal, _ = a04_db_fixture
+    files = [database]
+    if wal_bytes is not None:
+        wal.write_bytes(wal_bytes)
+        files.append(wal)
+    for path in files:
+        os.utime(path, ns=(1_000_000_000, path.stat().st_mtime_ns))
+    atimes = [path.stat().st_atime_ns for path in files]
+    main_sha, state, wal_sha = remote.a04_database_snapshot(database)
+    assert main_sha == _digest(b'private jobs bytes')
+    assert state == wal_state
+    if wal_bytes is None:
+        assert wal_sha is None and not wal.exists()
+    elif wal_bytes:
+        assert wal_sha == _digest(wal_bytes)
+    assert [path.stat().st_atime_ns for path in files] == atimes
+
+
+def test_a04_database_snapshot_retries_a_transient_stat_race(a04_db_fixture, monkeypatch):
+    remote, database, _, metadata = a04_db_fixture
+    raced = False
+    sleeps = []
+
+    def change_after_stat(path):
+        nonlocal raced
+        info = metadata(path)
+        if path == database and not raced:
+            database.write_bytes(b'new stable bytes')
+            raced = True
+        return info
+
+    monkeypatch.setattr(remote, '_database_metadata', change_after_stat)
+    monkeypatch.setattr(remote.time, 'sleep', sleeps.append)
+    assert remote.a04_database_snapshot(database) == (_digest(b'new stable bytes'), 'absent', None)
+    assert len(sleeps) == 1
+
+
+def test_a04_database_snapshot_fails_after_five_racing_attempts(a04_db_fixture, monkeypatch):
+    remote, database, _, metadata = a04_db_fixture
+    sleeps = []
+    stat_calls = []
+
+    def keep_changing(path):
+        info = metadata(path)
+        if path == database:
+            stat_calls.append(path)
+            database.write_bytes(b'x' * (info.st_size + 1))
+        return info
+
+    monkeypatch.setattr(remote, '_database_metadata', keep_changing)
+    monkeypatch.setattr(remote.time, 'sleep', sleeps.append)
+    with pytest.raises(remote.ProbeError):
+        remote.a04_database_snapshot(database)
+    assert len(stat_calls) == 5
+    assert len(sleeps) == 4
+
+
+def test_a04_database_snapshot_rejects_missing_main_without_retry(a04_db_fixture, monkeypatch):
+    remote, database, _, _ = a04_db_fixture
+    database.unlink()
+    monkeypatch.setattr(remote.time, 'sleep', lambda _: pytest.fail('must fail without retry'))
+    with pytest.raises(remote.ProbeError):
+        remote.a04_database_snapshot(database)
+
+
+def test_a04_database_metadata_does_not_treat_dangling_wal_symlink_as_absent(tmp_path):
+    remote = load('remote_atomistic_probe')
+    wal = tmp_path / 'jobs.sqlite3-wal'
+    assert remote._database_metadata(wal) is None
+    wal.symlink_to(tmp_path / 'missing-wal')
+    with pytest.raises(remote.ProbeError):
+        remote._database_metadata(wal)
+
+
+def test_a04_database_metadata_enforces_the_file_size_limit(monkeypatch):
+    remote = load('remote_atomistic_probe')
+    info = SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_nlink=1, st_uid=10001, st_gid=10001,
+                           st_size=remote.DATABASE_FILE_LIMIT)
+    monkeypatch.setattr(remote.Path, 'lstat', lambda path: info)
+    assert remote._database_metadata(remote.DATABASE) is info
+    info.st_size += 1
+    with pytest.raises(remote.ProbeError):
+        remote._database_metadata(remote.DATABASE)
+
+
+def test_a04_first_postflight_mismatch_remains_a_failure_after_final_match(tmp_path, monkeypatch):
+    remote = load('remote_atomistic_probe')
+    db_before, db_changed = _digest(b'baseline jobs'), _digest(b'updated jobs')
+    web = {'web_status': 200, 'anonymous_capabilities_status': 401, 'latency_seconds': [0.01, 0.02]}
+    observations = iter([(db_before, 'absent', None), (db_changed, 'absent', None),
+                         (db_before, 'empty', _digest(b''))])
+
+    def snapshot(*, a04=False):
+        assert a04
+        return {**_a04_snapshot(next(observations)), 'active_jobs': 0, 'web': web}
+
+    real_open, real_fstat = remote.os.open, remote.os.fstat
+    guard_fd = real_open(tmp_path / 'guard.lock', os.O_RDWR | os.O_CREAT, 0o600)
+    original_guard = SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_uid=0, st_nlink=1)
+
+    def open_file(path, *args):
+        if str(path) == '/run/quanta-application-upgrade.lock':
+            return guard_fd
+        return real_open(path, *args)
+
+    monkeypatch.setattr(remote.os, 'open', open_file)
+    monkeypatch.setattr(remote.os, 'fstat', lambda fd: original_guard if fd == guard_fd else real_fstat(fd))
+    monkeypatch.setattr(remote.os, 'geteuid', lambda: 0)
+    monkeypatch.setattr(remote.platform, 'machine', lambda: 'aarch64')
+    monkeypatch.setattr(remote, '_parents', lambda path: None)
+    monkeypatch.setattr(remote.fcntl, 'flock', lambda *args: None)
+    monkeypatch.setattr(remote, 'snapshot', snapshot)
+    monkeypatch.setattr(remote, 'memory_available', lambda: 10 * 1024**3)
+    monkeypatch.setattr(remote, 'available_disk', lambda docker_root=None: 20 * 1024**3)
+    monkeypatch.setattr(remote, 'a04_docker_data_root', lambda: tmp_path)
+    monkeypatch.setattr(remote, 'a04_image_present', lambda: True)
+    monkeypatch.setattr(remote, 'active_jobs', lambda: 0)
+    monkeypatch.setattr(remote, 'web_boundary', lambda: web)
+    monkeypatch.setattr(remote, 'cleanup_containers', lambda output, *, a04=False: 0)
+    monkeypatch.setattr(remote.pwd, 'getpwnam', lambda name: SimpleNamespace(pw_uid=os.getuid(), pw_gid=os.getgid()))
+    monkeypatch.setattr(remote, 'docker_child_groups', lambda user: ([], False))
+    monkeypatch.setattr(remote.os, 'chown', lambda *args: None)
+    monkeypatch.setattr(remote, 'relay_candidate', lambda *args, **kwargs: None)
+    monkeypatch.setattr(remote, 'a04_benchmark_passed', lambda *args: True)
+    monkeypatch.setattr(remote.time, 'sleep', lambda seconds: None)
+    source = tmp_path / 'source'
+    source.mkdir()
+    monkeypatch.setattr(remote, 'prepare', lambda *args, **kwargs: (tmp_path, source))
+
+    def run(*args, **kwargs):
+        output = tmp_path / 'workspace' / 'run'
+        output.mkdir()
+        (output / 'report.json').write_text('{}')
+        states = iter([None, 0])
+        return SimpleNamespace(returncode=0, poll=lambda: next(states, 0))
+
+    monkeypatch.setattr(remote.subprocess, 'Popen', run)
+    archive = b'isolated test archive'
+    result = remote.execute(a04_config(remote, archive), archive, a04=True)
+    assert result['status'] == 'failed'
+    assert result['failure_reason'] == 'benchmark_or_preservation'
+    assert result['first_postflight_gate']['database_bytes_preserved'] is False
+    assert result['first_postflight_gate']['database_preservation']['main_bytes_preserved'] is False
+    assert result['database_bytes_preserved'] is True
+    assert result['database_preservation']['empty_wal_transition'] is True
+    assert result['postflight_verified'] is True
+    assert db_before not in json.dumps(result) and db_changed not in json.dumps(result)

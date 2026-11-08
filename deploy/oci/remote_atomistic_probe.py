@@ -48,6 +48,8 @@ MAX_ARCHIVE = 65536
 A04_MAX_ARCHIVE = 80 * 1024
 MAX_EXPANDED = 3 * 1024**2
 MAX_FILE = 512 * 1024
+DATABASE_FILE_LIMIT = 512 * 1024**2
+DATABASE_SNAPSHOT_ATTEMPTS = 5
 MAX_REPORT = 131072
 MAX_CANDIDATE = 2 * 1024**3
 CANDIDATE_TIMEOUT = 240
@@ -75,6 +77,10 @@ STAGES = frozenset({'config', 'lock', 'preflight', 'archive', 'benchmark', 'pres
 
 
 class ProbeError(Exception):
+    pass
+
+
+class DatabaseReadRace(Exception):
     pass
 
 
@@ -139,6 +145,82 @@ def _file(path, limit=MAX_FILE):
     if len(raw) > limit:
         raise ProbeError('file_size')
     return raw
+
+
+def _database_metadata(path):
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return None
+    if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_uid != 10001
+            or info.st_gid != 10001 or info.st_mode & 0o077 or info.st_size > DATABASE_FILE_LIMIT):
+        raise ProbeError('unsafe_file')
+    return info
+
+
+def _database_stamp(info):
+    if info is None:
+        return None
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns,
+            info.st_mode, info.st_uid, info.st_gid, info.st_nlink)
+
+
+def _database_digest(path, stamp):
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_NOATIME | os.O_CLOEXEC
+    try:
+        fd = os.open(path, flags)
+    except FileNotFoundError:
+        raise DatabaseReadRace() from None
+    try:
+        if _database_stamp(os.fstat(fd)) != stamp:
+            raise DatabaseReadRace()
+        digest = hashlib.sha256()
+        pending = stamp[2]
+        while pending:
+            chunk = os.read(fd, min(256 * 1024, pending))
+            if not chunk:
+                raise DatabaseReadRace()
+            pending -= len(chunk)
+            digest.update(chunk)
+        if _database_stamp(os.fstat(fd)) != stamp:
+            raise DatabaseReadRace()
+        return digest.hexdigest()
+    finally:
+        os.close(fd)
+
+
+def a04_database_snapshot(database=DATABASE):
+    """Read the first stable pair and keep fingerprints private to the controller."""
+    _parents(database)
+    wal = database.with_name(database.name + '-wal')
+    paths = (database, wal)
+    cache = {}
+    remaining = 2 * DATABASE_FILE_LIMIT
+    for attempt in range(DATABASE_SNAPSHOT_ATTEMPTS):
+        if attempt:
+            time.sleep(0.017)
+        stamps = tuple(_database_stamp(_database_metadata(path)) for path in paths)
+        if stamps[0] is None:
+            raise ProbeError('database_missing')
+        try:
+            for path, stamp in zip(paths, stamps):
+                if stamp is None or cache.get(path, (None, None))[0] == stamp:
+                    continue
+                if stamp[2] > remaining:
+                    raise ProbeError('database_read_limit')
+                remaining -= stamp[2]
+                cache[path] = (stamp, _database_digest(path, stamp))
+            # Check WAL first so both files' stable intervals overlap.
+            wal_after = _database_stamp(_database_metadata(wal))
+            database_after = _database_stamp(_database_metadata(database))
+            if (database_after, wal_after) != stamps:
+                raise DatabaseReadRace()
+        except DatabaseReadRace:
+            continue
+        if stamps[1] is None:
+            return cache[database][1], 'absent', None
+        return cache[database][1], 'empty' if stamps[1][2] == 0 else 'nonempty', cache[wal][1]
+    raise ProbeError('database_snapshot_unstable')
 
 
 def _run(args, timeout=15):
@@ -255,7 +337,7 @@ def require_a04_web(web):
         raise ProbeError('service_boundary')
 
 
-def snapshot():
+def snapshot(*, a04=False):
     service = _run(['/usr/bin/systemctl', 'is-active', 'quanta-boot.service', 'quanta-https.service'])
     if service != b'active\nactive\n':
         raise ProbeError('service_inactive')
@@ -267,11 +349,32 @@ def snapshot():
     configs = [Path('/etc/quanta/deployment.json'), Path('/etc/quanta/installed.json'),
                Path('/usr/local/lib/quanta/runtime.py')]
     config_sha = [hashlib.sha256(_file(path)).hexdigest() for path in configs]
-    database_sha = []
-    for path in (DATABASE, Path(str(DATABASE) + '-wal')):
-        database_sha.append(hashlib.sha256(_file(path, 512 * 1024**2)).hexdigest() if path.exists() else None)
-    return {'identity': hashlib.sha256(identity).hexdigest(), 'config_sha': config_sha,
-            'database_sha': database_sha, 'active_jobs': active_jobs(), 'web': web_boundary()}
+    result = {'identity': hashlib.sha256(identity).hexdigest(), 'config_sha': config_sha}
+    if a04:
+        result['database'] = a04_database_snapshot()
+    else:
+        result['database_sha'] = [hashlib.sha256(_file(path, DATABASE_FILE_LIMIT)).hexdigest()
+                                  if path.exists() else None
+                                  for path in (DATABASE, Path(str(DATABASE) + '-wal'))]
+    return {**result, 'active_jobs': active_jobs(), 'web': web_boundary()}
+
+
+def preservation(before, after, *, a04=False):
+    result = {'container_preserved': after['identity'] == before['identity'],
+              'configuration_preserved': after['config_sha'] == before['config_sha']}
+    if not a04:
+        return {**result, 'database_bytes_preserved': after['database_sha'] == before['database_sha']}
+    before_main, before_wal_state, before_wal = before['database']
+    after_main, after_wal_state, after_wal = after['database']
+    main_preserved = before_main == after_main
+    empty_transition = {before_wal_state, after_wal_state} == {'absent', 'empty'}
+    wal_preserved = ((before_wal_state, before_wal) == (after_wal_state, after_wal) or empty_transition)
+    return {**result, 'database_bytes_preserved': main_preserved and wal_preserved,
+            'database_preservation': {'main_bytes_preserved': main_preserved,
+                                      'wal_content_preserved': wal_preserved,
+                                      'before_wal_state': before_wal_state,
+                                      'after_wal_state': after_wal_state,
+                                      'empty_wal_transition': empty_transition}}
 
 
 def allowed_path(name, *, trace=False, candidate=False, a04=False):
@@ -509,7 +612,7 @@ def execute(config, archive, input_stream=None, *, trace=False, a04=False):
             raise ProbeError('lock_metadata')
         fcntl.flock(lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         stage = 'preflight'
-        baseline = snapshot()
+        baseline = snapshot(a04=a04)
         available = memory_available()
         disk = available_disk()
         resource_preflight(baseline['active_jobs'], available, disk, a04=a04)
@@ -621,24 +724,22 @@ def execute(config, archive, input_stream=None, *, trace=False, a04=False):
         value['report_bytes'] = len(raw)
         stage = 'preservation'
         removed = cleanup_containers(output, a04=a04)
-        after = snapshot()
+        after = snapshot(a04=a04)
         if a04:
             require_a04_web(after['web'])
-        value['container_preserved'] = after['identity'] == baseline['identity']
-        value['configuration_preserved'] = after['config_sha'] == baseline['config_sha']
-        value['database_bytes_preserved'] = after['database_sha'] == baseline['database_sha']
+        checked = preservation(baseline, after, a04=a04)
+        if not a04:
+            value.update(checked)
         value['postflight'] = {'active_jobs': after['active_jobs'], 'web': after['web']}
         value['first_postflight_gate'] = {
             'runner_exit_code': process.returncode,
             'active_jobs': after['active_jobs'],
-            'container_preserved': value['container_preserved'],
-            'configuration_preserved': value['configuration_preserved'],
-            'database_bytes_preserved': value['database_bytes_preserved'],
+            **checked,
         }
         if (process.returncode != 0 or trace and report.get('trace_diagnostic_passed') is not True
                 or a04 and (removed or not samples or not a04_benchmark_passed(report, config['source_sha']))
-                or not value['container_preserved'] or not value['configuration_preserved']
-                or not value['database_bytes_preserved'] or after['active_jobs'] != 0):
+                or not checked['container_preserved'] or not checked['configuration_preserved']
+                or not checked['database_bytes_preserved'] or after['active_jobs'] != 0):
             raise ProbeError('benchmark_or_preservation')
         stage = 'complete'
         value['status'] = 'success'
@@ -695,12 +796,10 @@ def execute(config, archive, input_stream=None, *, trace=False, a04=False):
                 value['status'] = 'failed'
         if baseline is not None:
             try:
-                final = snapshot()
+                final = snapshot(a04=a04)
                 if a04:
                     require_a04_web(final['web'])
-                value['container_preserved'] = final['identity'] == baseline['identity']
-                value['configuration_preserved'] = final['config_sha'] == baseline['config_sha']
-                value['database_bytes_preserved'] = final['database_sha'] == baseline['database_sha']
+                value.update(preservation(baseline, final, a04=a04))
                 value['postflight'] = {'active_jobs': final['active_jobs'], 'web': final['web']}
                 value['postflight_verified'] = True
                 if (not value['container_preserved'] or not value['configuration_preserved']
