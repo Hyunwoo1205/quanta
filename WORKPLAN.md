@@ -12,7 +12,17 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 OCI 정리 판정 수정과 재검증
+## 현재 개발 위치 — A04 OCI 고정 다섯 건 실측 완료 · 운영 보존 판정 보류
+
+2026-11-08 KST [OCI 재시험 42477399912](https://github.com/Hyunwoo1205/quanta/actions/runs/42477399912)에서 CP2K ARMv8-A로 H₂ 0.60·0.74144·0.80·1.00 Å의 12 Å·400 Ry·REL_CUTOFF 40 Ry와 He의 12 Å·800 Ry·REL_CUTOFF 80 Ry를 1랭크·1스레드로 순차 실행했습니다. H₂ 엔진은 31.56–36.87초·최대 cgroup RAM 1.77 GiB, He 엔진은 100.90초·4.72 GiB였습니다. 컨테이너 준비·출력 검사·정리를 포함한 시도는 각각 36.29–41.49초와 109.76초였습니다. 다섯 건의 스왑과 OOM은 0이었습니다. [실측 및 보존 판정 기록](docs/verification/atomistic-a04/oci-qualification-42477399912.json)
+
+동일 입력의 GitHub 네이티브 ARM 기준과 다섯 건 모두 에너지, 힘, 전자 수, 격자 규격 및 원본 CUBE SHA-256이 일치했습니다. 기존 x86 동일 입력 허용오차도 충족했습니다. 유한 셀과 격자 조건별 해상도 근거는 앞선 고정 비교를 따릅니다. 독립 물리 검증은 `unvalidated`입니다.
+
+운영 작업 수는 사전·실행 중·사후 표본에서 0건이었고, 호스트 가용 RAM 최저는 6.11 GiB였습니다. 운영 컨테이너·설정, 웹 응답, 시험 자원 정리 확인을 통과했습니다. 첫 사후 점검에서 운영 jobs DB·WAL의 결합 지문이 사전과 달랐고 최종 점검은 일치했습니다. 불일치 원인은 확인되지 않았으며 최초 보존 게이트 실패로 전체 워크플로는 실패했습니다. 이번 결과의 범위는 유휴 OCI 호스트에서의 격리 실행과 동일 입력 대조입니다. 공개 요청 지원과 동시 부하 검증은 별도입니다.
+
+**다음 시작점은** 짧은 읽기 전용 점검에서 jobs DB 본체와 WAL의 존재 여부·지문을 분리해 보존 판정 차이의 원인을 확인하는 것입니다. 이후 같은 보호 기준으로 OCI 시험 재개 여부를 판단합니다. A04 초기 프로필 동결에 필요한 SCF·원자 중심 격자·기저 수렴은 별도 검증으로 남아 있습니다.
+
+## 이전 개발 기록 — A04 OCI 정리 판정 수정
 
 [첫 OCI 시험 42474683291](https://github.com/Hyunwoo1205/quanta/actions/runs/42474683291)에서 가용 RAM 약 10.75 GiB와 운영 작업 0건 등 사전 조건을 충족했습니다. 첫 H₂ 0.60 Å는 31.81초에 정상 종료했으며 cgroup RAM 피크는 1.77 GiB, 스왑과 OOM은 0이었습니다. 개별 컨테이너 정리 확인이 Docker 오류 문구에 의존해 실패했고 후속 4건을 시작하지 않았습니다. 사후 점검은 운영 컨테이너·설정·DB/WAL 보존과 웹 응답을 확인했으며, 마지막 정리 조회에 시험 컨테이너가 남아 있지 않았습니다. [실패 기록](docs/verification/atomistic-a04/oci-qualification-attempt-42474683291.json)
 

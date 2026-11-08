@@ -1,0 +1,433 @@
+{
+  "schema_version": 1,
+  "status": "measurements_complete_preservation_gate_failed",
+  "scope": "isolated_oci_arm_A04_same_input_qualification",
+  "workflow_run_id": 42477399912,
+  "workflow_job_id": 128721685393,
+  "workflow_conclusion": "failure",
+  "workflow_started_at": "2026-11-08T11:49:08Z",
+  "artifact": {
+    "id": 13616211179,
+    "name": "oci-atomistic-a04-1fdfd7140d1273e86b723053307192268f4e14c6",
+    "digest": "sha256:a78e93d7f70bbe767b66c0c89681ac332dff0d521b186747c3018ec67325374d"
+  },
+  "ops_request_commit": "1fdfd7140d1273e86b723053307192268f4e14c6",
+  "request_id": "bdc158a1-e7a1-4fb2-9cca-b39102cd904c",
+  "quanta_source": "66940c3de634d077b6a26a4a6089094d753ec4b8",
+  "control_ci_run": 42475116959,
+  "plan_sha256": "173ec544cb72e9526c2ca5942df62243e494394c98e429d8833f02f72749fd5b",
+  "reference": {
+    "native_arm_run_id": 42456722645,
+    "native_arm_source": "a5adac0cbf7ace845e514f6a9cdd977748565aea",
+    "native_arm_receipt": "native-arm-qualification-42456722645.json"
+  },
+  "candidate": {
+    "source_sha": "5dd1e90c8332366c1f95f5b58b260ce966af5e84",
+    "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "platform": "linux/arm64",
+    "binary_sha256": "af665277ebd21d4397448d49a9ce666756a05ebcf401a9967e19c32af9c9b60f",
+    "daemon_image_id": "sha256:ad3350e1fa394ab34b406fdab4131fbe2d814ede5b1e6ef2f444ac0d04ff770c",
+    "config_digest": "sha256:3c31b88484c7d077a5c3d2cabb4985b77b6e79ac3d0512a8dbb7f7fa9c05b792",
+    "manifest_digest": "sha256:ad3350e1fa394ab34b406fdab4131fbe2d814ede5b1e6ef2f444ac0d04ff770c",
+    "native_candidate_artifact_id": 13573889644,
+    "native_candidate_artifact_digest": "sha256:bb1e80caeb62e989a44e95d9b739b99ecffdf23191241c6802fc687d6b37538c",
+    "candidate_archive_sha256": "c7a60fc4da430a40d60af0fa18ad5c4d1dc1f727dceb84752b7a8471f33e0ec0"
+  },
+  "host_protection": {
+    "preflight": {
+      "active_jobs": 0,
+      "disk_free_bytes": 191895924736,
+      "memory_available_bytes": 11546267648,
+      "web": {
+        "anonymous_capabilities_status": 401,
+        "latency_seconds": [
+          0.0029058219806756824,
+          0.0016591729945503175
+        ],
+        "web_status": 200
+      }
+    },
+    "admission": {
+      "active_jobs": 0,
+      "disk_free_bytes": 191056515072,
+      "memory_available_bytes": 11484434432,
+      "web": {
+        "anonymous_capabilities_status": 401,
+        "latency_seconds": [
+          0.0016656529915053397,
+          0.00196189500275068
+        ],
+        "web_status": 200
+      }
+    },
+    "first_postflight_gate": {
+      "active_jobs": 0,
+      "configuration_preserved": true,
+      "container_preserved": true,
+      "database_bytes_preserved": false,
+      "runner_exit_code": 0
+    },
+    "postflight": {
+      "active_jobs": 0,
+      "web": {
+        "anonymous_capabilities_status": 401,
+        "latency_seconds": [
+          0.001649971993174404,
+          0.0016694929799996316
+        ],
+        "web_status": 200
+      }
+    },
+    "final_database_bytes_match_baseline": true,
+    "postflight_verified": true,
+    "qualification_passed": false,
+    "load_guard_samples": 131,
+    "minimum_memory_available_bytes": 6563655680,
+    "minimum_disk_free_bytes": 190923399168,
+    "maximum_sampled_web_latency_seconds": 0.006136687006801367,
+    "container_preserved": true,
+    "configuration_preserved": true,
+    "candidate_image_tag_preserved": true,
+    "candidate_transfer_archive_removed": true,
+    "scratch_removed": true
+  },
+  "tolerances": {
+    "energy_hartree": 1e-8,
+    "max_force_component_hartree_per_bohr": 1e-7,
+    "engine_electron_count": 0.000001,
+    "cube_electron_count": 0.001
+  },
+  "cases": [
+    {
+      "system": "h2-short",
+      "fixture": "A04-H2-short",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_bytes": 3221225472,
+      "attempt": {
+        "input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+        "submitted_input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+        "engine_energy_hartree": -1.134187007656219,
+        "engine_forces_hartree_per_bohr": [
+          [
+            -0.198886060656019,
+            3e-14,
+            3e-14
+          ],
+          [
+            0.198886060656027,
+            3e-14,
+            3e-14
+          ]
+        ],
+        "engine_hard_soft_electron_count": 2.0000001869,
+        "density": {
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "sha256": "4a44bccedbd1dbdd116ab81c2167e635b998229265cc53d407aec896b6aeb22b",
+          "bytes": 44437812,
+          "electron_integral": 1.9999971382287292,
+          "negative_integral": -8.766229323145887e-7,
+          "negative_samples": 1131688
+        },
+        "cgroup_memory_peak_bytes": 1904447488,
+        "oom_events": 0,
+        "swap_peak_bytes": 0,
+        "minimum_sampled_available_memory_bytes": 9542627328,
+        "minimum_sampled_free_disk_bytes": 191011868672,
+        "engine_wall_seconds": 31.555598630016902,
+        "engine_peak_rss_kib": 1850368,
+        "container_elapsed_seconds": 34.11534337699413,
+        "output_analysis_seconds": 2.1087372269830666,
+        "total_attempt_seconds": 36.290053074015304,
+        "output_bytes": 44486713,
+        "observed_mpi_ranks": 1,
+        "observed_omp_threads": 1,
+        "container_removed": true
+      },
+      "comparison": {
+        "reference": "native ARM",
+        "energy_difference_hartree": 0,
+        "max_force_component_difference_hartree_per_bohr": 0,
+        "engine_electron_count_difference": 0,
+        "cube_integral_difference_electrons": 0,
+        "grid_counts_match": true,
+        "cube_sha256_matches": true,
+        "passed": true,
+        "x86_comparison_also_passed": true
+      }
+    },
+    {
+      "system": "h2-reference",
+      "fixture": "C02-H2-reference",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_bytes": 3221225472,
+      "attempt": {
+        "input_sha256": "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9",
+        "submitted_input_sha256": "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9",
+        "engine_energy_hartree": -1.159890062386401,
+        "engine_forces_hartree_per_bohr": [
+          [
+            -0.019995093990889,
+            5.7e-14,
+            5.7e-14
+          ],
+          [
+            0.019995093990973,
+            5.5e-14,
+            5.5e-14
+          ]
+        ],
+        "engine_hard_soft_electron_count": 2.0000000045,
+        "density": {
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "sha256": "3a18b7b2d07b1c791fd45a3304fef0b7f166f937289b8db28932eab8edc29ce2",
+          "bytes": 44437812,
+          "electron_integral": 1.999998280026289,
+          "negative_integral": -0.0000010191537203832004,
+          "negative_samples": 1098561
+        },
+        "cgroup_memory_peak_bytes": 1905295360,
+        "oom_events": 0,
+        "swap_peak_bytes": 0,
+        "minimum_sampled_available_memory_bytes": 9614090240,
+        "minimum_sampled_free_disk_bytes": 191011815424,
+        "engine_wall_seconds": 32.1744374440168,
+        "engine_peak_rss_kib": 1849632,
+        "container_elapsed_seconds": 34.25015253701713,
+        "output_analysis_seconds": 2.093176186986966,
+        "total_attempt_seconds": 36.40760558101465,
+        "output_bytes": 44486712,
+        "observed_mpi_ranks": 1,
+        "observed_omp_threads": 1,
+        "container_removed": true
+      },
+      "comparison": {
+        "reference": "native ARM",
+        "energy_difference_hartree": 0,
+        "max_force_component_difference_hartree_per_bohr": 0,
+        "engine_electron_count_difference": 0,
+        "cube_integral_difference_electrons": 0,
+        "grid_counts_match": true,
+        "cube_sha256_matches": true,
+        "passed": true,
+        "x86_comparison_also_passed": true
+      }
+    },
+    {
+      "system": "h2",
+      "fixture": "C03-H2-stretched",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_bytes": 3221225472,
+      "attempt": {
+        "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+        "submitted_input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+        "engine_energy_hartree": -1.159847078649372,
+        "engine_forces_hartree_per_bohr": [
+          [
+            0.018445083741563,
+            4.8e-14,
+            4.9e-14
+          ],
+          [
+            -0.018445083741437,
+            5.9e-14,
+            6e-14
+          ]
+        ],
+        "engine_hard_soft_electron_count": 2.0000000019,
+        "density": {
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "sha256": "991b8f164d9c776ab77fc95c55161ac6c6a6dddb53095d6623833d3f25965d79",
+          "bytes": 44437812,
+          "electron_integral": 1.9999968833696176,
+          "negative_integral": -9.425397987242856e-7,
+          "negative_samples": 1113228
+        },
+        "cgroup_memory_peak_bytes": 1904812032,
+        "oom_events": 0,
+        "swap_peak_bytes": 0,
+        "minimum_sampled_available_memory_bytes": 9606602752,
+        "minimum_sampled_free_disk_bytes": 191011766272,
+        "engine_wall_seconds": 31.89231462700991,
+        "engine_peak_rss_kib": 1849704,
+        "container_elapsed_seconds": 34.21781380698667,
+        "output_analysis_seconds": 2.1135023440001532,
+        "total_attempt_seconds": 36.39724665999529,
+        "output_bytes": 44486721,
+        "observed_mpi_ranks": 1,
+        "observed_omp_threads": 1,
+        "container_removed": true
+      },
+      "comparison": {
+        "reference": "native ARM",
+        "energy_difference_hartree": 0,
+        "max_force_component_difference_hartree_per_bohr": 0,
+        "engine_electron_count_difference": 0,
+        "cube_integral_difference_electrons": 0,
+        "grid_counts_match": true,
+        "cube_sha256_matches": true,
+        "passed": true,
+        "x86_comparison_also_passed": true
+      }
+    },
+    {
+      "system": "h2-long",
+      "fixture": "A04-H2-long",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_bytes": 3221225472,
+      "attempt": {
+        "input_sha256": "b0dab8fa3832e2b2e5f8306a9eea1899f88dc658b0130a6cf812bef5b0254af4",
+        "submitted_input_sha256": "b0dab8fa3832e2b2e5f8306a9eea1899f88dc658b0130a6cf812bef5b0254af4",
+        "engine_energy_hartree": -1.138896159175753,
+        "engine_forces_hartree_per_bohr": [
+          [
+            0.079124985517737,
+            3e-14,
+            3e-14
+          ],
+          [
+            -0.079124985517719,
+            3e-14,
+            3e-14
+          ]
+        ],
+        "engine_hard_soft_electron_count": 1.9999999997,
+        "density": {
+          "grid_counts": [
+            150,
+            150,
+            150
+          ],
+          "sha256": "de24bc126458420e13d812cf35d35157cbec7e74806d6b0c15b2bd2e93f25a0c",
+          "bytes": 44437812,
+          "electron_integral": 1.999998306648423,
+          "negative_integral": -0.0000011366627424753447,
+          "negative_samples": 1079767
+        },
+        "cgroup_memory_peak_bytes": 1904979968,
+        "oom_events": 0,
+        "swap_peak_bytes": 0,
+        "minimum_sampled_available_memory_bytes": 9605914624,
+        "minimum_sampled_free_disk_bytes": 191011708928,
+        "engine_wall_seconds": 36.86922128798324,
+        "engine_peak_rss_kib": 1849536,
+        "container_elapsed_seconds": 39.33995853699162,
+        "output_analysis_seconds": 2.0927709719981067,
+        "total_attempt_seconds": 41.49361129899626,
+        "output_bytes": 44486793,
+        "observed_mpi_ranks": 1,
+        "observed_omp_threads": 1,
+        "container_removed": true
+      },
+      "comparison": {
+        "reference": "native ARM",
+        "energy_difference_hartree": 0,
+        "max_force_component_difference_hartree_per_bohr": 0,
+        "engine_electron_count_difference": 0,
+        "cube_integral_difference_electrons": 0,
+        "grid_counts_match": true,
+        "cube_sha256_matches": true,
+        "passed": true,
+        "x86_comparison_also_passed": true
+      }
+    },
+    {
+      "system": "he",
+      "fixture": "C01-He",
+      "settings": [
+        12,
+        800,
+        80
+      ],
+      "cap_bytes": 6442450944,
+      "attempt": {
+        "input_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef",
+        "submitted_input_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef",
+        "engine_energy_hartree": -2.884463653247769,
+        "engine_forces_hartree_per_bohr": [
+          [
+            1.23e-13,
+            1.23e-13,
+            1.22e-13
+          ]
+        ],
+        "engine_hard_soft_electron_count": 2,
+        "density": {
+          "grid_counts": [
+            216,
+            216,
+            216
+          ],
+          "sha256": "d067d1990f1521a2fecc752075444e5682346e518f322b4d97b01c1029ae2d40",
+          "bytes": 132689922,
+          "electron_integral": 2.000005533968172,
+          "negative_integral": -0.000009664337443936244,
+          "negative_samples": 4649226
+        },
+        "cgroup_memory_peak_bytes": 5065621504,
+        "oom_events": 0,
+        "swap_peak_bytes": 0,
+        "minimum_sampled_available_memory_bytes": 6561767424,
+        "minimum_sampled_free_disk_bytes": 190923395072,
+        "engine_wall_seconds": 100.9002945490065,
+        "engine_peak_rss_kib": 4840664,
+        "container_elapsed_seconds": 103.36849925399292,
+        "output_analysis_seconds": 6.328695504984353,
+        "total_attempt_seconds": 109.76049740597955,
+        "output_bytes": 132738403,
+        "observed_mpi_ranks": 1,
+        "observed_omp_threads": 1,
+        "container_removed": true
+      },
+      "comparison": {
+        "reference": "native ARM",
+        "energy_difference_hartree": 0,
+        "max_force_component_difference_hartree_per_bohr": 0,
+        "engine_electron_count_difference": 0,
+        "cube_integral_difference_electrons": 0,
+        "grid_counts_match": true,
+        "cube_sha256_matches": true,
+        "passed": true,
+        "x86_comparison_also_passed": true
+      }
+    }
+  ],
+  "verification_scope": {
+    "runtime": "idle OCI host, fixed isolated one-case-at-a-time execution",
+    "public_execution_support": false,
+    "concurrent_load_verified": false,
+    "spatial_density_cross_build": "not_executed",
+    "physical_validation": "unvalidated",
+    "same_input_numerical_comparison": "five fixed inputs passed against native ARM and x86 references",
+    "operational_preservation": "no-go at first postflight fingerprint comparison; final comparison matched"
+  },
+  "failure_stage": "preservation",
+  "failure_reason": "benchmark_or_preservation"
+}
