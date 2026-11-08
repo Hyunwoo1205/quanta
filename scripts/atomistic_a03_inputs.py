@@ -40,7 +40,7 @@ def probe_metadata(
     system: str = "he", basis: str = "cc-pVDZ", project: str = "a03_probe",
     data_dir: str = "/quanta-data", *, cell_angstrom: int = 12,
     cutoff_ry: int = 400, rel_cutoff_ry: int = 40, eps_scf: float = 1e-8,
-    max_scf: int = 80, density: bool = True,
+    max_scf: int = 80, density: bool = True, radial_grid: int = 100, lebedev_grid: int = 110,
 ) -> dict:
     """Describe an internal probe and its explicit SI-to-native mapping.
 
@@ -64,6 +64,10 @@ def probe_metadata(
     ):
         if isinstance(value, bool) or value not in allowed:
             raise ValueError(f"unsupported A01 candidate {name}")
+    if type(radial_grid) is not int or radial_grid not in (100, 150, 200):
+        raise ValueError("unsupported A04 candidate radial_grid")
+    if type(lebedev_grid) is not int or lebedev_grid not in (110, 146, 194):
+        raise ValueError("unsupported A04 candidate lebedev_grid")
     if type(max_scf) is not int or not 1 <= max_scf <= 500:
         raise ValueError("max_scf must be an integer in 1..500")
     if type(density) is not bool:
@@ -117,7 +121,7 @@ def probe_metadata(
                      "eps_pgf_orb": 1e-10, "epsfit": 1e-4, "epsiso": 1e-12,
                      "epssvd": 1e-8, "epsrho0": 1e-8,
                      "lmaxn0": 2, "lmaxn1": 6, "quadrature": "GC_LOG",
-                     "radial_grid": 100, "lebedev_grid": 110},
+                     "radial_grid": radial_grid, "lebedev_grid": lebedev_grid},
         "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
         "density": {"enabled": density, "quantity": "electron_number_density_hard_plus_soft",
                     "density_include": "TOTAL_DENSITY", "stride": [1, 1, 1],
@@ -160,8 +164,8 @@ def generate_input(*args, **kwargs) -> str:
       BASIS_SET {p['basis']}
       POTENTIAL ALL
       MASS {a['engine_mass_amu']}
-      RADIAL_GRID 100
-      LEBEDEV_GRID 110
+      RADIAL_GRID {n['radial_grid']}
+      LEBEDEV_GRID {n['lebedev_grid']}
     &END KIND"""
     return f"""# Internal A03 exploratory probe; not an A04 profile/scientific pass.
 &GLOBAL

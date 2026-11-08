@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ${{ fromJSON(inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
+        track: ${{ fromJSON(inputs.experiment == 'atomic-grid-pilot' && '["pilot-h2-short","pilot-he"]' || inputs.experiment == 'atomic-grid' && '["grid-h2-short","grid-h2-reference","grid-h2","grid-h2-long","grid-he"]' || inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -152,6 +152,13 @@ jobs:
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence \
             --mpi-refinement-serial-report .cache/atomistic-a04-resource/serial-reference/report.json
+      - name: Retrieve the exact same-run atomic-grid pilot
+        if: matrix.track == 'grid-h2-short' || matrix.track == 'grid-he'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: atomistic-a04-native-${{ matrix.track }}-pilot-${{ github.run_attempt }}
+          path: .cache/atomistic-a04-resource/grid-pilot
+          digest-mismatch: error
       - name: Measure fixed-input spatial density comparisons
         if: matrix.track != 'legacy' || inputs.experiment == 'cross-grid-accuracy'
         env:
@@ -167,12 +174,23 @@ jobs:
           case "$A04_TRACK" in
             fixture-*) mode=(--fixture-accuracy "${A04_TRACK#fixture-}") ;;
             scf-*) mode=(--scf-refinement "${A04_TRACK#scf-}") ;;
+            pilot-*) mode=(--grid-pilot "${A04_TRACK#pilot-}" --grid-pilot-dir .cache/atomistic-a04-resource/grid-pilot) ;;
+            grid-h2-short|grid-he) mode=(--atomic-grid "${A04_TRACK#grid-}" --grid-pilot-dir .cache/atomistic-a04-resource/grid-pilot) ;;
+            grid-*) mode=(--atomic-grid "${A04_TRACK#grid-}") ;;
             cell|cutoff|relative) mode=(--one-factor "$A04_TRACK") ;;
           esac
           python -B scripts/run_atomistic_a04_resource_ci.py \
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence \
             "${mode[@]}"
+      - name: Preserve only the two pilot CUBEs for this workflow
+        if: startsWith(matrix.track, 'pilot-')
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a04-native-grid-${{ matrix.track == 'pilot-he' && 'he' || 'h2-short' }}-pilot-${{ github.run_attempt }}
+          path: .cache/atomistic-a04-resource/grid-pilot/
+          if-no-files-found: error
+          retention-days: 1
       - name: Preserve the resource report and bounded diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

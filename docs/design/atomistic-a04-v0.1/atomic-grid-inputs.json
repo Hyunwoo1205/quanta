@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "scope": "fixed_A04_cc_pVDZ_atomic_grid_screen",
+  "development_plan_sha256": "9da71d4eaf274244a2c407f9c5962035aa1656bdd2ab28eeca3cc81f0d752242",
+  "baseline_scf_receipt_sha256": "e94ae20e55ff029365049ad053a5ed25ceaef8f9d41f0adb9543cf51d4f8ea9a",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "basis": "cc-pVDZ",
+  "grid_resolution_evidence": {
+    "policy": "Pinned engine source maps the exact submitted integers; the standard atom grid does not emit a positive grid-count line at MEDIUM.",
+    "allocation": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_rho_atom_methods.F#L898-L928",
+    "lebedev_table": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/lebedev.F#L358-L365"
+  },
+  "fixtures": {
+    "h2-short": [
+      {
+        "grid": [
+          100,
+          110
+        ],
+        "input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95"
+      },
+      {
+        "grid": [
+          100,
+          194
+        ],
+        "input_sha256": "729bd3bb3464eeddfa9d392b552b43a05e1d00577f1791c2794533b7834fe692"
+      },
+      {
+        "grid": [
+          150,
+          194
+        ],
+        "input_sha256": "1dca83f65db2bf1cd9d7310558fb3ad24b9d31a439acfe1e4f08e0e56d608d08"
+      },
+      {
+        "grid": [
+          200,
+          194
+        ],
+        "input_sha256": "32d208a1263dad287fd9403d22139a75f3a2a6807d41515d393fed79f7e42b39"
+      },
+      {
+        "grid": [
+          200,
+          110
+        ],
+        "input_sha256": "64ed0cf76b9b64456630416fac73fb73c8991da8bfe0b9fcdfb3b4a656b3b463"
+      },
+      {
+        "grid": [
+          200,
+          146
+        ],
+        "input_sha256": "ebf4474735c1f0f82db154a954dcf8dc78fd337dfe7c6893dc566c44478e6851"
+      }
+    ],
+    "h2-reference": [
+      {
+        "grid": [
+          100,
+          110
+        ],
+        "input_sha256": "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9"
+      },
+      {
+        "grid": [
+          100,
+          194
+        ],
+        "input_sha256": "18f1b1cb1f2e390028d49f330f58629db04d17c8ce0ddc74ca542499e9a985b5"
+      },
+      {
+        "grid": [
+          150,
+          194
+        ],
+        "input_sha256": "c6017890717da4ffb51323ae4bff798969a9fc123c62442fe49862e356603276"
+      },
+      {
+        "grid": [
+          200,
+          194
+        ],
+        "input_sha256": "af73473c9bcfc468316b61b33941cfa8f7de89dc87bd8bcce83d9749786b2e54"
+      },
+      {
+        "grid": [
+          200,
+          110
+        ],
+        "input_sha256": "6a74adbdf1dfec9c78d5d8aef5abfa1c1974b0303d2a6d8fffe6b2ae476d2ee3"
+      },
+      {
+        "grid": [
+          200,
+          146
+        ],
+        "input_sha256": "1d1b653c7c30eecc20c348ca740d921bfed408b6287588ff0690cbef056cd73a"
+      }
+    ],
+    "h2": [
+      {
+        "grid": [
+          100,
+          110
+        ],
+        "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f"
+      },
+      {
+        "grid": [
+          100,
+          194
+        ],
+        "input_sha256": "569767fe906446c68b37b659d2e02822a14933c65da99224aac638d15e9a23fd"
+      },
+      {
+        "grid": [
+          150,
+          194
+        ],
+        "input_sha256": "b1f5a5668dc30711d26498fbf27e76e1541f0b4a920f7a3ca16abf2c749ffdff"
+      },
+      {
+        "grid": [
+          200,
+          194
+        ],
+        "input_sha256": "0ac450dd8416c7dbeef32457a9b2a32866fe132c5b6ca8a6489deda866da3e59"
+      },
+      {
+        "grid": [
+          200,
+          110
+        ],
+        "input_sha256": "a473086d33918235176aa8090ef41113f46b30659615a427faf62c038f27fdd2"
+      },
+      {
+        "grid": [
+          200,
+          146
+        ],
+        "input_sha256": "da5936748f305f7bff6137170c58e0bf96e693231d031d39dca3e34b74b7c8d6"
+      }
+    ],
+    "h2-long": [
+      {
+        "grid": [
+          100,
+          110
+        ],
+        "input_sha256": "b0dab8fa3832e2b2e5f8306a9eea1899f88dc658b0130a6cf812bef5b0254af4"
+      },
+      {
+        "grid": [
+          100,
+          194
+        ],
+        "input_sha256": "e0242e649d6114941b291822a16d1e0b165af4401054ab98e5f3b9617f09fb35"
+      },
+      {
+        "grid": [
+          150,
+          194
+        ],
+        "input_sha256": "3b53d3677cde233941555abfc4cfe780712806bf7c6801d07f95605f17b007cd"
+      },
+      {
+        "grid": [
+          200,
+          194
+        ],
+        "input_sha256": "8fcb7edd5169c48f2ef0bc1bb9bdf107f5e114e14fe2bbfe78630b50cf3fa325"
+      },
+      {
+        "grid": [
+          200,
+          110
+        ],
+        "input_sha256": "f7d3e4d1b8d76fc1b0b8f41a4b6e478e602809fc1a480427df8f77a5ca31ef8d"
+      },
+      {
+        "grid": [
+          200,
+          146
+        ],
+        "input_sha256": "ac7c16877f37db38ca9ef05eae2e98f1149f2ca2c4e1be21cab4530e21c8f094"
+      }
+    ],
+    "he": [
+      {
+        "grid": [
+          100,
+          110
+        ],
+        "input_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef"
+      },
+      {
+        "grid": [
+          100,
+          194
+        ],
+        "input_sha256": "bce1e05a0d44b049e04ac9e97eafd0d9b2e8114acc0afc66368d068b3f9acafb"
+      },
+      {
+        "grid": [
+          150,
+          194
+        ],
+        "input_sha256": "70b3074dfc56b5f5ceffc6a9b0474a126d468e184ff825eeb5a6b022ebbcbc31"
+      },
+      {
+        "grid": [
+          200,
+          194
+        ],
+        "input_sha256": "1cfea2b2414730e1cdd1187f6530584b98a0d1a26963bce8f4958ba1cc56cf13"
+      },
+      {
+        "grid": [
+          200,
+          110
+        ],
+        "input_sha256": "e813a843354e2204ecfb766f5ae151e1c6d7132cf7e332214478a5e7b8af0e02"
+      },
+      {
+        "grid": [
+          200,
+          146
+        ],
+        "input_sha256": "7901ad113b5d104e543819455fd1e75664ccfd861642204bb473d3b3bbcc67d4"
+      }
+    ]
+  }
+}

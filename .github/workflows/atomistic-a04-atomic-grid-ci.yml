@@ -1,0 +1,24 @@
+name: Atomistic A04 fixed-fixture atomic-grid refinement
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-atomic-grid-ci.yml
+      - docs/design/atomistic-a04-v0.1/atomic-grid-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  pilot:
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: atomic-grid-pilot
+  grid:
+    needs: pilot
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: atomic-grid

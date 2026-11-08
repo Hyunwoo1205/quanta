@@ -63,6 +63,8 @@ class Case:
     rel_cutoff: int = 40
     system: str = "h2"
     eps_scf: float = 1e-8
+    radial_grid: int = 100
+    lebedev_grid: int = 110
 
 
 CASES = (
@@ -90,6 +92,8 @@ BOUNDARY_SYSTEMS = ("h2-short", "h2-long")
 FIXTURE_SYSTEMS = ("he", "h2-reference", *BOUNDARY_SYSTEMS)
 SCF_SYSTEMS = (*FIXTURE_SYSTEMS, "h2")
 SCF_PLAN = FIXTURE_PLAN.with_name("scf-refinement.json")
+GRID_PLAN = FIXTURE_PLAN.with_name("remaining-numerical-validation.json")
+GRID_INPUTS = FIXTURE_PLAN.with_name("atomic-grid-inputs.json")
 
 
 ENGINE_WRAPPER = r"""
@@ -418,6 +422,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
             "system": case.system, "basis": "cc-pVDZ", "project": PROJECT,
             "cell_angstrom": case.cell, "cutoff_ry": case.cutoff,
             "rel_cutoff_ry": case.rel_cutoff, "density": case.density, "eps_scf": case.eps_scf,
+            "radial_grid": case.radial_grid, "lebedev_grid": case.lebedev_grid,
         }
         base_input = generate_input(**options).encode("ascii")
         submitted_input = base_input
@@ -534,6 +539,10 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 raise ValueError("CP2K output did not confirm the requested rank/thread layout")
             record["observed_mpi_ranks"] = mpi_ranks
             record["observed_omp_threads"] = 1
+            if (case.radial_grid, case.lebedev_grid) != (100, 110) and (
+                "the lebedev grid is built for angular momentum" in text.lower()
+            ):
+                raise ValueError("CP2K reported insufficient angular integration order")
             cp2k = parse_output(text)
             forces = parse_force_artifact(work / "forces.xyz")
             if (
@@ -1165,6 +1174,184 @@ def run_scf_screen(system: str, candidate: dict, scratch: Path, diagnostics: Pat
     return "measured"
 
 
+def check_grid_attempt(attempt: dict, case: Case, spec: dict, expected: str, cube: Path, cap: int,
+                       checks: dict) -> None:
+    if attempt["status"] != "measured":
+        raise ValueError("Missing completed atomic-grid attempt")
+    meta = attempt["input_metadata"]
+    numerics = meta["numerics"]
+    if (
+        meta["source_fixture"] != spec["fixture"]
+        or (numerics["radial_grid"], numerics["lebedev_grid"]) != (case.radial_grid, case.lebedev_grid)
+        or numerics["eps_scf"] != 1e-8
+        or attempt["input_sha256"] != expected
+        or attempt["submitted_input_sha256"] != expected
+        or attempt["granted_memory_bytes"] != cap
+        or attempt["granted_swap_extra_bytes"] != 0
+        or attempt["observed_mpi_ranks"] != 1
+        or attempt["observed_omp_threads"] != 1
+        or not 1 <= attempt.get("engine_scf_iterations", 0) <= 80
+        or attempt.get("container_removed") is not True
+        or not 0 < attempt["cgroup_memory_peak_bytes"] <= cap
+        or any(attempt["cgroup_memory_events_max"].get(k, 0) for k in ("oom", "oom_kill", "oom_group_kill"))
+    ):
+        raise ValueError("Input identity, explicit SCF convergence or resource evidence differs from the plan")
+    density = attempt["density"]
+    if cube.is_symlink() or not cube.is_file() or not 0 < density["bytes"] <= GIB or cube.stat().st_size != density["bytes"]:
+        raise ValueError("Invalid retained CUBE path or byte size")
+    if sha256(cube) != density["sha256"]:
+        raise ValueError("Retained CUBE SHA-256 differs from measured evidence")
+    for value, gate in ((attempt["engine_hard_soft_electron_count"], "AV05"), (density["electron_integral"], "AV06")):
+        if not math.isfinite(value) or abs(value - 2) > checks[gate]["atol"]:
+            raise ValueError(f"{gate} electron count exceeds the predeclared tolerance")
+
+
+def run_atomic_grid(system: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict,
+                    *, pilot: bool, pilot_dir: Path | None) -> str:
+    plan = json.loads(GRID_PLAN.read_bytes())
+    locked = json.loads(GRID_INPUTS.read_bytes())
+    stage = next(row for row in plan["stages"] if row["id"] == "G1")
+    specs = {row["system"]: row for row in plan["fixtures"]}
+    pilots = set(plan["resource_admission"]["first_pilots"])
+    pairs = [tuple(x) for x in stage["grid_pairs_radial_then_lebedev"]]
+    baseline, reference = (100, 110), tuple(stage["common_reference"])
+    if (
+        len(specs) != 5 or set(specs) != set(SCF_SYSTEMS)
+        or set(pairs) != {(100, 110), (100, 194), (150, 194), (200, 194), (200, 110), (200, 146)}
+        or len(pairs) != 6 or reference != (200, 194) or pilots != {"he", "h2-short"}
+        or locked["development_plan_sha256"] != sha256(GRID_PLAN)
+        or locked["baseline_scf_receipt_sha256"] != sha256(ROOT / plan["start_from"]["scf_receipt"])
+        or locked["basis"] != "cc-pVDZ"
+        or locked["cp2k_source"] != candidate["cp2k_source"]
+        or locked["binary_sha256"] != candidate["binary_sha256"]
+    ):
+        raise ValueError("Atomic-grid matrix or candidate differs from the fixed plan")
+    if (pilot and system not in pilots) or (system in pilots) != (pilot_dir is not None):
+        raise ValueError("Only the two registered pilots use the retained pilot directory")
+    spec = specs[system]
+    caps = plan["resource_admission"]["pilot_caps"]["he" if system == "he" else "h2"]
+    cap, deadline = caps["gib"] * GIB, caps["wall_seconds"]
+    policy = plan["resource_admission"]
+    if policy["retain_host_available_gib"] * GIB != MEMORY_RESERVE_BYTES or policy["admission_disk_gib"] * GIB != DISK_ADMISSION:
+        raise ValueError("Atomic-grid resource admission differs from the fixed plan")
+    checks = {c["id"]: c for c in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    limit = plan["thresholds"]["separate_field_shape_screen"]["absolute_density_l1_electrons"]
+    if limit != json.loads(FIXTURE_PLAN.read_bytes())["spatial_l1_atol_electrons"]:
+        raise ValueError("Atomic-grid field limit differs from the predeclared threshold")
+    report.update(system=system, fixture_id=spec["fixture"], comparison_plan_sha256=sha256(GRID_PLAN),
+                  input_manifest_sha256=sha256(GRID_INPUTS), comparisons=[])
+    report["resource_policy"].update(normal_memory_cap_bytes=cap, retry_memory_cap_bytes=cap)
+    cell, cutoff, relative = spec["baseline_cell_cutoff_relative"]
+    by_pair = {tuple(x["grid"]): x["input_sha256"] for x in locked["fixtures"][system]}
+    if len(by_pair) != len(pairs) or set(by_pair) != set(pairs) or by_pair[baseline] != spec["baseline_deck_sha256"]:
+        raise ValueError("Atomic-grid input manifest differs from the historical baseline or fixed matrix")
+
+    pilot_rows = {}
+    if pilot_dir is not None:
+        if pilot:
+            pilot_dir.mkdir(exist_ok=False)
+        else:
+            pilot_report = pilot_dir / "report.json"
+            if pilot_report.is_symlink() or not pilot_report.is_file() or pilot_report.stat().st_size > REPORT_LIMIT:
+                raise ValueError("Missing bounded pilot report")
+            prior = json.loads(pilot_report.read_bytes())
+            if (
+                prior["status"] != "measured" or prior["scope"] != "isolated_native_x86_A04_atomic_grid_pilot"
+                or prior["system"] != system or prior["quanta_source"] != report["quanta_source"]
+                or prior["workflow_run_id"] != report["workflow_run_id"]
+                or prior["input_manifest_sha256"] != report["input_manifest_sha256"]
+                or prior["candidate"]["binary_sha256"] != candidate["binary_sha256"]
+                or prior["candidate"]["image_id"] != candidate["image_id"]
+            ):
+                raise ValueError("Pilot report does not match this workflow, candidate or matrix")
+            pilot_rows = {tuple(x["grid"]): x["attempt"] for x in prior["cases"]}
+            if set(pilot_rows) != {baseline, reference} or len(prior["cases"]) != 2:
+                raise ValueError("Expected exactly the baseline and fine pilot cases")
+            report["reused_pilot_report_sha256"] = sha256(pilot_report)
+
+    order = [reference, baseline]
+    if not pilot:
+        order += [pair for pair in pairs if pair not in order]
+    rows = {}
+    for radial, lebedev in order:
+        pair = (radial, lebedev)
+        case = Case(f"{system}-r{radial}-l{lebedev}", cell, cutoff, True, deadline,
+                    rel_cutoff=relative, system=system, radial_grid=radial, lebedev_grid=lebedev)
+        reused = pair in pilot_rows
+        cube = (pilot_dir if pilot or reused else scratch) / f"{case.name}.cube"
+        attempt = pilot_rows.get(pair, {})
+        row = {"grid": list(pair), "case": case.name, "reused_pilot": reused, "attempt": attempt}
+        report["cases"].append(row)
+        if not reused:
+            available = available_memory_bytes()
+            free = shutil.disk_usage(scratch).free
+            if available < cap + MEMORY_RESERVE_BYTES or free < DISK_ADMISSION:
+                attempt.update(status="deferred_headroom", available_memory_bytes=available, free_disk_bytes=free)
+                return "measurement_incomplete"
+            run_attempt(case, 1, cap, available, candidate, scratch, diagnostics, attempt,
+                        expected_input=by_pair[pair], retained_cube=cube)
+        if attempt["status"] != "measured":
+            return "measurement_incomplete"
+        check_grid_attempt(attempt, case, spec, by_pair[pair], cube, cap, checks)
+        rows[pair] = (case, attempt, cube)
+    if pilot:
+        return "measured"
+
+    ref_case, ref_attempt, ref_cube = rows[reference]
+    for pair in pairs:
+        if pair == reference:
+            continue
+        case, attempt, cube = rows[pair]
+        keys = ("grid_counts", "origin_bohr_rounded", "grid_axes_bohr_rounded", "atoms_bohr_rounded")
+        if any(ref_attempt["density"][k] != attempt["density"][k] for k in keys):
+            raise ValueError("Atomic-grid screen requires identical native CUBE lattice and geometry")
+        result = compare_accuracy_pair(ref_case, case, ref_attempt, attempt, ref_cube, cube, checks, limit)
+        if result["spatial_density"]["method"] != "native_aligned_crop":
+            raise ValueError("Atomic-grid comparison must use the exact native lattice")
+        required = pair in {(150, 194), (200, 146)}
+        report["comparisons"].append({"grid": list(pair), "reference_grid": list(reference),
+                                      "required_finest_pair": required, "result": result})
+    passed = all(x["result"]["within_all_endpoint_thresholds"] for x in report["comparisons"] if x["required_finest_pair"])
+    report["verification_scope"]["fixed_fixture_atomic_grid_screen"] = "measured"
+    report["finest_pairs_passed"] = passed
+    return "measured"
+
+
+def summarize_atomic_grid(report: dict, output: Path) -> None:
+    summary = {key: report[key] for key in (
+        "system", "scope", "status", "comparison_plan_sha256", "input_manifest_sha256",
+        "finest_pairs_passed", "reused_pilot_report_sha256", "error",
+    ) if key in report}
+    summary["report_sha256"] = sha256(output / "report.json")
+    summary["cases"] = [
+        {
+            "grid": row["grid"], "reused_pilot": row["reused_pilot"], "status": row["attempt"].get("status", "controller_error"),
+            "error": row["attempt"].get("error"), "input_sha256": row["attempt"].get("input_sha256"),
+            "iterations": row["attempt"].get("engine_scf_iterations"),
+            "engine_seconds": row["attempt"].get("engine_resource", {}).get("engine_wall_seconds"),
+            "peak_bytes": row["attempt"].get("cgroup_memory_peak_bytes"),
+            "engine_count": row["attempt"].get("engine_hard_soft_electron_count"),
+            "cube_count": row["attempt"].get("density", {}).get("electron_integral"),
+            "cube_sha256": row["attempt"].get("density", {}).get("sha256"),
+            "cube_grid": row["attempt"].get("density", {}).get("grid_counts"),
+        }
+        for row in report["cases"]
+    ]
+    summary["comparisons"] = [
+        {
+            "grid": row["grid"], "reference_grid": row["reference_grid"], "required": row["required_finest_pair"],
+            "passed": row["result"]["within_all_endpoint_thresholds"],
+            "energy_delta_hartree": row["result"]["absolute_energy_difference_hartree"],
+            "force_delta_hartree_per_bohr": row["result"]["absolute_maximum_force_component_difference_hartree_per_bohr"],
+            "density_l1_electrons": row["result"]["spatial_density"]["primary"][
+                "zero_extended_absolute_density_difference_integral_electrons"
+            ],
+        }
+        for row in report.get("comparisons", [])
+    ]
+    print("QUANTA_ATOMIC_GRID_RESULT " + json.dumps(summary, allow_nan=False, separators=(",", ":")))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-dir", type=Path, required=True)
@@ -1175,7 +1362,12 @@ def main() -> int:
     mode.add_argument("--one-factor", choices=ONE_FACTOR_AXES)
     mode.add_argument("--fixture-accuracy", choices=FIXTURE_SYSTEMS)
     mode.add_argument("--scf-refinement", choices=SCF_SYSTEMS)
+    mode.add_argument("--grid-pilot", choices=("h2-short", "he"))
+    mode.add_argument("--atomic-grid", choices=SCF_SYSTEMS)
+    parser.add_argument("--grid-pilot-dir", type=Path)
     args = parser.parse_args()
+    if args.grid_pilot_dir is not None and not (args.grid_pilot or args.atomic_grid):
+        parser.error("--grid-pilot-dir requires an atomic-grid mode")
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
     diagnostics = output / "diagnostics"
@@ -1213,7 +1405,15 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.scf_refinement:
+    if args.grid_pilot or args.atomic_grid:
+        report["scope"] = "isolated_native_x86_A04_atomic_grid_" + ("pilot" if args.grid_pilot else "screen")
+        report.pop("known_unadmitted_cases")
+        report["resource_policy"].update(
+            retry_maximum_increase_bytes=0, oom_retry="none; fixed sequential one-rank cases",
+            raw_cube="compared on runner disk; exact pilot CUBEs transferred in a short-lived artifact",
+        )
+        report["verification_scope"]["fixed_fixture_atomic_grid_screen"] = "incomplete"
+    elif args.scf_refinement:
         report["scope"] = "isolated_native_x86_A04_fixed_fixture_scf_refinement"
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update(
@@ -1279,7 +1479,12 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.scf_refinement:
+            if args.grid_pilot or args.atomic_grid:
+                report["status"] = run_atomic_grid(
+                    args.grid_pilot or args.atomic_grid, candidate, Path(directory), diagnostics, report,
+                    pilot=bool(args.grid_pilot), pilot_dir=args.grid_pilot_dir,
+                )
+            elif args.scf_refinement:
                 report["status"] = run_scf_screen(args.scf_refinement, candidate, Path(directory), diagnostics, report)
             elif args.fixture_accuracy:
                 report["status"] = run_fixed_fixture(args.fixture_accuracy, candidate, Path(directory), diagnostics, report)
@@ -1312,6 +1517,10 @@ def main() -> int:
     finally:
         write_report(output / "report.json", report)
     print(f"A04 native resource measurement: {report['status']}; report.json")
+    if args.grid_pilot or args.atomic_grid:
+        if args.grid_pilot and report["status"] == "measured":
+            shutil.copyfile(output / "report.json", args.grid_pilot_dir / "report.json")
+        summarize_atomic_grid(report, output)
     if args.scf_refinement:
         summary = {key: report[key] for key in (
             "system", "status", "comparison_plan_sha256", "scf_screen", "error",
