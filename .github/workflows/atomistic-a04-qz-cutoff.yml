@@ -1,0 +1,19 @@
+name: Atomistic A04 QZ CUTOFF refinement
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-qz-cutoff.yml
+      - docs/design/atomistic-a04-v0.1/qz-cutoff-refinement-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  cutoff:
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: qz-cutoff

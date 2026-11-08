@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "scope": "native_x86_A04_fixed_QZ_higher_cutoff_development_only",
+  "prior_receipt": "docs/verification/atomistic-a04/qz-sensitivity-42501071977.json",
+  "prior_receipt_sha256": "d8cba3f9e4e613b64ec210ea94170b780e8364ca267397c361a00e1f4e07c852",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "checks": {
+    "AV03": {
+      "id": "AV03",
+      "layer": "numerical",
+      "observable": "scf_and_grid_property_convergence",
+      "rule": "Refine each SCF/grid/atomic-grid family separately; compare two finest levels with other families fixed sufficiently fine.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 1e-06,
+      "force_atol_hartree_per_bohr": 1e-05
+    },
+    "AV05": {
+      "id": "AV05",
+      "layer": "density",
+      "observable": "engine_all_electron_count",
+      "rule": "Engine all-electron hard+soft integral compared to 2.",
+      "atol": 1e-06,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty"
+    },
+    "AV06": {
+      "id": "AV06",
+      "layer": "density",
+      "observable": "exported_density_integral",
+      "rule": "Explicit full hard+soft electron-number density export: integral rho*dV compared to 2, including field/grid refinement.",
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "blocked_until": "A02/A04 full-density export semantics pinned; soft or signed total charge density cannot substitute"
+    }
+  },
+  "density_l1_atol_electrons": 0.001,
+  "wall_seconds": 900,
+  "fixtures": {
+    "h2-short": {
+      "fixture": "A04-H2-short",
+      "prior_track": "h2-short",
+      "rel_cutoff_ry": 40,
+      "levels": [
+        {
+          "cutoff_ry": 400,
+          "cap_gib": 3,
+          "input_sha256": "7dcebdb24ac1c100049978fdd2dbd72828f0dadf5eda5e315fcbd3d92c29d010",
+          "prior_axis": "anchor"
+        },
+        {
+          "cutoff_ry": 600,
+          "cap_gib": 6,
+          "input_sha256": "5d899325be7ff80f883157e83cd23978809f3120d3a9c9ca6e5ed2f2335c32ed",
+          "prior_axis": "cutoff"
+        },
+        {
+          "cutoff_ry": 800,
+          "cap_gib": 6,
+          "input_sha256": "2219f5585f74de834d45cb1930d7c48c9d76b90b2f1e1ad667a1ddc494a50248",
+          "prior_axis": null
+        }
+      ]
+    },
+    "he": {
+      "fixture": "C01-He",
+      "prior_track": "he-mgrid",
+      "rel_cutoff_ry": 80,
+      "levels": [
+        {
+          "cutoff_ry": 800,
+          "cap_gib": 6,
+          "input_sha256": "ddcbc594870c97e05235b1305cedab41f0ead81ed05ab06ec02a6b7e98662995",
+          "prior_axis": "anchor"
+        },
+        {
+          "cutoff_ry": 1000,
+          "cap_gib": 10,
+          "input_sha256": "e79ffd6a5c7ae5d0ed8b282caf9d708e40c5c1d7819b63b037b752708ccaa272",
+          "prior_axis": "cutoff"
+        },
+        {
+          "cutoff_ry": 1200,
+          "cap_gib": 12,
+          "input_sha256": "7d3eb5e63190091e05a0bfb170bc54fc831647f0ed18d9ab8a5c3e3d109325a0",
+          "prior_axis": null
+        }
+      ]
+    }
+  },
+  "rules": [
+    "Hold exact PBE/GAPW cc-pVQZ and the same 12 angstrom cell, relative cutoff, SCF, atomic grid and overlap diagnostic. Alter only CUTOFF. Recompute both levels of the previous pair plus the new finest level on each fixture runner.",
+    "One rank and OMP thread, no swap or automatic retry; require fixed per-case RAM grant plus 2 GiB runner reserve and at least 10 GiB free scratch.",
+    "Apply unchanged AV03, AV05, AV06 and both 4- and 6-point signed-field comparisons at 0.001 electrons. Only the adjacent finest pair decides this extension. The first pair is a same-run remeasurement of the previous no-go.",
+    "Record raw native CUBE hashes and direct coincident samples, full-field Fourier resampling and fine-field-only reconstruction controls. These diagnostics do not substitute for the existing acceptance rule. Sparse coincident samples and Fourier reconstruction do not bound continuum error.",
+    "A pass is local to these fixed fixtures and pair settings. It does not freeze a joint profile, prove complete-basis or physical accuracy, or qualify ARM or OCI."
+  ]
+}

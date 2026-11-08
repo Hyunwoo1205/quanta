@@ -60,7 +60,7 @@ def probe_metadata(
     qz = basis == "cc-pVQZ"
     for value, allowed, name in (
         (cell_angstrom, (12, 16, 20), "cell_angstrom"),
-        (cutoff_ry, (400, 600, 800, 1000) if qz else (400, 600, 800), "cutoff_ry"),
+        (cutoff_ry, (400, 600, 800, 1000, 1200) if qz else (400, 600, 800), "cutoff_ry"),
         (rel_cutoff_ry, (40, 60, 80, 120) if qz else (40, 60, 80), "rel_cutoff_ry"),
         (eps_scf, (1e-8, 1e-9, 1e-10), "eps_scf"),
     ):

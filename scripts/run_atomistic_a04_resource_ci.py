@@ -100,6 +100,8 @@ BASIS_INPUTS = FIXTURE_PLAN.with_name("basis-refinement-inputs.json")
 QZ_INPUTS = FIXTURE_PLAN.with_name("qz-sensitivity-inputs.json")
 QZ_G2_RECEIPT = REFINEMENT_RECEIPTS / "basis-refinement-42499460058.json"
 QZ_TRACKS = ("h2-short", "he-local", "he-mgrid", "he-cell")
+QZ_CUTOFF_INPUTS = FIXTURE_PLAN.with_name("qz-cutoff-refinement-inputs.json")
+QZ_SENSITIVITY_RECEIPT = REFINEMENT_RECEIPTS / "qz-sensitivity-42501071977.json"
 
 
 ENGINE_WRAPPER = r"""
@@ -1496,6 +1498,76 @@ def run_qz_sensitivity(track: str, candidate: dict, scratch: Path, diagnostics: 
     return "measured" if passed else "criterion_not_met"
 
 
+def run_qz_cutoff(system: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
+    from compare_atomistic_qz_sensitivity import compare_qz_pair
+    from diagnose_atomistic_cutoff_density import diagnose_cutoff_density
+
+    locked = json.loads(QZ_CUTOFF_INPUTS.read_bytes())
+    prior = json.loads(QZ_SENSITIVITY_RECEIPT.read_bytes())
+    checks = {item["id"]: item for item in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    if (
+        locked["prior_receipt_sha256"] != sha256(QZ_SENSITIVITY_RECEIPT)
+        or prior["status"] != "no_go_fixed_fixture_qz_cutoff_density"
+        or any(locked[key] != candidate[key] or locked[key] != prior[key]
+               for key in ("cp2k_source", "binary_sha256"))
+        or any(locked["checks"][key] != checks[key] or locked["checks"][key] != prior["checks"][key]
+               for key in ("AV03", "AV05", "AV06"))
+        or locked["density_l1_atol_electrons"] != prior["density_l1_atol_electrons"]
+    ):
+        raise ValueError("QZ CUTOFF refinement requires the locked prior evidence and unchanged criteria")
+
+    spec = locked["fixtures"][system]
+    previous = next(row for row in prior["tracks"] if row["track"] == spec["prior_track"])
+    prior_cases = {row["axis"]: row for row in previous["cases"]}
+    levels = spec["levels"]
+    if previous["system"] != system or [row["prior_axis"] for row in levels] != ["anchor", "cutoff", None]:
+        raise ValueError("CUTOFF levels do not match the preregistered prior pair and extension")
+    report.update(system=system, track=system, fixture_id=spec["fixture"], comparisons=[],
+                  input_manifest_sha256=sha256(QZ_CUTOFF_INPUTS))
+    report["resource_policy"].update(normal_memory_cap_bytes="per case, locked", retry_memory_cap_bytes=None)
+    conditioning_passed = True
+    last = None
+    for level in levels:
+        cutoff = level["cutoff_ry"]
+        case = Case(f"{system}-qz-{cutoff}ry", 12, cutoff, True, locked["wall_seconds"],
+                    rel_cutoff=spec["rel_cutoff_ry"], system=system, radial_grid=200,
+                    lebedev_grid=194, basis="cc-pVQZ", overlap_condition=True)
+        cap, expected = level["cap_gib"] * GIB, level["input_sha256"]
+        if not 0 < cap <= MEMORY_TIERS_BYTES[-1]:
+            raise ValueError("CUTOFF cap exceeds the fixed runner envelope")
+        historical = prior_cases[level["prior_axis"]] if level["prior_axis"] is not None else None
+        if historical is not None and historical["input_sha256"] != expected:
+            raise ValueError("Prior CUTOFF input does not match the historical deck")
+        cube = scratch / f"{case.name}.cube"
+        attempt: dict = {}
+        report["cases"].append({"axis": cutoff, "case": case.name, "attempt": attempt})
+        available = available_memory_bytes()
+        free = shutil.disk_usage(scratch).free
+        if available < cap + MEMORY_RESERVE_BYTES or free < DISK_ADMISSION:
+            attempt.update(status="deferred_headroom", available_memory_bytes=available, free_disk_bytes=free)
+            return "measurement_incomplete"
+        run_attempt(case, 1, cap, available, candidate, scratch, diagnostics, attempt,
+                    expected_input=expected, retained_cube=cube)
+        if attempt["status"] != "measured":
+            return "measurement_incomplete"
+        check_grid_attempt(attempt, case, spec, expected, cube, cap, checks, require_electron_counts=False)
+        conditioning_passed &= attempt["basis_conditioning"]["conditioning_passed"]
+        if historical is not None:
+            attempt["historical_cube_sha256_match"] = attempt["density"]["sha256"] == historical["cube"]["sha256"]
+        if last is not None:
+            low_case, low_attempt, low_cube = last
+            result = compare_qz_pair(case, low_case, attempt, low_attempt, cube, low_cube, checks,
+                                     locked["density_l1_atol_electrons"], axis="cutoff")
+            row = {"low_cutoff_ry": low_case.cutoff, "high_cutoff_ry": cutoff,
+                   "required": historical is None, "result": result}
+            report["comparisons"].append(row)
+            row["resampling_diagnostic"] = diagnose_cutoff_density(attempt, low_attempt, cube, low_cube, case.cell)
+            low_cube.unlink()
+        last = case, attempt, cube
+    report["verification_scope"]["fixed_fixture_qz_cutoff_refinement"] = "measured"
+    return "measured" if conditioning_passed and report["comparisons"][-1]["result"]["within_all_endpoint_thresholds"] else "criterion_not_met"
+
+
 def summarize_qz_sensitivity(report: dict, output: Path) -> None:
     summary = {key: report[key] for key in (
         "scope", "track", "system", "status", "input_manifest_sha256", "anchor_cube_matches_g2", "error",
@@ -1506,7 +1578,7 @@ def summarize_qz_sensitivity(report: dict, output: Path) -> None:
             "axis": row["axis"], **{key: row["attempt"].get(key) for key in (
                 "status", "error", "input_sha256", "granted_memory_bytes", "available_memory_at_admission_bytes",
                 "granted_swap_extra_bytes", "cgroup_memory_peak_bytes", "cgroup_memory_events_max",
-                "engine_scf_iterations", "engine_energy_hartree", "engine_forces_hartree_per_bohr",
+                "historical_cube_sha256_match", "engine_scf_iterations", "engine_energy_hartree", "engine_forces_hartree_per_bohr",
                 "engine_hard_soft_electron_count", "basis_conditioning",
             )},
             "engine_seconds": row["attempt"].get("engine_resource", {}).get("engine_wall_seconds"),
@@ -1571,6 +1643,7 @@ def main() -> int:
     mode.add_argument("--atomic-grid", choices=SCF_SYSTEMS)
     mode.add_argument("--basis-refinement", choices=SCF_SYSTEMS)
     mode.add_argument("--qz-sensitivity", choices=QZ_TRACKS)
+    mode.add_argument("--qz-cutoff", choices=("h2-short", "he"))
     parser.add_argument("--grid-pilot-dir", type=Path)
     args = parser.parse_args()
     if args.grid_pilot_dir is not None and not (args.grid_pilot or args.atomic_grid):
@@ -1612,14 +1685,15 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.qz_sensitivity:
-        report["scope"] = "isolated_native_x86_A04_fixed_fixture_qz_sensitivity"
+    if args.qz_cutoff or args.qz_sensitivity:
+        qz_scope = "cutoff_refinement" if args.qz_cutoff else "sensitivity"
+        report["scope"] = f"isolated_native_x86_A04_fixed_fixture_qz_{qz_scope}"
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update(
             retry_maximum_increase_bytes=0, oom_retry="none; fixed per-case caps",
             raw_cube="signed original samples compared on runner disk and removed",
         )
-        report["verification_scope"]["fixed_fixture_qz_sensitivity"] = "incomplete"
+        report["verification_scope"][f"fixed_fixture_qz_{qz_scope}"] = "incomplete"
     elif args.basis_refinement:
         report["scope"] = "isolated_native_x86_A04_fixed_fixture_basis_refinement"
         report.pop("known_unadmitted_cases")
@@ -1702,7 +1776,9 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.qz_sensitivity:
+            if args.qz_cutoff:
+                report["status"] = run_qz_cutoff(args.qz_cutoff, candidate, Path(directory), diagnostics, report)
+            elif args.qz_sensitivity:
                 report["status"] = run_qz_sensitivity(args.qz_sensitivity, candidate, Path(directory), diagnostics, report)
             elif args.basis_refinement:
                 report["status"] = run_basis_ladder(args.basis_refinement, candidate, Path(directory), diagnostics, report)
@@ -1744,7 +1820,7 @@ def main() -> int:
     finally:
         write_report(output / "report.json", report)
     print(f"A04 native resource measurement: {report['status']}; report.json")
-    if args.qz_sensitivity:
+    if args.qz_cutoff or args.qz_sensitivity:
         summarize_qz_sensitivity(report, output)
     elif args.grid_pilot or args.atomic_grid or args.basis_refinement:
         if args.grid_pilot and report["status"] == "measured":

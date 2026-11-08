@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ${{ fromJSON(inputs.experiment == 'qz-sensitivity' && '["qz-h2-short","qz-he-local","qz-he-mgrid","qz-he-cell"]' || inputs.experiment == 'basis-pilot' && '["basis-h2-short","basis-he"]' || inputs.experiment == 'basis-refinement' && '["basis-h2-reference","basis-h2","basis-h2-long"]' || inputs.experiment == 'atomic-grid-pilot' && '["pilot-h2-short","pilot-he"]' || inputs.experiment == 'atomic-grid' && '["grid-h2-short","grid-h2-reference","grid-h2","grid-h2-long","grid-he"]' || inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
+        track: ${{ fromJSON(inputs.experiment == 'qz-cutoff' && '["qz-cutoff-h2-short","qz-cutoff-he"]' || inputs.experiment == 'qz-sensitivity' && '["qz-h2-short","qz-he-local","qz-he-mgrid","qz-he-cell"]' || inputs.experiment == 'basis-pilot' && '["basis-h2-short","basis-he"]' || inputs.experiment == 'basis-refinement' && '["basis-h2-reference","basis-h2","basis-h2-long"]' || inputs.experiment == 'atomic-grid-pilot' && '["pilot-h2-short","pilot-he"]' || inputs.experiment == 'atomic-grid' && '["grid-h2-short","grid-h2-reference","grid-h2","grid-h2-long","grid-he"]' || inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -178,6 +178,7 @@ jobs:
             grid-h2-short|grid-he) mode=(--atomic-grid "${A04_TRACK#grid-}" --grid-pilot-dir .cache/atomistic-a04-resource/grid-pilot) ;;
             grid-*) mode=(--atomic-grid "${A04_TRACK#grid-}") ;;
             basis-*) mode=(--basis-refinement "${A04_TRACK#basis-}") ;;
+            qz-cutoff-*) mode=(--qz-cutoff "${A04_TRACK#qz-cutoff-}") ;;
             qz-*) mode=(--qz-sensitivity "${A04_TRACK#qz-}") ;;
             cell|cutoff|relative) mode=(--one-factor "$A04_TRACK") ;;
           esac
