@@ -1,0 +1,471 @@
+{
+  "schema_version": 1,
+  "scope": "isolated_native_x86_A04_same_input_memory_refinement",
+  "workflow_run_id": 42438533750,
+  "workflow_job_id": 128602574990,
+  "quanta_source": "909b1aae537a52a6b8d6711a59419fadf34361b0",
+  "workflow_conclusion": "success",
+  "status": "measured",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+  "artifact": {
+    "id": 13601845856,
+    "bytes": 61744,
+    "sha256": "0fef4e9c685a5130b5c5b2419294cf2ed2baaa17fea12866ac83f258c172d9ea",
+    "report_sha256": "3ee47388db76e06d0207723ff5bafbdf81133e0d2bfda8874e0e535cf60c66ae"
+  },
+  "prior_runs": {
+    "20a_serial_oom": 42392008763,
+    "20a_distributed_oom": 42438115255,
+    "16a_serial_reference": 42392583423,
+    "12a_400ry_serial_reference": 42392583423
+  },
+  "comparison_layout": {
+    "mpi_ranks": 1,
+    "omp_threads": 1,
+    "swap_allowance_bytes": 17179869184,
+    "real_space_distribution_request": "AUTOMATIC"
+  },
+  "cases": [
+    {
+      "case": "h2-20a-800ry-density-on",
+      "status": "measured",
+      "attempts": [
+        {
+          "status": "measured",
+          "input_sha256": "d17d656bb1e97d4aa68fdb1f1e56fb4e3d30bde91a103a65393970d81b0cd0c9",
+          "submitted_input_sha256": "d17d656bb1e97d4aa68fdb1f1e56fb4e3d30bde91a103a65393970d81b0cd0c9",
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1,
+          "granted_memory_bytes": 12741791744,
+          "granted_swap_extra_bytes": 17179869184,
+          "cgroup_memory_peak_bytes": 12741791744,
+          "cgroup_memory_events_max": {
+            "max": 29824,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_energy_hartree": -1.159847127370222,
+          "engine_forces_hartree_per_bohr": [
+            [
+              0.018445084422083,
+              -2.4e-14,
+              -2.4e-14
+            ],
+            [
+              -0.018445084422082,
+              1.8e-14,
+              1.7e-14
+            ]
+          ],
+          "container_removed": true,
+          "engine_wall_seconds": 1158.567887492,
+          "swap_peak_bytes": 11014914048,
+          "density": {
+            "sha256": "e87a916fdb283295082f337727c902fcfd2c202a794a725f946328b3c66fb23c",
+            "bytes": 614304312,
+            "grid_counts": [
+              360,
+              360,
+              360
+            ],
+            "samples": 46656000,
+            "electron_integral": 2.0000125431873355
+          }
+        }
+      ]
+    },
+    {
+      "case": "h2-16a-800ry-density-on",
+      "status": "measured",
+      "attempts": [
+        {
+          "status": "measured",
+          "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+          "submitted_input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1,
+          "granted_memory_bytes": 12884901888,
+          "granted_swap_extra_bytes": 17179869184,
+          "cgroup_memory_peak_bytes": 12142120960,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_energy_hartree": -1.159847127370243,
+          "engine_forces_hartree_per_bohr": [
+            [
+              0.018445085267698,
+              1.42e-13,
+              1.42e-13
+            ],
+            [
+              -0.018445085267461,
+              1.53e-13,
+              1.53e-13
+            ]
+          ],
+          "container_removed": true,
+          "engine_wall_seconds": 292.60991320699986,
+          "swap_peak_bytes": 0,
+          "density": {
+            "sha256": "ea0f110b48cd9f386daa5b05706f0d38e83252c2de141bbe96f74abddaf1235a",
+            "bytes": 314523960,
+            "grid_counts": [
+              288,
+              288,
+              288
+            ],
+            "samples": 23887872,
+            "electron_integral": 2.0000125381646816
+          }
+        },
+        {
+          "status": "measured",
+          "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+          "submitted_input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1,
+          "granted_memory_bytes": 12884901888,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 12138225664,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_energy_hartree": -1.159847127370243,
+          "engine_forces_hartree_per_bohr": [
+            [
+              0.018445085267698,
+              1.42e-13,
+              1.42e-13
+            ],
+            [
+              -0.018445085267461,
+              1.53e-13,
+              1.53e-13
+            ]
+          ],
+          "container_removed": true,
+          "engine_wall_seconds": 287.511741605,
+          "swap_peak_bytes": 0,
+          "density": {
+            "sha256": "ea0f110b48cd9f386daa5b05706f0d38e83252c2de141bbe96f74abddaf1235a",
+            "bytes": 314523960,
+            "grid_counts": [
+              288,
+              288,
+              288
+            ],
+            "samples": 23887872,
+            "electron_integral": 2.0000125381646816
+          }
+        }
+      ],
+      "comparison_status": "passed",
+      "historical_serial_comparison": {
+        "scope": "same locked scientific input and engine, different execution layout or swap allowance",
+        "tolerance_sources": [
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV06"
+        ],
+        "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+        "grid_counts": [
+          288,
+          288,
+          288
+        ],
+        "reference_energy_hartree": -1.159847127370217,
+        "distributed_energy_hartree": -1.159847127370243,
+        "absolute_energy_difference_hartree": 2.6201263381153694e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 7.735900010852337e-10,
+        "energy_atol_hartree": 1e-08,
+        "force_atol_hartree_per_bohr": 1e-07,
+        "reference_exported_electron_count": 2.0000125432081415,
+        "distributed_exported_electron_count": 2.0000125381646816,
+        "absolute_exported_electron_count_difference": 5.043459871956202e-09,
+        "exported_electron_count_atol_from_two": 0.001,
+        "reference_native_cube_sha256": "e319ce400659c4924e802924c3b3cf69ef6379d699566b649912d83237d2a7cd",
+        "distributed_native_cube_sha256": "ea0f110b48cd9f386daa5b05706f0d38e83252c2de141bbe96f74abddaf1235a",
+        "same_native_cube_sha256": false,
+        "passes_summary_comparison": true
+      },
+      "pointwise_comparison": {
+        "scope": "same locked scientific input and engine, different execution layout or swap allowance",
+        "tolerance_sources": [
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV06"
+        ],
+        "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+        "grid_counts": [
+          288,
+          288,
+          288
+        ],
+        "reference_energy_hartree": -1.159847127370243,
+        "distributed_energy_hartree": -1.159847127370243,
+        "absolute_energy_difference_hartree": 0.0,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 0.0,
+        "energy_atol_hartree": 1e-08,
+        "force_atol_hartree_per_bohr": 1e-07,
+        "reference_exported_electron_count": 2.0000125381646816,
+        "distributed_exported_electron_count": 2.0000125381646816,
+        "absolute_exported_electron_count_difference": 0.0,
+        "exported_electron_count_atol_from_two": 0.001,
+        "reference_native_cube_sha256": "ea0f110b48cd9f386daa5b05706f0d38e83252c2de141bbe96f74abddaf1235a",
+        "distributed_native_cube_sha256": "ea0f110b48cd9f386daa5b05706f0d38e83252c2de141bbe96f74abddaf1235a",
+        "same_native_cube_sha256": true,
+        "passes_summary_comparison": true,
+        "compared_native_samples": 23887872,
+        "maximum_absolute_density_difference_electron_per_bohr3": 0.0,
+        "rms_density_difference_electron_per_bohr3": 0.0,
+        "signed_density_difference_integral_electrons": 0.0,
+        "absolute_density_difference_integral_electrons": 0.0,
+        "density_l1_atol_electrons": 0.001,
+        "density_l1_tolerance_origin": "predeclared MPI reproducibility criterion using the AV06 tolerance magnitude; distinct from AV06 and spatial convergence",
+        "passes_comparison": true
+      },
+      "recreated_serial_comparison": {
+        "scope": "same locked scientific input and engine, different execution layout or swap allowance",
+        "tolerance_sources": [
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV06"
+        ],
+        "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+        "grid_counts": [
+          288,
+          288,
+          288
+        ],
+        "reference_energy_hartree": -1.159847127370217,
+        "distributed_energy_hartree": -1.159847127370243,
+        "absolute_energy_difference_hartree": 2.6201263381153694e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 7.735900010852337e-10,
+        "energy_atol_hartree": 1e-08,
+        "force_atol_hartree_per_bohr": 1e-07,
+        "reference_exported_electron_count": 2.0000125432081415,
+        "distributed_exported_electron_count": 2.0000125381646816,
+        "absolute_exported_electron_count_difference": 5.043459871956202e-09,
+        "exported_electron_count_atol_from_two": 0.001,
+        "reference_native_cube_sha256": "e319ce400659c4924e802924c3b3cf69ef6379d699566b649912d83237d2a7cd",
+        "distributed_native_cube_sha256": "ea0f110b48cd9f386daa5b05706f0d38e83252c2de141bbe96f74abddaf1235a",
+        "same_native_cube_sha256": false,
+        "passes_summary_comparison": true
+      }
+    },
+    {
+      "case": "h2-12a-400ry-density-on",
+      "status": "measured",
+      "attempts": [
+        {
+          "status": "measured",
+          "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "submitted_input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1,
+          "granted_memory_bytes": 12884901888,
+          "granted_swap_extra_bytes": 17179869184,
+          "cgroup_memory_peak_bytes": 1891438592,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_energy_hartree": -1.159847078649398,
+          "engine_forces_hartree_per_bohr": [
+            [
+              0.018445083397822,
+              4.8e-14,
+              4.9e-14
+            ],
+            [
+              -0.018445083397695,
+              5.9e-14,
+              5.8e-14
+            ]
+          ],
+          "container_removed": true,
+          "engine_wall_seconds": 24.259434300000066,
+          "swap_peak_bytes": 0,
+          "density": {
+            "sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+            "bytes": 44437812,
+            "grid_counts": [
+              150,
+              150,
+              150
+            ],
+            "samples": 3375000,
+            "electron_integral": 1.9999968834561688
+          }
+        },
+        {
+          "status": "measured",
+          "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "submitted_input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1,
+          "granted_memory_bytes": 12884901888,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 1891287040,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_energy_hartree": -1.159847078649398,
+          "engine_forces_hartree_per_bohr": [
+            [
+              0.018445083397822,
+              4.8e-14,
+              4.9e-14
+            ],
+            [
+              -0.018445083397695,
+              5.9e-14,
+              5.8e-14
+            ]
+          ],
+          "container_removed": true,
+          "engine_wall_seconds": 24.4342505059999,
+          "swap_peak_bytes": 0,
+          "density": {
+            "sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+            "bytes": 44437812,
+            "grid_counts": [
+              150,
+              150,
+              150
+            ],
+            "samples": 3375000,
+            "electron_integral": 1.9999968834561688
+          }
+        }
+      ],
+      "comparison_status": "passed",
+      "historical_serial_comparison": {
+        "scope": "same locked scientific input and engine, different execution layout or swap allowance",
+        "tolerance_sources": [
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV06"
+        ],
+        "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+        "grid_counts": [
+          150,
+          150,
+          150
+        ],
+        "reference_energy_hartree": -1.159847078649396,
+        "distributed_energy_hartree": -1.159847078649398,
+        "absolute_energy_difference_hartree": 1.9984014443252818e-15,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 3.693599939791348e-11,
+        "energy_atol_hartree": 1e-08,
+        "force_atol_hartree_per_bohr": 1e-07,
+        "reference_exported_electron_count": 1.9999968833696253,
+        "distributed_exported_electron_count": 1.9999968834561688,
+        "absolute_exported_electron_count_difference": 8.654343908176543e-11,
+        "exported_electron_count_atol_from_two": 0.001,
+        "reference_native_cube_sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9",
+        "distributed_native_cube_sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+        "same_native_cube_sha256": false,
+        "passes_summary_comparison": true
+      },
+      "pointwise_comparison": {
+        "scope": "same locked scientific input and engine, different execution layout or swap allowance",
+        "tolerance_sources": [
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV06"
+        ],
+        "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+        "grid_counts": [
+          150,
+          150,
+          150
+        ],
+        "reference_energy_hartree": -1.159847078649398,
+        "distributed_energy_hartree": -1.159847078649398,
+        "absolute_energy_difference_hartree": 0.0,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 0.0,
+        "energy_atol_hartree": 1e-08,
+        "force_atol_hartree_per_bohr": 1e-07,
+        "reference_exported_electron_count": 1.9999968834561688,
+        "distributed_exported_electron_count": 1.9999968834561688,
+        "absolute_exported_electron_count_difference": 0.0,
+        "exported_electron_count_atol_from_two": 0.001,
+        "reference_native_cube_sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+        "distributed_native_cube_sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+        "same_native_cube_sha256": true,
+        "passes_summary_comparison": true,
+        "compared_native_samples": 3375000,
+        "maximum_absolute_density_difference_electron_per_bohr3": 0.0,
+        "rms_density_difference_electron_per_bohr3": 0.0,
+        "signed_density_difference_integral_electrons": 0.0,
+        "absolute_density_difference_integral_electrons": 0.0,
+        "density_l1_atol_electrons": 0.001,
+        "density_l1_tolerance_origin": "predeclared MPI reproducibility criterion using the AV06 tolerance magnitude; distinct from AV06 and spatial convergence",
+        "passes_comparison": true
+      },
+      "recreated_serial_comparison": {
+        "scope": "same locked scientific input and engine, different execution layout or swap allowance",
+        "tolerance_sources": [
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV01",
+          "docs/design/atomistic-a01-v0.1/validation-plan.json#AV06"
+        ],
+        "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+        "grid_counts": [
+          150,
+          150,
+          150
+        ],
+        "reference_energy_hartree": -1.159847078649396,
+        "distributed_energy_hartree": -1.159847078649398,
+        "absolute_energy_difference_hartree": 1.9984014443252818e-15,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 3.693599939791348e-11,
+        "energy_atol_hartree": 1e-08,
+        "force_atol_hartree_per_bohr": 1e-07,
+        "reference_exported_electron_count": 1.9999968833696253,
+        "distributed_exported_electron_count": 1.9999968834561688,
+        "absolute_exported_electron_count_difference": 8.654343908176543e-11,
+        "exported_electron_count_atol_from_two": 0.001,
+        "reference_native_cube_sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9",
+        "distributed_native_cube_sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+        "same_native_cube_sha256": false,
+        "passes_summary_comparison": true
+      }
+    }
+  ],
+  "historical_density_limit": "Only historical CUBE metadata and digests survived. Direct pointwise comparisons use fresh no-swap controls from the same runner.",
+  "scratch_removed": true,
+  "verification_scope": {
+    "production_oci_measured": false,
+    "public_execution_support": false,
+    "runtime_contract_frozen": false,
+    "AV01_adapter": "not_executed",
+    "AV03_AV04_convergence": "not_executed",
+    "AV05_AV06_density_acceptance": "not_executed",
+    "density_spatial_convergence": "not_tested",
+    "physical_validation": "unvalidated"
+  }
+}

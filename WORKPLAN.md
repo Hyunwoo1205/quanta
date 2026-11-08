@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 동일 입력 MPI 분산 재시험
+## 현재 개발 위치 — A04 해상도 유지·메모리 복구 및 재현성 확인
+
+2026-11-08 KST, [실행 42438533750](https://github.com/Hyunwoo1205/quanta/actions/runs/42438533750)에서 같은 x86 CP2K 바이너리와 원본 1랭크 입력으로 H₂ 20 Å·800 Ry를 완주했습니다. 2 GiB의 호스트 여유를 남긴 컨테이너에서 RAM 피크는 11.87 GiB, 스왑 피크는 10.26 GiB였으며 엔진은 1,158.57초에 수렴했습니다. 기본·보조 격자 설정과 전체 밀도 출력은 그대로이며 CUBE 격자는 360³, 적분은 2.0000125431873355 전자입니다. 이전 2랭크 분산 실행은 스왑을 추가해도 OOM이었으므로, 이번 실행 근거는 단일 랭크와 스왑에 해당합니다.
+
+같은 설정으로 16 Å·800 Ry와 12 Å·400 Ry를 재실행했습니다. 기존 1랭크 실행 42392583423에 대한 에너지 차이는 각각 2.62×10⁻¹⁴, 2.00×10⁻¹⁵ Hartree이며 최대 힘 성분 차이는 7.74×10⁻¹⁰, 3.69×10⁻¹¹ Hartree/Bohr입니다. 적분 전자 수 차이는 5.04×10⁻⁹, 8.65×10⁻¹¹ 전자였습니다. 두 조건 모두 사전 비교 기준을 통과했고 스왑 사용량은 0이었습니다. 과거 CUBE는 해시와 요약만 남아 당시 파일과 직접 점별 비교할 수 없었습니다. 같은 러너에서 스왑을 끈 기준을 새로 실행한 결과, 각 조건의 에너지·힘·CUBE 해시와 전체 밀도 표본 23,887,872개 및 3,375,000개가 스왑 허용 실행과 각각 일치했습니다. [실측·비교 영수증](docs/verification/atomistic-a04/memory-recovery-42438533750.json)
+
+**다음 시작점은** 완주한 20 Å·800 Ry 결과를 유한 셀·격자 검증의 비교 근거로 사용하고, 후보 설정별 실제 자원·수렴을 평가하는 것입니다. 이번 검증은 격리 x86 실행과 동일 입력 재현성 범위이며 운영 OCI의 적합성, 밀도 공간 수렴과 물리 검증은 아직 확인 전입니다.
+
+## 이전 개발 기록 — A04 동일 입력 MPI 분산 재시험
 
 2026-11-08 KST, 과거 12 GiB에서 OOM이 확인된 H₂ 20 Å·800 Ry를 잠금 x86 이미지, MPI 2랭크·랭크당 OpenMP 1스레드로 재시험했습니다. [실행 42437326217](https://github.com/Hyunwoo1205/quanta/actions/runs/42437326217)은 실공간 격자 4개를 복제했습니다. 스왑 없는 12 GiB와 4 GiB 스왑을 추가한 12 GiB에서 모두 cgroup OOM을 확인했습니다. 후자에서 스왑 피크는 4 GiB였으며 두 컨테이너와 임시 작업 폴더를 제거했습니다. 작은 두 사례의 실행 조건은 충족되지 않았습니다. [검증 영수증](docs/verification/atomistic-a04/mpi-resource-42437326217.json)
 
