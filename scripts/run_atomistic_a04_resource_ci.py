@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 from dataclasses import dataclass
 import json
 import math
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import stat
 import subprocess
@@ -66,6 +68,13 @@ CASES = (
     Case("h2-16a-800ry-density-on", 16, 800, True, 900, 4 * GIB, rel_cutoff=80),
 )
 
+MPI_CASES = (
+    Case("h2-20a-800ry-density-on", 20, 800, True, 1200, 4 * GIB, rel_cutoff=80),
+    CASES[-1],
+    CASES[1],
+)
+REFINEMENT_RECEIPTS = RECEIPT.parent
+
 
 ENGINE_WRAPPER = r"""
 import hashlib
@@ -87,7 +96,10 @@ def log_uncaught(exc_type, value, trace):
         traceback.print_exception(exc_type, value, trace, file=stream)
 
 sys.excepthook = log_uncaught
-binary, revision = sys.argv[1:]
+binary, revision, ranks_arg = sys.argv[1:]
+mpi_ranks = int(ranks_arg)
+if mpi_ranks not in (1, 2):
+    raise ValueError('Only the fixed one- and two-rank layouts are supported')
 with log.open('wb') as output:
     exe = shutil.which('cp2k')
     if exe is None:
@@ -101,8 +113,14 @@ with log.open('wb') as output:
         rb'^\s*Source code revision ' + revision.encode('ascii') + rb'\s*$', version, re.M
     ):
         raise RuntimeError('CP2K source revision or version mismatch')
+    command = [exe, '-i', '/quanta-input/input.inp']
+    if mpi_ranks == 2:
+        mpi = shutil.which('mpiexec')
+        if mpi is None:
+            raise RuntimeError('The pinned candidate has no MPICH launcher')
+        command = [mpi, '-launcher', 'fork', '-hosts', 'localhost', '-iface', 'lo', '-n', ranks_arg, *command]
     engine_started = time.monotonic()
-    child = subprocess.Popen([exe, '-i', '/quanta-input/input.inp'], stdout=output, stderr=output)
+    child = subprocess.Popen(command, stdout=output, stderr=output)
     _, status, usage = os.wait4(child.pid, 0)
     engine_wall_seconds = time.monotonic() - engine_started
     child.returncode = os.waitstatus_to_exitcode(status)
@@ -125,6 +143,7 @@ tmp = os.statvfs('/tmp')
 row = {
     'binary_sha256': actual,
     'reported_revision': revision,
+    'requested_mpi_ranks': mpi_ranks,
     'engine_returncode': child.returncode,
     'engine_wall_seconds': engine_wall_seconds,
     'engine_wall_seconds_with_inventory': time.monotonic() - start,
@@ -133,6 +152,8 @@ row = {
     'engine_system_cpu_seconds': usage.ru_stime,
     'final_cgroup_memory_max_bytes': metric('memory.max'),
     'final_cgroup_swap_max_bytes': metric('memory.swap.max'),
+    'final_cgroup_swap_current_bytes': metric('memory.swap.current'),
+    'final_cgroup_swap_peak_bytes': metric('memory.swap.peak'),
     'final_cgroup_memory_peak_bytes': metric('memory.peak'),
     'final_cgroup_memory_events': event_counts(),
     'final_tmpfs_used_bytes': (tmp.f_blocks - tmp.f_bfree) * tmp.f_frsize,
@@ -206,12 +227,17 @@ def safe_bind(path: Path, target: str, *, readonly: bool = False) -> str:
     return f"type=bind,source={resolved},target={target}" + (",readonly" if readonly else "")
 
 
-def container_args(name: str, image_id: str, budget: int, work: Path, inputs: Path, candidate: dict) -> list[str]:
+def container_args(name: str, image_id: str, budget: int, work: Path, inputs: Path, candidate: dict,
+                   *, mpi_ranks: int = 1, swap_extra_bytes: int = 0) -> list[str]:
+    if type(mpi_ranks) is not int or mpi_ranks not in (1, 2):
+        raise ValueError("Only the fixed one- and two-rank layouts are supported")
+    if type(swap_extra_bytes) is not int or swap_extra_bytes < 0:
+        raise ValueError("Swap allowance must be a nonnegative byte count")
     return [
         "create", "--name", name, "--pull=never", "--platform", "linux/amd64",
         "--read-only", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
         "--user", f"{os.getuid()}:{os.getgid()}", "--group-add", "0",
-        "--cpus", "1", "--memory", str(budget), "--memory-swap", str(budget),
+        "--cpus", str(mpi_ranks), "--memory", str(budget), "--memory-swap", str(budget + swap_extra_bytes),
         "--pids-limit", "128", "--cgroupns", "private", "--log-driver", "none", "--shm-size", str(SHM_LIMIT),
         "--ulimit", "core=0:0", "--ulimit", f"fsize={GIB}:{GIB}",
         "--tmpfs", f"/tmp:rw,nosuid,nodev,noexec,size={TMPFS_LIMIT},mode=1777", "--workdir", "/work",
@@ -220,14 +246,14 @@ def container_args(name: str, image_id: str, budget: int, work: Path, inputs: Pa
         "--mount", safe_bind(work, "/work"), "--mount", safe_bind(inputs, "/quanta-input", readonly=True),
         "--mount", safe_bind(LOCK_DIR / "assets", "/quanta-data", readonly=True),
         "--entrypoint", "python3", image_id, "-I", "-B", "-c", ENGINE_WRAPPER,
-        candidate["binary_sha256"], candidate["cp2k_source"],
+        candidate["binary_sha256"], candidate["cp2k_source"], str(mpi_ranks),
     ]
 
 
-def checked_controls(inspected: dict, budget: int) -> dict:
+def checked_controls(inspected: dict, budget: int, *, mpi_ranks: int = 1, swap_extra_bytes: int = 0) -> dict:
     host = inspected["HostConfig"]
     for key, expected in {
-        "Memory": budget, "MemorySwap": budget, "NanoCpus": 10**9,
+        "Memory": budget, "MemorySwap": budget + swap_extra_bytes, "NanoCpus": mpi_ranks * 10**9,
         "PidsLimit": 128, "NetworkMode": "none", "ReadonlyRootfs": True,
         "CgroupnsMode": "private", "ShmSize": SHM_LIMIT,
     }.items():
@@ -246,7 +272,7 @@ def checked_controls(inspected: dict, budget: int) -> dict:
     if mounts != {"/work": ("bind", True), "/quanta-input": ("bind", False), "/quanta-data": ("bind", False)}:
         raise ValueError("Docker did not enforce the expected bind controls")
     return {
-        "memory_bytes": budget, "memory_swap_bytes": budget, "cpus": 1, "pids": 128,
+        "memory_bytes": budget, "memory_swap_bytes": budget + swap_extra_bytes, "cpus": mpi_ranks, "pids": 128,
         "work": "disk-backed bind", "network": "none", "tmpfs_max_bytes": TMPFS_LIMIT,
         "readonly_rootfs": True, "log_driver": "none", "fsize_bytes": GIB, "shm_limit_bytes": SHM_LIMIT,
     }
@@ -343,7 +369,9 @@ def clean_container(name: str) -> None:
 
 
 def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate: dict,
-                scratch: Path, diagnostics: Path, record: dict) -> None:
+                scratch: Path, diagnostics: Path, record: dict, *, mpi_ranks: int = 1,
+                swap_extra_bytes: int = 0, expected_input: str | None = None,
+                retained_cube: Path | None = None) -> None:
     name = f"quanta-a04-resource-{uuid4().hex}"
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix=f"{case.name}-{attempt}-", dir=scratch) as path:
@@ -360,6 +388,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
         metadata = probe_metadata(**options)
         record.update({
             "attempt": attempt, "status": "controller_error", "granted_memory_bytes": budget,
+            "requested_mpi_ranks": mpi_ranks, "granted_swap_extra_bytes": swap_extra_bytes,
             "available_memory_at_admission_bytes": available, "minimum_sampled_available_memory_bytes": available,
             "minimum_sampled_free_disk_bytes": shutil.disk_usage(work).free, "samples": 0,
             "sampled_work_peak_logical_bytes": 0, "sampled_work_peak_allocated_bytes": 0,
@@ -370,8 +399,11 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
         state: dict = {}
         engine: dict = {}
         try:
-            run_docker(*container_args(name, candidate["image_id"], budget, work, inputs, candidate))
-            record["container_controls"] = checked_controls(inspect_container(name), budget)
+            if expected_input is not None and record["input_sha256"] != expected_input:
+                raise ValueError("Scientific input differs from the recorded serial input")
+            layout = {"mpi_ranks": mpi_ranks, "swap_extra_bytes": swap_extra_bytes}
+            run_docker(*container_args(name, candidate["image_id"], budget, work, inputs, candidate, **layout))
+            record["container_controls"] = checked_controls(inspect_container(name), budget, **layout)
             run_docker("start", name)
             until = time.monotonic() + case.wall_seconds
             while True:
@@ -433,7 +465,8 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 or engine.get("binary_sha256") != candidate["binary_sha256"]
                 or engine.get("reported_revision") != candidate["cp2k_source"]
                 or engine.get("final_cgroup_memory_max_bytes") != budget
-                or engine.get("final_cgroup_swap_max_bytes") != 0
+                or engine.get("final_cgroup_swap_max_bytes") != swap_extra_bytes
+                or engine.get("requested_mpi_ranks") != mpi_ranks
                 or not record["cgroup_memory_peak_bytes"]
                 or not engine.get("engine_children_peak_rss_kib")
             ):
@@ -445,6 +478,12 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
             record["output_bytes"] = total
             record["output_allocated_bytes"] = allocated
             text = (work / "cp2k.out").read_text(encoding="utf-8")
+            counts = re.findall(r"(?m)^\s*GLOBAL\| Total number of message passing processes\s+(\d+)\s*$", text)
+            threads = re.findall(r"(?m)^\s*GLOBAL\| Number of threads for this process\s+(\d+)\s*$", text)
+            if counts != [str(mpi_ranks)] or threads != ["1"]:
+                raise ValueError("CP2K output did not confirm the requested rank/thread layout")
+            record["observed_mpi_ranks"] = mpi_ranks
+            record["observed_omp_threads"] = 1
             cp2k = parse_output(text)
             forces = parse_force_artifact(work / "forces.xyz")
             if (
@@ -468,6 +507,10 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                  "sha256": record["density"]["sha256"] if key == CUBE else sha256(work / key)}
                 for key in sorted(expected)
             ]
+            if retained_cube is not None:
+                if not case.density or retained_cube.exists():
+                    raise ValueError("Invalid retained density destination")
+                (work / CUBE).rename(retained_cube)
             record["output_analysis_seconds"] = time.monotonic() - parsing_start
             record["status"] = "measured"
         except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
@@ -482,7 +525,8 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 record["error"] = f"{type(exc).__name__}: {exc}"[:500]
             try:
                 sample_scratch(work, record)
-                log_excerpt(work, diagnostics / f"{case.name}-attempt-{attempt}.log")
+                suffix = f"-mpi-{mpi_ranks}-swap-{swap_extra_bytes}" if retained_cube or mpi_ranks != 1 else ""
+                log_excerpt(work, diagnostics / f"{case.name}{suffix}-attempt-{attempt}.log")
             except (OSError, ValueError) as exc:
                 if record["status"] in {"container_oom", "measured"}:
                     record["status"] = "scratch_guard"
@@ -589,10 +633,123 @@ def write_report(path: Path, report: dict) -> None:
     target.replace(path)
 
 
+def refinement_attempt(case: Case, candidate: dict, scratch: Path, diagnostics: Path,
+                       *, ranks: int, swap: int, attempt: int = 1,
+                       expected_input: str | None = None, cube: Path | None = None) -> dict:
+    available = available_memory_bytes()
+    budget = memory_budget(available, len(MEMORY_TIERS_BYTES) - 1)
+    free = shutil.disk_usage(scratch).free
+    if budget is None or budget < case.minimum_memory_bytes or free < DISK_ADMISSION:
+        return {
+            "attempt": attempt, "status": "deferred", "requested_mpi_ranks": ranks,
+            "available_memory_bytes": available, "safe_grant_bytes": budget, "free_disk_bytes": free,
+        }
+    record: dict = {}
+    run_attempt(case, attempt, budget, available, candidate, scratch, diagnostics, record,
+                mpi_ranks=ranks, swap_extra_bytes=swap, expected_input=expected_input, retained_cube=cube)
+    return record
+
+
+def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
+                   serial_report: Path, report: dict) -> str:
+    from atomistic_a04_runner_swap import bounded_ci_swap
+    from compare_atomistic_a04_mpi import compare_attempts, compare_summaries
+
+    if len(os.sched_getaffinity(0)) < 2:
+        raise ValueError("This runner does not expose two CPUs for the MPI comparison")
+    failed = json.loads((REFINEMENT_RECEIPTS / "resource-42392008763.json").read_bytes())
+    historical = json.loads((REFINEMENT_RECEIPTS / "resource-42392583423.json").read_bytes())
+    if serial_report.stat().st_size > REPORT_LIMIT or sha256(serial_report) != historical["raw_artifact"]["report_sha256"]:
+        raise ValueError("Historical serial report does not match the recorded artifact")
+    previous = json.loads(serial_report.read_bytes())
+    if any(
+        receipt["candidate_source"] != candidate["source_sha"]
+        or receipt["binary_sha256"] != candidate["binary_sha256"]
+        for receipt in (failed, historical)
+    ) or any(previous["candidate"][key] != candidate[key] for key in ("binary_sha256", "image_id")):
+        raise ValueError("Historical attempts and the new experiment must use the same image and binary")
+    large, middle, small = MPI_CASES
+    failed_large = next(row for row in failed["cases"] if row["case"] == large.name)["attempts"][-1]
+    references = {row["case"]: row["attempts"][-1] for row in previous["cases"]}
+    if failed_large["status"] != "container_oom" or any(
+        references[case.name]["status"] != "measured" for case in (middle, small)
+    ):
+        raise ValueError("Unexpected historical A04 evidence")
+    report["prior_runs"] = {
+        "20a_serial_oom": failed["workflow_run_id"],
+        "16a_serial_reference": historical["workflow_run_id"],
+        "12a_400ry_serial_reference": historical["workflow_run_id"],
+    }
+    cases = report["cases"]
+    large_row = {"case": large.name, "attempts": []}
+    cases.append(large_row)
+    first = refinement_attempt(large, candidate, scratch, diagnostics, ranks=2, swap=0,
+                               expected_input=failed_large["input_sha256"])
+    large_row["attempts"].append(first)
+    large_row["status"] = first["status"]
+    swap_context = (
+        bounded_ci_swap(scratch.parent, minimum_free_bytes=DISK_ADMISSION)
+        if first["status"] == "container_oom" else nullcontext(0)
+    )
+    with swap_context as swap:
+        if swap:
+            recovered = refinement_attempt(large, candidate, scratch, diagnostics, ranks=2, swap=swap, attempt=2,
+                                           expected_input=failed_large["input_sha256"])
+            large_row["attempts"].append(recovered)
+            large_row["status"] = recovered["status"]
+        if large_row["status"] != "measured":
+            return large_row["status"]
+        report["comparison_layout"] = {"mpi_ranks": 2, "omp_threads": 1, "swap_allowance_bytes": swap}
+        comparisons_passed = True
+        for case in (middle, small):
+            row = {"case": case.name, "attempts": []}
+            cases.append(row)
+            distributed_cube = scratch / f"{case.name}-mpi.cube"
+            reference_cube = scratch / f"{case.name}-serial.cube"
+            reference = references[case.name]
+            distributed = refinement_attempt(case, candidate, scratch, diagnostics, ranks=2, swap=swap,
+                                             expected_input=reference["input_sha256"], cube=distributed_cube)
+            row["attempts"].append(distributed)
+            row["status"] = distributed["status"]
+            if distributed["status"] != "measured":
+                comparisons_passed = False
+                continue
+            try:
+                comparison = compare_summaries(reference, distributed)
+                row["historical_serial_comparison"] = comparison
+                passed = comparison["passes_summary_comparison"]
+                if not comparison["same_native_cube_sha256"]:
+                    serial = refinement_attempt(case, candidate, scratch, diagnostics, ranks=1, swap=0,
+                                                expected_input=distributed["input_sha256"], cube=reference_cube)
+                    row["attempts"].append(serial)
+                    if serial["status"] != "measured":
+                        row["comparison_status"] = "serial_reference_incomplete"
+                        comparisons_passed = False
+                        continue
+                    pointwise = compare_attempts(serial, distributed, reference_cube, distributed_cube)
+                    row["pointwise_comparison"] = pointwise
+                    row["recreated_serial_comparison"] = compare_summaries(reference, serial)
+                    passed &= (
+                        pointwise["passes_comparison"]
+                        and row["recreated_serial_comparison"]["passes_summary_comparison"]
+                    )
+                row["comparison_status"] = "passed" if passed else "difference_outside_tolerance"
+                comparisons_passed &= passed
+            except (KeyError, ValueError) as exc:
+                row["comparison_status"] = "invalid_comparison"
+                row["comparison_error"] = f"{type(exc).__name__}: {exc}"[:500]
+                comparisons_passed = False
+            finally:
+                for cube in (distributed_cube, reference_cube):
+                    cube.unlink(missing_ok=True)
+        return "measured" if comparisons_passed else "comparison_incomplete_or_failed"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--mpi-refinement-serial-report", type=Path)
     args = parser.parse_args()
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -631,6 +788,16 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
+    if args.mpi_refinement_serial_report:
+        report["scope"] = "isolated_native_x86_A04_same_input_MPI_refinement"
+        report.pop("known_unadmitted_cases")
+        report["resource_policy"].update({
+            "cpus": "one CPU per MPI rank, maximum two", "swap_extra_bytes": "zero initially; bounded fallback",
+            "normal_memory_cap_bytes": MEMORY_TIERS_BYTES[-1],
+            "retry_maximum_increase_bytes": 0,
+            "oom_retry": "same deck and two ranks; one isolated bounded swap retry on verified OOM",
+            "raw_cube": "streamed, compared on the runner if necessary, and discarded with temporary scratch",
+        })
     try:
         require_native_ci()
         if shutil.disk_usage(output).free < DISK_ADMISSION:
@@ -651,21 +818,25 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            for case in CASES:
-                row: dict = {}
-                report["cases"].append(row)
-                run_case(case, candidate, Path(directory), diagnostics, row)
-                if row["status"] != "measured":
-                    report["status"] = row["status"]
-                    break
-                if case.name == BASELINE_CASE_IDS[-1]:
-                    comparison = baseline_comparison(*report["cases"][:2])
-                    report["baseline_comparison"] = comparison
-                    if not comparison["passes_baseline_observational_comparison"]:
-                        report["status"] = "baseline_difference"
-                        break
+            if args.mpi_refinement_serial_report:
+                report["status"] = run_refinement(candidate, Path(directory), diagnostics,
+                                                  args.mpi_refinement_serial_report, report)
             else:
-                report["status"] = "measured"
+                for case in CASES:
+                    row: dict = {}
+                    report["cases"].append(row)
+                    run_case(case, candidate, Path(directory), diagnostics, row)
+                    if row["status"] != "measured":
+                        report["status"] = row["status"]
+                        break
+                    if case.name == BASELINE_CASE_IDS[-1]:
+                        comparison = baseline_comparison(*report["cases"][:2])
+                        report["baseline_comparison"] = comparison
+                        if not comparison["passes_baseline_observational_comparison"]:
+                            report["status"] = "baseline_difference"
+                            break
+                else:
+                    report["status"] = "measured"
         report["scratch_removed"] = True
     except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as exc:
         report["error"] = f"{type(exc).__name__}: {exc}"[:500]

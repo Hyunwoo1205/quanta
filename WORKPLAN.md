@@ -12,7 +12,13 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 가용 메모리 기반 격리 실측
+## 현재 개발 위치 — A04 동일 입력 MPI 분산 재시험
+
+2026-11-08 KST, 과거 12 GiB에서 OOM이 확인된 H₂ 20 Å·800 Ry를 잠금 x86 이미지와 동일 입력 해시로 재시험합니다. 셀, 기본·보조 격자 설정, 기저, SCF, 전체 전자밀도 출력은 고정하고 MPI 2랭크·랭크당 OpenMP 1스레드로 실행합니다. 호스트에 2 GiB를 남기며 전체 컨테이너 RAM은 최대 12 GiB입니다. 컨테이너 OOM이 확인된 경우에만 새 작업 경로와 같은 입력·랭크로 격리 러너의 임시 4 GiB 스왑을 사용해 한 번 더 시험합니다. [고정 실행](.github/workflows/atomistic-a04-resource-ci.yml)
+
+20 Å가 완료되면 같은 실행 방식으로 16 Å·800 Ry 및 12 Å·400 Ry를 순차 실행하고 해시로 고정한 각 입력의 이전 1랭크 출력과 대조합니다. CUBE 해시가 다르면 같은 입력을 1랭크로 재현하고 동일 격자에서 값을 스트리밍해 차이를 측정합니다. 에너지·힘은 AV01의 허용오차, 적분 전자 수는 AV06의 허용오차를 차용하며, 밀도장의 절댓값 차이 적분은 별도 재현성 기준 0.001 전자로 대조합니다. 이 시험의 실제 결과는 실행 영수증으로 판정하며 수치·공간 수렴과 물리 검증은 별도입니다.
+
+## 이전 개발 기록 — A04 가용 메모리 기반 격리 실측
 
 2026-11-08 KST, [A04 자원 실측 CI](.github/workflows/atomistic-a04-resource-ci.yml)를 추가했습니다. 고정 x86 후보의 이미지 다이제스트와 선행 A03·GAPW 결과를 대조한 뒤 한 번에 한 사례를 실행합니다. 가용 메모리에서 2 GiB를 남긴 범위의 기본 상한은 10 GiB입니다. 컨테이너 메모리 부족이 확인되고 여유가 충분한 경우 같은 입력을 새 임시 경로에서 최대 12 GiB까지 한 번 재실행합니다.
 

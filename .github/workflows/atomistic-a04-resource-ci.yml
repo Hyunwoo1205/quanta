@@ -6,9 +6,17 @@ on:
     paths:
       - .github/workflows/atomistic-a04-resource-ci.yml
       - scripts/atomistic_a04_resources.py
+      - scripts/atomistic_a04_runner_swap.py
+      - scripts/compare_atomistic_a04_mpi.py
       - scripts/run_atomistic_a04_resource_ci.py
       - tests/test_atomistic_a04_resources.py
   workflow_dispatch:
+    inputs:
+      experiment:
+        description: "Choose a fixed A04 experiment"
+        type: choice
+        default: mpi-refinement
+        options: [mpi-refinement, serial-resource]
 
 permissions:
   contents: read
@@ -103,11 +111,29 @@ jobs:
         run: |
           python -B scripts/check_atomistic_a02.py \
             --output .cache/atomistic-a04-resource/evidence/a02-lock-check.json
+      - name: Retrieve the recorded 12 and 16 angstrom serial references
+        if: inputs.experiment != 'serial-resource'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: 42392583423
+          artifact-ids: 13582288020
+          path: .cache/atomistic-a04-resource/serial-reference
+          github-token: ${{ github.token }}
+          digest-mismatch: error
       - name: Measure baseline and enlarged-grid cases with adaptive memory
+        if: inputs.experiment == 'serial-resource'
         run: |
           python -B scripts/run_atomistic_a04_resource_ci.py \
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence
+      - name: Retry the unchanged 20 angstrom input and compare MPI precision
+        if: inputs.experiment != 'serial-resource'
+        run: |
+          python -B scripts/run_atomistic_a04_resource_ci.py \
+            --candidate-dir .cache/atomistic-a04-resource/candidate \
+            --output-dir .cache/atomistic-a04-resource/evidence \
+            --mpi-refinement-serial-report .cache/atomistic-a04-resource/serial-reference/report.json
       - name: Preserve the resource report and bounded diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
