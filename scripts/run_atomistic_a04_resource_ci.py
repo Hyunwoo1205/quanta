@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from contextlib import nullcontext
 from dataclasses import dataclass
+import hashlib
 import json
 import math
 import os
@@ -371,7 +372,7 @@ def clean_container(name: str) -> None:
 def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate: dict,
                 scratch: Path, diagnostics: Path, record: dict, *, mpi_ranks: int = 1,
                 swap_extra_bytes: int = 0, expected_input: str | None = None,
-                retained_cube: Path | None = None) -> None:
+                retained_cube: Path | None = None, distribute_real_space: bool = False) -> None:
     name = f"quanta-a04-resource-{uuid4().hex}"
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix=f"{case.name}-{attempt}-", dir=scratch) as path:
@@ -384,7 +385,16 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
             "cell_angstrom": case.cell, "cutoff_ry": case.cutoff,
             "rel_cutoff_ry": case.rel_cutoff, "density": case.density,
         }
-        (inputs / "input.inp").write_text(generate_input(**options), encoding="ascii")
+        base_input = generate_input(**options).encode("ascii")
+        submitted_input = base_input
+        if distribute_real_space:
+            mgrid_end = b"    &END MGRID\n"
+            if base_input.count(mgrid_end) != 1:
+                raise ValueError("The fixed input must contain exactly one MGRID section")
+            submitted_input = base_input.replace(
+                mgrid_end, b"      &RS_GRID\n        DISTRIBUTION_TYPE DISTRIBUTED\n      &END RS_GRID\n" + mgrid_end,
+            )
+        (inputs / "input.inp").write_bytes(submitted_input)
         metadata = probe_metadata(**options)
         record.update({
             "attempt": attempt, "status": "controller_error", "granted_memory_bytes": budget,
@@ -394,7 +404,9 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
             "sampled_work_peak_logical_bytes": 0, "sampled_work_peak_allocated_bytes": 0,
             "cgroup_memory_peak_bytes": None, "cgroup_sampled_current_peak_bytes": None,
             "cgroup_sampled_stat_peak_bytes": {}, "cgroup_memory_events_max": {},
-            "input_sha256": sha256(inputs / "input.inp"), "input_metadata": metadata,
+            "input_sha256": hashlib.sha256(base_input).hexdigest(),
+            "submitted_input_sha256": sha256(inputs / "input.inp"), "input_metadata": metadata,
+            "real_space_distribution_request": "DISTRIBUTED" if distribute_real_space else "AUTOMATIC",
         })
         state: dict = {}
         engine: dict = {}
@@ -525,6 +537,11 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 record["error"] = f"{type(exc).__name__}: {exc}"[:500]
             try:
                 sample_scratch(work, record)
+                if (work / "cp2k.out").is_file():
+                    with (work / "cp2k.out").open(encoding="utf-8", errors="replace") as stream:
+                        layout_log = stream.read(LOG_LIMIT)
+                    record["replicated_real_space_grid_count"] = layout_log.count("RS_GRID| Real space fully replicated")
+                    record["distributed_real_space_grid_count"] = layout_log.count("RS_GRID| Real space distribution over")
                 suffix = f"-mpi-{mpi_ranks}-swap-{swap_extra_bytes}" if retained_cube or mpi_ranks != 1 else ""
                 log_excerpt(work, diagnostics / f"{case.name}{suffix}-attempt-{attempt}.log")
             except (OSError, ValueError) as exc:
@@ -646,7 +663,8 @@ def refinement_attempt(case: Case, candidate: dict, scratch: Path, diagnostics: 
         }
     record: dict = {}
     run_attempt(case, attempt, budget, available, candidate, scratch, diagnostics, record,
-                mpi_ranks=ranks, swap_extra_bytes=swap, expected_input=expected_input, retained_cube=cube)
+                mpi_ranks=ranks, swap_extra_bytes=swap, expected_input=expected_input, retained_cube=cube,
+                distribute_real_space=ranks == 2)
     return record
 
 
@@ -699,7 +717,10 @@ def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
             large_row["status"] = recovered["status"]
         if large_row["status"] != "measured":
             return large_row["status"]
-        report["comparison_layout"] = {"mpi_ranks": 2, "omp_threads": 1, "swap_allowance_bytes": swap}
+        report["comparison_layout"] = {
+            "mpi_ranks": 2, "omp_threads": 1, "swap_allowance_bytes": swap,
+            "real_space_distribution_request": "DISTRIBUTED",
+        }
         comparisons_passed = True
         for case in (middle, small):
             row = {"case": case.name, "attempts": []}
@@ -792,7 +813,8 @@ def main() -> int:
         report["scope"] = "isolated_native_x86_A04_same_input_MPI_refinement"
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update({
-            "cpus": "one CPU per MPI rank, maximum two", "swap_extra_bytes": "zero initially; bounded fallback",
+            "cpus": "one CPU per MPI rank, maximum two", "swap_extra_bytes": "zero initially; 8 GiB bounded fallback",
+            "input_hash_scope": "input_sha256 is the base deck; submitted_input_sha256 includes the RS_GRID execution directive",
             "normal_memory_cap_bytes": MEMORY_TIERS_BYTES[-1],
             "retry_maximum_increase_bytes": 0,
             "oom_retry": "same deck and two ranks; one isolated bounded swap retry on verified OOM",

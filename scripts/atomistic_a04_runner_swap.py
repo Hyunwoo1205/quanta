@@ -12,7 +12,7 @@ import tempfile
 from atomistic_a04_resources import GIB
 
 
-SWAP_BYTES = 4 * GIB
+SWAP_BYTES = 8 * GIB
 
 
 def _active_swap_paths() -> set[str]:
@@ -45,7 +45,7 @@ def _check_runner(work_root: Path) -> None:
 
 @contextmanager
 def bounded_ci_swap(work_root: Path, *, minimum_free_bytes: int) -> Iterator[int]:
-    """Add up to 4 GiB of disk swap for one job and remove only our own file."""
+    """Add the bounded disk swap for one job and remove only our own file."""
     work_root = work_root.resolve(strict=True)
     _check_runner(work_root)
     if type(minimum_free_bytes) is not int or minimum_free_bytes < 0:
@@ -66,7 +66,8 @@ def bounded_ci_swap(work_root: Path, *, minimum_free_bytes: int) -> Iterator[int
             os.close(fd)
         if shutil.disk_usage(work_root).free < minimum_free_bytes:
             raise ValueError("Free disk reserve fell below the minimum during swap allocation")
-        subprocess.run(["/usr/sbin/mkswap", "--quiet", "--", path], check=True, timeout=30)
+        subprocess.run(["sudo", "-n", "/usr/bin/chown", "0:0", "--", path], check=True, timeout=30)
+        subprocess.run(["sudo", "-n", "/usr/sbin/mkswap", "--quiet", "--", path], check=True, timeout=30)
         subprocess.run(
             ["sudo", "-n", "/usr/sbin/swapon", "--priority", "0", "--", path],
             check=True, timeout=30,
