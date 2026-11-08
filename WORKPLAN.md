@@ -12,7 +12,17 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 OCI 고정 다섯 건 실측 완료 · 운영 보존 판정 보류
+## 현재 개발 위치 — A04 OCI DB 본체와 WAL 읽기 전용 대조 완료
+
+2026-11-08 KST [OCI 진단 42480916880](https://github.com/Hyunwoo1205/quanta/actions/runs/42480916880)에서 운영 jobs DB 본체와 WAL을 SQLite 연결 없이 43 ms 간격으로 관찰했습니다. 안정 표본 640개에서 DB 본체 지문은 모두 같았습니다. WAL이 없었던 표본은 636개, 0바이트 WAL이 있었던 표본은 4개였고 내용이 있는 WAL은 관측되지 않았습니다. 인접한 안정 표본에서 WAL 상태 전환은 8회였습니다. 최초 안정 표본과 비교할 때 4개 표본은 WAL만 달랐고, 최종 표본에서 두 파일 모두 최초와 일치했습니다. [진단 기록](docs/verification/atomistic-a04/oci-db-wal-observation-42480916880.json)
+
+첫 진단의 파일당 64 MiB 한도는 실제 대상에 부족했습니다. 기존 OCI 점검과 같은 512 MiB 상한, 전체 읽기량 1 GiB, 256 KiB 단위 읽기와 지문 재사용으로 보정하고 [x86·ARM 진단 CI 42480817152](https://github.com/Hyunwoo1205/quanta/actions/runs/42480817152)를 통과했습니다. 운영 진단은 파일을 읽기 전용으로 열었으며, 지문 원문이나 DB 내용은 내보내지 않았습니다.
+
+빈 WAL의 생성·제거만으로 결합 지문이 달라지는 현상을 운영 호스트에서 확인했습니다. 이전 OCI 시험의 첫 사후 표본에는 두 파일의 개별 판정이 없어 당시 차이의 원인은 확정할 수 없습니다. 원래 보존 판정과 운영 적격 상태는 보류입니다.
+
+**다음 시작점은** 보존 검사에서 안정적으로 관측한 DB 본체와 내용이 있는 WAL의 변경을 기존처럼 차단하면서, 빈 WAL과 부재의 전환을 따로 보고하는 것입니다. 해당 검사와 회귀 시험을 준비한 뒤 고정 OCI 시험을 다시 검증합니다. SCF·원자 중심 격자·기저 수렴은 별도입니다.
+
+## 이전 개발 기록 — A04 OCI 고정 다섯 건 실측 완료 · 운영 보존 판정 보류
 
 2026-11-08 KST [OCI 재시험 42477399912](https://github.com/Hyunwoo1205/quanta/actions/runs/42477399912)에서 CP2K ARMv8-A로 H₂ 0.60·0.74144·0.80·1.00 Å의 12 Å·400 Ry·REL_CUTOFF 40 Ry와 He의 12 Å·800 Ry·REL_CUTOFF 80 Ry를 1랭크·1스레드로 순차 실행했습니다. H₂ 엔진은 31.56–36.87초·최대 cgroup RAM 1.77 GiB, He 엔진은 100.90초·4.72 GiB였습니다. 컨테이너 준비·출력 검사·정리를 포함한 시도는 각각 36.29–41.49초와 109.76초였습니다. 다섯 건의 스왑과 OOM은 0이었습니다. [실측 및 보존 판정 기록](docs/verification/atomistic-a04/oci-qualification-42477399912.json)
 

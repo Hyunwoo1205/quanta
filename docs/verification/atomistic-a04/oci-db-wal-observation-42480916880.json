@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "scope": "read-only fixed OCI jobs database and WAL observation",
+  "workflow_run_id": 42480916880,
+  "workflow_job_id": 128732434828,
+  "workflow_conclusion": "success",
+  "ops_request_commit": "05a2c11057a0a06087458d46e2880ea090e2dad9",
+  "quanta_source": "ae804d6cea5613cdcffcb463ec65494bd921960f",
+  "control_diagnostic_ci_run": 42480817152,
+  "baseline_full_ci_run": 42475116959,
+  "artifact": {
+    "id": 13617157258,
+    "name": "oci-a04-db-wal-05a2c11057a0a06087458d46e2880ea090e2dad9",
+    "digest": "sha256:9bb3f471c8fbba03ffc7064cbd908672d4f660124405e470506fb57d540d3dd0"
+  },
+  "earlier_attempt": {
+    "workflow_run_id": 42480631672,
+    "workflow_job_id": 128731570149,
+    "workflow_conclusion": "failure",
+    "ops_request_commit": "3ad7c5e1b83d9cff4e360cd76d161d6b9e5f6f2d",
+    "quanta_source": "70dc0a19960c591682de15c3bd818efd816aaf91",
+    "artifact": {
+      "id": 13617820316,
+      "name": "oci-a04-db-wal-3ad7c5e1b83d9cff4e360cd76d161d6b9e5f6f2d",
+      "digest": "sha256:07973d5787bbfa12ee5364111256deb93d122b545a7f9e05ebe72845c1eccb32"
+    },
+    "reason": "file_limit",
+    "per_file_limit_bytes": 67108864
+  },
+  "observation_policy": {
+    "sample_interval_ms": 43,
+    "per_file_limit_bytes": 536870912,
+    "total_read_limit_bytes": 1073741824,
+    "read_chunk_bytes": 262144,
+    "sqlite_connection_opened": false,
+    "atime_updates_allowed": false,
+    "remote_payload_data_exported": false
+  },
+  "observation": {
+    "attempted_samples": 640,
+    "differences_from_first": {
+      "both": 0,
+      "main_only": 0,
+      "unchanged": 636,
+      "wal_only": 4
+    },
+    "last_matches_first": {
+      "main": true,
+      "wal": true
+    },
+    "main_fingerprints": 1,
+    "stable_pairs": 640,
+    "unstable_samples": 0,
+    "wal_fingerprints": 2,
+    "wal_state_transitions": 8,
+    "wal_states": {
+      "absent": 636,
+      "empty": 4,
+      "nonempty": 0
+    }
+  },
+  "prior_qualification_run": 42477399912,
+  "prior_first_postflight_cause_confirmed": false,
+  "operational_qualification_passed": false
+}
