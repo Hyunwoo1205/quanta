@@ -18,8 +18,8 @@ concurrency:
 env:
   # The ops/oci workflow pins the reviewed main commit and its successful full CI.
   # These inert values allow the main control source to pass CI before it is pinned.
-  QUANTA_ATOMISTIC_A04_CONTROL_SHA: '1344339c5023a73543971b414b6b2b944ebc7308'
-  QUANTA_ATOMISTIC_A04_CONTROL_CI_RUN: '42471501127'
+  QUANTA_ATOMISTIC_A04_CONTROL_SHA: '66940c3de634d077b6a26a4a6089094d753ec4b8'
+  QUANTA_ATOMISTIC_A04_CONTROL_CI_RUN: '42475116959'
 
 jobs:
   atomistic:
