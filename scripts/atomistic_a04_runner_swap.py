@@ -12,7 +12,7 @@ import tempfile
 from atomistic_a04_resources import GIB
 
 
-SWAP_BYTES = 8 * GIB
+SWAP_BYTES = 16 * GIB
 
 
 def _active_swap_paths() -> set[str]:

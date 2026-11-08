@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "scope": "isolated_native_x86_A04_same_input_MPI_refinement",
+  "workflow_run_id": 42437718361,
+  "workflow_job_id": 128600069679,
+  "quanta_source": "7afb142e3c01c485cd9407031685428beec24e1a",
+  "workflow_conclusion": "failure",
+  "case": "h2-20a-800ry-density-on",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+  "artifact": {
+    "id": 13599989064,
+    "bytes": 18441,
+    "sha256": "4a4705431fe4c8632e0357ab0dcbf1e1339efa842204fbd4534655d599bcc9b5",
+    "report_sha256": "c717b34581ce5228d0007afc4a4da2bc69a6dd404a05392029fb91f119d0451d"
+  },
+  "attempts": [
+    {
+      "status": "container_oom",
+      "attempt": 1,
+      "input_sha256": "d17d656bb1e97d4aa68fdb1f1e56fb4e3d30bde91a103a65393970d81b0cd0c9",
+      "submitted_input_sha256": "e8df3126f904afb744495c4587b5ce4d68819ad159d0e3d5f5a064af90efc462",
+      "requested_mpi_ranks": 2,
+      "granted_memory_bytes": 12728406016,
+      "granted_swap_extra_bytes": 0,
+      "cgroup_memory_peak_bytes": 12728406016,
+      "cgroup_memory_events_max": {
+        "max": 98,
+        "oom": 3,
+        "oom_kill": 2,
+        "oom_group_kill": 0,
+        "low": 0,
+        "high": 0,
+        "sock_throttled": 0
+      },
+      "container_elapsed_seconds": 40.264304390999996,
+      "container_removed": true,
+      "replicated_real_space_grid_count": 1,
+      "distributed_real_space_grid_count": 3,
+      "observed_mpi_ranks": 2,
+      "reached_scf": false,
+      "swap_peak_bytes": 0
+    },
+    {
+      "status": "container_oom",
+      "attempt": 2,
+      "input_sha256": "d17d656bb1e97d4aa68fdb1f1e56fb4e3d30bde91a103a65393970d81b0cd0c9",
+      "submitted_input_sha256": "e8df3126f904afb744495c4587b5ce4d68819ad159d0e3d5f5a064af90efc462",
+      "requested_mpi_ranks": 2,
+      "granted_memory_bytes": 12884901888,
+      "granted_swap_extra_bytes": 8589934592,
+      "cgroup_memory_peak_bytes": 12884901888,
+      "cgroup_memory_events_max": {
+        "max": 6150,
+        "oom": 5,
+        "oom_kill": 1,
+        "oom_group_kill": 0,
+        "low": 0,
+        "high": 0,
+        "sock_throttled": 0
+      },
+      "container_elapsed_seconds": 94.65671518200001,
+      "container_removed": true,
+      "replicated_real_space_grid_count": 1,
+      "distributed_real_space_grid_count": 3,
+      "observed_mpi_ranks": 2,
+      "reached_scf": true,
+      "swap_peak_bytes": 8589934592
+    }
+  ],
+  "smaller_case_gate": "not_run_due_to_20a_OOM",
+  "scratch_removed": true,
+  "physical_validation": "unvalidated"
+}

@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-from contextlib import nullcontext
 from dataclasses import dataclass
 import hashlib
 import json
@@ -70,7 +69,7 @@ CASES = (
 )
 
 MPI_CASES = (
-    Case("h2-20a-800ry-density-on", 20, 800, True, 1200, 4 * GIB, rel_cutoff=80),
+    Case("h2-20a-800ry-density-on", 20, 800, True, 1800, 4 * GIB, rel_cutoff=80),
     CASES[-1],
     CASES[1],
 )
@@ -676,6 +675,7 @@ def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
     if len(os.sched_getaffinity(0)) < 2:
         raise ValueError("This runner does not expose two CPUs for the MPI comparison")
     failed = json.loads((REFINEMENT_RECEIPTS / "resource-42392008763.json").read_bytes())
+    failed_mpi = json.loads((REFINEMENT_RECEIPTS / "mpi-resource-42437718361.json").read_bytes())
     historical = json.loads((REFINEMENT_RECEIPTS / "resource-42392583423.json").read_bytes())
     if serial_report.stat().st_size > REPORT_LIMIT or sha256(serial_report) != historical["raw_artifact"]["report_sha256"]:
         raise ValueError("Historical serial report does not match the recorded artifact")
@@ -688,6 +688,14 @@ def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
         raise ValueError("Historical attempts and the new experiment must use the same image and binary")
     large, middle, small = MPI_CASES
     failed_large = next(row for row in failed["cases"] if row["case"] == large.name)["attempts"][-1]
+    prior_mpi = failed_mpi["attempts"][-1]
+    if (
+        failed_mpi["binary_sha256"] != candidate["binary_sha256"] or failed_mpi["image_id"] != candidate["image_id"]
+        or prior_mpi["input_sha256"] != failed_large["input_sha256"]
+        or prior_mpi["status"] != "container_oom" or prior_mpi["swap_peak_bytes"] != 8 * GIB
+        or prior_mpi["observed_mpi_ranks"] != 2 or not prior_mpi["distributed_real_space_grid_count"]
+    ):
+        raise ValueError("The larger swap experiment requires the verified two-rank OOM with exhausted swap")
     references = {row["case"]: row["attempts"][-1] for row in previous["cases"]}
     if failed_large["status"] != "container_oom" or any(
         references[case.name]["status"] != "measured" for case in (middle, small)
@@ -695,26 +703,20 @@ def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
         raise ValueError("Unexpected historical A04 evidence")
     report["prior_runs"] = {
         "20a_serial_oom": failed["workflow_run_id"],
+        "20a_distributed_oom": failed_mpi["workflow_run_id"],
         "16a_serial_reference": historical["workflow_run_id"],
         "12a_400ry_serial_reference": historical["workflow_run_id"],
     }
     cases = report["cases"]
     large_row = {"case": large.name, "attempts": []}
     cases.append(large_row)
-    first = refinement_attempt(large, candidate, scratch, diagnostics, ranks=2, swap=0,
-                               expected_input=failed_large["input_sha256"])
-    large_row["attempts"].append(first)
-    large_row["status"] = first["status"]
-    swap_context = (
-        bounded_ci_swap(scratch.parent, minimum_free_bytes=DISK_ADMISSION)
-        if first["status"] == "container_oom" else nullcontext(0)
-    )
-    with swap_context as swap:
-        if swap:
-            recovered = refinement_attempt(large, candidate, scratch, diagnostics, ranks=2, swap=swap, attempt=2,
-                                           expected_input=failed_large["input_sha256"])
-            large_row["attempts"].append(recovered)
-            large_row["status"] = recovered["status"]
+    with bounded_ci_swap(scratch.parent, minimum_free_bytes=DISK_ADMISSION) as swap:
+        recovered = refinement_attempt(large, candidate, scratch, diagnostics, ranks=2, swap=swap, attempt=3,
+                                       expected_input=failed_large["input_sha256"])
+        large_row["attempts"].append(recovered)
+        large_row["status"] = recovered["status"]
+        if recovered.get("submitted_input_sha256") not in (None, prior_mpi["submitted_input_sha256"]):
+            raise ValueError("The follow-up distributed deck differs from the previous MPI attempt")
         if large_row["status"] != "measured":
             return large_row["status"]
         report["comparison_layout"] = {
@@ -813,11 +815,11 @@ def main() -> int:
         report["scope"] = "isolated_native_x86_A04_same_input_MPI_refinement"
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update({
-            "cpus": "one CPU per MPI rank, maximum two", "swap_extra_bytes": "zero initially; 8 GiB bounded fallback",
+            "cpus": "one CPU per MPI rank, maximum two", "swap_extra_bytes": "16 GiB bounded recovery",
             "input_hash_scope": "input_sha256 is the base deck; submitted_input_sha256 includes the RS_GRID execution directive",
             "normal_memory_cap_bytes": MEMORY_TIERS_BYTES[-1],
             "retry_maximum_increase_bytes": 0,
-            "oom_retry": "same deck and two ranks; one isolated bounded swap retry on verified OOM",
+            "oom_retry": "one isolated follow-up of the recorded 8 GiB swap exhaustion with the same deck and two ranks",
             "raw_cube": "streamed, compared on the runner if necessary, and discarded with temporary scratch",
         })
     try:
