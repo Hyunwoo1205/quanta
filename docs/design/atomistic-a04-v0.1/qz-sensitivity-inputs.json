@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "scope": "post_G2_native_x86_QZ_one_factor_sensitivity_development_only",
+  "g2_receipt_sha256": "896087cd6c54d515e2490dd3041202628ba859d487def22fb5bf8aa619e6d452",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "checks": {
+    "AV03": {
+      "id": "AV03",
+      "layer": "numerical",
+      "observable": "scf_and_grid_property_convergence",
+      "rule": "Refine each SCF/grid/atomic-grid family separately; compare two finest levels with other families fixed sufficiently fine.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 1e-06,
+      "force_atol_hartree_per_bohr": 1e-05
+    },
+    "AV05": {
+      "id": "AV05",
+      "layer": "density",
+      "observable": "engine_all_electron_count",
+      "rule": "Engine all-electron hard+soft integral compared to 2.",
+      "atol": 1e-06,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty"
+    },
+    "AV06": {
+      "id": "AV06",
+      "layer": "density",
+      "observable": "exported_density_integral",
+      "rule": "Explicit full hard+soft electron-number density export: integral rho*dV compared to 2, including field/grid refinement.",
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "blocked_until": "A02/A04 full-density export semantics pinned; soft or signed total charge density cannot substitute"
+    }
+  },
+  "density_l1_atol_electrons": 0.001,
+  "shell_width_angstrom": 1,
+  "shell_atol_electrons": 0.001,
+  "omitted_atol_electrons": 0.001,
+  "allow_cell_interpolation": false,
+  "wall_seconds": 900,
+  "tracks": {
+    "h2-short": {
+      "system": "h2-short",
+      "axes": [
+        "scf",
+        "radial",
+        "angular",
+        "cutoff",
+        "relative",
+        "cell"
+      ]
+    },
+    "he-local": {
+      "system": "he",
+      "axes": [
+        "scf",
+        "radial",
+        "angular"
+      ]
+    },
+    "he-mgrid": {
+      "system": "he",
+      "axes": [
+        "cutoff",
+        "relative"
+      ]
+    },
+    "he-cell": {
+      "system": "he",
+      "axes": [
+        "cell"
+      ]
+    }
+  },
+  "fixtures": {
+    "h2-short": {
+      "fixture": "A04-H2-short",
+      "baseline_cell_cutoff_relative": [
+        12,
+        400,
+        40
+      ],
+      "anchor": {
+        "cap_gib": 3,
+        "input_sha256": "7dcebdb24ac1c100049978fdd2dbd72828f0dadf5eda5e315fcbd3d92c29d010"
+      },
+      "scf": {
+        "value": 1e-10,
+        "cap_gib": 3,
+        "input_sha256": "b3b77de932f04b305ded54f472556c5f6bed029ea1d14fb45c0bfbf648200164"
+      },
+      "radial": {
+        "value": 250,
+        "cap_gib": 3,
+        "input_sha256": "4965564315564542eb4aa859bd203e0da70a4544a656417eed735a7d4627fa64"
+      },
+      "angular": {
+        "value": 302,
+        "cap_gib": 3,
+        "input_sha256": "9e8c6d7b1641f7462d8bd38c5c500f92d232f63f026e6d2137d908c59732e17f"
+      },
+      "cutoff": {
+        "value": 600,
+        "cap_gib": 6,
+        "input_sha256": "5d899325be7ff80f883157e83cd23978809f3120d3a9c9ca6e5ed2f2335c32ed"
+      },
+      "relative": {
+        "value": 80,
+        "cap_gib": 3,
+        "input_sha256": "ddabc4b5ce3cd1ea56c4f411ef671d7d4c823e99db1f3b8f0ffad9742841ef4b"
+      },
+      "cell": {
+        "value": 16,
+        "cap_gib": 6,
+        "input_sha256": "a7f3a8839f2c7a244935464f47e9d1ee6c464e06f93fef38f69397522b6dd6e4"
+      }
+    },
+    "he": {
+      "fixture": "C01-He",
+      "baseline_cell_cutoff_relative": [
+        12,
+        800,
+        80
+      ],
+      "anchor": {
+        "cap_gib": 6,
+        "input_sha256": "ddcbc594870c97e05235b1305cedab41f0ead81ed05ab06ec02a6b7e98662995"
+      },
+      "scf": {
+        "value": 1e-10,
+        "cap_gib": 6,
+        "input_sha256": "21762ce350a2b0f49d6f595cd15db3dc1c11f6e71983911c6d1e39628c132114"
+      },
+      "radial": {
+        "value": 250,
+        "cap_gib": 6,
+        "input_sha256": "32a11a5ffae9235022ee4585f8994a68e554320fe6b232a22e7dfdc0ef5eae5b"
+      },
+      "angular": {
+        "value": 302,
+        "cap_gib": 6,
+        "input_sha256": "ebac95ff57eed4e3f3e7610dd10e0acd568439c486c06a4b9d31af7d9b9d7746"
+      },
+      "cutoff": {
+        "value": 1000,
+        "cap_gib": 10,
+        "input_sha256": "e79ffd6a5c7ae5d0ed8b282caf9d708e40c5c1d7819b63b037b752708ccaa272"
+      },
+      "relative": {
+        "value": 120,
+        "cap_gib": 6,
+        "input_sha256": "851ec2ad0525e48fb9b2bb4d5b5748cad9f4647812bde8e15999c4cd6fc85c61"
+      },
+      "cell": {
+        "value": 16,
+        "cap_gib": 12,
+        "input_sha256": "5e3227896b7ea542b75c352489dd3d183e057d47b767911486ba4c535a049ea8"
+      }
+    }
+  },
+  "rules": [
+    "Hold PBE/GAPW/cc-pVQZ, geometry, print precision and all other settings fixed. Translate the fixed geometry to the center when varying only the finite cell size.",
+    "One native CPU, MPI rank and OMP thread per runner; no swap or retry. Require each fixed cgroup cap plus 2 GiB effective host reserve and 10 GiB scratch free.",
+    "Check conditioning at every measured input. Compare original signed CUBE directly on equal grids or centered aligned crop; on changed CUTOFF apply both 4- and 6-point interpolations and require both to pass.",
+    "For a cell increase also measure outer 1 angstrom boundary shells and omitted absolute density, with separate 0.001 electron screens.",
+    "Repeat the exact G2 QZ input per track and log same-input CUBE digest equality separately. A failed endpoint or unavailable evidence keeps the QZ reference and A04 contract unfrozen.",
+    "This diagnostic neither changes AV04 nor substitutes for combined refined settings, independent physical validation, architecture checks or production qualification."
+  ]
+}

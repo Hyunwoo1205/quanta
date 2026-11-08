@@ -1,0 +1,19 @@
+name: Atomistic A04 fixed-fixture QZ sensitivity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-qz-sensitivity.yml
+      - docs/design/atomistic-a04-v0.1/qz-sensitivity-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  qz:
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: qz-sensitivity

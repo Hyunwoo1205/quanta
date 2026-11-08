@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 import math
@@ -97,6 +97,9 @@ SCF_PLAN = FIXTURE_PLAN.with_name("scf-refinement.json")
 GRID_PLAN = FIXTURE_PLAN.with_name("remaining-numerical-validation.json")
 GRID_INPUTS = FIXTURE_PLAN.with_name("atomic-grid-inputs.json")
 BASIS_INPUTS = FIXTURE_PLAN.with_name("basis-refinement-inputs.json")
+QZ_INPUTS = FIXTURE_PLAN.with_name("qz-sensitivity-inputs.json")
+QZ_G2_RECEIPT = REFINEMENT_RECEIPTS / "basis-refinement-42499460058.json"
+QZ_TRACKS = ("h2-short", "he-local", "he-mgrid", "he-cell")
 
 
 ENGINE_WRAPPER = r"""
@@ -1195,7 +1198,7 @@ def run_scf_screen(system: str, candidate: dict, scratch: Path, diagnostics: Pat
 
 
 def check_grid_attempt(attempt: dict, case: Case, spec: dict, expected: str, cube: Path, cap: int,
-                       checks: dict) -> None:
+                       checks: dict, *, require_electron_counts: bool = True) -> None:
     if attempt["status"] != "measured":
         raise ValueError("Missing completed atomic-grid attempt")
     meta = attempt["input_metadata"]
@@ -1204,7 +1207,7 @@ def check_grid_attempt(attempt: dict, case: Case, spec: dict, expected: str, cub
         meta["source_fixture"] != spec["fixture"]
         or meta["basis"] != case.basis
         or (numerics["radial_grid"], numerics["lebedev_grid"]) != (case.radial_grid, case.lebedev_grid)
-        or numerics["eps_scf"] != 1e-8
+        or numerics["eps_scf"] != case.eps_scf
         or attempt["input_sha256"] != expected
         or attempt["submitted_input_sha256"] != expected
         or attempt["granted_memory_bytes"] != cap
@@ -1222,6 +1225,8 @@ def check_grid_attempt(attempt: dict, case: Case, spec: dict, expected: str, cub
         raise ValueError("Invalid retained CUBE path or byte size")
     if sha256(cube) != density["sha256"]:
         raise ValueError("Retained CUBE SHA-256 differs from measured evidence")
+    if not require_electron_counts:
+        return
     for value, gate in ((attempt["engine_hard_soft_electron_count"], "AV05"), (density["electron_integral"], "AV06")):
         if not math.isfinite(value) or abs(value - 2) > checks[gate]["atol"]:
             raise ValueError(f"{gate} electron count exceeds the predeclared tolerance")
@@ -1412,6 +1417,108 @@ def run_basis_ladder(system: str, candidate: dict, scratch: Path, diagnostics: P
     return "measured" if report["finest_pairs_passed"] else "criterion_not_met"
 
 
+def run_qz_sensitivity(track: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
+    from compare_atomistic_qz_sensitivity import compare_qz_pair
+
+    locked = json.loads(QZ_INPUTS.read_bytes())
+    receipt = json.loads(QZ_G2_RECEIPT.read_bytes())
+    checks = {item["id"]: item for item in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    if (
+        locked["g2_receipt_sha256"] != sha256(QZ_G2_RECEIPT)
+        or receipt["status"] != "no_go_fixed_fixture_basis_pilots"
+        or any(locked[key] != candidate[key] or locked[key] != receipt[key]
+               for key in ("cp2k_source", "binary_sha256"))
+        or any(locked["checks"][key] != checks[key] for key in ("AV03", "AV05", "AV06"))
+    ):
+        raise ValueError("QZ sensitivity requires its locked G2 evidence, candidate and comparison criteria")
+
+    system = locked["tracks"][track]["system"]
+    spec = locked["fixtures"][system]
+    prior = next(row for row in receipt["pilots"] if row["system"] == system)
+    prior_qz = next(row for row in prior["cases"] if row["basis"] == "cc-pVQZ")
+    cell, cutoff, relative = spec["baseline_cell_cutoff_relative"]
+    base = Case(f"{system}-qz-anchor", cell, cutoff, True, locked["wall_seconds"], rel_cutoff=relative,
+                system=system, radial_grid=200, lebedev_grid=194, basis="cc-pVQZ", overlap_condition=True)
+    if spec["anchor"]["input_sha256"] != prior_qz["input_sha256"] or not prior_qz["conditioning"]["conditioning_passed"]:
+        raise ValueError("QZ anchor does not match the conditioned G2 input")
+    report.update(track=track, system=system, fixture_id=spec["fixture"], comparisons=[],
+                  input_manifest_sha256=sha256(QZ_INPUTS), prior_qz_cube_sha256=prior_qz["cube_sha256"])
+    report["resource_policy"].update(normal_memory_cap_bytes="per case, locked", retry_memory_cap_bytes=None)
+    fields = {"scf": "eps_scf", "radial": "radial_grid", "angular": "lebedev_grid",
+              "cutoff": "cutoff", "relative": "rel_cutoff", "cell": "cell"}
+    incomplete = False
+    conditioning_passed = True
+    anchor = None
+    for axis in ("anchor", *locked["tracks"][track]["axes"]):
+        row_spec = spec[axis]
+        case = base if axis == "anchor" else replace(base, name=f"{system}-qz-{axis}",
+                                                      **{fields[axis]: row_spec["value"]})
+        cap, expected = row_spec["cap_gib"] * GIB, row_spec["input_sha256"]
+        if not 0 < cap <= MEMORY_TIERS_BYTES[-1]:
+            raise ValueError("QZ cap exceeds the fixed development runner envelope")
+        cube = scratch / f"{case.name}.cube"
+        attempt: dict = {}
+        report["cases"].append({"axis": axis, "case": case.name, "attempt": attempt})
+        available = available_memory_bytes()
+        free = shutil.disk_usage(scratch).free
+        if available < cap + MEMORY_RESERVE_BYTES or free < DISK_ADMISSION:
+            attempt.update(status="deferred_headroom", available_memory_bytes=available, free_disk_bytes=free)
+        else:
+            run_attempt(case, 1, cap, available, candidate, scratch, diagnostics, attempt,
+                        expected_input=expected, retained_cube=cube)
+        if attempt["status"] != "measured":
+            if axis == "anchor":
+                return "measurement_incomplete"
+            incomplete = True
+            continue
+        check_grid_attempt(attempt, case, spec, expected, cube, cap, checks, require_electron_counts=False)
+        conditioning_passed &= attempt["basis_conditioning"]["conditioning_passed"]
+        if axis == "anchor":
+            if attempt["density"]["grid_counts"] != prior_qz["cube_grid"]:
+                raise ValueError("QZ anchor native grid counts differ from G2")
+            report["anchor_cube_matches_g2"] = attempt["density"]["sha256"] == prior_qz["cube_sha256"]
+            anchor = attempt, cube
+            continue
+        base_attempt, base_cube = anchor
+        result = compare_qz_pair(case, base, attempt, base_attempt, cube, base_cube, checks,
+                                 locked["density_l1_atol_electrons"], axis=axis,
+                                 shell_width_angstrom=locked["shell_width_angstrom"],
+                                 shell_atol=locked["shell_atol_electrons"],
+                                 omitted_atol=locked["omitted_atol_electrons"],
+                                 allow_cell_interpolation=locked["allow_cell_interpolation"])
+        report["comparisons"].append({"axis": axis, "result": result})
+        cube.unlink()
+    report["verification_scope"]["fixed_fixture_qz_sensitivity"] = "partial" if incomplete else "measured"
+    if incomplete:
+        return "measurement_incomplete"
+    passed = conditioning_passed and all(row["result"]["within_all_endpoint_thresholds"]
+                                        for row in report["comparisons"])
+    return "measured" if passed else "criterion_not_met"
+
+
+def summarize_qz_sensitivity(report: dict, output: Path) -> None:
+    summary = {key: report[key] for key in (
+        "scope", "track", "system", "status", "input_manifest_sha256", "anchor_cube_matches_g2", "error",
+    ) if key in report}
+    summary["report_sha256"] = sha256(output / "report.json")
+    summary["cases"] = [
+        {
+            "axis": row["axis"], **{key: row["attempt"].get(key) for key in (
+                "status", "error", "input_sha256", "granted_memory_bytes", "available_memory_at_admission_bytes",
+                "granted_swap_extra_bytes", "cgroup_memory_peak_bytes", "cgroup_memory_events_max",
+                "engine_scf_iterations", "engine_energy_hartree", "engine_forces_hartree_per_bohr",
+                "engine_hard_soft_electron_count", "basis_conditioning",
+            )},
+            "engine_seconds": row["attempt"].get("engine_resource", {}).get("engine_wall_seconds"),
+            "density": {key: row["attempt"].get("density", {}).get(key)
+                        for key in ("sha256", "grid_counts", "electron_integral")},
+        }
+        for row in report["cases"]
+    ]
+    summary["comparisons"] = report["comparisons"]
+    print("QUANTA_QZ_RESULT " + json.dumps(summary, allow_nan=False, separators=(",", ":")))
+
+
 def summarize_atomic_grid(report: dict, output: Path) -> None:
     summary = {key: report[key] for key in (
         "system", "scope", "status", "comparison_plan_sha256", "input_manifest_sha256",
@@ -1463,6 +1570,7 @@ def main() -> int:
     mode.add_argument("--grid-pilot", choices=("h2-short", "he"))
     mode.add_argument("--atomic-grid", choices=SCF_SYSTEMS)
     mode.add_argument("--basis-refinement", choices=SCF_SYSTEMS)
+    mode.add_argument("--qz-sensitivity", choices=QZ_TRACKS)
     parser.add_argument("--grid-pilot-dir", type=Path)
     args = parser.parse_args()
     if args.grid_pilot_dir is not None and not (args.grid_pilot or args.atomic_grid):
@@ -1504,7 +1612,15 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.basis_refinement:
+    if args.qz_sensitivity:
+        report["scope"] = "isolated_native_x86_A04_fixed_fixture_qz_sensitivity"
+        report.pop("known_unadmitted_cases")
+        report["resource_policy"].update(
+            retry_maximum_increase_bytes=0, oom_retry="none; fixed per-case caps",
+            raw_cube="signed original samples compared on runner disk and removed",
+        )
+        report["verification_scope"]["fixed_fixture_qz_sensitivity"] = "incomplete"
+    elif args.basis_refinement:
         report["scope"] = "isolated_native_x86_A04_fixed_fixture_basis_refinement"
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update(
@@ -1586,7 +1702,9 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.basis_refinement:
+            if args.qz_sensitivity:
+                report["status"] = run_qz_sensitivity(args.qz_sensitivity, candidate, Path(directory), diagnostics, report)
+            elif args.basis_refinement:
                 report["status"] = run_basis_ladder(args.basis_refinement, candidate, Path(directory), diagnostics, report)
             elif args.grid_pilot or args.atomic_grid:
                 report["status"] = run_atomic_grid(
@@ -1626,7 +1744,9 @@ def main() -> int:
     finally:
         write_report(output / "report.json", report)
     print(f"A04 native resource measurement: {report['status']}; report.json")
-    if args.grid_pilot or args.atomic_grid or args.basis_refinement:
+    if args.qz_sensitivity:
+        summarize_qz_sensitivity(report, output)
+    elif args.grid_pilot or args.atomic_grid or args.basis_refinement:
         if args.grid_pilot and report["status"] == "measured":
             shutil.copyfile(output / "report.json", args.grid_pilot_dir / "report.json")
         summarize_atomic_grid(report, output)

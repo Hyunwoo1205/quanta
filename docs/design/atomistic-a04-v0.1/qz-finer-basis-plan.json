@@ -1,0 +1,109 @@
+{
+  "document_kind": "preregistered_development_validation_plan",
+  "schema_version": 1,
+  "status": "conditional_pilot_planned_not_executed",
+  "executable": false,
+  "physical_validation_status": "unvalidated",
+  "scope": "Isolated x86 H2 0.60 Å and He numerical screening only. No public capability, profile freeze, ARM/OCI execution, deployment or production resource authorization.",
+  "prior_basis_receipt": {
+    "path": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
+    "sha256": "896087cd6c54d515e2490dd3041202628ba859d487def22fb5bf8aa619e6d452",
+    "status": "criterion_not_met",
+    "unchanged_decision": "The TZ–QZ screen failed. This pilot does not retroactively pass G2 or unlock G3–G6."
+  },
+  "candidate": {
+    "name": "cc-pV5Z",
+    "role": "Finer compatible orbital-basis candidate subject to resource, rank and numerical screening",
+    "repository": "MolSSI-BSE/basis_set_exchange",
+    "commit": "9fe07596f87753343e0a5748d1722135b21b8623",
+    "path": "basis_set_exchange/data/dunning/cc-pV5Z.1.json",
+    "url": "https://raw.githubusercontent.com/MolSSI-BSE/basis_set_exchange/9fe07596f87753343e0a5748d1722135b21b8623/basis_set_exchange/data/dunning/cc-pV5Z.1.json",
+    "license": "BSD-3-Clause",
+    "source_size_bytes": 367716,
+    "source_sha256": "21ae4069e69544dbba11cfbeae7ba4231bbcacd847ae3f116f035b8714c9f3b7",
+    "source_git_blob_sha1": "983519322594e50444da24a5c137fbe17a2c293c",
+    "elements": ["1", "2"],
+    "expected_spherical_shell_counts_per_atom": [5, 4, 3, 2, 1],
+    "expected_spherical_functions_per_atom": 55,
+    "expected_fixture_spherical_functions": {"h2-short": 110, "he": 55},
+    "asset_admission": "Before execution, extract only the fixed H/He records without numeric edits. Re-render as CP2K orbital input, verify parsed exponents and contraction vectors against those records and commit the exact source, conversion, asset and deck identities. Keep the existing A02 basis lock and the QZ asset intact. Record and validate expected AO counts from stdout."
+  },
+  "fixed_engine": {
+    "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+    "x86_artifact_id": 13579899979,
+    "x86_build_run_id": 42385227123,
+    "method": "All-electron nonrelativistic PBE/GAPW, POTENTIAL ALL, neutral closed shell, identical ordered centered fixture, MT nonperiodic boundary, OT/DIIS/FULL_ALL from atomic guess, GC_LOG, LMAXN0 2",
+    "export": "Native signed unmodified TOTAL_DENSITY CUBE at stride 1, with lattice, geometry, raw hash, electron integral and boundary support recorded",
+    "x86_provenance_admission": "Reverify the live pinned artifact and image, source and binary identities before use. An unavailable artifact requires a separate qualified rebuild and exact baseline equivalence."
+  },
+  "prior_qz_anchors": {
+    "h2-short": {
+      "deck_sha256": "7dcebdb24ac1c100049978fdd2dbd72828f0dadf5eda5e315fcbd3d92c29d010",
+      "cell_angstrom_cutoff_ry_relative_cutoff_ry": [12, 400, 40],
+      "cube_shape": [150, 150, 150],
+      "qz_overlap_min_eigenvalue_printed": 0.00009157,
+      "qz_overlap_condition_printed": 71210,
+      "qz_peak_bytes": 1894023168
+    },
+    "he": {
+      "deck_sha256": "ddcbc594870c97e05235b1305cedab41f0ead81ed05ab06ec02a6b7e98662995",
+      "cell_angstrom_cutoff_ry_relative_cutoff_ry": [12, 800, 80],
+      "cube_shape": [216, 216, 216],
+      "qz_overlap_min_eigenvalue_printed": 0.006165,
+      "qz_overlap_condition_printed": 549.7,
+      "qz_peak_bytes": 5056536576
+    },
+    "eps_scf": 1e-8,
+    "radial_lebedev_grid": [200, 194],
+    "lmaxn1": 6,
+    "conditioning_risk": "The short H2 QZ minimum printed eigenvalue was about nine times the existing lower guard. The extra 5Z orbital functions may reduce it further. A count or a successful SCF alone cannot establish usable overlap."
+  },
+  "steps": [
+    {
+      "id": "B0",
+      "action": "Read the completed QZ sensitivity evidence and explicitly select one admissible tuple per pilot before generating the basis-pair inputs. Lock its exact values and evidence, including SCF, atomic and regular grids, cell, native density lattice and boundary support. If sensitivity is unresolved, defer the comparison pending additional QZ qualification."
+    },
+    {
+      "id": "B1",
+      "action": "Measure a QZ bridge from LMAXN1 6 to 8 with all other options fixed at the selected tuple. Verify the CP2K-reported max l and the exact one-line deck change. Require AV03, AV05, AV06 and native field-shape agreement. Defer the basis comparison if the bridge or evidence fails.",
+      "reason": "The 5Z g orbitals can produce atomic-density terms up to l=8. The existing value 6 caps the atomic-density expansion at l=6. Use explicit 8 on both QZ and 5Z, leaving LMAXN0 and the selected numerical controls fixed.",
+      "source_urls": [
+        "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/cp_control_utils.F#L1102",
+        "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_rho_atom_methods.F#L836-L840"
+      ]
+    },
+    {
+      "id": "B2",
+      "action": "At each selected QZ tuple and LMAXN1 8, compare same-run QZ and 5Z with common overlap diagnostics and native CUBEs. Between the pair, permit only the locked orbital basis file and KIND basis label to differ. Compare the identical signed density lattices directly, with no resampling, clipping or renormalization. Require both pilots to meet all guards and AV04, AV05, AV06 and field criteria. If either pilot fails, keep the finer-reference screen blocked and preserve the result. A pass only qualifies the two measured fixtures and requires a separately locked expansion before any wider decision."
+    }
+  ],
+  "criteria": {
+    "threshold_source": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
+    "av03": {"energy_atol_hartree": 0.000001, "force_atol_hartree_per_bohr": 0.00001, "rtol": 0},
+    "av04": {"energy_atol_hartree": 0.0001, "force_atol_hartree_per_bohr": 0.0001, "rtol": 0},
+    "av05_engine_electron_count_atol": 0.000001,
+    "av06_cube_electron_count_atol": 0.001,
+    "native_field_l1_atol_electrons": 0.001,
+    "minimum_printed_overlap_eigenvalue": 0.00001001,
+    "maximum_printed_overlap_condition": 99990000,
+    "decision": "Require SCF convergence, full expected spherical AO count, consistent diagonalization evidence and no rank or angular-grid warning. Keep all thresholds and overlap pruning unchanged. Report incomplete execution, rank rejection and measured threshold failures separately. No complete-basis or physical accuracy claim follows from this finite comparison."
+  },
+  "resource_admission": {
+    "runner": "GitHub-hosted x86 development runner",
+    "fixture_order": ["h2-short", "he"],
+    "case_concurrency_per_runner": 1,
+    "mpi_ranks": 1,
+    "omp_threads": 1,
+    "swap_bytes": 0,
+    "host_memory_reserve_gib": 2,
+    "h2_memory_cap_range_gib": [3, 6],
+    "he_memory_cap_range_gib": [6, 12],
+    "wall_seconds_per_case": 900,
+    "admission_free_disk_gib": 10,
+    "stop_free_disk_gib": 6,
+    "per_file_gib": 1,
+    "per_work_directory_gib": 2,
+    "policy": "Fix the grant for each exact deck within the stated range, using measured QZ resource evidence and observed runner headroom before launch. Require at least the stated host reserve, no automatic retries, and new private scratch per attempt with checks accounting for retained density files. On resource rejection preserve the exact deck and observed cause. Any higher cap or different execution conditions require a separate preregistration."
+  }
+}

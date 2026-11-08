@@ -57,17 +57,18 @@ def probe_metadata(
         raise ValueError("data_dir must be a safe absolute container path")
     if ".." in PurePosixPath(data_dir).parts or str(PurePosixPath(data_dir)) != data_dir:
         raise ValueError("data_dir must be normalized without parent traversal")
+    qz = basis == "cc-pVQZ"
     for value, allowed, name in (
         (cell_angstrom, (12, 16, 20), "cell_angstrom"),
-        (cutoff_ry, (400, 600, 800), "cutoff_ry"),
-        (rel_cutoff_ry, (40, 60, 80), "rel_cutoff_ry"),
+        (cutoff_ry, (400, 600, 800, 1000) if qz else (400, 600, 800), "cutoff_ry"),
+        (rel_cutoff_ry, (40, 60, 80, 120) if qz else (40, 60, 80), "rel_cutoff_ry"),
         (eps_scf, (1e-8, 1e-9, 1e-10), "eps_scf"),
     ):
         if isinstance(value, bool) or value not in allowed:
             raise ValueError(f"unsupported A01 candidate {name}")
-    if type(radial_grid) is not int or radial_grid not in (100, 150, 200):
+    if type(radial_grid) is not int or radial_grid not in ((100, 150, 200, 250) if qz else (100, 150, 200)):
         raise ValueError("unsupported A04 candidate radial_grid")
-    if type(lebedev_grid) is not int or lebedev_grid not in (110, 146, 194):
+    if type(lebedev_grid) is not int or lebedev_grid not in ((110, 146, 194, 302) if qz else (110, 146, 194)):
         raise ValueError("unsupported A04 candidate lebedev_grid")
     if type(max_scf) is not int or not 1 <= max_scf <= 500:
         raise ValueError("max_scf must be an integer in 1..500")
