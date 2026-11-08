@@ -16,8 +16,8 @@ concurrency:
 
 env:
   # The ops/oci copy pins the reviewed main commit and its successful diagnostic CI.
-  QUANTA_A04_DB_WAL_CONTROL_SHA: '70dc0a19960c591682de15c3bd818efd816aaf91'
-  QUANTA_A04_DB_WAL_CONTROL_CI_RUN: '42480489225'
+  QUANTA_A04_DB_WAL_CONTROL_SHA: 'ae804d6cea5613cdcffcb463ec65494bd921960f'
+  QUANTA_A04_DB_WAL_CONTROL_CI_RUN: '42480817152'
 
 jobs:
   diagnostic:
