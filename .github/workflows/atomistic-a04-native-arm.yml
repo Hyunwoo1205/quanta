@@ -1,0 +1,134 @@
+name: Atomistic A04 native ARM qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-native-arm.yml
+      - scripts/run_atomistic_a04_native_arm.py
+      - tests/test_atomistic_a04_native_arm.py
+      - docs/design/atomistic-a04-v0.1/native-arm-qualification.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  native:
+    name: Sequential fixed candidates (aarch64)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 35
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: arm64
+      - name: Verify the source build, native ARM probe and full CI
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = aarch64
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python -B - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import platform
+          import sys
+          from urllib.request import Request, urlopen
+
+          sys.path.insert(0, "scripts")
+          from run_atomistic_a04_gapw_ci import A03_EVIDENCE, ARTIFACT_ID, NATIVE_RUN, REPO, SOURCE_SHA, approved_candidate
+
+          if platform.machine() != "aarch64" or platform.python_version() != "3.12.14":
+              raise ValueError("Native A04 requires aarch64 and the pinned CPython")
+          native_artifact, metadata, image = approved_candidate()
+          recorded = json.loads(A03_EVIDENCE.read_bytes())["successful_retry"]
+          if (recorded["source_build_run_id"], NATIVE_RUN, recorded["full_ci_run_id"], ARTIFACT_ID) != (
+              42370042984, 42370042995, 42370042969, 13573889644
+          ):
+              raise ValueError("The A03 provenance record no longer matches the pinned runs")
+          source_image = next(a for a in recorded["source_build_artifacts"] if a["id"] == 13574357276)
+          headers = {"Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                     "Accept": "application/vnd.github+json"}
+
+          def get(path):
+              request = Request(f"https://api.github.com/repos/{REPO}/actions/{path}", headers=headers)
+              with urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          runs = (
+              (42370042984, "cp2k-armv8a-build.yml", 128396088619, "CP2K ARMv8-A build and He-D (aarch64)"),
+              (42370042995, "atomistic-a03.yml", 128396088895, "atomistic A03 (aarch64)"),
+              (42370042969, "ci.yml", 128396088737, "contracts (aarch64)"),
+          )
+          for run_id, workflow, job_id, name in runs:
+              run = get(f"runs/{run_id}")
+              expected = {"id": run_id, "head_sha": SOURCE_SHA, "head_branch": "main",
+                          "path": f".github/workflows/{workflow}", "status": "completed", "conclusion": "success"}
+              if any(run.get(key) != value for key, value in expected.items()):
+                  raise ValueError(f"Invalid pinned run {run_id}")
+              job = get(f"jobs/{job_id}")
+              expected_job = {"id": job_id, "run_id": run_id, "head_sha": SOURCE_SHA, "name": name,
+                              "status": "completed", "conclusion": "success"}
+              if any(job.get(key) != value for key, value in expected_job.items()):
+                  raise ValueError(f"Invalid pinned ARM job {job_id}")
+
+          artifacts = []
+          for run_id, lock in ((42370042984, source_image), (NATIVE_RUN, native_artifact)):
+              artifact = get(f'artifacts/{lock["id"]}')
+              expected = {"id": lock["id"], "name": lock["name"], "digest": lock["digest"],
+                          "size_in_bytes": lock["zip_bytes"], "expired": False}
+              if (any(artifact.get(key) != value for key, value in expected.items())
+                      or artifact["workflow_run"]["id"] != run_id
+                      or artifact["workflow_run"]["head_sha"] != SOURCE_SHA):
+                  raise ValueError(f'Pinned image artifact {lock["id"]} differs or expired')
+              artifacts.append({**expected, "run_id": run_id, "expires_at": artifact["expires_at"]})
+          proof = Path(".cache/atomistic-a04-native-arm/artifact-lock.json")
+          proof.parent.mkdir(parents=True, exist_ok=True)
+          proof.write_text(json.dumps({
+              "source_sha": SOURCE_SHA, "successful_run_ids": [run[0] for run in runs],
+              "artifacts": artifacts, "candidate_image": metadata,
+              "native_image_identity": image,
+          }, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"run-id={NATIVE_RUN}\nartifact-id={ARTIFACT_ID}\n")
+          PY
+      - name: Download the verified ARM native archive
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ steps.candidate.outputs.run-id }}
+          artifact-ids: ${{ steps.candidate.outputs.artifact-id }}
+          path: .cache/atomistic-a04-native-arm/candidate
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Run isolated H2 and He profiles on native ARM
+        run: |
+          python -B scripts/run_atomistic_a04_native_arm.py \
+            --candidate-dir .cache/atomistic-a04-native-arm/candidate \
+            --output-dir .cache/atomistic-a04-native-arm/evidence
+      - name: Preserve the compact qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: atomistic-a04-native-arm-${{ github.sha }}
+          path: |
+            .cache/atomistic-a04-native-arm/artifact-lock.json
+            .cache/atomistic-a04-native-arm/evidence/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

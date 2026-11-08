@@ -205,19 +205,23 @@ def docker_disk_free(path: Path) -> int:
         return int(result[1].strip())
 
 
-def require_native_ci() -> None:
+def require_native_ci(architecture: str = "amd64") -> None:
+    machine, runner, docker_architectures = {
+        "amd64": ("x86_64", "X64", {"x86_64"}),
+        "arm64": ("aarch64", "ARM64", {"aarch64", "arm64"}),
+    }[architecture]
     expected_env = {
         "GITHUB_ACTIONS": "true", "GITHUB_REPOSITORY": REPO,
-        "RUNNER_ENVIRONMENT": "github-hosted", "RUNNER_ARCH": "X64",
+        "RUNNER_ENVIRONMENT": "github-hosted", "RUNNER_ARCH": runner,
     }
     if (
         os.geteuid() == 0
         or platform.system() != "Linux"
-        or platform.machine() != "x86_64"
+        or platform.machine() != machine
         or any(os.environ.get(key) != value for key, value in expected_env.items())
         or not shutil.which("docker")
     ):
-        raise ValueError("Only the nonroot native x86-64 GitHub-hosted Quanta runner is permitted")
+        raise ValueError(f"Only the nonroot native {machine} GitHub-hosted Quanta runner is permitted")
     # The process and the container must share the native local host/cgroup view.
     if os.environ.get("DOCKER_HOST") not in (None, "", "unix:///var/run/docker.sock"):
         raise ValueError("A remote Docker daemon is unsupported")
@@ -226,8 +230,8 @@ def require_native_ci() -> None:
         raise ValueError("The default native GitHub runner Docker socket is required")
     info = run_docker("info", "--format", "{{.OSType}} {{.Architecture}} {{.CgroupVersion}} {{.DockerRootDir}}").stdout.strip()
     parts = info.split(maxsplit=3)
-    if len(parts) != 4 or parts[:3] != ["linux", "x86_64", "2"]:
-        raise ValueError("Native Linux amd64 Docker with cgroup v2 is required")
+    if len(parts) != 4 or parts[0] != "linux" or parts[1] not in docker_architectures or parts[2] != "2":
+        raise ValueError(f"Native Linux {architecture} Docker with cgroup v2 is required")
     if not parts[3].startswith("/") or docker_disk_free(Path(parts[3])) < DISK_ADMISSION:
         raise ValueError("Docker storage has insufficient disk headroom before image load")
 
@@ -240,13 +244,15 @@ def safe_bind(path: Path, target: str, *, readonly: bool = False) -> str:
 
 
 def container_args(name: str, image_id: str, budget: int, work: Path, inputs: Path, candidate: dict,
-                   *, mpi_ranks: int = 1, swap_extra_bytes: int = 0) -> list[str]:
+                   *, mpi_ranks: int = 1, swap_extra_bytes: int = 0, architecture: str = "amd64") -> list[str]:
     if type(mpi_ranks) is not int or mpi_ranks not in (1, 2):
         raise ValueError("Only the fixed one- and two-rank layouts are supported")
     if type(swap_extra_bytes) is not int or swap_extra_bytes < 0:
         raise ValueError("Swap allowance must be a nonnegative byte count")
+    if architecture not in ("amd64", "arm64"):
+        raise ValueError("Unsupported native architecture")
     return [
-        "create", "--name", name, "--pull=never", "--platform", "linux/amd64",
+        "create", "--name", name, "--pull=never", "--platform", f"linux/{architecture}",
         "--read-only", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
         "--user", f"{os.getuid()}:{os.getgid()}", "--group-add", "0",
         "--cpus", str(mpi_ranks), "--memory", str(budget), "--memory-swap", str(budget + swap_extra_bytes),
@@ -383,7 +389,8 @@ def clean_container(name: str) -> None:
 def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate: dict,
                 scratch: Path, diagnostics: Path, record: dict, *, mpi_ranks: int = 1,
                 swap_extra_bytes: int = 0, expected_input: str | None = None,
-                retained_cube: Path | None = None, distribute_real_space: bool = False) -> None:
+                retained_cube: Path | None = None, distribute_real_space: bool = False,
+                architecture: str = "amd64") -> None:
     name = f"quanta-a04-resource-{uuid4().hex}"
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix=f"{case.name}-{attempt}-", dir=scratch) as path:
@@ -425,7 +432,9 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
             if expected_input is not None and record["input_sha256"] != expected_input:
                 raise ValueError("Scientific input differs from the recorded serial input")
             layout = {"mpi_ranks": mpi_ranks, "swap_extra_bytes": swap_extra_bytes}
-            run_docker(*container_args(name, candidate["image_id"], budget, work, inputs, candidate, **layout))
+            run_docker(*container_args(
+                name, candidate["image_id"], budget, work, inputs, candidate, architecture=architecture, **layout,
+            ))
             record["container_controls"] = checked_controls(inspect_container(name), budget, **layout)
             run_docker("start", name)
             until = time.monotonic() + case.wall_seconds
@@ -786,7 +795,7 @@ def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
         return "measured" if comparisons_passed else "comparison_incomplete_or_failed"
 
 
-def accuracy_scalars(reference: dict, candidate: dict, checks: dict) -> dict:
+def accuracy_scalars(reference: dict, candidate: dict, checks: dict, *, energy_force_check: str = "AV03") -> dict:
     left = reference["engine_forces_hartree_per_bohr"]
     right = candidate["engine_forces_hartree_per_bohr"]
     atom_count = reference["density"]["atom_count"]
@@ -812,8 +821,8 @@ def accuracy_scalars(reference: dict, candidate: dict, checks: dict) -> dict:
         "reference_engine_hard_soft_electron_count": ref_engine_count,
         "candidate_engine_hard_soft_electron_count": engine_count,
         "engine_electron_counts_passed": max(abs(engine_count - 2), abs(ref_engine_count - 2)) <= checks["AV05"]["atol"],
-        "energy_passed": energy <= checks["AV03"]["energy_atol_hartree"],
-        "force_passed": force <= checks["AV03"]["force_atol_hartree_per_bohr"],
+        "energy_passed": energy <= checks[energy_force_check]["energy_atol_hartree"],
+        "force_passed": force <= checks[energy_force_check]["force_atol_hartree_per_bohr"],
         "exported_electron_counts_passed": max(abs(count - 2), abs(ref_count - 2)) <= checks["AV06"]["atol"],
     }
 

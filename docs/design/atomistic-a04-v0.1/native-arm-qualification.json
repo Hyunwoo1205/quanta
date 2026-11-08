@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "scope": "preregistered_native_arm_same_input_candidate_qualification",
+  "arm_source_sha": "5dd1e90c8332366c1f95f5b58b260ce966af5e84",
+  "cp2k_source_sha": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "x86_receipt_sha256": {
+    "h2-boundary-accuracy-42450193275.json": "650d41f128c6b69ce2784f1b6201014cd6c5e0ce9f541d5ea2289e5fab3387fe",
+    "fixed-fixture-accuracy-42448653582.json": "e748b423e04a0065a79fe534036dcb932b214bac2b11de944310ed94277f103f",
+    "one-factor-refinement-42447627356.json": "59daaf2d5a6529a96d5f3d314ae46b56c773611556895a8e2270938e50d78e34"
+  },
+  "cases": [
+    {"system": "h2-short", "fixture": "A04-H2-short", "settings": [12, 400, 40], "cap_gib": 3, "deadline_seconds": 240, "receipt": "h2-boundary-accuracy-42450193275.json", "group": "h2-short", "case_role": "lightweight"},
+    {"system": "h2-reference", "fixture": "C02-H2-reference", "settings": [12, 400, 40], "cap_gib": 3, "deadline_seconds": 240, "receipt": "fixed-fixture-accuracy-42448653582.json", "group": "h2-reference", "case_role": "lightweight"},
+    {"system": "h2", "fixture": "C03-H2-stretched", "settings": [12, 400, 40], "cap_gib": 3, "deadline_seconds": 240, "receipt": "one-factor-refinement-42447627356.json", "group": "cutoff", "case_role": null},
+    {"system": "h2-long", "fixture": "A04-H2-long", "settings": [12, 400, 40], "cap_gib": 3, "deadline_seconds": 240, "receipt": "h2-boundary-accuracy-42450193275.json", "group": "h2-long", "case_role": "lightweight"},
+    {"system": "he", "fixture": "C01-He", "settings": [12, 800, 80], "cap_gib": 6, "deadline_seconds": 360, "receipt": "fixed-fixture-accuracy-42448653582.json", "group": "he", "case_role": "matched_cutoff_cell_check"}
+  ],
+  "limits": {
+    "ranks": 1, "threads": 1, "swap_bytes": 0,
+    "reserved_host_memory_gib": 2, "admission_disk_gib": 10, "guard_disk_gib": 6
+  },
+  "numerical_comparison": "Require the exact x86 input digest and native CUBE grid size. Use the AV01 energy and force tolerance magnitudes for this same-input cross-build screen and the AV05 and AV06 individual electron count bounds. Report the difference in native CUBE integrals and retain the raw density hashes. The historical x86 CUBEs are unavailable for pointwise density comparison.",
+  "scope_limits": "These are fixed non-production native ARM cases. This does not claim physical accuracy, continuous H2 interval coverage, cross-build spatial L1, or actual OCI operational qualification."
+}
