@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.13",
+  "plan_version": "1.0.14",
   "updated_at": "2026-11-09",
   "status": "planned_development",
   "executable": false,
@@ -374,7 +374,8 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "고정 SCF 후보 1e-8에서 원자 중심 radial·Lebedev 격자와 기저 수렴을 각각 검증한 뒤 초기 수치 프로필 동결을 판단.",
+      "next_action": "G0 기준·자원 점검에서 시작해 방사형·Lebedev, 기저, 선택 조합과 이전 검증의 재확인, ARM/격리 자격 순으로 판정.",
+      "remaining_numerical_validation_plan": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
       "fixed_fixture_scf_screen": "docs/verification/atomistic-a04/scf-refinement-42495134220.json",
       "oci_db_wal_observation": "docs/verification/atomistic-a04/oci-db-wal-observation-42480916880.json",
       "oci_fixed_measurement": "docs/verification/atomistic-a04/oci-qualification-42477399912.json",

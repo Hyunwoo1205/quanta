@@ -12,6 +12,18 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
+## 다음 작업 계획 — A04 수치 프로필 동결 전 검증
+
+[실행 계획 JSON](docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json)에 다섯 고정 구조의 기준 입력, 축별 실측, 판정·중단 기준과 후속 의존관계를 정했습니다. SCF 42495134220의 15개 실행·10개 비교와 기존 H₂ 경계 회귀 42495134228은 성공을 확인했습니다. 이번 변경은 계획과 자료 대조이며 새 CP2K 실측을 제출하지 않았습니다.
+
+1. 고정 후보 이미지·기저·현재 CI를 재확인하고, 기존 기본 입력의 SHA를 유지하는 허용 목록과 비교 검사를 준비합니다. H₂ 0.60 Å·He부터 자원과 출력 경로를 실측한 뒤 다섯 구조로 확대합니다.
+2. cc-pVDZ에서 radial 100/150/200과 Lebedev 110/146/194를 한 축씩 바꿉니다. 공통 미세 기준과 기존 조합을 포함한 30개 입력에 AV03을 적용합니다.
+3. 같은 미세 원자 격자에서 cc-pVDZ/TZ/QZ를 비교합니다. 새 입력 10개와 기저 랭크·안정성에 대한 근거를 확보하고, TZ와 QZ가 모든 구조에서 AV04를 충족하는지 확인합니다.
+4. TZ가 통과하면 두 원자 격자 축과 선택 조합을 TZ에서 재검증하고, 선택 격자의 TZ–QZ 차이와 더 엄격한 SCF·정규 격자·유한 셀 및 함께 세분화한 설정을 비교합니다. 같은 원본 격자의 밀도 차이, 두 미세 격자의 CUBE 전자 수, 경계/생략 밀도를 별도로 기록합니다.
+5. 선택한 입력을 네이티브 ARM에서 대조하고, 운영 프로필 자격은 별도 고정 OCI 경로에서 판정합니다. 미수렴·오차 초과·자원 미충족·증거 누락을 구분하고 필수 항목이 남으면 A04 동결을 보류합니다. 어댑터 비교와 독립 물리 검증은 A06/A07 순서로 진행합니다.
+
+다음 시작점은 계획의 G0에서 고정 빌드와 입력 해시를 확인하고 H₂ 0.60 Å·He 시험의 자원 조건을 고정하는 것입니다.
+
 ## 현재 개발 위치 — A04 고정 원자계 SCF 수렴 실측 통과
 
 2026-11-09 KST [실행 42495134220](https://github.com/Hyunwoo1205/quanta/actions/runs/42495134220)에서 H₂ 0.60·0.74144·0.80·1.00 Å와 He에 EPS_SCF 10⁻⁸·10⁻⁹·10⁻¹⁰을 각각 적용했습니다. [사전 계획](docs/design/atomistic-a04-v0.1/scf-refinement.json)의 고정 x86 CP2K/PBE/GAPW/cc-pVDZ 설정에서 기준 데크의 EPS_SCF 한 줄만 달라지는지 확인하고, 매 실행은 새 작업 폴더에서 1랭크·1스레드·스왑 0 상한으로 진행했습니다. H₂는 12 Å·400 Ry·REL_CUTOFF 40 Ry, He는 12 Å·800 Ry·REL_CUTOFF 80 Ry입니다.

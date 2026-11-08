@@ -1,0 +1,377 @@
+{
+  "document_kind": "preregistered_development_validation_plan",
+  "schema_version": 1,
+  "updated_at": "2026-11-09",
+  "status": "planned_not_executed",
+  "executable": false,
+  "start_from": {
+    "main": "c120a82e74cb204d3579a2c97ee1ce59b0670bd8",
+    "ops_oci": "d7e2c02b119650d3bccfe7db887bbabffceee096",
+    "scf_run_id": 42495134220,
+    "scf_receipt": "docs/verification/atomistic-a04/scf-refinement-42495134220.json",
+    "scf_receipt_git_blob": "a1edf2ff69c88ba50cca5e4651efb1f5a67890be"
+  },
+  "objective": "Complete the pre-freeze numerical evidence for the fixed A04 He/H2 candidates. Keep eligibility, physical validation and runtime contracts as separate decisions.",
+  "fixtures": [
+    {
+      "system": "h2-short",
+      "fixture": "A04-H2-short",
+      "baseline_cell_cutoff_relative": [
+        12,
+        400,
+        40
+      ],
+      "baseline_deck_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+      "baseline_native_x86_cube_sha256": "fbd467c5a20ec064f171d2a9b3cdad900d433782d6c190194b92c6bd379be07c"
+    },
+    {
+      "system": "h2-reference",
+      "fixture": "C02-H2-reference",
+      "baseline_cell_cutoff_relative": [
+        12,
+        400,
+        40
+      ],
+      "baseline_deck_sha256": "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9",
+      "baseline_native_x86_cube_sha256": "097e3de36951ab8dcac4189e2aa2548456033f3dd95dcf45e25146a71d97bfe0"
+    },
+    {
+      "system": "h2",
+      "fixture": "C03-H2-stretched",
+      "baseline_cell_cutoff_relative": [
+        12,
+        400,
+        40
+      ],
+      "baseline_deck_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+      "baseline_native_x86_cube_sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9"
+    },
+    {
+      "system": "h2-long",
+      "fixture": "A04-H2-long",
+      "baseline_cell_cutoff_relative": [
+        12,
+        400,
+        40
+      ],
+      "baseline_deck_sha256": "b0dab8fa3832e2b2e5f8306a9eea1899f88dc658b0130a6cf812bef5b0254af4",
+      "baseline_native_x86_cube_sha256": "bc495cb12a40b39ebfa8d50c16d5ff26faa533c4aa2d434dfd49645d65875969"
+    },
+    {
+      "system": "he",
+      "fixture": "C01-He",
+      "baseline_cell_cutoff_relative": [
+        12,
+        800,
+        80
+      ],
+      "baseline_deck_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef",
+      "baseline_native_x86_cube_sha256": "f795debf360580f6b8bebb3dc1ae3388a555281d33224d4a4950b9881c9ab109"
+    }
+  ],
+  "fixed_defaults": {
+    "method": "all-electron nonrelativistic PBE/GAPW, POTENTIAL ALL, neutral closed-shell",
+    "geometry": "same ordered SI fixture and recorded centered finite-cell translation",
+    "engine": "CP2K 2026.2 source 67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "eps_scf": 1e-8,
+    "max_scf": 80,
+    "guess": "ATOMIC",
+    "algorithm": "OT/DIIS/FULL_ALL",
+    "quadrature": "GC_LOG",
+    "initial_basis": "cc-pVDZ",
+    "initial_atom_grid": [
+      100,
+      110
+    ],
+    "ranks": 1,
+    "threads": 1,
+    "swap_bytes": 0,
+    "export": "unmodified signed TOTAL_DENSITY native CUBE, stride 1"
+  },
+  "provenance": {
+    "x86": {
+      "artifact_id": 13579899979,
+      "build_run_id": 42385227123,
+      "expires_utc": "2026-11-21T16:04:11Z",
+      "receipt": "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json"
+    },
+    "arm": {
+      "artifact_id": 13574357276,
+      "build_run_id": 42370042984,
+      "expires_utc": "2026-11-21T12:27:29Z",
+      "receipt": "docs/verification/atomistic-a04/armv8a-source-dependency-review.json"
+    },
+    "basis_lock": "docs/design/atomistic-a02-v0.1/manifest.json",
+    "expiry_policy": "Verify live artifact, source, binary, image and file digests before admission. If missing, rebuild from tracked locked inputs, verify exact new identities and pass A03, upstream GAPW and exact baseline-deck numerical equivalence before using new evidence.",
+    "expected_basis_functions_per_atom_for_h_and_he": {
+      "cc-pVDZ": 5,
+      "cc-pVTZ": 14,
+      "cc-pVQZ": 30
+    },
+    "basis_conditioning": "Require expected species, atom order and spherical basis count, successful overlap setup and an evidenced usable rank with no rank loss or unresolved singularity, linear-dependence or SCF warning. If stock output lacks evidence, predeclare a separate non-production diagnostic before adjudicating the basis reference. Keep overlap thresholds and GAPW expansion settings fixed within the ladder.",
+    "repo_execution": "Extend only allowlisted radial/angular/basis values in the existing atomistic_a03_inputs.py and isolated A04 controller. Preserve baseline bytes. Require per-axis deck diffs and exact prepared hashes. Basis may change only its locked file and KIND basis values. Select AV04 explicitly for basis comparisons. Check fixture, actual setting consumption and parsed convergence evidence before admitting comparisons."
+  },
+  "resource_admission": {
+    "first_pilots": [
+      "h2-short",
+      "he"
+    ],
+    "pilot_caps": {
+      "h2": {
+        "gib": 3,
+        "wall_seconds": 240
+      },
+      "he": {
+        "gib": 6,
+        "wall_seconds": 360
+      }
+    },
+    "retain_host_available_gib": 2,
+    "admission_disk_gib": 10,
+    "stop_disk_gib": 6,
+    "per_file_gib": 1,
+    "per_work_dir_gib": 2,
+    "scratch": "New private disk-backed directory per attempt. Bound retained comparison files separately and check disk including retained references. Stream reference/candidate pairs, validate exact CUBE byte count and SHA, release temporary data after the required comparisons.",
+    "fallback": "On resource rejection record the attempted or deferred deck and reason. On a new preregistered isolated x86 run consider only the exact same deck with fixed larger limits after resource sizing and admission. Existing adaptive 10/12 GiB limits are x86 precedent and require at least 2 GiB host reserve; no auto-retry, no change to physics inputs. Resource-inadmissible heavy cases stay blocked pending a qualified reference environment.",
+    "heavy_reference_evidence": "16 Å/800 Ry measured about 11.30 GiB on x86. H2 20 Å/800 Ry previously exceeded 12 GiB without swap. Recheck time, memory and output feasibility for the selected basis and grid before placing these rows; the plan does not allocate paid capacity or production work.",
+    "state_labels": [
+      "measured_pass",
+      "measured_fail",
+      "deferred_headroom",
+      "failed_or_incomplete",
+      "not_run_dependency",
+      "reused_exact_evidence"
+    ]
+  },
+  "thresholds": {
+    "source": "docs/design/atomistic-a01-v0.1/validation-plan.json",
+    "av": {
+      "AV03": {
+        "atol": null,
+        "rtol": 0,
+        "unit": null,
+        "energy_atol_hartree": 0.000001,
+        "force_atol_hartree_per_bohr": 0.00001
+      },
+      "AV04": {
+        "atol": null,
+        "rtol": 0,
+        "unit": null,
+        "energy_atol_hartree": 0.0001,
+        "force_atol_hartree_per_bohr": 0.0001
+      },
+      "AV05": {
+        "atol": 0.000001,
+        "rtol": 0,
+        "unit": "electron"
+      },
+      "AV06": {
+        "atol": 0.001,
+        "rtol": 0,
+        "unit": "electron"
+      }
+    },
+    "separate_field_shape_screen": {
+      "absolute_density_l1_electrons": 0.001,
+      "rule": "Apply to every grid/basis/combined field comparison in this plan as a separate predeclared engineering screen. Never infer field agreement from the integrated electron count."
+    },
+    "finite_cell_tail_screen": {
+      "outer_shell_width_angstrom": 1,
+      "maximum_absolute_shell_electrons": 0.001,
+      "maximum_omitted_reference_electrons": 0.001,
+      "rule": "Sum absolute serialized density times native voxel volume for voxels whose sample points lie within 1 Å of any face. Record the signed sum as well. Use the centered larger reference for the omitted-domain integral. This is a numerical finite-cell admission screen with the same 0.001 e budget as the field comparison."
+    },
+    "same_lattice": "Require matching shape, origin, axis vectors and ordered geometry. Compare raw signed samples directly without interpolation, clipping or renormalization.",
+    "changed_lattice": "Use the existing validated centered overlap and omitted-domain metric; retain 4-point and 6-point results where interpolation is used, and require both within budget. If geometry or grid alignment cannot be verified, report the row blocked and lock a comparable method in advance.",
+    "rule": "Every required fixture and comparison must pass individually. Require explicit engine SCF convergence and both electron count checks on every successful level. Do not average fixtures or reinterpret the thresholds after observing outputs."
+  },
+  "stages": [
+    {
+      "id": "G0",
+      "title": "Provenance, local guard regression and pilot admission",
+      "depends_on": [],
+      "action": "Recheck latest source, CI, artifact identity and expiry. Add allowlisted inputs, unchanged default deck hashes, per-axis diffs, explicit AV03/AV04 routing, finite density/output validation and failure tests. Lock exact per-deck resource plan and expected hashes before launching. Pilot H2-short and He on the fine atom-centered anchor and baseline; pilot again for the highest basis and each new heavy resource class. Reuse verified pilot rows in the matrix."
+    },
+    {
+      "id": "G1",
+      "title": "Atom-centered radial and angular grids on cc-pVDZ",
+      "depends_on": [
+        "G0"
+      ],
+      "basis": "cc-pVDZ",
+      "common_reference": [
+        200,
+        194
+      ],
+      "radial_levels": [
+        100,
+        150,
+        200
+      ],
+      "angular_levels": [
+        110,
+        146,
+        194
+      ],
+      "grid_pairs_radial_then_lebedev": [
+        [
+          100,
+          110
+        ],
+        [
+          100,
+          194
+        ],
+        [
+          150,
+          194
+        ],
+        [
+          200,
+          194
+        ],
+        [
+          200,
+          110
+        ],
+        [
+          200,
+          146
+        ]
+      ],
+      "unique_decks": 30,
+      "criteria": [
+        "AV03",
+        "AV05",
+        "AV06",
+        "field_shape"
+      ],
+      "action": "For each of the five fixtures compare radial 100/150 to 200 at L=194, and angular 110/146 to 194 at R=200. Include the 100/110 control and compare it directly with 200/194. Require the two finest levels per axis to pass. Keep provisional lower levels only if each comparison to the finest passes; a low joint control failure calls for tighter settings, not cancellation by axis errors."
+    },
+    {
+      "id": "G2",
+      "title": "Basis ladder on the common fine atomic grid",
+      "depends_on": [
+        "G1"
+      ],
+      "grid_pair": [
+        200,
+        194
+      ],
+      "basis_levels": [
+        "cc-pVDZ",
+        "cc-pVTZ",
+        "cc-pVQZ"
+      ],
+      "target": "cc-pVTZ",
+      "reference": "cc-pVQZ",
+      "unique_new_decks": 10,
+      "criteria": [
+        "AV04",
+        "AV05",
+        "AV06",
+        "field_shape"
+      ],
+      "action": "Reuse the exact DZ anchor. Run TZ and QZ under the same settings and ordered geometry. Require a usable QZ reference and TZ versus QZ pass in all five cases. Preserve diagnostics for all three. Do not declare a converged basis by falling back to DZ or treating the finest measured result as its own reference."
+    },
+    {
+      "id": "G3",
+      "title": "Atomic-grid and basis coupling at the target basis",
+      "depends_on": [
+        "G2"
+      ],
+      "basis": "cc-pVTZ",
+      "common_reference": [
+        200,
+        194
+      ],
+      "criteria": [
+        "AV03",
+        "AV04",
+        "AV05",
+        "AV06",
+        "field_shape"
+      ],
+      "action": "Repeat both isolated atomic grid ladders at TZ. Reuse the TZ fine anchor, add four axis decks per fixture. Require the two finest to pass again. Select the lowest common passing radial and angular levels across all five systems, then directly compare their joint deck to the TZ 200/194 anchor. If that joint fails, use the fine pair as a separately recorded candidate. In either case repeat the TZ–QZ basis comparison at the chosen common pair, reusing the exact fine-grid comparison if applicable. Do not infer coupling from independent axis passes."
+    },
+    {
+      "id": "G4",
+      "title": "Final candidate SCF, finite cell, regular grid and combined bridge",
+      "depends_on": [
+        "G3"
+      ],
+      "criteria": [
+        "AV03",
+        "AV04",
+        "AV05",
+        "AV06",
+        "field_shape",
+        "finite_cell_tail"
+      ],
+      "levels": {
+        "eps_scf": [
+          1e-8,
+          1e-9,
+          1e-10
+        ],
+        "cell_angstrom": [
+          12,
+          16,
+          20
+        ],
+        "cutoff_ry": [
+          400,
+          600,
+          800
+        ],
+        "rel_cutoff_ry": [
+          40,
+          60,
+          80
+        ]
+      },
+      "action": "At selected TZ and atomic grid, recheck both stricter SCF settings against the candidate. Run regular-grid and finite-cell axes independently at the same geometry with the other settings fixed, starting from the already measured 12 Å species-specific candidate. Compare two finest on each axis plus the candidate directly to the finest, and require AV06 on both finest export grids. For He the existing 400/600 Ry field differences were over the limit, so if 600/800 does not bracket convergence, gate a separate 1000 Ry x86 reference before 800/1000 comparison. Qualify any extra level before use. Compare the selected tuple to a jointly finer admitted tuple. The first joint reference is 16 Å/800 Ry/REL80 with the common fine atomic grid and strict SCF; if a qualified finer reference is required for a failed or unresolved screen, predeclare it and its resource conditions. If the finest or joint evidence is inadmissible or missing, block freeze. Record fixed-cell origin and transform, edge mass, omitted-domain mass, native field resolution, observable differences and the actual finite-cell admission scope."
+    },
+    {
+      "id": "G5",
+      "title": "Target architecture and isolated host qualification",
+      "depends_on": [
+        "G4"
+      ],
+      "action": "After x86 numerical gates, run the selected five identical decks on pinned native ARM with resource limits derived from measured candidates. Compare ordered energy/force using the previously qualified same-input tolerance magnitudes (1e-8 Hartree, 1e-7 Hartree/Bohr), electron counts, lattice and raw native CUBE L1 under the fixed printed precision. Cross-architecture raw digest equality is reported separately. Treat OCI as a separate prerequisite-gated isolated qualification, using new fixed operation/request UUID and successful pinned control CI only if needed for the intended operating profile. Require idle production, measured headroom and web/DB/WAL preservation before/during/after. A production deployment, concurrent workload qualification and capability rollout are separate steps."
+    },
+    {
+      "id": "G6",
+      "title": "A04 freeze decision and handoff",
+      "depends_on": [
+        "G5"
+      ],
+      "action": "Freeze only a fully evidenced configuration and input admission domain with explicit units, transform, basis/engine/runtime identities, all numerical gates, raw/derived provenance and negative cases. Treat untested continuous geometry, orientation, translation and deployment scope as open. Keep exact completed and blocked rows. Align WORKPLAN, roadmap, profile and same-ID Drive explanations with the decision; then proceed to A05/A06."
+    }
+  ],
+  "downstream_acceptance": {
+    "A06": [
+      "AV01 direct-versus-adapter under exactly the locked settings"
+    ],
+    "A07_P2": [
+      "AV02 force versus central energy differences",
+      "AV07 force balance and dipole",
+      "AV08 translation/rotation and atom-order mapping",
+      "AV10 independent H2 equilibrium distance",
+      "AV11 harmonic wavenumber",
+      "Complete applicable AV03–AV06 acceptance at the exposed adapter/field scope"
+    ],
+    "A11_P3": [
+      "AV12 nonstationary dynamics and its separately locked time, energy and force gates"
+    ],
+    "physical_validation": "unvalidated",
+    "status": "scheduled_by_existing_roadmap"
+  },
+  "sources": [
+    "https://manual.cp2k.org/cp2k-2026_2-branch/CP2K_INPUT/FORCE_EVAL/SUBSYS/KIND.html",
+    "https://manual.cp2k.org/cp2k-2026_2-branch/CP2K_INPUT/FORCE_EVAL/DFT/QS.html",
+    "docs/design/atomistic-a04-v0.1/finite-cell-resource-review.md",
+    "docs/design/atomistic-a04-v0.1/native-arm-qualification.json",
+    "docs/design/atomistic-a04-v0.1/oci-isolated-qualification.md"
+  ]
+}
