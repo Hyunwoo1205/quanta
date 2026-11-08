@@ -48,7 +48,8 @@
     "lock": "docs/design/atomistic-a02-v0.1/manifest.json",
     "candidate_basis_sets": ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"],
     "potential_file": "ALL_POTENTIALS",
-    "target_basis": "cc-pVTZ subject to conditioning, numerical convergence and resource gates"
+    "target_basis": "unselected; the provisional cc-pVTZ target did not pass the G2 pilot comparisons",
+    "offline_finer_basis_pilot_plan": "docs/design/atomistic-a04-v0.1/qz-finer-basis-plan.json"
   },
   "units": {
     "arithmetic": "IEEE 754 binary64, roundTiesToEven; use the pinned multiplier for each engine output",
@@ -128,6 +129,12 @@
       "status": "no_go_TZ_QZ_pilot_criteria",
       "receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
       "scope": "H2 at 0.60 angstrom and He; six converged CP2K calculations, both mandatory TZ-QZ comparisons failed"
+    },
+    "fixed_fixture_qz_sensitivity": {
+      "status": "no_go_CUTOFF_spatial_density",
+      "input_manifest": "docs/design/atomistic-a04-v0.1/qz-sensitivity-inputs.json",
+      "receipt": "docs/verification/atomistic-a04/qz-sensitivity-42501071977.json",
+      "scope": "H2 at 0.60 angstrom and He; 16 converged calculations and 10 of 12 comparisons passed. Both CUTOFF comparisons failed the original density shape screen."
     },
     "fixed_fixture_scf_screen": {
       "status": "passed_on_pinned_x86_fixed_fixtures",

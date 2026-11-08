@@ -12,7 +12,7 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 다음 작업 계획 — A04 수치 프로필 동결 전 검증
+## 기존 계획 — A04 수치 프로필 동결 전 검증 G0~G6
 
 [실행 계획 JSON](docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json)에 다섯 고정 구조의 기준 입력, 축별 실측, 판정·중단 기준과 후속 의존관계를 정했습니다. SCF 42495134220의 15개 실행·10개 비교와 기존 H₂ 경계 회귀 42495134228은 성공을 확인했습니다. 이번 변경은 계획과 자료 대조이며 새 CP2K 실측을 제출하지 않았습니다.
 
@@ -24,13 +24,21 @@
 
 다음 시작점은 계획의 G0에서 고정 빌드와 입력 해시를 확인하고 H₂ 0.60 Å·He 시험의 자원 조건을 고정하는 것입니다.
 
-## A04 후속 — QZ 민감도 사전 고정
+## 현재 개발 위치 — P1 A04 QZ 민감도 실측 · CUTOFF 밀도 보류
 
-[G2 후속 입력·판정 계획](docs/design/atomistic-a04-v0.1/qz-sensitivity-inputs.json)을 고정했습니다. 고정 x86 CP2K의 H₂ 0.60 Å·He QZ에서 지난 QZ 입력을 반복하고 SCF, radial, Lebedev, CUTOFF, REL_CUTOFF, 유한 셀을 한 번에 하나씩 비교합니다. 에너지·힘에는 AV03, 전자 수에는 AV05·AV06, 밀도 모양에는 원본 부호를 보존한 L1 0.001전자 기준을 적용합니다. 같은 격자와 정렬된 셀은 원본을 직접 대조하며 CUTOFF가 다른 격자는 두 보간 결과를 모두 판정합니다. 셀 경계와 생략 절대 밀도는 별도로 기록합니다.
+[실행 42501071977](https://github.com/Hyunwoo1205/quanta/actions/runs/42501071977)에서 고정 x86 CP2K의 H₂ 0.60 Å·He QZ 입력을 반복하고 SCF, radial, Lebedev, CUTOFF, REL_CUTOFF, 유한 셀을 한 번에 하나씩 바꿨습니다. [사전 고정 입력](docs/design/atomistic-a04-v0.1/qz-sensitivity-inputs.json)에 따라 계산 16건이 모두 수렴했고 겹침·전자 수·자원 검사를 통과했습니다. 모든 비교에서 에너지와 힘이 AV03 이내였고, 밀도를 포함한 전체 비교는 12건 중 10건이 통과했습니다. 워크플로의 실패는 두 CUTOFF 비교의 밀도 기준 미달입니다. 관련 로컬 회귀시험 75개와 4개 경로의 모의 실행도 통과했습니다.
 
-각 GitHub 호스팅 x86 러너는 한 번에 한 계산만 실행합니다. RAM 상한은 H₂ 3–6 GiB, He 6–12 GiB이고 호스트 여유 2 GiB, 스왑 없음, 사례당 900초입니다. QZ 민감도 측정과 더 정밀한 기저의 자료·호환성 확인을 선행하며 A04 프로필 확정과 공개 원자계 실행은 보류입니다.
+| CUTOFF 비교 | 밀도 L1 4점 / 6점 (전자) | 판정 |
+| --- | ---: | --- |
+| H₂ 400→600 Ry | 0.001493 / 0.0009825 | 4점 기준 초과 |
+| He 800→1000 Ry | 0.001653 / 0.001018 | 두 추정값 기준 초과 |
+| 사전 기준 | 각 0.001 | 두 추정값 모두 충족 필요 |
 
-## 현재 개발 위치 — A04 G2 기저 예비시험 no-go
+셀 12→16 Å의 원본 격자 대조에서 밀도 L1은 H₂ 4.38×10⁻⁵, He 7.18×10⁻⁵전자이며 양쪽 1 Å 경계와 생략 밀도 기준도 충족했습니다. 최대 RAM은 He 16 Å에서 11.31 GiB였고 스왑과 OOM은 0이었습니다. He 기준 CUBE는 세 러너에서 이전 G2 해시와 같았습니다. H₂ 기준 CUBE 해시는 달랐고 에너지·힘·전자 수 차이는 각각 8.0×10⁻¹⁵ Hartree, 1.0×10⁻¹⁵ Hartree/Bohr, 4.0×10⁻¹⁵전자였습니다. 이전 원본 CUBE가 보존되지 않아 두 실행의 점별 차이와 해시 차이 원인은 확인되지 않았습니다. 이번 변수별 비교는 각 러너 안에서 수행했습니다. [정제 검증 기록](docs/verification/atomistic-a04/qz-sensitivity-42501071977.json)
+
+**다음 시작점은** 같은 QZ 설정에서 두 계의 더 높은 CUTOFF 구간을 사전 고정해 비교하고, 필요하면 보간 오차와 밀도 해상도 변화를 분리하는 것입니다. [5Z 비교 계획](docs/design/atomistic-a04-v0.1/qz-finer-basis-plan.json)에 H/He cc-pV5Z 원본과 변환 자산의 해시, AV04와 x86 자원 기준을 잠갔습니다. QZ 설정이 정해지면 QZ에서 LMAXN1 6→8 변경을 먼저 검증하고, 공통 LMAXN1 8에서 QZ와 5Z를 대조합니다. A04 프로필 확정, G3~G6, 독립 물리 검증과 원자계 공개 지원은 보류입니다. ARM 회귀의 새 빌드와 검사는 동일 소스에서 실행을 시작했고 이 결과 시점에는 별도 진행 중입니다.
+
+## 이전 개발 기록 — A04 G2 기저 예비시험 no-go
 
 [기저 실행 42499460058](https://github.com/Hyunwoo1205/quanta/actions/runs/42499460058)은 동일 고정 x86 CP2K·PBE/GAPW에서 원자 격자 200/194를 고정하고 H₂ 0.60 Å와 He의 DZ/TZ/QZ를 실행했습니다. 기존 미세 DZ 과학 입력의 해시를 대조한 후 출력 전용 겹침 진단을 세 기저에 공통 적용했습니다. 여섯 계산은 수렴, AV05·AV06 및 겹침 행렬 검사에 모두 통과했습니다. 겹침 검사는 예상 구면 AO 수, 유한 양의 최소 고윳값과 조건수를 사용했습니다.
 
