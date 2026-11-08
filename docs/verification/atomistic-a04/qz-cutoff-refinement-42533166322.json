@@ -1,0 +1,998 @@
+{
+  "schema_version": 1,
+  "status": "passed_fixed_fixture_qz_cutoff_refinement",
+  "workflow": {
+    "id": 42533166322,
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "1139df6a745164b0ce1a273425c7c54232327848",
+    "path": ".github/workflows/atomistic-a04-qz-cutoff.yml"
+  },
+  "input_manifest": "docs/design/atomistic-a04-v0.1/qz-cutoff-refinement-inputs.json",
+  "input_manifest_sha256": "80853ac9003365232add0ab85a958d894555f32c0944e011a573a2eb258a6da4",
+  "prior_receipt": "docs/verification/atomistic-a04/qz-sensitivity-42501071977.json",
+  "prior_receipt_sha256": "d8cba3f9e4e613b64ec210ea94170b780e8364ca267397c361a00e1f4e07c852",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "checks": {
+    "AV03": {
+      "id": "AV03",
+      "layer": "numerical",
+      "observable": "scf_and_grid_property_convergence",
+      "rule": "Refine each SCF/grid/atomic-grid family separately; compare two finest levels with other families fixed sufficiently fine.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 1e-06,
+      "force_atol_hartree_per_bohr": 1e-05
+    },
+    "AV05": {
+      "id": "AV05",
+      "layer": "density",
+      "observable": "engine_all_electron_count",
+      "rule": "Engine all-electron hard+soft integral compared to 2.",
+      "atol": 1e-06,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty"
+    },
+    "AV06": {
+      "id": "AV06",
+      "layer": "density",
+      "observable": "exported_density_integral",
+      "rule": "Explicit full hard+soft electron-number density export: integral rho*dV compared to 2, including field/grid refinement.",
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "blocked_until": "A02/A04 full-density export semantics pinned; soft or signed total charge density cannot substitute"
+    }
+  },
+  "density_l1_atol_electrons": 0.001,
+  "totals": {
+    "calculations_measured": 6,
+    "historical_pairs_measured": 2,
+    "finest_pairs_measured": 2,
+    "finest_fixture_screens_passed": 2
+  },
+  "fixtures": [
+    {
+      "system": "h2-short",
+      "artifact_id": 13638178290,
+      "digest": "sha256:bd98d40a3497a79b9758dfb65a792f5b10d05ac18b46084b690e0461ee135f8c",
+      "size_in_bytes": 44077,
+      "report_sha256": "7f4c3eb739c7280d3832253cbbc3795c6b549bd67e48ff801ca54b20d48944ba",
+      "job_id": 128891625802,
+      "status": "measured",
+      "error": null,
+      "cases": [
+        {
+          "cutoff_ry": 400,
+          "status": "measured",
+          "input_sha256": "7dcebdb24ac1c100049978fdd2dbd72828f0dadf5eda5e315fcbd3d92c29d010",
+          "submitted_input_sha256": "7dcebdb24ac1c100049978fdd2dbd72828f0dadf5eda5e315fcbd3d92c29d010",
+          "granted_memory_bytes": 3221225472,
+          "available_memory_at_admission_bytes": 14950391808,
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -1.146397980397041,
+          "engine_forces_hartree_per_bohr": [
+            [
+              -0.169257194185456,
+              7.8e-14,
+              7.8e-14
+            ],
+            [
+              0.169257194185474,
+              8e-14,
+              8e-14
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0000003169,
+          "cgroup_memory_peak_bytes": 1893847040,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 60,
+            "independent_orbital_functions_reported": 60,
+            "overlap_ratio_line": "CN : max/min ev:  6.520E+000 /  9.157E-005   = 7.121E+004  Log(2-CN):  4.8525",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 6.52,
+            "overlap_min_eigenvalue_printed": 9.157e-05,
+            "overlap_condition_2_printed": 71210.0,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "granted_swap_extra_bytes": 0,
+          "historical_cube_sha256_match": true,
+          "engine_seconds": 36.11013999100001,
+          "cube": {
+            "grid_counts": [
+              150,
+              150,
+              150
+            ],
+            "sha256": "c887af607bc31addfb53e9c9c49f3607781105feb00d7e26d006311b9ed0d262",
+            "electron_integral": 1.999995670580182
+          }
+        },
+        {
+          "cutoff_ry": 600,
+          "status": "measured",
+          "input_sha256": "5d899325be7ff80f883157e83cd23978809f3120d3a9c9ca6e5ed2f2335c32ed",
+          "submitted_input_sha256": "5d899325be7ff80f883157e83cd23978809f3120d3a9c9ca6e5ed2f2335c32ed",
+          "granted_memory_bytes": 6442450944,
+          "available_memory_at_admission_bytes": 15588016128,
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -1.146398303179872,
+          "engine_forces_hartree_per_bohr": [
+            [
+              -0.169257820922897,
+              1.12e-13,
+              1.12e-13
+            ],
+            [
+              0.169257820922959,
+              1.06e-13,
+              1.06e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0000003169,
+          "cgroup_memory_peak_bytes": 3074535424,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 60,
+            "independent_orbital_functions_reported": 60,
+            "overlap_ratio_line": "CN : max/min ev:  6.520E+000 /  9.157E-005   = 7.121E+004  Log(2-CN):  4.8525",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 6.52,
+            "overlap_min_eigenvalue_printed": 9.157e-05,
+            "overlap_condition_2_printed": 71210.0,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "granted_swap_extra_bytes": 0,
+          "historical_cube_sha256_match": true,
+          "engine_seconds": 64.92041237699999,
+          "cube": {
+            "grid_counts": [
+              180,
+              180,
+              180
+            ],
+            "sha256": "72e3db4f4bc0a1d28750add06deebecf63849d8a6c6bfa738fe15e77d02a8323",
+            "electron_integral": 2.000015793114047
+          }
+        },
+        {
+          "cutoff_ry": 800,
+          "status": "measured",
+          "input_sha256": "2219f5585f74de834d45cb1930d7c48c9d76b90b2f1e1ad667a1ddc494a50248",
+          "submitted_input_sha256": "2219f5585f74de834d45cb1930d7c48c9d76b90b2f1e1ad667a1ddc494a50248",
+          "granted_memory_bytes": 6442450944,
+          "available_memory_at_admission_bytes": 15666950144,
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -1.146398289108485,
+          "engine_forces_hartree_per_bohr": [
+            [
+              -0.169257843144928,
+              8.7e-14,
+              8.7e-14
+            ],
+            [
+              0.169257843145079,
+              9.8e-14,
+              9.7e-14
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0000003169,
+          "cgroup_memory_peak_bytes": 5056585728,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 60,
+            "independent_orbital_functions_reported": 60,
+            "overlap_ratio_line": "CN : max/min ev:  6.520E+000 /  9.157E-005   = 7.121E+004  Log(2-CN):  4.8525",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 6.52,
+            "overlap_min_eigenvalue_printed": 9.157e-05,
+            "overlap_condition_2_printed": 71210.0,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "granted_swap_extra_bytes": 0,
+          "engine_seconds": 114.24985123399998,
+          "cube": {
+            "grid_counts": [
+              216,
+              216,
+              216
+            ],
+            "sha256": "22f83fa4e9decbe159c786030ac81cdecdfa5a2839bbe3089fe1e6c8b4bbfea1",
+            "electron_integral": 2.0000134248439005
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "low_cutoff_ry": 400,
+          "high_cutoff_ry": 600,
+          "required": false,
+          "result": {
+            "absolute_energy_difference_hartree": 3.2278283090825255e-07,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 6.267374849933116e-07,
+            "reference_exported_electron_count": 2.000015793114047,
+            "candidate_exported_electron_count": 1.999995670580182,
+            "absolute_exported_electron_count_difference": 2.0122533865185588e-05,
+            "reference_engine_hard_soft_electron_count": 2.0000003169,
+            "candidate_engine_hard_soft_electron_count": 2.0000003169,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-short-qz-400ry",
+            "reference_case": "h2-short-qz-600ry",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 400,
+            "candidate_rel_cutoff_ry": 40,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "candidate_grid_counts": [
+                150,
+                150,
+                150
+              ],
+              "reference_native_cube_sha256": "72e3db4f4bc0a1d28750add06deebecf63849d8a6c6bfa738fe15e77d02a8323",
+              "candidate_native_cube_sha256": "c887af607bc31addfb53e9c9c49f3607781105feb00d7e26d006311b9ed0d262",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "reference_voxel_volume_bohr3": 0.0019995065431377777,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0.0,
+              "reference_outer_shell_signed_integral_electrons": 0.0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0014929655529958138,
+                "overlap_signed_density_difference_integral_electrons": 0.00031380499950739015,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.5420083951305734e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.015007530864197594,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0014929655529958138
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.000982497447626463,
+                "overlap_signed_density_difference_integral_electrons": 9.667697032550505e-05,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.279090902369995e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.012034417009602172,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.000982497447626463
+              },
+              "interpolants_overlap_l1_electrons": 0.00086191295877461,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": false,
+            "within_all_endpoint_thresholds": false,
+            "sensitivity_axis": "cutoff",
+            "reference_axis_setting": 600,
+            "candidate_axis_setting": 400
+          },
+          "resampling_diagnostic": {
+            "method": "signed periodic trigonometric diagnostic on a common half-open cell",
+            "reference_grid_axis_count": 180,
+            "candidate_grid_axis_count": 150,
+            "shared_native_grid_axis_count": 30,
+            "shared_native_points": {
+              "samples": 27000,
+              "voxel_volume_bohr3": 0.43189341331776004,
+              "absolute_difference_integral_electrons": 0.00454071742761883,
+              "signed_difference_integral_electrons": -0.00020482524116923154,
+              "rms_difference_electrons_per_bohr3": 3.4889997911258426e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.005359999999999976
+            },
+            "shared_native_scope": "Direct point differences; its integral uses the sparse shared-grid rectangular rule.",
+            "candidate_to_reference_fourier": {
+              "samples": 5832000,
+              "voxel_volume_bohr3": 0.0019995065431377777,
+              "absolute_difference_integral_electrons": 0.002102583635262911,
+              "signed_difference_integral_electrons": -4.247174376194406e-06,
+              "rms_difference_electrons_per_bohr3": 1.175610205531995e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.0070695926990448354
+            },
+            "reference_to_candidate_sampling": "periodic trigonometric evaluation with alias folding",
+            "candidate_vs_sampled_reference": {
+              "samples": 3375000,
+              "voxel_volume_bohr3": 0.0034551473065420795,
+              "absolute_difference_integral_electrons": 0.0012762744981460934,
+              "signed_difference_integral_electrons": -4.2471743767895e-06,
+              "rms_difference_electrons_per_bohr3": 1.2346550310947714e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.008965178832096743
+            },
+            "reference_self_roundtrip": {
+              "fourier": {
+                "samples": 5832000,
+                "voxel_volume_bohr3": 0.0019995065431377777,
+                "absolute_difference_integral_electrons": 0.004472308635124934,
+                "signed_difference_integral_electrons": 6.13366359006267e-16,
+                "rms_difference_electrons_per_bohr3": 1.671154691924955e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.006341658200716194
+              },
+              "lagrange_4pt": {
+                "samples": 5832000,
+                "voxel_volume_bohr3": 0.0019995065431377777,
+                "absolute_difference_integral_electrons": 0.0016239357593944722,
+                "signed_difference_integral_electrons": 0.00032429850936221185,
+                "rms_difference_electrons_per_bohr3": 1.5399071019488995e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.012150430038168847
+              },
+              "lagrange_6pt": {
+                "samples": 5832000,
+                "voxel_volume_bohr3": 0.0019995065431377777,
+                "absolute_difference_integral_electrons": 0.0010920850612670414,
+                "signed_difference_integral_electrons": 0.00010551764588165338,
+                "rms_difference_electrons_per_bohr3": 1.1837509059757623e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.010030237728098967
+              }
+            },
+            "interpretation": "Self-roundtrip starts from the same fine output and measures sampling plus reconstruction. The Fourier estimator assumes periodic extension of the serialized finite-cell data. These diagnostics do not replace the preregistered two-interpolant gate or provide an additive separation of error magnitudes."
+          }
+        },
+        {
+          "low_cutoff_ry": 600,
+          "high_cutoff_ry": 800,
+          "required": true,
+          "result": {
+            "absolute_energy_difference_hartree": 1.4071386944536357e-08,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 2.222212000524415e-08,
+            "reference_exported_electron_count": 2.0000134248439005,
+            "candidate_exported_electron_count": 2.000015793114047,
+            "absolute_exported_electron_count_difference": 2.368270146657636e-06,
+            "reference_engine_hard_soft_electron_count": 2.0000003169,
+            "candidate_engine_hard_soft_electron_count": 2.0000003169,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-short-qz-600ry",
+            "reference_case": "h2-short-qz-800ry",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 600,
+            "candidate_rel_cutoff_ry": 40,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "candidate_grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "reference_native_cube_sha256": "22f83fa4e9decbe159c786030ac81cdecdfa5a2839bbe3089fe1e6c8b4bbfea1",
+              "candidate_native_cube_sha256": "72e3db4f4bc0a1d28750add06deebecf63849d8a6c6bfa738fe15e77d02a8323",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_voxel_volume_bohr3": 0.0011571218420936215,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0.0,
+              "reference_outer_shell_signed_integral_electrons": 0.0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0008384606523326115,
+                "overlap_signed_density_difference_integral_electrons": 0.000245622259411918,
+                "overlap_rms_density_difference_electron_per_bohr3": 8.697395162829318e-06,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.010490316358024776,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0008384606523326115
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0005846532403397914,
+                "overlap_signed_density_difference_integral_electrons": 8.39923483994485e-05,
+                "overlap_rms_density_difference_electron_per_bohr3": 7.566999108725514e-06,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.008714110243055573,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0005846532403397914
+              },
+              "interpolants_overlap_l1_electrons": 0.0004622575375554027,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true,
+            "sensitivity_axis": "cutoff",
+            "reference_axis_setting": 800,
+            "candidate_axis_setting": 600
+          },
+          "resampling_diagnostic": {
+            "method": "signed periodic trigonometric diagnostic on a common half-open cell",
+            "reference_grid_axis_count": 216,
+            "candidate_grid_axis_count": 180,
+            "shared_native_grid_axis_count": 36,
+            "shared_native_points": {
+              "samples": 46656,
+              "voxel_volume_bohr3": 0.24993831789222223,
+              "absolute_difference_integral_electrons": 0.0040960363425386215,
+              "signed_difference_integral_electrons": -0.0008920351320388654,
+              "rms_difference_electrons_per_bohr3": 2.774247949385484e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.0034600000000000186
+            },
+            "shared_native_scope": "Direct point differences; its integral uses the sparse shared-grid rectangular rule.",
+            "candidate_to_reference_fourier": {
+              "samples": 10077696,
+              "voxel_volume_bohr3": 0.0011571218420936215,
+              "absolute_difference_integral_electrons": 0.0008721082746297876,
+              "signed_difference_integral_electrons": 2.3682556065843472e-06,
+              "rms_difference_electrons_per_bohr3": 6.407427825151241e-06,
+              "max_absolute_difference_electrons_per_bohr3": 0.005186897342109531
+            },
+            "reference_to_candidate_sampling": "periodic trigonometric evaluation with alias folding",
+            "candidate_vs_sampled_reference": {
+              "samples": 5832000,
+              "voxel_volume_bohr3": 0.0019995065431377777,
+              "absolute_difference_integral_electrons": 0.0006633628210274503,
+              "signed_difference_integral_electrons": 2.3682556066857786e-06,
+              "rms_difference_electrons_per_bohr3": 6.431737807542939e-06,
+              "max_absolute_difference_electrons_per_bohr3": 0.003459999999999963
+            },
+            "reference_self_roundtrip": {
+              "fourier": {
+                "samples": 10077696,
+                "voxel_volume_bohr3": 0.0011571218420936215,
+                "absolute_difference_integral_electrons": 0.0015744660432227833,
+                "signed_difference_integral_electrons": -1.1784175675892702e-16,
+                "rms_difference_electrons_per_bohr3": 8.954445792503973e-06,
+                "max_absolute_difference_electrons_per_bohr3": 0.0044589444504482545
+              },
+              "lagrange_4pt": {
+                "samples": 10077696,
+                "voxel_volume_bohr3": 0.0011571218420936215,
+                "absolute_difference_integral_electrons": 0.0008497323354355995,
+                "signed_difference_integral_electrons": 0.00024549094785924266,
+                "rms_difference_electrons_per_bohr3": 8.996506002033263e-06,
+                "max_absolute_difference_electrons_per_bohr3": 0.007339394863427051
+              },
+              "lagrange_6pt": {
+                "samples": 10077696,
+                "voxel_volume_bohr3": 0.0011571218420936215,
+                "absolute_difference_integral_electrons": 0.0005891019962463325,
+                "signed_difference_integral_electrons": 8.304002600613989e-05,
+                "rms_difference_electrons_per_bohr3": 7.5095495030863994e-06,
+                "max_absolute_difference_electrons_per_bohr3": 0.007147570246164692
+              }
+            },
+            "interpretation": "Self-roundtrip starts from the same fine output and measures sampling plus reconstruction. The Fourier estimator assumes periodic extension of the serialized finite-cell data. These diagnostics do not replace the preregistered two-interpolant gate or provide an additive separation of error magnitudes."
+          }
+        }
+      ]
+    },
+    {
+      "system": "he",
+      "artifact_id": 13638077551,
+      "digest": "sha256:c2cc0281449998aa8a8be8aa4314acdc3f302e77240e0dad1c58245828b34f0a",
+      "size_in_bytes": 43591,
+      "report_sha256": "2e1033020b01ba2f220f2e4ff1e9a085e405eb1473dd2cc4f2837e4761bff76a",
+      "job_id": 128891626071,
+      "status": "measured",
+      "error": null,
+      "cases": [
+        {
+          "cutoff_ry": 800,
+          "status": "measured",
+          "input_sha256": "ddcbc594870c97e05235b1305cedab41f0ead81ed05ab06ec02a6b7e98662995",
+          "submitted_input_sha256": "ddcbc594870c97e05235b1305cedab41f0ead81ed05ab06ec02a6b7e98662995",
+          "granted_memory_bytes": 6442450944,
+          "available_memory_at_admission_bytes": 15129927680,
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -2.892651023414634,
+          "engine_forces_hartree_per_bohr": [
+            [
+              3.48e-13,
+              3.48e-13,
+              3.48e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "cgroup_memory_peak_bytes": 5056806912,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "granted_swap_extra_bytes": 0,
+          "historical_cube_sha256_match": true,
+          "engine_seconds": 64.51784845399999,
+          "cube": {
+            "grid_counts": [
+              216,
+              216,
+              216
+            ],
+            "sha256": "9fb8981a079fa986cfce2388f77194f2739a0be32dfd824ff5e51b09a6f06eb1",
+            "electron_integral": 2.0000115490587516
+          }
+        },
+        {
+          "cutoff_ry": 1000,
+          "status": "measured",
+          "input_sha256": "e79ffd6a5c7ae5d0ed8b282caf9d708e40c5c1d7819b63b037b752708ccaa272",
+          "submitted_input_sha256": "e79ffd6a5c7ae5d0ed8b282caf9d708e40c5c1d7819b63b037b752708ccaa272",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15637504000,
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -2.892651023414831,
+          "engine_forces_hartree_per_bohr": [
+            [
+              2.7e-14,
+              2.7e-14,
+              2.6e-14
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "cgroup_memory_peak_bytes": 6732533760,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "granted_swap_extra_bytes": 0,
+          "historical_cube_sha256_match": true,
+          "engine_seconds": 83.14251177400001,
+          "cube": {
+            "grid_counts": [
+              240,
+              240,
+              240
+            ],
+            "sha256": "ab4190a90bb18da566f7fd540fc76a5a56965fe2677d13155e310400f79a4c31",
+            "electron_integral": 1.9999784972459866
+          }
+        },
+        {
+          "cutoff_ry": 1200,
+          "status": "measured",
+          "input_sha256": "7d3eb5e63190091e05a0bfb170bc54fc831647f0ed18d9ab8a5c3e3d109325a0",
+          "submitted_input_sha256": "7d3eb5e63190091e05a0bfb170bc54fc831647f0ed18d9ab8a5c3e3d109325a0",
+          "granted_memory_bytes": 12884901888,
+          "available_memory_at_admission_bytes": 15623495680,
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -2.892651023414628,
+          "engine_forces_hartree_per_bohr": [
+            [
+              2.62e-13,
+              2.62e-13,
+              2.63e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "cgroup_memory_peak_bytes": 8696336384,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "granted_swap_extra_bytes": 0,
+          "engine_seconds": 181.01128163,
+          "cube": {
+            "grid_counts": [
+              256,
+              256,
+              256
+            ],
+            "sha256": "d15917cb55208c76e697760352da025760c3c449f968d6e2c0a7d1e7cf23815e",
+            "electron_integral": 2.000008024806416
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "low_cutoff_ry": 800,
+          "high_cutoff_ry": 1000,
+          "required": false,
+          "result": {
+            "absolute_energy_difference_hartree": 1.9673151996357774e-13,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 3.22e-13,
+            "reference_exported_electron_count": 1.9999784972459866,
+            "candidate_exported_electron_count": 2.0000115490587516,
+            "absolute_exported_electron_count_difference": 3.305181276491709e-05,
+            "reference_engine_hard_soft_electron_count": 2.0,
+            "candidate_engine_hard_soft_electron_count": 2.0,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "he-qz-800ry",
+            "reference_case": "he-qz-1000ry",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 800,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                240,
+                240,
+                240
+              ],
+              "candidate_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_native_cube_sha256": "ab4190a90bb18da566f7fd540fc76a5a56965fe2677d13155e310400f79a4c31",
+              "candidate_native_cube_sha256": "9fb8981a079fa986cfce2388f77194f2739a0be32dfd824ff5e51b09a6f06eb1",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                240,
+                240,
+                240
+              ],
+              "reference_voxel_volume_bohr3": 0.0008435418228862501,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0.0,
+              "reference_outer_shell_signed_integral_electrons": 0.0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0016532043172054305,
+                "overlap_signed_density_difference_integral_electrons": 0.0007776020171355374,
+                "overlap_rms_density_difference_electron_per_bohr3": 2.4826290795833264e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.048900000000000166,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0016532043172054305
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0010177590215925095,
+                "overlap_signed_density_difference_integral_electrons": 0.0001690720005232979,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.9660268681492905e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.048900000000000166,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0010177590215925095
+              },
+              "interpolants_overlap_l1_electrons": 0.0010928688868638938,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": false,
+            "within_all_endpoint_thresholds": false,
+            "sensitivity_axis": "cutoff",
+            "reference_axis_setting": 1000,
+            "candidate_axis_setting": 800
+          },
+          "resampling_diagnostic": {
+            "method": "signed periodic trigonometric diagnostic on a common half-open cell",
+            "reference_grid_axis_count": 240,
+            "candidate_grid_axis_count": 216,
+            "shared_native_grid_axis_count": 24,
+            "shared_native_points": {
+              "samples": 13824,
+              "voxel_volume_bohr3": 0.84354182288625,
+              "absolute_difference_integral_electrons": 0.04838782661632065,
+              "signed_difference_integral_electrons": -0.034958337795647644,
+              "rms_difference_electrons_per_bohr3": 0.00041651186688915063,
+              "max_absolute_difference_electrons_per_bohr3": 0.048900000000000166
+            },
+            "shared_native_scope": "Direct point differences; its integral uses the sparse shared-grid rectangular rule.",
+            "candidate_to_reference_fourier": {
+              "samples": 13824000,
+              "voxel_volume_bohr3": 0.0008435418228862501,
+              "absolute_difference_integral_electrons": 0.003429833945771652,
+              "signed_difference_integral_electrons": 1.3012425647396884e-06,
+              "rms_difference_electrons_per_bohr3": 2.8395514652631155e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.04889999999999928
+            },
+            "reference_to_candidate_sampling": "periodic trigonometric evaluation with alias folding",
+            "candidate_vs_sampled_reference": {
+              "samples": 10077696,
+              "voxel_volume_bohr3": 0.0011571218420936215,
+              "absolute_difference_integral_electrons": 0.00260065798016395,
+              "signed_difference_integral_electrons": 1.3012425651499897e-06,
+              "rms_difference_electrons_per_bohr3": 3.03990561640666e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.04889999999999928
+            },
+            "reference_self_roundtrip": {
+              "fourier": {
+                "samples": 13824000,
+                "voxel_volume_bohr3": 0.0008435418228862501,
+                "absolute_difference_integral_electrons": 0.00811975575600337,
+                "signed_difference_integral_electrons": -3.8717799752890424e-16,
+                "rms_difference_electrons_per_bohr3": 4.064259621994495e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.021628036529180772
+              },
+              "lagrange_4pt": {
+                "samples": 13824000,
+                "voxel_volume_bohr3": 0.0008435418228862501,
+                "absolute_difference_integral_electrons": 0.002342008699158159,
+                "signed_difference_integral_electrons": 0.0007822309925309758,
+                "rms_difference_electrons_per_bohr3": 3.0988032643599014e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.02932395316725156
+              },
+              "lagrange_6pt": {
+                "samples": 13824000,
+                "voxel_volume_bohr3": 0.0008435418228862501,
+                "absolute_difference_integral_electrons": 0.0016460655001779554,
+                "signed_difference_integral_electrons": 0.00017238158694429502,
+                "rms_difference_electrons_per_bohr3": 2.312376039012513e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.018474813128545486
+              }
+            },
+            "interpretation": "Self-roundtrip starts from the same fine output and measures sampling plus reconstruction. The Fourier estimator assumes periodic extension of the serialized finite-cell data. These diagnostics do not replace the preregistered two-interpolant gate or provide an additive separation of error magnitudes."
+          }
+        },
+        {
+          "low_cutoff_ry": 1000,
+          "high_cutoff_ry": 1200,
+          "required": true,
+          "result": {
+            "absolute_energy_difference_hartree": 2.0294876890147862e-13,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 2.37e-13,
+            "reference_exported_electron_count": 2.000008024806416,
+            "candidate_exported_electron_count": 1.9999784972459866,
+            "absolute_exported_electron_count_difference": 2.9527560429176702e-05,
+            "reference_engine_hard_soft_electron_count": 2.0,
+            "candidate_engine_hard_soft_electron_count": 2.0,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "he-qz-1000ry",
+            "reference_case": "he-qz-1200ry",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 1000,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                256,
+                256,
+                256
+              ],
+              "candidate_grid_counts": [
+                240,
+                240,
+                240
+              ],
+              "reference_native_cube_sha256": "d15917cb55208c76e697760352da025760c3c449f968d6e2c0a7d1e7cf23815e",
+              "candidate_native_cube_sha256": "ab4190a90bb18da566f7fd540fc76a5a56965fe2677d13155e310400f79a4c31",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                256,
+                256,
+                256
+              ],
+              "reference_voxel_volume_bohr3": 0.0006950570440041733,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0.0,
+              "reference_outer_shell_signed_integral_electrons": 0.0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0009151361373792743,
+                "overlap_signed_density_difference_integral_electrons": 0.00043549705603414696,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.2844876314813348e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.027399999999999647,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0009151361373792743
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0005186856920753291,
+                "overlap_signed_density_difference_integral_electrons": 6.871183146587525e-05,
+                "overlap_rms_density_difference_electron_per_bohr3": 9.941190781542211e-06,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.027399999999999647,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0005186856920753291
+              },
+              "interpolants_overlap_l1_electrons": 0.0006415882940670871,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true,
+            "sensitivity_axis": "cutoff",
+            "reference_axis_setting": 1200,
+            "candidate_axis_setting": 1000
+          },
+          "resampling_diagnostic": {
+            "method": "signed periodic trigonometric diagnostic on a common half-open cell",
+            "reference_grid_axis_count": 256,
+            "candidate_grid_axis_count": 240,
+            "shared_native_grid_axis_count": 16,
+            "shared_native_points": {
+              "samples": 4096,
+              "voxel_volume_bohr3": 2.8469536522410936,
+              "absolute_difference_integral_electrons": 0.08563159058456325,
+              "signed_difference_integral_electrons": -0.07098050686016955,
+              "rms_difference_electrons_per_bohr3": 0.0004283389817211772,
+              "max_absolute_difference_electrons_per_bohr3": 0.027399999999999647
+            },
+            "shared_native_scope": "Direct point differences; its integral uses the sparse shared-grid rectangular rule.",
+            "candidate_to_reference_fourier": {
+              "samples": 16777216,
+              "voxel_volume_bohr3": 0.0006950570440041733,
+              "absolute_difference_integral_electrons": 0.0022109701817694043,
+              "signed_difference_integral_electrons": -4.127125309956349e-06,
+              "rms_difference_electrons_per_bohr3": 1.747416174488423e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.027399999999999647
+            },
+            "reference_to_candidate_sampling": "periodic trigonometric evaluation with alias folding",
+            "candidate_vs_sampled_reference": {
+              "samples": 13824000,
+              "voxel_volume_bohr3": 0.0008435418228862501,
+              "absolute_difference_integral_electrons": 0.0018021962510890545,
+              "signed_difference_integral_electrons": -4.127125309893515e-06,
+              "rms_difference_electrons_per_bohr3": 1.8344341574794036e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.02740000000000009
+            },
+            "reference_self_roundtrip": {
+              "fourier": {
+                "samples": 16777216,
+                "voxel_volume_bohr3": 0.0006950570440041733,
+                "absolute_difference_integral_electrons": 0.004781611052133183,
+                "signed_difference_integral_electrons": -4.0372261652332765e-17,
+                "rms_difference_electrons_per_bohr3": 2.4527730810165307e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.01212080780886951
+              },
+              "lagrange_4pt": {
+                "samples": 16777216,
+                "voxel_volume_bohr3": 0.0006950570440041733,
+                "absolute_difference_integral_electrons": 0.0014349716712261868,
+                "signed_difference_integral_electrons": 0.0004413581354748522,
+                "rms_difference_electrons_per_bohr3": 1.821941769259801e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.01819035651682821
+              },
+              "lagrange_6pt": {
+                "samples": 16777216,
+                "voxel_volume_bohr3": 0.0006950570440041733,
+                "absolute_difference_integral_electrons": 0.001036246177613724,
+                "signed_difference_integral_electrons": 7.423050558016867e-05,
+                "rms_difference_electrons_per_bohr3": 1.4698308564437785e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.01177791280067697
+              }
+            },
+            "interpretation": "Self-roundtrip starts from the same fine output and measures sampling plus reconstruction. The Fourier estimator assumes periodic extension of the serialized finite-cell data. These diagnostics do not replace the preregistered two-interpolant gate or provide an additive separation of error magnitudes."
+          }
+        }
+      ]
+    }
+  ],
+  "scope": {
+    "settings": "fixed two-fixture QZ sensitivity in pinned x86 CP2K",
+    "fourier_and_self_roundtrip_used_for_acceptance": false,
+    "a04_profile_frozen": false,
+    "physical_validation_status": "unvalidated",
+    "oci_measured": false
+  },
+  "decision": {
+    "required_comparisons": "Both finest pairs passed the unchanged AV03/AV05/AV06 and dual-interpolation L1 acceptance. Both historical lower pairs reproduced the original no-go.",
+    "diagnostic": "The He finest-pair Fourier L1 was 0.0022109701817694043 electrons. The fine-He-only reconstruction controls had nonzero L1 of similar or greater magnitude than the existing estimators. This is method sensitivity, not an additive attribution or a reversal of the original gate.",
+    "next": "He 1200 Ry 이상의 QZ CUTOFF에서 원본 격자와 재표본화 진단을 다시 대조하고, 선정한 결합 설정에서 밀도 경계 및 기준 프로필을 확인. 이후 QZ LMAXN1 브리지와 동일 조건 QZ–5Z 예비시험. G3 이후는 보류.",
+    "finer_basis_not_executed": true
+  }
+}

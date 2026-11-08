@@ -136,6 +136,12 @@
       "receipt": "docs/verification/atomistic-a04/qz-sensitivity-42501071977.json",
       "scope": "H2 at 0.60 angstrom and He; 16 converged calculations and 10 of 12 comparisons passed. Both CUTOFF comparisons failed the original density shape screen."
     },
+    "fixed_fixture_qz_cutoff_refinement": {
+      "status": "passed_preregistered_two_interpolant_screen_reference_pending",
+      "input_manifest": "docs/design/atomistic-a04-v0.1/qz-cutoff-refinement-inputs.json",
+      "receipt": "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json",
+      "scope": "H2 600–800 Ry and He 1000–1200 Ry in the fixed 12 angstrom x86 QZ profile. The He Fourier diagnostic remains method-sensitive. Joint reference settings and physical validation are pending."
+    },
     "fixed_fixture_scf_screen": {
       "status": "passed_on_pinned_x86_fixed_fixtures",
       "candidate_eps_scf": 1e-8,

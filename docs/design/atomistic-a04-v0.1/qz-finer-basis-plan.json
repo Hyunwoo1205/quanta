@@ -161,5 +161,11 @@
     "per_file_gib": 1,
     "per_work_directory_gib": 2,
     "policy": "Fix the grant for each exact deck within the stated range, using measured QZ resource evidence and observed runner headroom before launch. Require at least the stated host reserve, no automatic retries, and new private scratch per attempt with checks accounting for retained density files. On resource rejection preserve the exact deck and observed cause. Any higher cap or different execution conditions require a separate preregistration."
+  },
+  "qz_cutoff_refinement": {
+    "receipt": "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json",
+    "screen_status": "passed_preregistered_two_interpolant_screen",
+    "reference_readiness": "pending_He_resampling_crosscheck_and_joint_tuple",
+    "followup": "Confirm the He QZ field and comparison-method sensitivity above 1200 Ry, then document the joint candidate settings and finite-cell boundary evidence before B0. The Fourier result is diagnostic, not a change to the original acceptance threshold."
   }
 }
