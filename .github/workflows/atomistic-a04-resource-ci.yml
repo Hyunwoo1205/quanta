@@ -13,13 +13,14 @@ on:
       - tests/test_atomistic_a04_resources.py
       - tests/test_atomistic_a04_accuracy.py
       - docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json
+      - docs/design/atomistic-a04-v0.1/h2-one-factor-refinement.json
   workflow_dispatch:
     inputs:
       experiment:
         description: "Choose a fixed A04 experiment"
         type: choice
         default: mpi-refinement
-        options: [mpi-refinement, serial-resource, cross-grid-accuracy]
+        options: [mpi-refinement, serial-resource, cross-grid-accuracy, one-factor-refinement]
 
 permissions:
   contents: read
@@ -28,6 +29,11 @@ permissions:
 jobs:
   measure:
     if: github.ref == 'refs/heads/main'
+    name: measure (${{ matrix.track }})
+    strategy:
+      fail-fast: false
+      matrix:
+        track: ${{ fromJSON((github.event_name == 'push' || inputs.experiment == 'one-factor-refinement') && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -137,25 +143,30 @@ jobs:
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence \
             --mpi-refinement-serial-report .cache/atomistic-a04-resource/serial-reference/report.json
-      - name: Compare candidate energy, force and full density against the 20 angstrom reference
-        if: github.event_name == 'push' || inputs.experiment == 'cross-grid-accuracy'
+      - name: Measure fixed-input spatial density comparisons
+        if: matrix.track != 'legacy' || inputs.experiment == 'cross-grid-accuracy'
         env:
           OPENBLAS_NUM_THREADS: '1'
           OMP_NUM_THREADS: '1'
+          A04_TRACK: ${{ matrix.track }}
         run: |
           set -euo pipefail
           numpy_lock="$(mktemp)"
           grep '^numpy==' requirements.lock.txt > "$numpy_lock"
           python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
+          mode=(--cross-grid-accuracy)
+          if [ "$A04_TRACK" != legacy ]; then
+            mode=(--one-factor "$A04_TRACK")
+          fi
           python -B scripts/run_atomistic_a04_resource_ci.py \
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence \
-            --cross-grid-accuracy
+            "${mode[@]}"
       - name: Preserve the resource report and bounded diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: atomistic-a04-adaptive-resource-${{ github.sha }}
+          name: atomistic-a04-adaptive-resource-${{ matrix.track }}-${{ github.sha }}
           path: .cache/atomistic-a04-resource/evidence/
           include-hidden-files: true
           if-no-files-found: warn

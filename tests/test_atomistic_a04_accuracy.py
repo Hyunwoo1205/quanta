@@ -113,6 +113,47 @@ def test_rejects_changed_cube_digest(tmp_path, comparison):
         compare(reference, candidate, reference_cube, candidate_cube, 4, 2)
 
 
+@pytest.mark.parametrize("candidate_count", [8, 6])
+def test_equal_cell_compares_whole_domain(tmp_path, comparison, candidate_count):
+    compare, parse = comparison
+
+    def field(count):
+        x, y, z = np.meshgrid(np.arange(count) * (24 // count), np.arange(count) * (24 // count),
+                              np.arange(count) * (24 // count), indexing="ij")
+        return 2 * x - y + z - 5
+
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, field(8), 4)
+    candidate = _cube(candidate_cube, parse, field(candidate_count) + 1, 4)
+    result = compare(reference, candidate, reference_cube, candidate_cube, 4, 4)
+    cell_volume = (4 * BOHR_PER_ANGSTROM) ** 3
+    assert result["reference_overlap_start_index"] == [0] * 3
+    assert result["reference_overlap_grid_counts"] == [8] * 3
+    assert result["reference_outer_shell_samples"] == 0
+    assert result["reference_outer_shell_absolute_integral_electrons"] == 0
+    assert result["reference_outer_shell_signed_integral_electrons"] == 0
+    primary = result["primary"]
+    assert primary["overlap_absolute_density_difference_integral_electrons"] == pytest.approx(cell_volume)
+    assert primary["zero_extended_absolute_density_difference_integral_electrons"] == pytest.approx(cell_volume)
+    if candidate_count == 8:
+        assert result["method"] == "native_aligned_crop"
+        assert result["sensitivity"] is None
+    else:
+        assert result["method"] == "separable_lagrange_4pt_and_6pt"
+        assert result["sensitivity"]["overlap_absolute_density_difference_integral_electrons"] == pytest.approx(cell_volume)
+
+
+def test_rejects_coarser_reference_for_equal_cells(tmp_path, comparison):
+    compare, parse = comparison
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, np.zeros((6,) * 3), 4)
+    candidate = _cube(candidate_cube, parse, np.zeros((8,) * 3), 4)
+    with pytest.raises(ValueError, match="reference grid at least as fine"):
+        compare(reference, candidate, reference_cube, candidate_cube, 4, 4)
+
+
 def test_rejects_nonmatching_atoms(tmp_path, comparison):
     compare, parse = comparison
     reference_cube = tmp_path / "reference.cube"
@@ -121,3 +162,37 @@ def test_rejects_nonmatching_atoms(tmp_path, comparison):
     candidate = _cube(candidate_cube, parse, np.zeros((6,) * 3), 2, atom_offset=0.001)
     with pytest.raises(ValueError, match="Ordered CUBE atoms do not align"):
         compare(reference, candidate, reference_cube, candidate_cube, 4, 2)
+
+
+@pytest.mark.parametrize(("track", "runs", "factors"), [
+    ("cell", [(12, 800, 80), (16, 800, 80)], ["cell_angstrom", "cell_angstrom"]),
+    ("cutoff", [(12, 400, 40), (12, 400, 80), (12, 600, 80), (12, 800, 80)],
+     ["rel_cutoff_ry", "cutoff_ry", "cutoff_ry"]),
+    ("relative", [(12, 800, 40), (12, 800, 60), (12, 800, 80)], ["rel_cutoff_ry", "rel_cutoff_ry"]),
+])
+def test_refinement_only_executes_preregistered_cases(monkeypatch, tmp_path, track, runs, factors):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    import run_atomistic_a04_resource_ci as runner
+
+    prior = json.loads(runner.ENDPOINT_RECEIPT.read_bytes())
+    observed = []
+    compared = []
+
+    def attempt(case, *args, ranks, swap, expected_input, cube):
+        observed.append((case.cell, case.cutoff, case.rel_cutoff))
+        assert ranks == 1 and swap == 0 and cube.parent == tmp_path
+        return {"status": "measured"}
+
+    def pair(reference_case, case, *_):
+        compared.append((reference_case, case))
+        return {"within_all_endpoint_thresholds": False}
+
+    monkeypatch.setattr(runner, "refinement_attempt", attempt)
+    monkeypatch.setattr(runner, "compare_accuracy_pair", pair)
+    report = {"cases": [], "verification_scope": {}}
+    assert runner.run_one_factor(track, prior["candidate"], tmp_path, tmp_path, report) == "measured"
+    assert observed == runs
+    assert [row["factor"] for row in report["comparisons"]] == factors
+    assert len(compared) == len(factors) - int(track == "cell")
+    if track == "cell":
+        assert report["comparisons"][-1]["reused_workflow_run_id"] == 42443582121

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scope": "preregistered_one_factor_refinement_at_fixed_h2_0p8_angstrom",
+  "setting_order": ["cell_angstrom", "cutoff_ry", "rel_cutoff_ry"],
+  "reference_receipt": "../../verification/atomistic-a04/cross-grid-accuracy-42443582121.json",
+  "reference_receipt_sha256": "7efb9d1bfefe78e229db0d776a83060fcc96da1a34c6348780b79ead0c5e1ec7",
+  "tracks": {
+    "cell": [[12, 800, 80], [16, 800, 80], [20, 800, 80]],
+    "cutoff": [[12, 400, 80], [12, 600, 80], [12, 800, 80]],
+    "relative": [[12, 800, 40], [12, 800, 60], [12, 800, 80]]
+  },
+  "operating_bridge": [[12, 400, 40], [12, 400, 80]],
+  "reuse": "Use the original same-engine 16 to 20 angstrom one-factor comparison from 42443582121. Validate the receipt and the fresh 16 angstrom input hash; compare the fresh 12 to 16 edge with both native CUBEs.",
+  "scalar_thresholds": "../atomistic-a01-v0.1/validation-plan.json#AV03",
+  "electron_count_thresholds": ["../atomistic-a01-v0.1/validation-plan.json#AV05", "../atomistic-a01-v0.1/validation-plan.json#AV06"],
+  "spatial_l1_atol_electrons": 0.001,
+  "spatial_method": "Same comparison rule as h2-cross-grid-comparison.json. Use the finer reference sample grid, compare directly if aligned, otherwise require both four- and six-point L1 estimates, and report the excluded reference shell separately.",
+  "interpretation": "Report both adjacent comparisons for each axis and the lightweight bridge. The finest adjacent comparison probes local numerical stability at this geometry. These axes and the existing joint endpoint comparison do not complete SCF, radial/angular, basis, full density convergence, independent physical validation, or OCI production checks.",
+  "subsequent_validation": [
+    "Use the fixed 0.74144 angstrom H2 and helium fixtures, then predeclare boundary geometries before claiming an interval.",
+    "After numerical screening, measure the lightweight candidate in an isolated ARM/OCI trial with its separate operational gates."
+  ]
+}

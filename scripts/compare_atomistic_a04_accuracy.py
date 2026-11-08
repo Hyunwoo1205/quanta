@@ -146,13 +146,15 @@ def compare_density(
     """Report overlap and omitted-domain errors, without assigning a scientific pass."""
     if (
         type(reference_cell_angstrom) is not int or type(candidate_cell_angstrom) is not int
-        or not 0 < candidate_cell_angstrom < reference_cell_angstrom
+        or not 0 < candidate_cell_angstrom <= reference_cell_angstrom
     ):
-        raise ValueError("Expected smaller and larger authored cubic cells in integer Å")
+        raise ValueError("Expected positive authored cubic cells in integer Å with the reference no smaller")
     engine_units = json.loads((LOCK_DIR / "density-and-units.json").read_bytes())["engine_unit_profile"]
     bohr_per_angstrom = 1e-10 / engine_units["a_bohr_m"]
     ref_n = _grid_count(reference_attempt, reference_cell_angstrom * bohr_per_angstrom)
     cand_n = _grid_count(candidate_attempt, candidate_cell_angstrom * bohr_per_angstrom)
+    if reference_cell_angstrom == candidate_cell_angstrom and ref_n < cand_n:
+        raise ValueError("Equal-cell comparison requires a reference grid at least as fine as the candidate")
     overlap = Fraction(ref_n * candidate_cell_angstrom, reference_cell_angstrom)
     offset = (ref_n - overlap) / 2
     if overlap.denominator != 1 or offset.denominator != 1:

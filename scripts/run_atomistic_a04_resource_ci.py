@@ -76,6 +76,9 @@ MPI_CASES = (
 REFINEMENT_RECEIPTS = RECEIPT.parent
 ACCURACY_REFERENCE = REFINEMENT_RECEIPTS / "memory-recovery-42438533750.json"
 ACCURACY_PLAN = ROOT / "docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json"
+ONE_FACTOR_PLAN = ACCURACY_PLAN.with_name("h2-one-factor-refinement.json")
+ENDPOINT_RECEIPT = ACCURACY_REFERENCE.with_name("cross-grid-accuracy-42443582121.json")
+ONE_FACTOR_AXES = ("cell", "cutoff", "relative")
 
 
 ENGINE_WRAPPER = r"""
@@ -806,9 +809,33 @@ def accuracy_scalars(reference: dict, candidate: dict, checks: dict) -> dict:
     }
 
 
+def compare_accuracy_pair(reference_case: Case, case: Case, reference: dict, attempt: dict,
+                          reference_path: Path, path: Path, checks: dict, l1_atol: float) -> dict:
+    from compare_atomistic_a04_accuracy import compare_density
+
+    result = accuracy_scalars(reference, attempt, checks)
+    result.update(
+        case=case.name, reference_case=reference_case.name,
+        candidate_cell_angstrom=case.cell, candidate_cutoff_ry=case.cutoff,
+        candidate_rel_cutoff_ry=case.rel_cutoff,
+    )
+    density = compare_density(reference, attempt, reference_path, path, reference_case.cell, case.cell)
+    result["spatial_density"] = density
+    result["spatial_l1_screen_passed"] = all(
+        method["zero_extended_absolute_density_difference_integral_electrons"] <= l1_atol
+        for method in (density["primary"], density["sensitivity"]) if method is not None
+    )
+    result["within_all_endpoint_thresholds"] = all(
+        result[key] for key in (
+            "energy_passed", "force_passed", "engine_electron_counts_passed",
+            "exported_electron_counts_passed", "spatial_l1_screen_passed",
+        )
+    )
+    return result
+
+
 def run_accuracy(candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
     from atomistic_a04_runner_swap import bounded_ci_swap
-    from compare_atomistic_a04_accuracy import compare_density
 
     previous = json.loads(ACCURACY_REFERENCE.read_bytes())
     plan = json.loads(ACCURACY_PLAN.read_bytes())
@@ -854,36 +881,92 @@ def run_accuracy(candidate: dict, scratch: Path, diagnostics: Path, report: dict
             if attempt["status"] != "measured":
                 continue
             try:
-                result = accuracy_scalars(reference, attempt, checks)
-                result["case"] = case.name
-                result["reference_case"] = reference_case.name
-                result["candidate_cell_angstrom"] = case.cell
-                result["candidate_cutoff_ry"] = case.cutoff
-                result["candidate_rel_cutoff_ry"] = case.rel_cutoff
-                result["spatial_density"] = compare_density(
-                    reference, attempt, reference_path, path, reference_case.cell, case.cell
-                )
-                methods = [result["spatial_density"]["primary"]]
-                if result["spatial_density"].get("sensitivity") is not None:
-                    methods.append(result["spatial_density"]["sensitivity"])
-                result["spatial_l1_screen_passed"] = all(
-                    method["zero_extended_absolute_density_difference_integral_electrons"]
-                    <= plan["spatial_l1_atol_electrons"]
-                    for method in methods
-                )
-                result["within_all_endpoint_thresholds"] = all(
-                    result[key] for key in (
-                        "energy_passed", "force_passed", "engine_electron_counts_passed",
-                        "exported_electron_counts_passed", "spatial_l1_screen_passed",
-                    )
-                )
-                report["comparisons"].append(result)
+                report["comparisons"].append(compare_accuracy_pair(
+                    reference_case, case, reference, attempt, reference_path, path, checks,
+                    plan["spatial_l1_atol_electrons"],
+                ))
             except (OSError, ValueError, KeyError) as exc:
                 row["comparison_error"] = f"{type(exc).__name__}: {exc}"[:500]
             finally:
                 path.unlink(missing_ok=True)
     complete = len(report["comparisons"]) == len(MPI_CASES) - 1
     report["verification_scope"]["cross_grid_endpoint_screen"] = "measured" if complete else "incomplete"
+    return "measured" if complete else "comparison_incomplete"
+
+
+def run_one_factor(track: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
+    plan = json.loads(ONE_FACTOR_PLAN.read_bytes())
+    prior = json.loads(ENDPOINT_RECEIPT.read_bytes())
+    if (
+        sha256(ENDPOINT_RECEIPT) != plan["reference_receipt_sha256"]
+        or prior["workflow_conclusion"] != "success"
+        or any(prior["candidate"][key] != candidate[key] for key in ("binary_sha256", "image_id"))
+    ):
+        raise ValueError("One-factor refinement requires the verified prior image and endpoint receipt")
+    checks = {check["id"]: check for check in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    l1_atol = plan["spatial_l1_atol_electrons"]
+    levels = [tuple(settings) for settings in plan["tracks"][track]]
+    pairs = list(zip(levels, levels[1:]))
+    if track == "cutoff":
+        bridge = [tuple(settings) for settings in plan["operating_bridge"]]
+        pairs.insert(0, tuple(bridge))
+    settings = list(dict.fromkeys(value for pair in pairs for value in pair))
+    expected_inputs = {
+        (12, 400, 40): prior["cases"][2]["attempt"]["input_sha256"],
+        (16, 800, 80): prior["cases"][1]["attempt"]["input_sha256"],
+    }
+    report.update(
+        track=track, comparison_plan_sha256=sha256(ONE_FACTOR_PLAN),
+        comparison_thresholds=prior["thresholds"], comparisons=[],
+    )
+    if prior["thresholds"] != {
+        "energy_hartree": checks["AV03"]["energy_atol_hartree"],
+        "maximum_force_component_hartree_per_bohr": checks["AV03"]["force_atol_hartree_per_bohr"],
+        "engine_hard_soft_count_from_two_electrons": checks["AV05"]["atol"],
+        "exported_count_from_two_electrons": checks["AV06"]["atol"],
+        "exploratory_spatial_l1_electrons": l1_atol,
+    }:
+        raise ValueError("The new and prior comparison thresholds must agree")
+    cases = {}
+    for key in settings:
+        if key == (20, 800, 80):
+            continue
+        cell, cutoff, relative = key
+        case = Case(f"h2-{cell}a-{cutoff}ry-rel{relative}-density-on", cell, cutoff, True, 900,
+                    rel_cutoff=relative)
+        cube = scratch / f"{case.name}.cube"
+        attempt = refinement_attempt(case, candidate, scratch, diagnostics, ranks=1, swap=0,
+                                     expected_input=expected_inputs.get(key), cube=cube)
+        cases[key] = (case, attempt, cube)
+        report["cases"].append({"case": case.name, "settings": key, "attempts": [attempt]})
+    for coarse, fine in pairs:
+        changed = [i for i, (a, b) in enumerate(zip(coarse, fine, strict=True)) if a != b]
+        if len(changed) != 1 or coarse[changed[0]] >= fine[changed[0]]:
+            raise ValueError("Every comparison must increase exactly one setting")
+        row = {"candidate_settings": coarse, "reference_settings": fine,
+               "factor": plan["setting_order"][changed[0]]}
+        report["comparisons"].append(row)
+        coarse_case, coarse_attempt, coarse_cube = cases[coarse]
+        if coarse_attempt["status"] != "measured":
+            row["status"] = "case_incomplete"
+            continue
+        if fine == (20, 800, 80) and coarse == (16, 800, 80):
+            row.update(status="measured", reused_workflow_run_id=prior["workflow_run_id"],
+                       result=prior["comparisons"][0])
+            continue
+        fine_case, fine_attempt, fine_cube = cases[fine]
+        if fine_attempt["status"] != "measured":
+            row["status"] = "case_incomplete"
+            continue
+        try:
+            row["result"] = compare_accuracy_pair(
+                fine_case, coarse_case, fine_attempt, coarse_attempt, fine_cube, coarse_cube, checks, l1_atol,
+            )
+            row["status"] = "measured"
+        except (OSError, ValueError, KeyError) as exc:
+            row.update(status="comparison_error", error=f"{type(exc).__name__}: {exc}"[:500])
+    complete = all(row["status"] == "measured" for row in report["comparisons"])
+    report["verification_scope"]["fixed_h2_one_factor_screen"] = "measured" if complete else "incomplete"
     return "measured" if complete else "comparison_incomplete"
 
 
@@ -894,6 +977,7 @@ def main() -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--mpi-refinement-serial-report", type=Path)
     mode.add_argument("--cross-grid-accuracy", action="store_true")
+    mode.add_argument("--one-factor", choices=ONE_FACTOR_AXES)
     args = parser.parse_args()
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -932,7 +1016,17 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.cross_grid_accuracy:
+    if args.one_factor:
+        report["scope"] = "isolated_native_x86_A04_one_factor_refinement"
+        report.pop("known_unadmitted_cases")
+        report["resource_policy"].update({
+            "normal_memory_cap_bytes": MEMORY_TIERS_BYTES[-1],
+            "retry_maximum_increase_bytes": 0,
+            "oom_retry": "none; fixed sequential one-rank cases on this runner",
+            "raw_cube": "original samples compared on runner disk and removed with scratch",
+        })
+        report["verification_scope"]["fixed_h2_one_factor_screen"] = "incomplete"
+    elif args.cross_grid_accuracy:
         report["scope"] = "isolated_native_x86_A04_cross_grid_endpoint_accuracy"
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update({
@@ -974,7 +1068,9 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.cross_grid_accuracy:
+            if args.one_factor:
+                report["status"] = run_one_factor(args.one_factor, candidate, Path(directory), diagnostics, report)
+            elif args.cross_grid_accuracy:
                 report["status"] = run_accuracy(candidate, Path(directory), diagnostics, report)
             elif args.mpi_refinement_serial_report:
                 report["status"] = run_refinement(candidate, Path(directory), diagnostics,
