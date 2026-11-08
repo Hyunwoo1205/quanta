@@ -1,0 +1,69 @@
+name: OCI fixed A04 DB/WAL diagnostic
+
+on:
+  push:
+    branches: [ops/oci]
+    paths:
+      - .github/oci/atomistic-a04-db-request.json
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: quanta-oci-installation
+  cancel-in-progress: false
+
+env:
+  # The ops/oci copy pins the reviewed main commit and its successful diagnostic CI.
+  QUANTA_A04_DB_WAL_CONTROL_SHA: '0000000000000000000000000000000000000000'
+  QUANTA_A04_DB_WAL_CONTROL_CI_RUN: '0'
+
+jobs:
+  diagnostic:
+    if: github.repository == 'Hyunwoo1205/quanta' && github.ref == 'refs/heads/ops/oci' && github.event_name == 'push' && github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    environment: oci-preflight
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check out the fixed diagnostic control and baseline history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.QUANTA_A04_DB_WAL_CONTROL_SHA }}
+          path: verified-a04-db-wal-control
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require same-source native diagnostic CI and the successful full-CI baseline
+        id: authorize
+        env:
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+        run: python3 -I -B verified-a04-db-wal-control/deploy/oci/probe_atomistic_a04_db_wal.py --authorize
+      - name: Install the existing-key SSH transport
+        run: |
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends putty-tools
+      - name: Reauthorize and run the fixed read-only diagnostic
+        env:
+          QUANTA_CI_READ_TOKEN: ${{ github.token }}
+          QUANTA_A04_DB_WAL_OPERATION: ${{ steps.authorize.outputs.operation }}
+          QUANTA_A04_DB_WAL_SOURCE_SHA: ${{ steps.authorize.outputs.source_sha }}
+          QUANTA_A04_DB_WAL_REQUEST_ID: ${{ steps.authorize.outputs.request_id }}
+          QUANTA_OCI_AUTH_CONFIRMED: 'true'
+          QUANTA_OCI_HOST: ${{ secrets.QUANTA_OCI_HOST }}
+          QUANTA_OCI_HOST_KEY: ${{ secrets.QUANTA_OCI_HOST_KEY }}
+          QUANTA_OCI_PPK: ${{ secrets.QUANTA_OCI_PPK }}
+        run: |
+          mkdir -p .cache
+          python3 -I -B verified-a04-db-wal-control/deploy/oci/probe_atomistic_a04_db_wal.py > .cache/oci-a04-db-wal-report.json
+      - name: Preserve the sanitized diagnostic receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oci-a04-db-wal-${{ github.sha }}
+          path: .cache/oci-a04-db-wal-report.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
