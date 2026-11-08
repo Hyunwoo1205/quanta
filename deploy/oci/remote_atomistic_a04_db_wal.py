@@ -22,7 +22,8 @@ LOCK = Path("/run/quanta-application-upgrade.lock")
 DATA_OWNER = 10001
 SAMPLE_COUNT = 640
 SAMPLE_INTERVAL = 0.043
-MAX_FILE_BYTES = 64 * 1024**2
+# Match the existing OCI probe's per-file allowance and stream the contents.
+MAX_FILE_BYTES = 512 * 1024**2
 MAX_READ_BYTES = 2 * MAX_FILE_BYTES
 READ_FLAGS = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_NOATIME | os.O_CLOEXEC
 CONFIG_KEYS = {"source_sha", "control_sha", "request_id"}

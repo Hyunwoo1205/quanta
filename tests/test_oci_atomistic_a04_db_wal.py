@@ -94,6 +94,17 @@ class DbWalObserverTests(unittest.TestCase):
         for path in (self.database, self.wal):
             self.assertEqual(path.stat().st_atime_ns, old_atime)
 
+    def test_streams_database_over_initial_64_mib_limit_once(self):
+        size = 64 * 1024**2 + 1
+        with self.database.open('r+b') as stream:
+            stream.truncate(size)
+        with patch.object(DIAGNOSTIC.os, 'read', wraps=os.read) as read:
+            result = self.observe(3)
+        self.assertEqual(result['stable_pairs'], 3)
+        self.assertEqual(result['main_fingerprints'], 1)
+        self.assertEqual(sum(call.args[1] for call in read.call_args_list), size)
+        self.assertLessEqual(max(call.args[1] for call in read.call_args_list), 256 * 1024)
+
     def test_symbolic_links_are_rejected(self):
         target = self.database.with_name('unrelated-file')
         target.write_bytes(b'private contents')
