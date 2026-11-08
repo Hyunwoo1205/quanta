@@ -12,9 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 고정 H₂ 조건의 설정별 정확도 비교
+## 현재 개발 위치 — A04 고정 H₂ 조건의 설정별 정확도 비교 완료
 
-동일 x86 CP2K 이미지·원본 입력으로 20 Å·800 Ry 기준과 16 Å·800 Ry, 12 Å·400 Ry 후보를 대조합니다. [사전 비교 조건](docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json)은 에너지·힘, 엔진 및 원본 CUBE 전자 수, 셀 중심을 맞춘 밀도장의 절대 차이 적분을 별도 판정합니다. 12 Å 후보는 셀·주 격자·보조 격자 설정이 함께 달라지며, 이번 시험 범위는 고정 H₂ 구조의 두 후보가 기준과 얼마나 일치하는지입니다. 실행 전 원본 CUBE가 보존된 자료는 없으므로 동일 입력의 원본 격자를 한 러너에서 다시 생성합니다. 자원 실측과 동일 입력 재현성은 아래 기록을 유지합니다.
+2026-11-08 KST [실행 42443582121](https://github.com/Hyunwoo1205/quanta/actions/runs/42443582121)에서 결합 길이 0.8 Å인 H₂의 고정 x86 CP2K/PBE/GAPW/cc-pVDZ 세 입력을 1랭크로 다시 실행했습니다. 기준 20 Å·800 Ry는 1,234.38초, cgroup RAM 11.66 GiB, 스왑 10.58 GiB였습니다. 후보 16 Å·800 Ry는 277.59초와 RAM 11.31 GiB, 12 Å·400 Ry는 31.25초와 RAM 1.76 GiB를 사용했으며 두 후보 모두 스왑을 쓰지 않았습니다. 원본 CUBE는 각각 360³, 288³, 150³이었습니다.
+
+두 후보 모두 [사전 비교 기준](docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json)을 통과했습니다. 기준 대비 에너지 차이는 16 Å와 12 Å 순서로 8.88×10⁻¹⁶ 및 4.87×10⁻⁸ Hartree, 최대 힘 성분 차이는 3.86×10⁻¹⁰ 및 1.44×10⁻⁹ Hartree/Bohr였습니다. 세 입력의 엔진 전전자 수는 각각 2.0000000019였고, 각 원본 CUBE의 적분은 2전자에서 0.001전자 이내였습니다.
+
+셀 중심을 맞춘 밀도장의 절대 차이 적분은 경계 밖 기준 밀도를 포함하여 16 Å에서 9.25×10⁻⁹전자였습니다. 288³ 원본 격자점을 직접 대조했습니다. 12 Å의 서로 다른 격자는 4점·6점 보간에서 각각 7.51×10⁻⁴·3.02×10⁻⁴전자로, 두 값 모두 이 시험의 0.001전자 기준 이내였습니다. 보간 방법 자체의 L1 차이 5.40×10⁻⁴전자도 기록했습니다. 비교 과정에서 음수 표본을 잘라내거나 밀도를 재정규화하지 않았습니다. [실행 영수증](docs/verification/atomistic-a04/cross-grid-accuracy-42443582121.json)
+
+**다음 시작점은** 12 Å·400 Ry를 가벼운 후보로 유지하고, 셀 크기·CUTOFF·REL_CUTOFF를 각각 변화시켜 수치 및 밀도 해상도 수렴을 분리한 뒤 추가 구조와 운영 OCI 자원·시간을 검증하는 것입니다. 현재 결과의 적용 범위는 0.8 Å H₂ 구조와 고정 엔진·기저의 기준 대비 비교입니다. 정식 AV03~AV06 전체 판정, 공개 기능, 물리 검증은 별도이며 물리 검증 상태는 `unvalidated`입니다.
 
 ## 이전 개발 기록 — A04 해상도 유지·메모리 복구 및 재현성 확인
 
