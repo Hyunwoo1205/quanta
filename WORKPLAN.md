@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 고정 H₂ 조건의 설정별 정확도 비교 완료
+## 현재 개발 위치 — A04 고정 H₂ 셀·격자 변수 분리 시험 완료
+
+2026-11-08 KST [실행 42447627356](https://github.com/Hyunwoo1205/quanta/actions/runs/42447627356)에서 결합 길이 0.8 Å인 H₂에 대해 동일 x86 CP2K/PBE/GAPW/cc-pVDZ와 1랭크·1스레드로 셀 길이, CUTOFF, REL_CUTOFF를 한 번에 하나씩 바꿨습니다. [사전 계획](docs/design/atomistic-a04-v0.1/h2-one-factor-refinement.json)의 세 트랙 모두 정상 완료했고, 해시로 고정한 이전 16→20 Å 비교를 포함하여 7개 비교가 에너지·힘·전자 수 및 탐색용 밀도 L1 기준을 통과했습니다. 이번에 새로 실행한 계산은 모두 스왑 사용량 0입니다. [실행 영수증](docs/verification/atomistic-a04/one-factor-refinement-42447627356.json)
+
+셀 12→16→20 Å에서 CUTOFF 800 Ry 및 REL_CUTOFF 80 Ry를 고정한 밀도 L1은 1.41×10⁻⁸, 9.25×10⁻⁹전자였습니다. 셀 12 Å·REL_CUTOFF 80 Ry에서 CUTOFF 400→600→800 Ry의 두 보간법 중 큰 값은 각각 8.07×10⁻⁴, 3.84×10⁻⁴전자였습니다. 셀 12 Å·CUTOFF 800 Ry에서 REL_CUTOFF 40→60→80 Ry의 L1은 1.40×10⁻⁶, 1.11×10⁻⁹전자였습니다. 실제 가벼운 후보의 12 Å·400 Ry에서 REL_CUTOFF 40→80 Ry 차이는 2.09×10⁻⁷전자였습니다. 7개 중 에너지·힘 차이 최댓값은 4.71×10⁻⁸ Hartree·5.76×10⁻⁹ Hartree/Bohr였으며, 밀도 L1 사전 기준은 0.001전자였습니다.
+
+12 Å·400 Ry·REL_CUTOFF 40 Ry는 같은 cutoff 러너에서 25.27초·RAM 1.76 GiB였습니다. **다음 시작점은** 12 Å·400 Ry를 후보로 두고 기존 H₂ 0.74144 Å와 He 기준 사례를 대조한 후, 지원 구간을 명시하기 전에 사전 지정한 경계 구조를 검증하는 것입니다. 그다음 가벼운 후보의 격리 ARM/OCI 실행으로 시간·RAM과 운영 보호 조건을 확인합니다. 이번 결과의 적용 범위는 해당 0.8 Å H₂ 및 고정 엔진·기저이며 SCF·원자 중심 격자·기저 수렴, 물리 검증 및 공개 운용 판정은 별도입니다.
+
+## 이전 개발 기록 — A04 고정 H₂ 조건의 설정별 정확도 비교 완료
 
 2026-11-08 KST [실행 42443582121](https://github.com/Hyunwoo1205/quanta/actions/runs/42443582121)에서 결합 길이 0.8 Å인 H₂의 고정 x86 CP2K/PBE/GAPW/cc-pVDZ 세 입력을 1랭크로 다시 실행했습니다. 기준 20 Å·800 Ry는 1,234.38초, cgroup RAM 11.66 GiB, 스왑 10.58 GiB였습니다. 후보 16 Å·800 Ry는 277.59초와 RAM 11.31 GiB, 12 Å·400 Ry는 31.25초와 RAM 1.76 GiB를 사용했으며 두 후보 모두 스왑을 쓰지 않았습니다. 원본 CUBE는 각각 360³, 288³, 150³이었습니다.
 

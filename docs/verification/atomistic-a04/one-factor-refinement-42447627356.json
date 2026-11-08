@@ -1,0 +1,1059 @@
+{
+  "schema_version": 1,
+  "scope": "isolated_native_x86_A04_one_factor_refinement",
+  "workflow_run_id": 42447627356,
+  "workflow_conclusion": "success",
+  "quanta_source": "b39169dfc6533d2d60dabc77ffa5aeedd7b27adc",
+  "prior_workflow_run_id": 42443582121,
+  "candidate": {
+    "source_sha": "3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+    "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+    "image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029"
+  },
+  "comparison_plan_sha256": "17a7be80dc2e54f2f6a0d12208192007b4113b07aac43220f21ab561f5444c78",
+  "comparison_thresholds": {
+    "energy_hartree": 0.000001,
+    "maximum_force_component_hartree_per_bohr": 0.00001,
+    "engine_hard_soft_count_from_two_electrons": 0.000001,
+    "exported_count_from_two_electrons": 0.001,
+    "exploratory_spatial_l1_electrons": 0.001
+  },
+  "geometry": {
+    "system": "H2",
+    "bond_length_angstrom": 0.8,
+    "method": "CP2K 2026.2, all-electron PBE/GAPW, cc-pVDZ"
+  },
+  "status": "measured",
+  "comparison_count": 7,
+  "scratch_removed": true,
+  "pivot_same_input_sha256": "75261bba868e3e27b5a3e6a5565c4cb4393d975142a9c0ab6c365af8fc991ecb",
+  "pivot_native_cube_sha256_by_track": {
+    "cell": "580ec6ac697512acfc2f41029030122061a893cc8384d0a372c3dc9bdad55f6a",
+    "cutoff": "b352a2e6060b5eb76910ef2924131214b5124187c0f8d899cb273a944da29a40",
+    "relative": "580ec6ac697512acfc2f41029030122061a893cc8384d0a372c3dc9bdad55f6a"
+  },
+  "pivot_cross_runner_scalar_spread": {
+    "energy_hartree": 1.1102230246251565e-15,
+    "maximum_force_component_hartree_per_bohr": 3.0755799990123123e-10,
+    "exported_electron_count": 2.353672812205332e-14
+  },
+  "pivot_cross_runner_density_note": "One of the three CUBE hashes differed. No pointwise equivalence across runners was assumed; every newly measured edge was compared within its own runner.",
+  "verification_scope": {
+    "production_oci_measured": false,
+    "public_execution_support": false,
+    "runtime_contract_frozen": false,
+    "AV01_adapter": "not_executed",
+    "AV03_AV04_convergence": "not_executed",
+    "AV05_AV06_density_acceptance": "not_executed",
+    "density_spatial_convergence": "not_tested",
+    "physical_validation": "unvalidated",
+    "fixed_h2_one_factor_screen": "measured"
+  },
+  "tracks": [
+    {
+      "track": "cell",
+      "job_id": 128629804107,
+      "conclusion": "success",
+      "artifact": {
+        "id": 13604148592,
+        "bytes": 28657,
+        "sha256": "cb092ca84c6cbd199c63615aac02928284030e404c7ef1ac4905462ae7a5c0d9",
+        "report_sha256": "f40e226b12723516851dfd15fd2c6ac75981c8e89cba10e035dffca6136c2cc6"
+      },
+      "cases": [
+        {
+          "case": "h2-12a-800ry-rel80-density-on",
+          "settings": [
+            12,
+            800,
+            80
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "75261bba868e3e27b5a3e6a5565c4cb4393d975142a9c0ab6c365af8fc991ecb",
+            "submitted_input_sha256": "75261bba868e3e27b5a3e6a5565c4cb4393d975142a9c0ab6c365af8fc991ecb",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847127339929,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445084217205,
+                1.41e-13,
+                1.41e-13
+              ],
+              [
+                -0.018445084216968,
+                1.51e-13,
+                1.52e-13
+              ]
+            ],
+            "engine_wall_seconds": 89.32363917199999,
+            "cgroup_memory_peak_bytes": 5054373888,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "580ec6ac697512acfc2f41029030122061a893cc8384d0a372c3dc9bdad55f6a",
+              "bytes": 132689976,
+              "grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "electron_integral": 2.0000125435981917,
+              "negative_samples": 2255031,
+              "negative_integral": -5.677423367011557e-9
+            },
+            "container_removed": true
+          }
+        },
+        {
+          "case": "h2-16a-800ry-rel80-density-on",
+          "settings": [
+            16,
+            800,
+            80
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+            "submitted_input_sha256": "af29a5675fdc2abb2696eddcfe42e64497f31f2eed1f6735ab2f047646a36f22",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847127370217,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445084494108,
+                1.42e-13,
+                1.42e-13
+              ],
+              [
+                -0.018445084493871,
+                1.53e-13,
+                1.52e-13
+              ]
+            ],
+            "engine_wall_seconds": 252.13698240500003,
+            "cgroup_memory_peak_bytes": 12137910272,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "e319ce400659c4924e802924c3b3cf69ef6379d699566b649912d83237d2a7cd",
+              "bytes": 314523960,
+              "grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "electron_integral": 2.0000125432081415,
+              "negative_samples": 9049808,
+              "negative_integral": -8.025956937773297e-9
+            },
+            "container_removed": true
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "candidate_settings": [
+            12,
+            800,
+            80
+          ],
+          "reference_settings": [
+            16,
+            800,
+            80
+          ],
+          "factor": "cell_angstrom",
+          "result": {
+            "absolute_energy_difference_hartree": 3.0287994334798896e-11,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 2.769030005289608e-10,
+            "reference_exported_electron_count": 2.0000125432081415,
+            "candidate_exported_electron_count": 2.0000125435981917,
+            "absolute_exported_electron_count_difference": 3.9005021434945775e-10,
+            "reference_engine_hard_soft_electron_count": 2.0000000019,
+            "candidate_engine_hard_soft_electron_count": 2.0000000019,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-12a-800ry-rel80-density-on",
+            "reference_case": "h2-16a-800ry-rel80-density-on",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 800,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "native_aligned_crop",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "candidate_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_native_cube_sha256": "e319ce400659c4924e802924c3b3cf69ef6379d699566b649912d83237d2a7cd",
+              "candidate_native_cube_sha256": "580ec6ac697512acfc2f41029030122061a893cc8384d0a372c3dc9bdad55f6a",
+              "reference_overlap_start_index": [
+                36,
+                36,
+                36
+              ],
+              "reference_overlap_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_voxel_volume_bohr3": 0.0011571218420936215,
+              "reference_outer_shell_samples": 13810176,
+              "reference_outer_shell_absolute_integral_electrons": 7.805073484605629e-9,
+              "reference_outer_shell_signed_integral_electrons": -4.820044095773505e-14,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 6.291436315093711e-9,
+                "overlap_signed_density_difference_integral_electrons": 3.899999389782827e-10,
+                "overlap_rms_density_difference_electron_per_bohr3": 2.8468418971823373e-11,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 1.0000000000049032e-8,
+                "zero_extended_absolute_density_difference_integral_electrons": 1.409650979969934e-8
+              },
+              "sensitivity": null,
+              "interpolants_overlap_l1_electrons": null,
+              "interpolation_right_extrapolated_planes_per_axis": 0,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "status": "measured"
+        },
+        {
+          "candidate_settings": [
+            16,
+            800,
+            80
+          ],
+          "reference_settings": [
+            20,
+            800,
+            80
+          ],
+          "factor": "cell_angstrom",
+          "status": "measured",
+          "reused_workflow_run_id": 42443582121,
+          "result": {
+            "absolute_energy_difference_hartree": 8.881784197001252e-16,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 3.857179992072801e-10,
+            "reference_exported_electron_count": 2.0000125431881064,
+            "candidate_exported_electron_count": 2.0000125432081415,
+            "absolute_exported_electron_count_difference": 2.0035084702385575e-11,
+            "reference_engine_hard_soft_electron_count": 2.0000000019,
+            "candidate_engine_hard_soft_electron_count": 2.0000000019,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-16a-800ry-density-on",
+            "reference_case": "h2-20a-800ry-density-on",
+            "candidate_cell_angstrom": 16,
+            "candidate_cutoff_ry": 800,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "native_aligned_crop",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                360,
+                360,
+                360
+              ],
+              "candidate_grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "reference_native_cube_sha256": "d800260da5152b117727518b41c5d3aee6b23ea6de644fefb93acff218833aa0",
+              "candidate_native_cube_sha256": "e319ce400659c4924e802924c3b3cf69ef6379d699566b649912d83237d2a7cd",
+              "reference_overlap_start_index": [
+                36,
+                36,
+                36
+              ],
+              "reference_overlap_grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "reference_voxel_volume_bohr3": 0.001157121842093621,
+              "reference_outer_shell_samples": 22768128,
+              "reference_outer_shell_absolute_integral_electrons": 4.897355898963037e-9,
+              "reference_outer_shell_signed_integral_electrons": -1.5963835904307385e-14,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 4.3544685233255545e-9,
+                "overlap_signed_density_difference_integral_electrons": 2.0018793453911416e-11,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.3503853482517948e-11,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 9.999999999994822e-9,
+                "zero_extended_absolute_density_difference_integral_electrons": 9.251824422288593e-9
+              },
+              "sensitivity": null,
+              "interpolants_overlap_l1_electrons": null,
+              "interpolation_right_extrapolated_planes_per_axis": 0,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          }
+        }
+      ]
+    },
+    {
+      "track": "cutoff",
+      "job_id": 128629804369,
+      "conclusion": "success",
+      "artifact": {
+        "id": 13603838448,
+        "bytes": 51324,
+        "sha256": "1b909ba251d1dbe0d630f8b4df48e4aefa66cbab79ed7dd4c060bd218bf54a08",
+        "report_sha256": "99c9677ad3e583dd02e0348aac623918617a42092cb3514e3b102f527c206b97"
+      },
+      "cases": [
+        {
+          "case": "h2-12a-400ry-rel40-density-on",
+          "settings": [
+            12,
+            400,
+            40
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+            "submitted_input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847078649398,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445083397822,
+                4.8e-14,
+                4.9e-14
+              ],
+              [
+                -0.018445083397695,
+                5.9e-14,
+                5.8e-14
+              ]
+            ],
+            "engine_wall_seconds": 25.271944031000004,
+            "cgroup_memory_peak_bytes": 1891983360,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+              "bytes": 44437812,
+              "grid_counts": [
+                150,
+                150,
+                150
+              ],
+              "electron_integral": 1.9999968834561688,
+              "negative_samples": 1113228,
+              "negative_integral": -9.425397991014037e-7
+            },
+            "container_removed": true
+          }
+        },
+        {
+          "case": "h2-12a-400ry-rel80-density-on",
+          "settings": [
+            12,
+            400,
+            80
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "bba7a0d4e59359c296ef83e466dc064b38915d6de9c3c21df5e8702378301462",
+            "submitted_input_sha256": "bba7a0d4e59359c296ef83e466dc064b38915d6de9c3c21df5e8702378301462",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847080198753,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445082547986,
+                1.03e-13,
+                1.04e-13
+              ],
+              [
+                -0.018445082547743,
+                1.11e-13,
+                1.11e-13
+              ]
+            ],
+            "engine_wall_seconds": 25.176064327999995,
+            "cgroup_memory_peak_bytes": 1891573760,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "8f7451051316b0d2eb425422221655c4a04c420d660cf560e93db5e3e698b06f",
+              "bytes": 44437812,
+              "grid_counts": [
+                150,
+                150,
+                150
+              ],
+              "electron_integral": 1.9999968978393063,
+              "negative_samples": 1093036,
+              "negative_integral": -9.389414647789776e-7
+            },
+            "container_removed": true
+          }
+        },
+        {
+          "case": "h2-12a-600ry-rel80-density-on",
+          "settings": [
+            12,
+            600,
+            80
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "1e02659776fc74b0a6a5d9c99a2ad12e66ea5b2c7c2860c96164c336b30a8fa5",
+            "submitted_input_sha256": "1e02659776fc74b0a6a5d9c99a2ad12e66ea5b2c7c2860c96164c336b30a8fa5",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847127318948,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445083811489,
+                9.2e-14,
+                9.2e-14
+              ],
+              [
+                -0.018445083811441,
+                9.6e-14,
+                9.6e-14
+              ]
+            ],
+            "engine_wall_seconds": 49.492785763,
+            "cgroup_memory_peak_bytes": 3071672320,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "cbf2dce716368cd8fee070893e39def1319a7d864e69096e31f07dc001229451",
+              "bytes": 76788312,
+              "grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "electron_integral": 2.0000129764694563,
+              "negative_samples": 1345750,
+              "negative_integral": -8.543483153406708e-8
+            },
+            "container_removed": true
+          }
+        },
+        {
+          "case": "h2-12a-800ry-rel80-density-on",
+          "settings": [
+            12,
+            800,
+            80
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "75261bba868e3e27b5a3e6a5565c4cb4393d975142a9c0ab6c365af8fc991ecb",
+            "submitted_input_sha256": "75261bba868e3e27b5a3e6a5565c4cb4393d975142a9c0ab6c365af8fc991ecb",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.15984712733993,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445084524763,
+                1.41e-13,
+                1.41e-13
+              ],
+              [
+                -0.018445084524526,
+                1.51e-13,
+                1.52e-13
+              ]
+            ],
+            "engine_wall_seconds": 87.39708807,
+            "cgroup_memory_peak_bytes": 5054484480,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "b352a2e6060b5eb76910ef2924131214b5124187c0f8d899cb273a944da29a40",
+              "bytes": 132689976,
+              "grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "electron_integral": 2.000012543598168,
+              "negative_samples": 2360357,
+              "negative_integral": -5.677423626382935e-9
+            },
+            "container_removed": true
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "candidate_settings": [
+            12,
+            400,
+            40
+          ],
+          "reference_settings": [
+            12,
+            400,
+            80
+          ],
+          "factor": "rel_cutoff_ry",
+          "result": {
+            "absolute_energy_difference_hartree": 1.5493550886702678e-9,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 8.49952001141796e-10,
+            "reference_exported_electron_count": 1.9999968978393063,
+            "candidate_exported_electron_count": 1.9999968834561688,
+            "absolute_exported_electron_count_difference": 1.4383137569851101e-8,
+            "reference_engine_hard_soft_electron_count": 2.0000000019,
+            "candidate_engine_hard_soft_electron_count": 2.0000000019,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-12a-400ry-rel40-density-on",
+            "reference_case": "h2-12a-400ry-rel80-density-on",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 400,
+            "candidate_rel_cutoff_ry": 40,
+            "spatial_density": {
+              "method": "native_aligned_crop",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                150,
+                150,
+                150
+              ],
+              "candidate_grid_counts": [
+                150,
+                150,
+                150
+              ],
+              "reference_native_cube_sha256": "8f7451051316b0d2eb425422221655c4a04c420d660cf560e93db5e3e698b06f",
+              "candidate_native_cube_sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                150,
+                150,
+                150
+              ],
+              "reference_voxel_volume_bohr3": 0.0034551473065420795,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0,
+              "reference_outer_shell_signed_integral_electrons": 0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 2.0931952529969182e-7,
+                "overlap_signed_density_difference_integral_electrons": -1.4383163041339497e-8,
+                "overlap_rms_density_difference_electron_per_bohr3": 6.434447493369788e-10,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 1.0000000000027348e-7,
+                "zero_extended_absolute_density_difference_integral_electrons": 2.0931952529969182e-7
+              },
+              "sensitivity": null,
+              "interpolants_overlap_l1_electrons": null,
+              "interpolation_right_extrapolated_planes_per_axis": 0,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "status": "measured"
+        },
+        {
+          "candidate_settings": [
+            12,
+            400,
+            80
+          ],
+          "reference_settings": [
+            12,
+            600,
+            80
+          ],
+          "factor": "cutoff_ry",
+          "result": {
+            "absolute_energy_difference_hartree": 4.712019485708652e-8,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 1.2636980004088194e-9,
+            "reference_exported_electron_count": 2.0000129764694563,
+            "candidate_exported_electron_count": 1.9999968978393063,
+            "absolute_exported_electron_count_difference": 0.00001607863014996269,
+            "reference_engine_hard_soft_electron_count": 2.0000000019,
+            "candidate_engine_hard_soft_electron_count": 2.0000000019,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-12a-400ry-rel80-density-on",
+            "reference_case": "h2-12a-600ry-rel80-density-on",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 400,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "candidate_grid_counts": [
+                150,
+                150,
+                150
+              ],
+              "reference_native_cube_sha256": "cbf2dce716368cd8fee070893e39def1319a7d864e69096e31f07dc001229451",
+              "candidate_native_cube_sha256": "8f7451051316b0d2eb425422221655c4a04c420d660cf560e93db5e3e698b06f",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "reference_voxel_volume_bohr3": 0.0019995065431377777,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0,
+              "reference_outer_shell_signed_integral_electrons": 0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0008072037109388445,
+                "overlap_signed_density_difference_integral_electrons": 0.0002954260075865356,
+                "overlap_rms_density_difference_electron_per_bohr3": 0.000005402371105201974,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.0015117404263469414,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0008072037109388445
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.000319626537042018,
+                "overlap_signed_density_difference_integral_electrons": 0.00009191479997948218,
+                "overlap_rms_density_difference_electron_per_bohr3": 0.000002735054640226858,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.0006974238683123968,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.000319626537042018
+              },
+              "interpolants_overlap_l1_electrons": 0.0005615645320282989,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "status": "measured"
+        },
+        {
+          "candidate_settings": [
+            12,
+            600,
+            80
+          ],
+          "reference_settings": [
+            12,
+            800,
+            80
+          ],
+          "factor": "cutoff_ry",
+          "result": {
+            "absolute_energy_difference_hartree": 2.0982104942390833e-11,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 7.132740023618744e-10,
+            "reference_exported_electron_count": 2.000012543598168,
+            "candidate_exported_electron_count": 2.0000129764694563,
+            "absolute_exported_electron_count_difference": 4.3287128814739617e-7,
+            "reference_engine_hard_soft_electron_count": 2.0000000019,
+            "candidate_engine_hard_soft_electron_count": 2.0000000019,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-12a-600ry-rel80-density-on",
+            "reference_case": "h2-12a-800ry-rel80-density-on",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 600,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "candidate_grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "reference_native_cube_sha256": "b352a2e6060b5eb76910ef2924131214b5124187c0f8d899cb273a944da29a40",
+              "candidate_native_cube_sha256": "cbf2dce716368cd8fee070893e39def1319a7d864e69096e31f07dc001229451",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_voxel_volume_bohr3": 0.0011571218420936215,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0,
+              "reference_outer_shell_signed_integral_electrons": 0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0003844883139765549,
+                "overlap_signed_density_difference_integral_electrons": 0.00012211956869806508,
+                "overlap_rms_density_difference_electron_per_bohr3": 0.0000029902357291471026,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.0012537082723594328,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0003844883139765549
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.00013001720439058753,
+                "overlap_signed_density_difference_integral_electrons": 0.000035569110919912576,
+                "overlap_rms_density_difference_electron_per_bohr3": 0.0000011382134923328376,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.00039141325843800034,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.00013001720439058753
+              },
+              "interpolants_overlap_l1_electrons": 0.00030584920023013766,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "status": "measured"
+        }
+      ]
+    },
+    {
+      "track": "relative",
+      "job_id": 128629804390,
+      "conclusion": "success",
+      "artifact": {
+        "id": 13604267722,
+        "bytes": 39473,
+        "sha256": "4e4e05baccca1b55130786eae3cd653ac00a0049e414ea621ef6fb4ae7884308",
+        "report_sha256": "2c9c7054a4569abcfdb31dc238e2399986a05eb5bb03d557326098bdcfb8a8ca"
+      },
+      "cases": [
+        {
+          "case": "h2-12a-800ry-rel40-density-on",
+          "settings": [
+            12,
+            800,
+            40
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "6d66b0b42ed80114e22ee4dc7cff15a0c13ce8dd4e520c197b9a7345c0ae621a",
+            "submitted_input_sha256": "6d66b0b42ed80114e22ee4dc7cff15a0c13ce8dd4e520c197b9a7345c0ae621a",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847129881232,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445089622957,
+                1.33e-13,
+                1.32e-13
+              ],
+              [
+                -0.018445089622733,
+                1.39e-13,
+                1.39e-13
+              ]
+            ],
+            "engine_wall_seconds": 80.261089801,
+            "cgroup_memory_peak_bytes": 5054476288,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "ea6a76912a27ae5de8c0f39b563c30aeec0640d0155b39f361a004184dd5c918",
+              "bytes": 132689976,
+              "grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "electron_integral": 2.000012493430764,
+              "negative_samples": 2675075,
+              "negative_integral": -7.558218776298772e-8
+            },
+            "container_removed": true
+          }
+        },
+        {
+          "case": "h2-12a-800ry-rel60-density-on",
+          "settings": [
+            12,
+            800,
+            60
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "a0002deebebcff49cf1013c99dc8bb109846c3c0281f1fd3a07c4d940c333839",
+            "submitted_input_sha256": "a0002deebebcff49cf1013c99dc8bb109846c3c0281f1fd3a07c4d940c333839",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847127340619,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445083860588,
+                1.32e-13,
+                1.33e-13
+              ],
+              [
+                -0.018445083860358,
+                1.42e-13,
+                1.42e-13
+              ]
+            ],
+            "engine_wall_seconds": 81.15818919399999,
+            "cgroup_memory_peak_bytes": 5054357504,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "2c92b30b42dbf0747ba3704f110e4336ddd7c125bb7b0ae27bc279b4ae1ea837",
+              "bytes": 132689976,
+              "grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "electron_integral": 2.0000125436829967,
+              "negative_samples": 2367510,
+              "negative_integral": -5.6848933932189736e-9
+            },
+            "container_removed": true
+          }
+        },
+        {
+          "case": "h2-12a-800ry-rel80-density-on",
+          "settings": [
+            12,
+            800,
+            80
+          ],
+          "attempt": {
+            "status": "measured",
+            "input_sha256": "75261bba868e3e27b5a3e6a5565c4cb4393d975142a9c0ab6c365af8fc991ecb",
+            "submitted_input_sha256": "75261bba868e3e27b5a3e6a5565c4cb4393d975142a9c0ab6c365af8fc991ecb",
+            "observed_mpi_ranks": 1,
+            "observed_omp_threads": 1,
+            "engine_hard_soft_electron_count": 2.0000000019,
+            "engine_energy_hartree": -1.159847127339929,
+            "engine_forces_hartree_per_bohr": [
+              [
+                0.018445084217205,
+                1.41e-13,
+                1.41e-13
+              ],
+              [
+                -0.018445084216968,
+                1.51e-13,
+                1.52e-13
+              ]
+            ],
+            "engine_wall_seconds": 89.25371583700002,
+            "cgroup_memory_peak_bytes": 5054291968,
+            "swap_peak_bytes": 0,
+            "oom_events": 0,
+            "density": {
+              "sha256": "580ec6ac697512acfc2f41029030122061a893cc8384d0a372c3dc9bdad55f6a",
+              "bytes": 132689976,
+              "grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "electron_integral": 2.0000125435981917,
+              "negative_samples": 2255031,
+              "negative_integral": -5.677423367011557e-9
+            },
+            "container_removed": true
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "candidate_settings": [
+            12,
+            800,
+            40
+          ],
+          "reference_settings": [
+            12,
+            800,
+            60
+          ],
+          "factor": "rel_cutoff_ry",
+          "result": {
+            "absolute_energy_difference_hartree": 2.5406130532701354e-9,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 5.7623749973034766e-9,
+            "reference_exported_electron_count": 2.0000125436829967,
+            "candidate_exported_electron_count": 2.000012493430764,
+            "absolute_exported_electron_count_difference": 5.025223259735867e-8,
+            "reference_engine_hard_soft_electron_count": 2.0000000019,
+            "candidate_engine_hard_soft_electron_count": 2.0000000019,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-12a-800ry-rel40-density-on",
+            "reference_case": "h2-12a-800ry-rel60-density-on",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 800,
+            "candidate_rel_cutoff_ry": 40,
+            "spatial_density": {
+              "method": "native_aligned_crop",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "candidate_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_native_cube_sha256": "2c92b30b42dbf0747ba3704f110e4336ddd7c125bb7b0ae27bc279b4ae1ea837",
+              "candidate_native_cube_sha256": "ea6a76912a27ae5de8c0f39b563c30aeec0640d0155b39f361a004184dd5c918",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_voxel_volume_bohr3": 0.0011571218420936215,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0,
+              "reference_outer_shell_signed_integral_electrons": 0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0000013984863475941144,
+                "overlap_signed_density_difference_integral_electrons": -5.025192432266314e-8,
+                "overlap_rms_density_difference_electron_per_bohr3": 3.2175009806834046e-9,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.000001000000000001,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0000013984863475941144
+              },
+              "sensitivity": null,
+              "interpolants_overlap_l1_electrons": null,
+              "interpolation_right_extrapolated_planes_per_axis": 0,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "status": "measured"
+        },
+        {
+          "candidate_settings": [
+            12,
+            800,
+            60
+          ],
+          "reference_settings": [
+            12,
+            800,
+            80
+          ],
+          "factor": "rel_cutoff_ry",
+          "result": {
+            "absolute_energy_difference_hartree": 6.901146321069973e-13,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 3.566169998192592e-10,
+            "reference_exported_electron_count": 2.0000125435981917,
+            "candidate_exported_electron_count": 2.0000125436829967,
+            "absolute_exported_electron_count_difference": 8.480505186980736e-11,
+            "reference_engine_hard_soft_electron_count": 2.0000000019,
+            "candidate_engine_hard_soft_electron_count": 2.0000000019,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-12a-800ry-rel60-density-on",
+            "reference_case": "h2-12a-800ry-rel80-density-on",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 800,
+            "candidate_rel_cutoff_ry": 60,
+            "spatial_density": {
+              "method": "native_aligned_crop",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "candidate_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_native_cube_sha256": "580ec6ac697512acfc2f41029030122061a893cc8384d0a372c3dc9bdad55f6a",
+              "candidate_native_cube_sha256": "2c92b30b42dbf0747ba3704f110e4336ddd7c125bb7b0ae27bc279b4ae1ea837",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_voxel_volume_bohr3": 0.0011571218420936215,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0,
+              "reference_outer_shell_signed_integral_electrons": 0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 1.1086023561319982e-9,
+                "overlap_signed_density_difference_integral_electrons": 8.48045708720719e-11,
+                "overlap_rms_density_difference_electron_per_bohr3": 5.232449734268737e-12,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 1.0000000000021927e-9,
+                "zero_extended_absolute_density_difference_integral_electrons": 1.1086023561319982e-9
+              },
+              "sensitivity": null,
+              "interpolants_overlap_l1_electrons": null,
+              "interpolation_right_extrapolated_planes_per_axis": 0,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "status": "measured"
+        }
+      ]
+    }
+  ]
+}
