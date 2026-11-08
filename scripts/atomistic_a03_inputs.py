@@ -17,10 +17,13 @@ ROOT = Path(__file__).resolve().parents[1]
 A01 = ROOT / "docs/design/atomistic-a01-v0.1"
 A02 = ROOT / "docs/design/atomistic-a02-v0.1"
 BASES = ("cc-pVDZ", "cc-pVTZ", "cc-pVQZ")
+BOUNDARY_FIXTURE_PATH = ROOT / "docs/design/atomistic-a04-v0.1/boundary-fixtures.json"
+BOUNDARY_SYSTEM_FIXTURES = {"h2-short": "A04-H2-short", "h2-long": "A04-H2-long"}
 SYSTEM_FIXTURES = {
     "he": "C01-He",
     "h2": "C03-H2-stretched",
     "h2-reference": "C02-H2-reference",
+    **BOUNDARY_SYSTEM_FIXTURES,
 }
 A03_CLI_SYSTEMS = ("he", "h2")
 
@@ -66,8 +69,15 @@ def probe_metadata(
     if type(density) is not bool:
         raise ValueError("density must be boolean")
 
-    fixture = next(f for f in _read(A01 / "fixtures.json")["valid"]
+    fixture_path = BOUNDARY_FIXTURE_PATH if system in BOUNDARY_SYSTEM_FIXTURES else A01 / "fixtures.json"
+    fixture = next(f for f in _read(fixture_path)["valid"]
                    if f["fixture_id"] == SYSTEM_FIXTURES[system])
+    source_paths = (
+        A01 / "fixtures.json", A01 / "profile.json", A01 / "reference-data.json",
+        A02 / "density-and-units.json", A02 / "engine-lock.json",
+    )
+    if fixture_path == BOUNDARY_FIXTURE_PATH:
+        source_paths += (fixture_path,)
     refs = _read(A01 / "reference-data.json")["constants"]
     units = _read(A02 / "density-and-units.json")["engine_unit_profile"]
     atoms = []
@@ -122,9 +132,7 @@ def probe_metadata(
         "engine_unit_codata_edition": units["codata_edition"],
         "data_sha256": {f"{basis}.cp2k": _sha(A02 / "assets" / f"{basis}.cp2k"),
                         "ALL_POTENTIALS": _sha(A02 / "assets/ALL_POTENTIALS")},
-        "source_files_sha256": {str(p.relative_to(ROOT)): _sha(p) for p in (
-            A01 / "fixtures.json", A01 / "profile.json", A01 / "reference-data.json",
-            A02 / "density-and-units.json", A02 / "engine-lock.json")},
+        "source_files_sha256": {str(p.relative_to(ROOT)): _sha(p) for p in source_paths},
         "unselected_version_locked_defaults": "Remaining engine defaults are tied to the actually measured binary; this is not a complete frozen numerical profile.",
     }
 

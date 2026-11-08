@@ -198,12 +198,17 @@ def test_refinement_only_executes_preregistered_cases(monkeypatch, tmp_path, tra
         assert report["comparisons"][-1]["reused_workflow_run_id"] == 42443582121
 
 
-@pytest.mark.parametrize(("system", "fixture"), [("he", "C01-He"), ("h2-reference", "C02-H2-reference")])
+@pytest.mark.parametrize(("system", "fixture"), [
+    ("he", "C01-He"), ("h2-reference", "C02-H2-reference"),
+    ("h2-short", "A04-H2-short"), ("h2-long", "A04-H2-long"),
+])
 def test_fixed_fixture_runs_each_declared_setting(monkeypatch, tmp_path, system, fixture):
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))
     import run_atomistic_a04_resource_ci as runner
 
-    prior = json.loads(runner.FIXTURE_PREDECESSOR.read_bytes())
+    boundary = system in runner.BOUNDARY_SYSTEMS
+    prior_path = runner.BOUNDARY_PREDECESSOR if boundary else runner.FIXTURE_PREDECESSOR
+    prior = json.loads(prior_path.read_bytes())
     observed = []
 
     def attempt(case, *_, ranks, swap, cube):
@@ -224,6 +229,8 @@ def test_fixed_fixture_runs_each_declared_setting(monkeypatch, tmp_path, system,
     assert [x["candidate_role"] for x in report["comparisons"]] == [
         "lightweight", "intermediate", "matched_cutoff_cell_check",
     ]
+    scope = "h2_boundary_accuracy_screen" if boundary else "fixed_fixture_accuracy_screen"
+    assert report["verification_scope"] == {scope: "measured"}
 
 
 def test_helium_comparison_requires_one_force_row(monkeypatch):

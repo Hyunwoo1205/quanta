@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "document_kind": "internal_a04_h2_boundary_fixtures",
+  "executable": false,
+  "coordinate_unit": "m",
+  "valid": [
+    {
+      "fixture_id": "A04-H2-short",
+      "atoms": [
+        {"id": "h1", "element": "H", "position": [-3e-11, 0, 0]},
+        {"id": "h2", "element": "H", "position": [3e-11, 0, 0]}
+      ]
+    },
+    {
+      "fixture_id": "A04-H2-long",
+      "atoms": [
+        {"id": "h1", "element": "H", "position": [-5e-11, 0, 0]},
+        {"id": "h2", "element": "H", "position": [5e-11, 0, 0]}
+      ]
+    }
+  ]
+}

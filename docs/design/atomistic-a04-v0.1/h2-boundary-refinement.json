@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scope": "preregistered_fixed_h2_bond_length_boundary_screen",
+  "fixtures": {
+    "h2-short": "A04-H2-short",
+    "h2-long": "A04-H2-long"
+  },
+  "bond_lengths_angstrom": {"h2-short": "0.60", "h2-long": "1.00"},
+  "fixtures_sha256": "f04074e237e904614324468d39693980964fc5dbdea7c2c358305797a6734e74",
+  "prior_fixed_fixture_receipt_sha256": "e748b423e04a0065a79fe534036dcb932b214bac2b11de944310ed94277f103f",
+  "setting_order": ["cell_angstrom", "cutoff_ry", "rel_cutoff_ry"],
+  "lightweight": [12, 400, 40],
+  "intermediate": [12, 600, 80],
+  "matched_cutoff_cell_check": [12, 800, 80],
+  "reference": [16, 800, 80],
+  "spatial_l1_atol_electrons": 0.001,
+  "comparison_rule": "At each bond length, compare against the same-geometry 16 angstrom reference using the previous screen's AV03 energy and force tolerances, AV05/AV06 counts, and spatial L1 threshold. Both interpolation methods must pass if grids differ.",
+  "scope_limits": [
+    "These two new internal fixtures and previous 0.74144 and 0.8 angstrom observations establish sampled-geometry checks, not a continuous interval guarantee.",
+    "Use one locked x86 CP2K PBE/GAPW/cc-pVDZ image. The 12 to 16 angstrom same-cutoff comparison diagnoses cell sensitivity at each boundary without claiming convergence of the finite reference.",
+    "The comparison informs selection of separate fixed H2 and He profiles for subsequent ARM and isolated OCI testing. It does not exercise an OCI or public runtime."
+  ]
+}

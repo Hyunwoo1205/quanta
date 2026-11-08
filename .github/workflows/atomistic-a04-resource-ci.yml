@@ -16,13 +16,15 @@ on:
       - docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json
       - docs/design/atomistic-a04-v0.1/h2-one-factor-refinement.json
       - docs/design/atomistic-a04-v0.1/fixed-fixture-refinement.json
+      - docs/design/atomistic-a04-v0.1/boundary-fixtures.json
+      - docs/design/atomistic-a04-v0.1/h2-boundary-refinement.json
   workflow_dispatch:
     inputs:
       experiment:
         description: "Choose a fixed A04 experiment"
         type: choice
         default: mpi-refinement
-        options: [mpi-refinement, serial-resource, cross-grid-accuracy, one-factor-refinement, fixed-fixture-accuracy]
+        options: [mpi-refinement, serial-resource, cross-grid-accuracy, one-factor-refinement, fixed-fixture-accuracy, h2-boundary-accuracy]
 
 permissions:
   contents: read
@@ -35,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ${{ fromJSON((github.event_name == 'push' || inputs.experiment == 'fixed-fixture-accuracy') && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
+        track: ${{ fromJSON((github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:

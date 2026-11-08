@@ -82,7 +82,10 @@ ENDPOINT_RECEIPT = ACCURACY_REFERENCE.with_name("cross-grid-accuracy-42443582121
 ONE_FACTOR_AXES = ("cell", "cutoff", "relative")
 FIXTURE_PLAN = ACCURACY_PLAN.with_name("fixed-fixture-refinement.json")
 FIXTURE_PREDECESSOR = ACCURACY_REFERENCE.with_name("one-factor-refinement-42447627356.json")
-FIXTURE_SYSTEMS = ("he", "h2-reference")
+BOUNDARY_PLAN = FIXTURE_PLAN.with_name("h2-boundary-refinement.json")
+BOUNDARY_PREDECESSOR = ACCURACY_REFERENCE.with_name("fixed-fixture-accuracy-42448653582.json")
+BOUNDARY_SYSTEMS = ("h2-short", "h2-long")
+FIXTURE_SYSTEMS = ("he", "h2-reference", *BOUNDARY_SYSTEMS)
 
 
 ENGINE_WRAPPER = r"""
@@ -979,12 +982,16 @@ def run_one_factor(track: str, candidate: dict, scratch: Path, diagnostics: Path
 
 
 def run_fixed_fixture(system: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
-    plan = json.loads(FIXTURE_PLAN.read_bytes())
-    prior = json.loads(FIXTURE_PREDECESSOR.read_bytes())
-    source = VALIDATION_PLAN.with_name("fixtures.json")
+    boundary = system in BOUNDARY_SYSTEMS
+    plan_path = BOUNDARY_PLAN if boundary else FIXTURE_PLAN
+    prior_path = BOUNDARY_PREDECESSOR if boundary else FIXTURE_PREDECESSOR
+    source = BOUNDARY_PLAN.with_name("boundary-fixtures.json") if boundary else VALIDATION_PLAN.with_name("fixtures.json")
+    plan = json.loads(plan_path.read_bytes())
+    prior = json.loads(prior_path.read_bytes())
+    prior_digest = plan["prior_fixed_fixture_receipt_sha256" if boundary else "prior_h2_refinement_receipt_sha256"]
     if (
         sha256(source) != plan["fixtures_sha256"]
-        or sha256(FIXTURE_PREDECESSOR) != plan["prior_h2_refinement_receipt_sha256"]
+        or sha256(prior_path) != prior_digest
         or prior["workflow_conclusion"] != "success"
         or any(prior["candidate"][k] != candidate[k] for k in ("binary_sha256", "image_id"))
     ):
@@ -993,7 +1000,7 @@ def run_fixed_fixture(system: str, candidate: dict, scratch: Path, diagnostics: 
     checks = {c["id"]: c for c in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
     l1 = plan["spatial_l1_atol_electrons"]
     report.update(
-        system=system, fixture_id=fixture, comparison_plan_sha256=sha256(FIXTURE_PLAN),
+        system=system, fixture_id=fixture, comparison_plan_sha256=sha256(plan_path),
         comparison_thresholds={
             "energy_hartree": checks["AV03"]["energy_atol_hartree"],
             "maximum_force_component_hartree_per_bohr": checks["AV03"]["force_atol_hartree_per_bohr"],
@@ -1031,7 +1038,8 @@ def run_fixed_fixture(system: str, candidate: dict, scratch: Path, diagnostics: 
         except (OSError, ValueError, KeyError) as exc:
             row.update(status="comparison_error", error=f"{type(exc).__name__}: {exc}"[:500])
     complete = all(row["status"] == "measured" for row in report["comparisons"])
-    report["verification_scope"]["fixed_fixture_accuracy_screen"] = "measured" if complete else "incomplete"
+    screen = "h2_boundary_accuracy_screen" if boundary else "fixed_fixture_accuracy_screen"
+    report["verification_scope"][screen] = "measured" if complete else "incomplete"
     return "measured" if complete else "comparison_incomplete"
 
 
@@ -1083,9 +1091,12 @@ def main() -> int:
         },
     }
     if args.one_factor or args.fixture_accuracy:
-        screen = "fixed_fixture_accuracy" if args.fixture_accuracy else "fixed_h2_one_factor"
+        screen = (
+            "h2_boundary_accuracy" if args.fixture_accuracy in BOUNDARY_SYSTEMS
+            else "fixed_fixture_accuracy" if args.fixture_accuracy else "fixed_h2_one_factor"
+        )
         report["scope"] = "isolated_native_x86_A04_" + (
-            "fixed_fixture_accuracy" if args.fixture_accuracy else "one_factor_refinement"
+            screen if args.fixture_accuracy else "one_factor_refinement"
         )
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update({

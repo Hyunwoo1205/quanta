@@ -35,17 +35,53 @@ def test_internal_h2_reference_uses_locked_c02_geometry():
     assert "\n      H 5.62928 6 6\n      H 6.37072 6 6\n" in text
 
 
-def test_stretched_h2_resource_input_remains_byte_identical():
-    text = module.generate_input("h2", "cc-pVDZ", project="a04_resource_h2")
-    assert hashlib.sha256(text.encode("ascii")).hexdigest() == (
-        "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f"
-    )
+@pytest.mark.parametrize(("system", "expected_sha"), [
+    ("he", "e2d6c35d143c9298abf873f25494a49211f32529c36b55c5f61a420eafdef8a9"),
+    ("h2", "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f"),
+    ("h2-reference", "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9"),
+])
+def test_existing_resource_inputs_remain_byte_identical(system, expected_sha):
+    text = module.generate_input(system, "cc-pVDZ", project="a04_resource_h2")
+    assert hashlib.sha256(text.encode("ascii")).hexdigest() == expected_sha
+    source = str(module.BOUNDARY_FIXTURE_PATH.relative_to(ROOT))
+    assert source not in module.probe_metadata(system)["source_files_sha256"]
 
 
-def test_a03_cli_keeps_reference_fixture_internal(tmp_path, monkeypatch):
+@pytest.mark.parametrize(("system", "fixture_id", "half_bond_m", "bond_angstrom"), [
+    ("h2-short", "A04-H2-short", Decimal("3e-11"), Decimal("0.60")),
+    ("h2-long", "A04-H2-long", Decimal("5e-11"), Decimal("1.00")),
+])
+@pytest.mark.parametrize("cell", [12, 16])
+def test_internal_h2_boundary_uses_locked_geometry(system, fixture_id, half_bond_m, bond_angstrom, cell):
+    meta = module.probe_metadata(system, cell_angstrom=cell)
+    assert meta["source_fixture"] == fixture_id
+    assert not meta["public_runtime_contract"]
+    assert not meta["fixture_as_product_execution_selector"]
+    model = meta["model"]
+    assert (model["charge_e"], model["multiplicity"], model["electron_count"]) == (0, 1, 2)
+    assert (model["method"], model["functional"]) == ("GAPW", "PBE")
+    native_x = []
+    center = Decimal(cell) / 2
+    for atom, source_x in zip(meta["atoms"], (-half_bond_m, half_bond_m), strict=True):
+        assert atom["element"] == "H"
+        assert [Decimal(str(v)) for v in atom["source_position_m"]] == [source_x, 0, 0]
+        x, y, z = (Decimal(v) for v in atom["engine_position_angstrom"])
+        assert y == z == center
+        native_x.append(x)
+    assert (native_x[0] + native_x[1]) / 2 == center
+    assert native_x[1] - native_x[0] == bond_angstrom
+    source = module.BOUNDARY_FIXTURE_PATH
+    assert meta["source_files_sha256"][str(source.relative_to(ROOT))] == hashlib.sha256(source.read_bytes()).hexdigest()
+    deck = module.generate_input(system, cell_angstrom=cell)
+    for atom in meta["atoms"]:
+        assert "\n      H " + " ".join(atom["engine_position_angstrom"]) + "\n" in deck
+
+
+@pytest.mark.parametrize("system", ["h2-reference", "h2-short", "h2-long"])
+def test_a03_cli_keeps_additional_fixtures_internal(tmp_path, monkeypatch, system):
     output_dir = tmp_path / "out"
     monkeypatch.setattr(sys, "argv", [
-        "atomistic_a03_inputs", "--output-dir", str(output_dir), "--system", "h2-reference",
+        "atomistic_a03_inputs", "--output-dir", str(output_dir), "--system", system,
     ])
     with pytest.raises(SystemExit) as exc:
         module.main()
