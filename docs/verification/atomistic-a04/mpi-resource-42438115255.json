@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "scope": "isolated_native_x86_A04_same_input_MPI_refinement",
+  "workflow_run_id": 42438115255,
+  "workflow_job_id": 128601263756,
+  "quanta_source": "7b94b794c9ecdd36d16ff1f50b275b915bf218e9",
+  "workflow_conclusion": "failure",
+  "case": "h2-20a-800ry-density-on",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+  "artifact": {
+    "id": 13600506612,
+    "bytes": 11694,
+    "sha256": "0e5123cc0e9efd1b7224f62730ae15eec0e420c9605f4f5f3604a6477eae8759",
+    "report_sha256": "551881ec12c477b0027aaa99d7e7ac41d17550aef80136ecf985ba38b255984e"
+  },
+  "attempts": [
+    {
+      "status": "container_oom",
+      "attempt": 3,
+      "input_sha256": "d17d656bb1e97d4aa68fdb1f1e56fb4e3d30bde91a103a65393970d81b0cd0c9",
+      "submitted_input_sha256": "e8df3126f904afb744495c4587b5ce4d68819ad159d0e3d5f5a064af90efc462",
+      "requested_mpi_ranks": 2,
+      "granted_memory_bytes": 12560912384,
+      "granted_swap_extra_bytes": 17179869184,
+      "cgroup_memory_peak_bytes": 12560912384,
+      "cgroup_memory_events_max": {
+        "max": 12950,
+        "oom": 4,
+        "oom_kill": 2,
+        "oom_group_kill": 0,
+        "low": 0,
+        "high": 0,
+        "sock_throttled": 0
+      },
+      "container_elapsed_seconds": 155.674468567,
+      "container_removed": true,
+      "replicated_real_space_grid_count": 1,
+      "distributed_real_space_grid_count": 3,
+      "observed_mpi_ranks": 2,
+      "reached_scf": true,
+      "swap_peak_bytes": 17179869184
+    }
+  ],
+  "smaller_case_gate": "not_run_due_to_20a_OOM",
+  "scratch_removed": true,
+  "physical_validation": "unvalidated"
+}

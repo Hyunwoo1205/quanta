@@ -55,7 +55,7 @@ def compare_summaries(reference: dict, distributed: dict) -> dict:
         and max(abs(ref_count - 2), abs(new_count - 2)) <= count_atol
     )
     return {
-        "scope": "same locked input and engine, different MPI launch; neither convergence nor physical validation",
+        "scope": "same locked scientific input and engine, different execution layout or swap allowance",
         "tolerance_sources": [f"{VALIDATION_PLAN}#AV01", f"{VALIDATION_PLAN}#AV06"],
         "input_sha256": reference["input_sha256"],
         "grid_counts": ref_density["grid_counts"],

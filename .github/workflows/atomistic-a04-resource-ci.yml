@@ -127,7 +127,7 @@ jobs:
           python -B scripts/run_atomistic_a04_resource_ci.py \
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence
-      - name: Retry the unchanged 20 angstrom input and compare MPI precision
+      - name: Retry the unchanged 20 angstrom input and compare numerical reproducibility
         if: inputs.experiment != 'serial-resource'
         run: |
           python -B scripts/run_atomistic_a04_resource_ci.py \

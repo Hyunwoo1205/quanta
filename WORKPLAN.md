@@ -18,7 +18,7 @@
 
 [실행 42437718361](https://github.com/Hyunwoo1205/quanta/actions/runs/42437718361)은 MGRID 실공간 분산을 명시해 격자 4개 중 3개를 분산했습니다. 11.85 GiB RAM 단독과 12 GiB RAM·8 GiB 스왑에서 모두 cgroup OOM을 확인했습니다. 후자는 SCF 시작까지 진행했으며 스왑 피크가 8 GiB에 도달했습니다. [분산 실측 영수증](docs/verification/atomistic-a04/mpi-resource-42437718361.json)
 
-다음 실행은 위 영수증을 확인한 뒤 같은 x86 바이너리와 동일 분산 입력으로 임시 스왑 16 GiB를 한 번 시험합니다. 호스트에 2 GiB를 남기며 계산 컨테이너 RAM은 최대 12 GiB입니다. 셀, 기본·보조 격자 설정, 기저, SCF, 전체 전자밀도 출력은 고정합니다. [고정 실행](.github/workflows/atomistic-a04-resource-ci.yml)
+[실행 42438115255](https://github.com/Hyunwoo1205/quanta/actions/runs/42438115255)는 동일 2랭크 분산 입력으로 RAM 11.70 GiB 및 임시 스왑 16 GiB를 사용했습니다. 첫 SCF 반복 결과를 쓰기 전에 양쪽 상한에 도달해 cgroup OOM으로 종료했습니다. 다음에는 고정 x86 바이너리와 원본 1랭크 입력으로 복제 영향을 확인합니다. 랭크당 OpenMP 1스레드, 호스트 2 GiB 여유, RAM 최대 12 GiB와 임시 스왑 16 GiB입니다. 셀, 기본·보조 격자 설정, 기저, SCF, 전체 전자밀도 출력은 고정합니다. [분산 스왑 실측 영수증](docs/verification/atomistic-a04/mpi-resource-42438115255.json) · [고정 실행](.github/workflows/atomistic-a04-resource-ci.yml)
 
 20 Å가 완료되면 같은 실행 방식으로 16 Å·800 Ry 및 12 Å·400 Ry를 순차 실행하고 해시로 고정한 각 입력의 이전 1랭크 출력과 대조합니다. CUBE 해시가 다르면 같은 입력을 1랭크로 재현하고 동일 격자에서 값을 스트리밍해 차이를 측정합니다. 에너지·힘은 AV01의 허용오차, 적분 전자 수는 AV06의 허용오차를 차용하며, 밀도장의 절댓값 차이 적분은 별도 재현성 기준 0.001 전자로 대조합니다. 이 시험의 실제 결과는 실행 영수증으로 판정하며 수치·공간 수렴과 물리 검증은 별도입니다.
 
