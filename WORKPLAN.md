@@ -12,7 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 H₂ 결합 길이 경계 시험 완료
+## 현재 개발 위치 — A04 고정 H₂·He 네이티브 ARM 실측 완료
+
+2026-11-08 KST [실행 42456722645](https://github.com/Hyunwoo1205/quanta/actions/runs/42456722645)에서 추적 가능한 CP2K 2026.2 ARMv8-A 이미지를 사용하여, [사전 계획](docs/design/atomistic-a04-v0.1/native-arm-qualification.json)의 다섯 입력을 GitHub aarch64 러너에서 1랭크·1스레드로 순차 실행했습니다. H₂ 0.60·0.74144·0.80·1.00 Å는 12 Å·400 Ry·REL_CUTOFF 40 Ry에서 22.47–26.28초·최대 cgroup RAM 1.77 GiB였고, He 12 Å·800 Ry·REL_CUTOFF 80 Ry는 71.34초·4.72 GiB였습니다. 다섯 실행 모두 스왑과 OOM 발생 없이 완료했습니다. [실행 영수증](docs/verification/atomistic-a04/native-arm-qualification-42456722645.json)
+
+동일 입력 해시의 x86과 비교하여 다섯 사례 모두 에너지·힘·전자 수와 격자 규격 기준을 충족했습니다. x86 대비 최대 에너지·힘 성분·CUBE 적분 전자 수 차이는 각각 3.51×10⁻¹⁴ Hartree, 3.66×10⁻¹⁰ Hartree/Bohr, 8.66×10⁻¹¹전자였습니다. H₂의 CUBE는 150³, He는 216³으로 x86과 같았으며, 원본 CUBE 해시는 모두 달랐습니다. 아키텍처 간 공간 밀도 L1은 이번 범위에 포함하지 않았습니다. 현 수치 근거는 다섯 고정 입력의 동일 입력 대조이며 독립 물리 검증은 별도입니다.
+
+**다음 시작점은** 운영 배포와 분리한 A04 OCI 고정 격리 시험을 구현해 검증하는 것입니다. 초기 상한은 H₂ 3 GiB, He 6 GiB로 두며, 스왑 없이 한 번에 한 건만 실행합니다. 기존 사전 여유 RAM 6 GiB와 디스크 10 GiB를 유지하고 He 실행은 상한 6 GiB와 호스트 여유 2 GiB를 합쳐 최소 가용 RAM 8 GiB에서만 시작합니다. 운영 작업 0건과 웹 응답을 사전에 확인하고, 실행 중 자원·운영 상태가 보호 기준을 벗어나면 중단합니다. 종료 후 시험 컨테이너 정리와 운영 상태 보존을 확인합니다. 운영 OCI 실측과 공개 지원은 아직 미실행입니다.
+
+## 이전 개발 기록 — A04 H₂ 결합 길이 경계 시험 완료
 
 2026-11-08 KST [실행 42450193275](https://github.com/Hyunwoo1205/quanta/actions/runs/42450193275)에서 H₂ 0.60 Å와 1.00 Å의 [고정 경계 입력](docs/design/atomistic-a04-v0.1/boundary-fixtures.json)을 각각 같은 구조의 16 Å·800 Ry·REL_CUTOFF 80 Ry와 비교했습니다. 동일 x86 CP2K/PBE/GAPW/cc-pVDZ로 두 러너에서 8개 계산을 완료했습니다. 모두 스왑을 쓰지 않았으며, [사전 기준](docs/design/atomistic-a04-v0.1/h2-boundary-refinement.json)에 따른 6개 비교가 에너지·힘·전자 수·밀도 L1 기준을 통과했습니다. [실행 영수증](docs/verification/atomistic-a04/h2-boundary-accuracy-42450193275.json)
 
