@@ -60,6 +60,7 @@ class Case:
     wall_seconds: int
     minimum_memory_bytes: int = 2 * GIB
     rel_cutoff: int = 40
+    system: str = "h2"
 
 
 CASES = (
@@ -79,6 +80,9 @@ ACCURACY_PLAN = ROOT / "docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.
 ONE_FACTOR_PLAN = ACCURACY_PLAN.with_name("h2-one-factor-refinement.json")
 ENDPOINT_RECEIPT = ACCURACY_REFERENCE.with_name("cross-grid-accuracy-42443582121.json")
 ONE_FACTOR_AXES = ("cell", "cutoff", "relative")
+FIXTURE_PLAN = ACCURACY_PLAN.with_name("fixed-fixture-refinement.json")
+FIXTURE_PREDECESSOR = ACCURACY_REFERENCE.with_name("one-factor-refinement-42447627356.json")
+FIXTURE_SYSTEMS = ("he", "h2-reference")
 
 
 ENGINE_WRAPPER = r"""
@@ -385,7 +389,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
         work.mkdir(mode=0o700)
         inputs.mkdir(mode=0o700)
         options = {
-            "system": "h2", "basis": "cc-pVDZ", "project": PROJECT,
+            "system": case.system, "basis": "cc-pVDZ", "project": PROJECT,
             "cell_angstrom": case.cell, "cutoff_ry": case.cutoff,
             "rel_cutoff_ry": case.rel_cutoff, "density": case.density,
         }
@@ -508,7 +512,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 or len(forces) != len(metadata["atoms"])
                 or not all(keyword in text for keyword in ("GAPW", "PBE", "cc-pVDZ.cp2k", "ALL_POTENTIALS"))
             ):
-                raise ValueError("Converged CP2K H2 energy, native forces or locked model evidence is missing")
+                raise ValueError("Converged CP2K fixture energy, native forces or locked model evidence is missing")
             record["engine_energy_hartree"] = cp2k["energy_hartree"]
             record["engine_forces_hartree_per_bohr"] = forces
             hard_soft_charge = re.findall(
@@ -782,8 +786,10 @@ def run_refinement(candidate: dict, scratch: Path, diagnostics: Path,
 def accuracy_scalars(reference: dict, candidate: dict, checks: dict) -> dict:
     left = reference["engine_forces_hartree_per_bohr"]
     right = candidate["engine_forces_hartree_per_bohr"]
-    if len(left) != 2 or len(right) != 2 or any(len(row) != 3 for row in (*left, *right)):
-        raise ValueError("Expected two ordered Cartesian force rows")
+    atom_count = reference["density"]["atom_count"]
+    if (atom_count not in (1, 2) or candidate["density"]["atom_count"] != atom_count
+            or len(left) != atom_count or len(right) != atom_count or any(len(row) != 3 for row in (*left, *right))):
+        raise ValueError("Expected ordered Cartesian force rows matching the fixture")
     energy = abs(candidate["engine_energy_hartree"] - reference["engine_energy_hartree"])
     force = max(abs(a - b) for lrow, rrow in zip(left, right) for a, b in zip(lrow, rrow))
     ref_count = reference["density"]["electron_integral"]
@@ -813,6 +819,8 @@ def compare_accuracy_pair(reference_case: Case, case: Case, reference: dict, att
                           reference_path: Path, path: Path, checks: dict, l1_atol: float) -> dict:
     from compare_atomistic_a04_accuracy import compare_density
 
+    if reference_case.system != case.system:
+        raise ValueError("Energy and density comparisons require identical fixtures")
     result = accuracy_scalars(reference, attempt, checks)
     result.update(
         case=case.name, reference_case=reference_case.name,
@@ -970,6 +978,63 @@ def run_one_factor(track: str, candidate: dict, scratch: Path, diagnostics: Path
     return "measured" if complete else "comparison_incomplete"
 
 
+def run_fixed_fixture(system: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
+    plan = json.loads(FIXTURE_PLAN.read_bytes())
+    prior = json.loads(FIXTURE_PREDECESSOR.read_bytes())
+    source = VALIDATION_PLAN.with_name("fixtures.json")
+    if (
+        sha256(source) != plan["fixtures_sha256"]
+        or sha256(FIXTURE_PREDECESSOR) != plan["prior_h2_refinement_receipt_sha256"]
+        or prior["workflow_conclusion"] != "success"
+        or any(prior["candidate"][k] != candidate[k] for k in ("binary_sha256", "image_id"))
+    ):
+        raise ValueError("Fixed fixture inputs or the verified image do not match the plan")
+    fixture = plan["fixtures"][system]
+    checks = {c["id"]: c for c in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    l1 = plan["spatial_l1_atol_electrons"]
+    report.update(
+        system=system, fixture_id=fixture, comparison_plan_sha256=sha256(FIXTURE_PLAN),
+        comparison_thresholds={
+            "energy_hartree": checks["AV03"]["energy_atol_hartree"],
+            "maximum_force_component_hartree_per_bohr": checks["AV03"]["force_atol_hartree_per_bohr"],
+            "engine_hard_soft_count_from_two_electrons": checks["AV05"]["atol"],
+            "exported_count_from_two_electrons": checks["AV06"]["atol"],
+            "exploratory_spatial_l1_electrons": l1,
+        },
+        comparisons=[],
+    )
+    if report["comparison_thresholds"] != prior["comparison_thresholds"]:
+        raise ValueError("Comparison thresholds must match the previous refinement")
+    rows = {}
+    labels = ("lightweight", "intermediate", "matched_cutoff_cell_check", "reference")
+    for label in labels:
+        cell, cutoff, rel = plan[label]
+        case = Case(f"{system}-{cell}a-{cutoff}ry-rel{rel}-density-on",
+                    cell, cutoff, True, 900, rel_cutoff=rel, system=system)
+        cube = scratch / f"{case.name}.cube"
+        attempt = refinement_attempt(case, candidate, scratch, diagnostics, ranks=1, swap=0, cube=cube)
+        if attempt["status"] == "measured" and attempt["input_metadata"]["source_fixture"] != fixture:
+            raise ValueError("Measured case does not match the locked fixture")
+        rows[label] = (case, attempt, cube)
+        report["cases"].append({"role": label, "case": case.name, "settings": plan[label], "attempts": [attempt]})
+    ref_case, reference, ref_cube = rows["reference"]
+    for label in labels[:-1]:
+        row = {"candidate_role": label, "candidate_settings": plan[label], "reference_settings": plan["reference"]}
+        report["comparisons"].append(row)
+        case, attempt, cube = rows[label]
+        if attempt["status"] != "measured" or reference["status"] != "measured":
+            row["status"] = "case_incomplete"
+            continue
+        try:
+            row["result"] = compare_accuracy_pair(ref_case, case, reference, attempt, ref_cube, cube, checks, l1)
+            row["status"] = "measured"
+        except (OSError, ValueError, KeyError) as exc:
+            row.update(status="comparison_error", error=f"{type(exc).__name__}: {exc}"[:500])
+    complete = all(row["status"] == "measured" for row in report["comparisons"])
+    report["verification_scope"]["fixed_fixture_accuracy_screen"] = "measured" if complete else "incomplete"
+    return "measured" if complete else "comparison_incomplete"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-dir", type=Path, required=True)
@@ -978,6 +1043,7 @@ def main() -> int:
     mode.add_argument("--mpi-refinement-serial-report", type=Path)
     mode.add_argument("--cross-grid-accuracy", action="store_true")
     mode.add_argument("--one-factor", choices=ONE_FACTOR_AXES)
+    mode.add_argument("--fixture-accuracy", choices=FIXTURE_SYSTEMS)
     args = parser.parse_args()
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -1016,8 +1082,11 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.one_factor:
-        report["scope"] = "isolated_native_x86_A04_one_factor_refinement"
+    if args.one_factor or args.fixture_accuracy:
+        screen = "fixed_fixture_accuracy" if args.fixture_accuracy else "fixed_h2_one_factor"
+        report["scope"] = "isolated_native_x86_A04_" + (
+            "fixed_fixture_accuracy" if args.fixture_accuracy else "one_factor_refinement"
+        )
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update({
             "normal_memory_cap_bytes": MEMORY_TIERS_BYTES[-1],
@@ -1025,7 +1094,7 @@ def main() -> int:
             "oom_retry": "none; fixed sequential one-rank cases on this runner",
             "raw_cube": "original samples compared on runner disk and removed with scratch",
         })
-        report["verification_scope"]["fixed_h2_one_factor_screen"] = "incomplete"
+        report["verification_scope"][f"{screen}_screen"] = "incomplete"
     elif args.cross_grid_accuracy:
         report["scope"] = "isolated_native_x86_A04_cross_grid_endpoint_accuracy"
         report.pop("known_unadmitted_cases")
@@ -1068,7 +1137,9 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.one_factor:
+            if args.fixture_accuracy:
+                report["status"] = run_fixed_fixture(args.fixture_accuracy, candidate, Path(directory), diagnostics, report)
+            elif args.one_factor:
                 report["status"] = run_one_factor(args.one_factor, candidate, Path(directory), diagnostics, report)
             elif args.cross_grid_accuracy:
                 report["status"] = run_accuracy(candidate, Path(directory), diagnostics, report)

@@ -7,6 +7,7 @@ on:
       - .github/workflows/atomistic-a04-resource-ci.yml
       - scripts/atomistic_a04_resources.py
       - scripts/atomistic_a04_runner_swap.py
+      - scripts/atomistic_a03_inputs.py
       - scripts/compare_atomistic_a04_mpi.py
       - scripts/compare_atomistic_a04_accuracy.py
       - scripts/run_atomistic_a04_resource_ci.py
@@ -14,13 +15,14 @@ on:
       - tests/test_atomistic_a04_accuracy.py
       - docs/design/atomistic-a04-v0.1/h2-cross-grid-comparison.json
       - docs/design/atomistic-a04-v0.1/h2-one-factor-refinement.json
+      - docs/design/atomistic-a04-v0.1/fixed-fixture-refinement.json
   workflow_dispatch:
     inputs:
       experiment:
         description: "Choose a fixed A04 experiment"
         type: choice
         default: mpi-refinement
-        options: [mpi-refinement, serial-resource, cross-grid-accuracy, one-factor-refinement]
+        options: [mpi-refinement, serial-resource, cross-grid-accuracy, one-factor-refinement, fixed-fixture-accuracy]
 
 permissions:
   contents: read
@@ -33,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ${{ fromJSON((github.event_name == 'push' || inputs.experiment == 'one-factor-refinement') && '["cell","cutoff","relative"]' || '["legacy"]') }}
+        track: ${{ fromJSON((github.event_name == 'push' || inputs.experiment == 'fixed-fixture-accuracy') && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -155,9 +157,10 @@ jobs:
           grep '^numpy==' requirements.lock.txt > "$numpy_lock"
           python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
           mode=(--cross-grid-accuracy)
-          if [ "$A04_TRACK" != legacy ]; then
-            mode=(--one-factor "$A04_TRACK")
-          fi
+          case "$A04_TRACK" in
+            fixture-*) mode=(--fixture-accuracy "${A04_TRACK#fixture-}") ;;
+            cell|cutoff|relative) mode=(--one-factor "$A04_TRACK") ;;
+          esac
           python -B scripts/run_atomistic_a04_resource_ci.py \
             --candidate-dir .cache/atomistic-a04-resource/candidate \
             --output-dir .cache/atomistic-a04-resource/evidence \

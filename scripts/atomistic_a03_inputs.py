@@ -17,7 +17,12 @@ ROOT = Path(__file__).resolve().parents[1]
 A01 = ROOT / "docs/design/atomistic-a01-v0.1"
 A02 = ROOT / "docs/design/atomistic-a02-v0.1"
 BASES = ("cc-pVDZ", "cc-pVTZ", "cc-pVQZ")
-SYSTEM_FIXTURES = {"he": "C01-He", "h2": "C03-H2-stretched"}
+SYSTEM_FIXTURES = {
+    "he": "C01-He",
+    "h2": "C03-H2-stretched",
+    "h2-reference": "C02-H2-reference",
+}
+A03_CLI_SYSTEMS = ("he", "h2")
 
 
 def _read(path: Path) -> dict:
@@ -141,7 +146,7 @@ def generate_input(*args, **kwargs) -> str:
 """
     coords = "\n".join("      " + a["element"] + " " + " ".join(a["engine_position_angstrom"])
                        for a in p["atoms"])
-    a = p["atoms"][0]  # all atoms of either bounded probe have one element/isotope
+    a = p["atoms"][0]  # all atoms of each bounded probe have one element/isotope
     kind = f"""    &KIND {a['element']}
       ELEMENT {a['element']}
       BASIS_SET {p['basis']}
@@ -233,7 +238,7 @@ def main() -> None:
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--data-dir", default="/quanta-data")
     parser.add_argument("--basis", choices=BASES, default="cc-pVDZ")
-    parser.add_argument("--system", choices=tuple(SYSTEM_FIXTURES), default="he")
+    parser.add_argument("--system", choices=A03_CLI_SYSTEMS, default="he")
     args = parser.parse_args()
     p = probe_metadata(args.system, args.basis, data_dir=args.data_dir)
     text = generate_input(args.system, args.basis, data_dir=args.data_dir)

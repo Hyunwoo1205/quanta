@@ -196,3 +196,49 @@ def test_refinement_only_executes_preregistered_cases(monkeypatch, tmp_path, tra
     assert len(compared) == len(factors) - int(track == "cell")
     if track == "cell":
         assert report["comparisons"][-1]["reused_workflow_run_id"] == 42443582121
+
+
+@pytest.mark.parametrize(("system", "fixture"), [("he", "C01-He"), ("h2-reference", "C02-H2-reference")])
+def test_fixed_fixture_runs_each_declared_setting(monkeypatch, tmp_path, system, fixture):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    import run_atomistic_a04_resource_ci as runner
+
+    prior = json.loads(runner.FIXTURE_PREDECESSOR.read_bytes())
+    observed = []
+
+    def attempt(case, *_, ranks, swap, cube):
+        observed.append((case.cell, case.cutoff, case.rel_cutoff))
+        assert case.system == system and ranks == 1 and swap == 0 and cube.parent == tmp_path
+        return {"status": "measured", "input_metadata": {"source_fixture": fixture}}
+
+    def pair(reference_case, case, *_):
+        assert reference_case.system == case.system == system
+        assert (reference_case.cell, reference_case.cutoff, reference_case.rel_cutoff) == (16, 800, 80)
+        return {"within_all_endpoint_thresholds": False}
+
+    monkeypatch.setattr(runner, "refinement_attempt", attempt)
+    monkeypatch.setattr(runner, "compare_accuracy_pair", pair)
+    report = {"cases": [], "verification_scope": {}}
+    assert runner.run_fixed_fixture(system, prior["candidate"], tmp_path, tmp_path, report) == "measured"
+    assert observed == [(12, 400, 40), (12, 600, 80), (12, 800, 80), (16, 800, 80)]
+    assert [x["candidate_role"] for x in report["comparisons"]] == [
+        "lightweight", "intermediate", "matched_cutoff_cell_check",
+    ]
+
+
+def test_helium_comparison_requires_one_force_row(monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    import run_atomistic_a04_resource_ci as runner
+
+    check_map = {c["id"]: c for c in json.loads(runner.VALIDATION_PLAN.read_bytes())["checks"]}
+    one_atom = {
+        "engine_energy_hartree": -2.0,
+        "engine_forces_hartree_per_bohr": [[0.0, 0.0, 0.0]],
+        "engine_hard_soft_electron_count": 2.0,
+        "density": {"atom_count": 1, "electron_integral": 2.0},
+    }
+    assert runner.accuracy_scalars(one_atom, one_atom, check_map)["force_passed"]
+    with pytest.raises(ValueError, match="matching the fixture"):
+        runner.accuracy_scalars(
+            one_atom, {**one_atom, "engine_forces_hartree_per_bohr": [[0.0] * 3] * 2}, check_map,
+        )

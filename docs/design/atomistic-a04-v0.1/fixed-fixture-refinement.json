@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "scope": "preregistered_fixed_c01_he_and_c02_h2_geometry_screen",
+  "fixtures": {
+    "he": "C01-He",
+    "h2-reference": "C02-H2-reference"
+  },
+  "fixtures_sha256": "ecffd8eb16fb80bedb7276fcade57e6a0a75e9f8022beceb82beb98dfc5a436c",
+  "prior_h2_refinement_receipt_sha256": "59daaf2d5a6529a96d5f3d314ae46b56c773611556895a8e2270938e50d78e34",
+  "setting_order": ["cell_angstrom", "cutoff_ry", "rel_cutoff_ry"],
+  "lightweight": [12, 400, 40],
+  "intermediate": [12, 600, 80],
+  "matched_cutoff_cell_check": [12, 800, 80],
+  "reference": [16, 800, 80],
+  "spatial_l1_atol_electrons": 0.001,
+  "comparison_rule": "Compare each tested setting against the 16 angstrom reference in the same runner. Use A01 AV03 energy and force thresholds and AV05/AV06 electron count thresholds. Apply both four- and six-point density L1 estimates when the grids differ. Record individual force components and full signed CUBE statistics.",
+  "scope_limits": [
+    "Fixed neutral singlet fixtures with one x86 CP2K PBE/GAPW/cc-pVDZ image. The C02 bond length is 0.74144 angstrom from the authored coordinates; no requirement of zero PBE force is imposed.",
+    "The finite 16 angstrom reference is a comparison endpoint for each fixture. The matched-cutoff 12 to 16 angstrom check does not establish 16 to 20 angstrom equivalence at these new geometries.",
+    "This is a numerical screening experiment. Formal family convergence, independent physical validation, boundary geometry coverage, and OCI operational validation remain separate."
+  ]
+}
