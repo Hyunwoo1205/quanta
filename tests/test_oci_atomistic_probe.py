@@ -1,9 +1,10 @@
-"""A03 fixed request/CI/transport/archive/resource boundaries, no real host access."""
+"""Fixed atomistic request/CI/transport/archive/resource boundaries, no host access."""
 import hashlib
 import importlib.util
 import io
 import json
 from pathlib import Path
+import stat
 import tarfile
 from types import SimpleNamespace
 import uuid
@@ -102,9 +103,9 @@ def test_requires_exact_successful_native_matrix(env, request_file, monkeypatch)
     assert gate.authorize(env,path=request_file)['status'] == 'denied'
 
 
-def tar_bytes(files, symlink=None):
+def tar_bytes(files, symlink=None, mode='w:gz'):
     buffer=io.BytesIO()
-    with tarfile.open(fileobj=buffer, mode='w:gz', format=tarfile.USTAR_FORMAT) as archive:
+    with tarfile.open(fileobj=buffer, mode=mode, format=tarfile.USTAR_FORMAT) as archive:
         for name, raw in files.items():
             info=tarfile.TarInfo(name);info.size=len(raw);archive.addfile(info,io.BytesIO(raw))
         if symlink:
@@ -235,3 +236,95 @@ def test_child_docker_group_is_ephemeral_and_only_verified_socket_gid(monkeypatc
     monkeypatch.setattr(remote.Path,'resolve',lambda path, strict=False:Path('/unexpected'))
     with pytest.raises(remote.ProbeError):
         remote.docker_child_groups(SimpleNamespace(pw_name='ubuntu',pw_gid=1000))
+
+
+def a04_config(remote, raw=b''):
+    return {'source_sha': 'a' * 40, 'request_id': str(uuid.uuid4()),
+            'archive_sha256': hashlib.sha256(raw).hexdigest(), 'candidate': dict(remote.A04_CANDIDATE)}
+
+
+def test_a04_candidate_uses_reviewed_image_separate_from_control_source():
+    remote = load('remote_atomistic_probe')
+    config = a04_config(remote)
+    assert remote.validate_config(config, a04=True) == config
+    with pytest.raises(ValueError):
+        remote.validate_config(config)
+    for candidate in (None, dict(config['candidate'], source_sha=config['source_sha']),
+                      dict(config['candidate'], archive_bytes=838924288.0),
+                      dict(config['candidate'], schema_version=True)):
+        with pytest.raises(ValueError):
+            remote.validate_config(dict(config, candidate=candidate), a04=True)
+    with pytest.raises(ValueError):
+        remote.validate_config(dict(config, case='he'), a04=True)
+
+
+def test_a04_archive_enforces_its_exact_files_and_bounded_xz():
+    remote = load('remote_atomistic_probe')
+    files = {name: b'{}\n' for name in remote.A04_REQUIRED}
+    raw = tar_bytes(files, mode='w:xz')
+    assert remote.archive_files(raw, hashlib.sha256(raw).hexdigest(), a04=True) == files
+    for bad in (raw + b'x', tar_bytes(files),
+                tar_bytes(dict(files, **{'docs/design/atomistic-a01-v0.1/arbitrary': b'x'}), mode='w:xz')):
+        with pytest.raises(remote.ProbeError):
+            remote.archive_files(bad, hashlib.sha256(bad).hexdigest(), a04=True)
+    with pytest.raises(remote.ProbeError):
+        remote.archive_files(raw, hashlib.sha256(raw).hexdigest(), a04=True, trace=True)
+
+
+def test_a04_headroom_and_web_boundary():
+    remote = load('remote_atomistic_probe')
+    GiB = 1024**3
+    remote.resource_preflight(0, 8 * GiB, 10 * GiB, a04=True)
+    with pytest.raises(remote.ProbeError, match='resource_preflight'):
+        remote.resource_preflight(0, 8 * GiB - 1, 10 * GiB, a04=True)
+    good = {'web_status': 200, 'anonymous_capabilities_status': 401, 'latency_seconds': [0.01, 2.0]}
+    remote.require_a04_web(good)
+    for bad in (dict(good, latency_seconds=[0.01, 2.01]), dict(good, anonymous_capabilities_status=200)):
+        with pytest.raises(remote.ProbeError, match='service_boundary'):
+            remote.require_a04_web(bad)
+
+
+def test_a04_cleanup_uses_only_exact_probe_label_and_pinned_new_image(monkeypatch):
+    remote = load('remote_atomistic_probe')
+    output = Path('/srv/quanta/atomistic-probes/request/workspace/run')
+    ref = remote.A04_CANDIDATE['image_ref']
+    native = f'{ref} sha256:{remote.A04_CANDIDATE["config_sha256"]}\n'.encode()
+    oci = f'{ref} sha256:{remote.A04_CANDIDATE_MANIFEST_SHA256}\n'.encode()
+    replies = iter([b'1234567890ab\n', b'', native, oci, oci, b'', b'foreign\n'])
+    calls = []
+
+    def run(args, **_):
+        calls.append(args[len(remote.DOCKER):])
+        return next(replies)
+
+    monkeypatch.setattr(remote, '_run', run)
+    assert remote.cleanup_containers(output, a04=True) == 1
+    remote.a04_restore_image_tag(True)
+    remote.a04_restore_image_tag(False)
+    assert calls[0] == ['ps', '-aq', '--filter', f'label=org.quanta.atomistic-a04={output}']
+    assert calls[1] == ['rm', '-f', '1234567890ab']
+    assert calls[4] == ['image', 'rm', '--no-prune', ref]
+    with pytest.raises(remote.ProbeError, match='candidate_image_identity'):
+        remote.a04_image_present()
+
+
+def test_a04_report_requires_all_cases_and_observed_caps():
+    remote = load('remote_atomistic_probe')
+    source = 'a' * 40
+    report = {'schema_version': 1, 'scope': remote.A04_REPORT_SCOPE, 'quanta_source': source,
+              'status': 'measured', 'all_cross_build_checks_passed': True, 'scratch_removed': True,
+              'cases': []}
+    for system in remote.A04_CASES:
+        he = system == 'he'
+        cap = (6 if he else 3) * 1024**3
+        report['cases'].append({'system': system, 'status': 'measured', 'cap_bytes': cap,
+            'settings': [12, 800, 80] if he else [12, 400, 40], 'comparison': {'passed': True},
+            'attempt': {'container_removed': True, 'observed_mpi_ranks': 1, 'observed_omp_threads': 1,
+                        'container_controls': {'memory_bytes': cap, 'memory_swap_bytes': cap, 'cpus': 1},
+                        'engine_resource': {'final_cgroup_memory_max_bytes': cap,
+                                            'final_cgroup_swap_max_bytes': 0, 'final_cgroup_swap_peak_bytes': 0}}})
+    assert remote.a04_benchmark_passed(report, source)
+    assert not remote.a04_benchmark_passed(dict(report, cases=report['cases'][:-1]), source)
+    assert not remote.a04_benchmark_passed(dict(report, all_cross_build_checks_passed=False), source)
+    report['cases'][-1]['attempt']['engine_resource']['final_cgroup_swap_max_bytes'] = 1
+    assert not remote.a04_benchmark_passed(report, source)

@@ -43,6 +43,7 @@ TMPFS_LIMIT = 256 * 1024**2
 DISK_ADMISSION = 10 * GIB
 DISK_GUARD = 6 * GIB
 MEMORY_GUARD = MEMORY_RESERVE_BYTES
+OCI_PROBE_LABEL = "org.quanta.atomistic-a04"
 SHM_LIMIT = 64 * 1024**2
 HEARTBEAT = 1.0
 EXPECTED_FILES = {"cp2k.out", "forces.xyz", "engine-resource.json", CUBE}
@@ -244,15 +245,22 @@ def safe_bind(path: Path, target: str, *, readonly: bool = False) -> str:
 
 
 def container_args(name: str, image_id: str, budget: int, work: Path, inputs: Path, candidate: dict,
-                   *, mpi_ranks: int = 1, swap_extra_bytes: int = 0, architecture: str = "amd64") -> list[str]:
+                   *, mpi_ranks: int = 1, swap_extra_bytes: int = 0, architecture: str = "amd64",
+                   oci_probe_output: Path | None = None) -> list[str]:
     if type(mpi_ranks) is not int or mpi_ranks not in (1, 2):
         raise ValueError("Only the fixed one- and two-rank layouts are supported")
     if type(swap_extra_bytes) is not int or swap_extra_bytes < 0:
         raise ValueError("Swap allowance must be a nonnegative byte count")
     if architecture not in ("amd64", "arm64"):
         raise ValueError("Unsupported native architecture")
+    label = []
+    if oci_probe_output is not None:
+        if architecture != "arm64" or not oci_probe_output.is_absolute():
+            raise ValueError("The OCI cleanup label requires native ARM and an absolute output path")
+        label = ["--label", f"{OCI_PROBE_LABEL}={oci_probe_output}"]
     return [
         "create", "--name", name, "--pull=never", "--platform", f"linux/{architecture}",
+        *label,
         "--read-only", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
         "--user", f"{os.getuid()}:{os.getgid()}", "--group-add", "0",
         "--cpus", str(mpi_ranks), "--memory", str(budget), "--memory-swap", str(budget + swap_extra_bytes),
@@ -268,7 +276,8 @@ def container_args(name: str, image_id: str, budget: int, work: Path, inputs: Pa
     ]
 
 
-def checked_controls(inspected: dict, budget: int, *, mpi_ranks: int = 1, swap_extra_bytes: int = 0) -> dict:
+def checked_controls(inspected: dict, budget: int, *, mpi_ranks: int = 1, swap_extra_bytes: int = 0,
+                     oci_probe_output: Path | None = None) -> dict:
     host = inspected["HostConfig"]
     for key, expected in {
         "Memory": budget, "MemorySwap": budget + swap_extra_bytes, "NanoCpus": mpi_ranks * 10**9,
@@ -289,6 +298,10 @@ def checked_controls(inspected: dict, budget: int, *, mpi_ranks: int = 1, swap_e
     mounts = {row["Destination"]: (row["Type"], row["RW"]) for row in inspected["Mounts"] if row["Type"] == "bind"}
     if mounts != {"/work": ("bind", True), "/quanta-input": ("bind", False), "/quanta-data": ("bind", False)}:
         raise ValueError("Docker did not enforce the expected bind controls")
+    if oci_probe_output is not None:
+        labels = inspected["Config"]["Labels"] or {}
+        if labels.get(OCI_PROBE_LABEL) != str(oci_probe_output):
+            raise ValueError("Docker did not attach the exact OCI cleanup label")
     return {
         "memory_bytes": budget, "memory_swap_bytes": budget + swap_extra_bytes, "cpus": mpi_ranks, "pids": 128,
         "work": "disk-backed bind", "network": "none", "tmpfs_max_bytes": TMPFS_LIMIT,
@@ -390,7 +403,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 scratch: Path, diagnostics: Path, record: dict, *, mpi_ranks: int = 1,
                 swap_extra_bytes: int = 0, expected_input: str | None = None,
                 retained_cube: Path | None = None, distribute_real_space: bool = False,
-                architecture: str = "amd64") -> None:
+                architecture: str = "amd64", oci_probe_output: Path | None = None) -> None:
     name = f"quanta-a04-resource-{uuid4().hex}"
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix=f"{case.name}-{attempt}-", dir=scratch) as path:
@@ -432,6 +445,8 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
             if expected_input is not None and record["input_sha256"] != expected_input:
                 raise ValueError("Scientific input differs from the recorded serial input")
             layout = {"mpi_ranks": mpi_ranks, "swap_extra_bytes": swap_extra_bytes}
+            if oci_probe_output is not None:
+                layout["oci_probe_output"] = oci_probe_output
             run_docker(*container_args(
                 name, candidate["image_id"], budget, work, inputs, candidate, architecture=architecture, **layout,
             ))
