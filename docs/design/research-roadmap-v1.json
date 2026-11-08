@@ -1,8 +1,8 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.12",
-  "updated_at": "2026-11-08",
+  "plan_version": "1.0.13",
+  "updated_at": "2026-11-09",
   "status": "planned_development",
   "executable": false,
   "runtime_contract_version": null,
@@ -364,7 +364,7 @@
         "A01",
         "A03"
       ],
-      "status": "arm_x86_candidate_execution_and_regression_passed_pre_freeze",
+      "status": "fixed_fixture_scf_screen_passed_pre_freeze",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
@@ -374,7 +374,8 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "SCF 수렴부터 기준을 고정해 측정하고, 원자 중심 격자·기저 수렴을 별도로 검증한 뒤 초기 수치 프로필 동결을 판단.",
+      "next_action": "고정 SCF 후보 1e-8에서 원자 중심 radial·Lebedev 격자와 기저 수렴을 각각 검증한 뒤 초기 수치 프로필 동결을 판단.",
+      "fixed_fixture_scf_screen": "docs/verification/atomistic-a04/scf-refinement-42495134220.json",
       "oci_db_wal_observation": "docs/verification/atomistic-a04/oci-db-wal-observation-42480916880.json",
       "oci_fixed_measurement": "docs/verification/atomistic-a04/oci-qualification-42477399912.json",
       "oci_fixed_qualification": "docs/verification/atomistic-a04/oci-qualification-42483814045.json",

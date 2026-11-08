@@ -120,6 +120,12 @@
     "criteria_status": "A01 predeclared tolerances unchanged",
     "adapter_status": "not_implemented",
     "numerical_acceptance_status": "not_tested",
+    "fixed_fixture_scf_screen": {
+      "status": "passed_on_pinned_x86_fixed_fixtures",
+      "candidate_eps_scf": 1e-8,
+      "receipt": "docs/verification/atomistic-a04/scf-refinement-42495134220.json",
+      "remaining": "Atom-centered grid, basis and selected joint settings, followed by independent acceptance."
+    },
     "resolution_acceptance_status": "not_tested",
     "independent_physical_acceptance_status": "unvalidated",
     "proposal_unexecuted": {

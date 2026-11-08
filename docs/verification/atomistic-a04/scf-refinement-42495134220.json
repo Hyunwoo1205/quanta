@@ -1,0 +1,577 @@
+{
+  "schema_version": 1,
+  "status": "passed_fixed_fixture_scf_screen",
+  "scope": "isolated_native_x86_A04_fixed_fixture_scf_refinement",
+  "workflow_run_id": 42495134220,
+  "workflow_conclusion": "success",
+  "workflow_attempt": 1,
+  "workflow_started_at": "2026-11-08T15:30:22Z",
+  "quanta_source": "14fd97a32611ad3ca09e4440518d38a957b731a3",
+  "candidate": {
+    "platform": "linux/amd64",
+    "quanta_candidate_source": "3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+    "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+    "pinned_candidate_artifact_id": 13579899979
+  },
+  "comparison_plan": "docs/design/atomistic-a04-v0.1/scf-refinement.json",
+  "comparison_plan_sha256": "5cae8b28d697616085ab93e01e21c50c0ddc853af700604da2805a97581da6aa",
+  "threshold_source": "docs/design/atomistic-a01-v0.1/validation-plan.json",
+  "thresholds": {
+    "threshold_source": "../atomistic-a01-v0.1/validation-plan.json",
+    "energy_hartree": 0.000001,
+    "max_force_component_hartree_per_bohr": 0.00001,
+    "engine_count_from_two_electrons": 0.000001,
+    "cube_count_from_two_electrons": 0.001,
+    "same_grid_cube_l1_electrons": 0.001,
+    "rule": "Require explicit CP2K convergence for every level. Compare each looser level to 1e-10 on the same native CUBE grid. The 1e-9 pair must pass before considering retention of 1e-8. If 1e-8 fails with 1e-9 passing, keep 1e-9 as the tighter candidate for later validation."
+  },
+  "baseline_oci_workflow_run_id": 42483814045,
+  "resource_policy": {
+    "ranks": 1,
+    "threads": 1,
+    "configured_swap_bytes": 0,
+    "reserved_memory_gib": 2,
+    "minimum_disk_gib": 10,
+    "oom_retry": false
+  },
+  "evidence_sources": "Verified the workflow, all job conclusions, the structured result lines in finalized job logs and matching artifact metadata. Report and CUBE hashes are recorded by the jobs. Same-lattice density differences use the native printed CUBE precision.",
+  "totals": {
+    "fixtures": 5,
+    "converged_levels": 15,
+    "comparisons_passed": 10,
+    "candidate_eps_scf": 1e-8,
+    "maximum_differences": {
+      "energy_delta_hartree": 2.398081733190338e-14,
+      "force_delta_hartree_per_bohr": 2.427980004549024e-10,
+      "density_l1_electrons": 5.021092989071477e-14,
+      "engine_count_error_electrons": 1.86899999921053e-7,
+      "cube_count_error_electrons": 0.000005533968172155568
+    }
+  },
+  "cases": [
+    {
+      "system": "h2-short",
+      "fixture": "A04-H2-short",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_gib": 3,
+      "workflow_job_id": 128775754029,
+      "artifact": {
+        "id": 13622469262,
+        "name": "atomistic-a04-adaptive-resource-scf-h2-short-14fd97a32611ad3ca09e4440518d38a957b731a3",
+        "bytes": 39226,
+        "digest": "sha256:8ff3ae9a10747b270270e3f5e0972b172acae1bb88d969313638da51703e260b",
+        "report_sha256_from_job_log": "2b3d0704180acce3f96eb3061c037a04999bf7ebd9738ba94251eccc84e94e6b"
+      },
+      "levels": [
+        {
+          "eps_scf": 1e-8,
+          "status": "measured",
+          "input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+          "iterations": 9,
+          "engine_seconds": 30.046933017000015,
+          "cgroup_peak_bytes": 1891627008,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000001869,
+          "cube_electron_count": 1.9999971382287305,
+          "cube_sha256": "fbd467c5a20ec064f171d2a9b3cdad900d433782d6c190194b92c6bd379be07c"
+        },
+        {
+          "eps_scf": 1e-9,
+          "status": "measured",
+          "input_sha256": "87c38a4762a08ca8b2479889d08f102900fa9e6987de7ef929384a65320f70a7",
+          "iterations": 10,
+          "engine_seconds": 32.18651034999999,
+          "cgroup_peak_bytes": 1891303424,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000001869,
+          "cube_electron_count": 1.99999713822873,
+          "cube_sha256": "d28ee88482c2c984f74ed79979f8992ccf84d79fd32d07bbb8dacdcae7385e40"
+        },
+        {
+          "eps_scf": 1e-10,
+          "status": "measured",
+          "input_sha256": "7a5ae42ef0c4b0a99ce9a5f279ea9fe39809d960201ed5118b97e298a4c991ce",
+          "iterations": 10,
+          "engine_seconds": 32.02549743099999,
+          "cgroup_peak_bytes": 1891479552,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000001869,
+          "cube_electron_count": 1.99999713822873,
+          "cube_sha256": "d28ee88482c2c984f74ed79979f8992ccf84d79fd32d07bbb8dacdcae7385e40"
+        }
+      ],
+      "comparisons": [
+        {
+          "eps_scf": 1e-8,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 1.1102230246251565e-15,
+          "force_delta_hartree_per_bohr": 1.5049000934297396e-10,
+          "density_l1_electrons": 1.900467301700522e-14
+        },
+        {
+          "eps_scf": 1e-9,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 0,
+          "force_delta_hartree_per_bohr": 0,
+          "density_l1_electrons": 0
+        }
+      ],
+      "scf_screen": {
+        "two_finest_passed": true,
+        "baseline_vs_finest_passed": true,
+        "candidate_eps_scf": 1e-8
+      }
+    },
+    {
+      "system": "h2-reference",
+      "fixture": "C02-H2-reference",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_gib": 3,
+      "workflow_job_id": 128775754097,
+      "artifact": {
+        "id": 13622224855,
+        "name": "atomistic-a04-adaptive-resource-scf-h2-reference-14fd97a32611ad3ca09e4440518d38a957b731a3",
+        "bytes": 39224,
+        "digest": "sha256:88ca2a12ac204b3a72eb5ff54f6b5df0f4b2b951765dc659cb9e828f43f03355",
+        "report_sha256_from_job_log": "8ceada0dc1ed1668879541c82cd97a094e07c18c11b8d65a5c14bd6d5e8caa60"
+      },
+      "levels": [
+        {
+          "eps_scf": 1e-8,
+          "status": "measured",
+          "input_sha256": "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9",
+          "iterations": 9,
+          "engine_seconds": 29.172637784999978,
+          "cgroup_peak_bytes": 1891590144,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000000045,
+          "cube_electron_count": 1.999998280026292,
+          "cube_sha256": "097e3de36951ab8dcac4189e2aa2548456033f3dd95dcf45e25146a71d97bfe0"
+        },
+        {
+          "eps_scf": 1e-9,
+          "status": "measured",
+          "input_sha256": "a904dfedb1bab8b83b8d10f0b08e71811fa3044991af7038cb24f47fb6d9b6e6",
+          "iterations": 10,
+          "engine_seconds": 31.438862986000004,
+          "cgroup_peak_bytes": 1891504128,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000000045,
+          "cube_electron_count": 1.9999982800262854,
+          "cube_sha256": "ef4633a52c4bdea20a3bdb34acecf0e1f93ee1dd3bd74fe51cb707f31e706ae8"
+        },
+        {
+          "eps_scf": 1e-10,
+          "status": "measured",
+          "input_sha256": "4929ec5a887088dbc2d16ee6ca7e418877011b7745b3698f9492e66e779c09ae",
+          "iterations": 10,
+          "engine_seconds": 31.366956603000006,
+          "cgroup_peak_bytes": 1891524608,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000000045,
+          "cube_electron_count": 1.9999982800262854,
+          "cube_sha256": "ef4633a52c4bdea20a3bdb34acecf0e1f93ee1dd3bd74fe51cb707f31e706ae8"
+        }
+      ],
+      "comparisons": [
+        {
+          "eps_scf": 1e-8,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 5.995204332975845e-15,
+          "force_delta_hartree_per_bohr": 2.427980004549024e-10,
+          "density_l1_electrons": 2.260234580813725e-14
+        },
+        {
+          "eps_scf": 1e-9,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 0,
+          "force_delta_hartree_per_bohr": 0,
+          "density_l1_electrons": 0
+        }
+      ],
+      "scf_screen": {
+        "two_finest_passed": true,
+        "baseline_vs_finest_passed": true,
+        "candidate_eps_scf": 1e-8
+      }
+    },
+    {
+      "system": "h2",
+      "fixture": "C03-H2-stretched",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_gib": 3,
+      "workflow_job_id": 128775754086,
+      "artifact": {
+        "id": 13623451930,
+        "name": "atomistic-a04-adaptive-resource-scf-h2-14fd97a32611ad3ca09e4440518d38a957b731a3",
+        "bytes": 38782,
+        "digest": "sha256:c2a5f05a0303790ec0d8f87a57a6a4ccf2c23ed880fe867c23decec560f29c16",
+        "report_sha256_from_job_log": "bcdb48333e65b8460ae313d0061d7d8c3442b00a80f26ad9080eb38ad0690d3e"
+      },
+      "levels": [
+        {
+          "eps_scf": 1e-8,
+          "status": "measured",
+          "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "iterations": 10,
+          "engine_seconds": 31.633828235999992,
+          "cgroup_peak_bytes": 1891594240,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000000019,
+          "cube_electron_count": 1.9999968833696253,
+          "cube_sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9"
+        },
+        {
+          "eps_scf": 1e-9,
+          "status": "measured",
+          "input_sha256": "f51b77c7c040575bdf6b9e7a5f82bef93808d1ab5e217c94e4b9771b2e44da75",
+          "iterations": 10,
+          "engine_seconds": 31.747373513,
+          "cgroup_peak_bytes": 1891811328,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000000019,
+          "cube_electron_count": 1.9999968833696253,
+          "cube_sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9"
+        },
+        {
+          "eps_scf": 1e-10,
+          "status": "measured",
+          "input_sha256": "639409f985bf34854cc76b5bf8273a4bdd80caa705791f9c3a1c47269dd111f4",
+          "iterations": 10,
+          "engine_seconds": 31.555026107000003,
+          "cgroup_peak_bytes": 1891721216,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2.0000000019,
+          "cube_electron_count": 1.9999968833696253,
+          "cube_sha256": "8ee66b8569122e82232830e288aac7759101a64a054e98652ac95b8c1b3444d9"
+        }
+      ],
+      "comparisons": [
+        {
+          "eps_scf": 1e-8,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 0,
+          "force_delta_hartree_per_bohr": 0,
+          "density_l1_electrons": 0
+        },
+        {
+          "eps_scf": 1e-9,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 0,
+          "force_delta_hartree_per_bohr": 0,
+          "density_l1_electrons": 0
+        }
+      ],
+      "scf_screen": {
+        "two_finest_passed": true,
+        "baseline_vs_finest_passed": true,
+        "candidate_eps_scf": 1e-8
+      }
+    },
+    {
+      "system": "h2-long",
+      "fixture": "A04-H2-long",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "cap_gib": 3,
+      "workflow_job_id": 128775753790,
+      "artifact": {
+        "id": 13622719685,
+        "name": "atomistic-a04-adaptive-resource-scf-h2-long-14fd97a32611ad3ca09e4440518d38a957b731a3",
+        "bytes": 39283,
+        "digest": "sha256:54b1b9950966273658ec23fe220a5cddec0dd79771e10ed120d9bea3f7b2c322",
+        "report_sha256_from_job_log": "4513402ee39d11670ec1f19d9894f2c1974f2435cdbeb4d19b8da96ee735a648"
+      },
+      "levels": [
+        {
+          "eps_scf": 1e-8,
+          "status": "measured",
+          "input_sha256": "b0dab8fa3832e2b2e5f8306a9eea1899f88dc658b0130a6cf812bef5b0254af4",
+          "iterations": 11,
+          "engine_seconds": 33.362718035,
+          "cgroup_peak_bytes": 1891344384,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 1.9999999997,
+          "cube_electron_count": 1.999998306648409,
+          "cube_sha256": "bc495cb12a40b39ebfa8d50c16d5ff26faa533c4aa2d434dfd49645d65875969"
+        },
+        {
+          "eps_scf": 1e-9,
+          "status": "measured",
+          "input_sha256": "1c53add23f3bf7732b5caa14f1bacf8d42f983d83b4b1a70aae888195845667f",
+          "iterations": 11,
+          "engine_seconds": 33.27503750800001,
+          "cgroup_peak_bytes": 1891377152,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 1.9999999997,
+          "cube_electron_count": 1.999998306648409,
+          "cube_sha256": "bc495cb12a40b39ebfa8d50c16d5ff26faa533c4aa2d434dfd49645d65875969"
+        },
+        {
+          "eps_scf": 1e-10,
+          "status": "measured",
+          "input_sha256": "3251f85f3522995b8fa9c0383187ebd356235d26498f7d58a3249f68bb1f822c",
+          "iterations": 12,
+          "engine_seconds": 35.276511064999994,
+          "cgroup_peak_bytes": 1891516416,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 1.9999999997,
+          "cube_electron_count": 1.999998306648424,
+          "cube_sha256": "16a086edd07fa4d03caf98c2a3d95352b39f06394755a7ecf4d9d1a4982ffa67"
+        }
+      ],
+      "comparisons": [
+        {
+          "eps_scf": 1e-8,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 7.993605777301127e-15,
+          "force_delta_hartree_per_bohr": 9.060002748029206e-12,
+          "density_l1_electrons": 2.6665036962297048e-14
+        },
+        {
+          "eps_scf": 1e-9,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 7.993605777301127e-15,
+          "force_delta_hartree_per_bohr": 9.060002748029206e-12,
+          "density_l1_electrons": 2.6665036962297048e-14
+        }
+      ],
+      "scf_screen": {
+        "two_finest_passed": true,
+        "baseline_vs_finest_passed": true,
+        "candidate_eps_scf": 1e-8
+      }
+    },
+    {
+      "system": "he",
+      "fixture": "C01-He",
+      "settings": [
+        12,
+        800,
+        80
+      ],
+      "cap_gib": 6,
+      "workflow_job_id": 128775754113,
+      "artifact": {
+        "id": 13623376377,
+        "name": "atomistic-a04-adaptive-resource-scf-he-14fd97a32611ad3ca09e4440518d38a957b731a3",
+        "bytes": 38815,
+        "digest": "sha256:9711985f0f8be57499c67b2b725c823f67bebc4074fc05d7cab2b8e42712dba4",
+        "report_sha256_from_job_log": "3824b5b0f552530c1b92abd0d7f5f11883d2857e25bb48ba70b022c0909c3ad0"
+      },
+      "levels": [
+        {
+          "eps_scf": 1e-8,
+          "status": "measured",
+          "input_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef",
+          "iterations": 6,
+          "engine_seconds": 50.01723855200001,
+          "cgroup_peak_bytes": 5055111168,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2,
+          "cube_electron_count": 2.000005533968151,
+          "cube_sha256": "f795debf360580f6b8bebb3dc1ae3388a555281d33224d4a4950b9881c9ab109"
+        },
+        {
+          "eps_scf": 1e-9,
+          "status": "measured",
+          "input_sha256": "ceaa7a211d190ade1efb8dcde48c80011f125c2f8fafda6e5e5fc04af7810396",
+          "iterations": 9,
+          "engine_seconds": 65.78163348000001,
+          "cgroup_peak_bytes": 5054713856,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2,
+          "cube_electron_count": 2.000005533968172,
+          "cube_sha256": "eaef902826222925626a1e90132b72b3d8b4a7302a3e80697896bbc4d84419e9"
+        },
+        {
+          "eps_scf": 1e-10,
+          "status": "measured",
+          "input_sha256": "ffebee050f1ae8c78dea3744ee7d86bf03422e48781eb500376556696dae5b0f",
+          "iterations": 9,
+          "engine_seconds": 65.47704838800001,
+          "cgroup_peak_bytes": 5054636032,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_count": 2,
+          "cube_electron_count": 2.000005533968172,
+          "cube_sha256": "eaef902826222925626a1e90132b72b3d8b4a7302a3e80697896bbc4d84419e9"
+        }
+      ],
+      "comparisons": [
+        {
+          "eps_scf": 1e-8,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 2.398081733190338e-14,
+          "force_delta_hartree_per_bohr": 9.999999999999957e-16,
+          "density_l1_electrons": 5.021092989071477e-14
+        },
+        {
+          "eps_scf": 1e-9,
+          "reference_eps_scf": 1e-10,
+          "passed": true,
+          "energy_delta_hartree": 0,
+          "force_delta_hartree_per_bohr": 0,
+          "density_l1_electrons": 0
+        }
+      ],
+      "scf_screen": {
+        "two_finest_passed": true,
+        "baseline_vs_finest_passed": true,
+        "candidate_eps_scf": 1e-8
+      }
+    }
+  ],
+  "verification_scope": {
+    "fixed_fixture_scf": "passed",
+    "full_av03_av06": "pending",
+    "atom_centered_grid_and_basis_convergence": "pending",
+    "physical_validation": "unvalidated",
+    "public_atomistic_runtime": "pending",
+    "profile_freeze": "pending"
+  }
+}

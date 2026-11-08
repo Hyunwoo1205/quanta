@@ -12,11 +12,15 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 SCF 수렴 실측 계획 고정
+## 현재 개발 위치 — A04 고정 원자계 SCF 수렴 실측 통과
 
-2026-11-09 KST, [SCF 사전 계획](docs/design/atomistic-a04-v0.1/scf-refinement.json)에 OCI 격리 시험을 통과한 H₂ 네 구조와 He의 입력 해시 및 조건을 고정했습니다. 격리 x86의 동일 CP2K 이미지에서 EPS_SCF 10⁻⁸·10⁻⁹·10⁻¹⁰의 세 입력을 독립 실행하며, 기존 기준 데크에서 EPS_SCF 한 줄만 달라지는지 계산 전에 확인합니다. H₂ 3 GiB/240초, He 6 GiB/360초, 호스트 여유 2 GiB와 시작 디스크 여유 10 GiB, 1랭크·1스레드·스왑 0·재시도 없음의 조건입니다.
+2026-11-09 KST [실행 42495134220](https://github.com/Hyunwoo1205/quanta/actions/runs/42495134220)에서 H₂ 0.60·0.74144·0.80·1.00 Å와 He에 EPS_SCF 10⁻⁸·10⁻⁹·10⁻¹⁰을 각각 적용했습니다. [사전 계획](docs/design/atomistic-a04-v0.1/scf-refinement.json)의 고정 x86 CP2K/PBE/GAPW/cc-pVDZ 설정에서 기준 데크의 EPS_SCF 한 줄만 달라지는지 확인하고, 매 실행은 새 작업 폴더에서 1랭크·1스레드·스왑 0 상한으로 진행했습니다. H₂는 12 Å·400 Ry·REL_CUTOFF 40 Ry, He는 12 Å·800 Ry·REL_CUTOFF 80 Ry입니다.
 
-최고 정밀도와 두 느슨한 수준의 에너지·최대 힘 성분·엔진 및 CUBE 전자수·원시 동일 격자 밀도 L1을 비교합니다. CP2K의 SCF 수렴 표시와 반복 횟수를 기록합니다. 로컬에서 다섯 기준 입력의 SHA 및 각 세 수준의 단일 변수 경로를 모의 실행으로 확인했습니다. 실제 결과와 다음 시작점은 고정 [격리 워크플로](.github/workflows/atomistic-a04-scf-ci.yml) 실행 후 기록합니다. 원자 중심 격자·기저 수렴, 동결, 독립 물리 검증은 후속 범위입니다.
+15건 모두 CP2K 수렴을 확인했고, 10⁻¹⁰ 기준과의 비교 10건이 사전 에너지·힘·엔진 전자수·CUBE 적분·동일 격자 밀도 L1 기준을 통과했습니다. 최대 차이는 에너지 2.40×10⁻¹⁴ Hartree, 최대 힘 성분 2.43×10⁻¹⁰ Hartree/Bohr, 밀도 L1 5.02×10⁻¹⁴전자였습니다. 원본 CUBE의 인쇄 정밀도에서 비교했으며 보간, 음수 절단, 재정규화를 사용하지 않았습니다. **다섯 고정 구조의 다음 검증 후보는 EPS_SCF 10⁻⁸**입니다.
+
+H₂의 엔진 시간은 29.17–35.28초, 최대 cgroup RAM은 1.76 GiB였으며 9–12회 반복했습니다. He는 50.02–65.78초, 최대 4.71 GiB, 6·9·9회 반복이었습니다. 관측한 cgroup OOM 카운터는 모두 0이었습니다. 로컬 모의 실행에서 다섯 기준 데크 SHA와 단일 변수 경로를 먼저 점검했습니다. [정제 검증 기록](docs/verification/atomistic-a04/scf-refinement-42495134220.json)
+
+**다음 시작점은** SCF 후보와 셀·격자·기저를 고정한 상태에서 원자 중심 격자의 radial 및 Lebedev 수준을 각각 변화시키는 사전 계획과 자원 조건을 정하는 것입니다. 그 뒤 기저 수렴과 선택 설정의 조합 검증을 이어가고 A04 초기 수치 프로필 동결을 판단합니다. 현재 판정은 고정 x86 조건에서의 SCF 검증입니다. 전체 AV03·AV06, 독립 물리 검증, 새 OCI 시험 및 공개 계약 동결은 후속 범위입니다.
 
 ## 이전 개발 기록 — A04 OCI 고정 다섯 건과 보존 검사 통과
 
