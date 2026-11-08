@@ -12,7 +12,17 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 고정 H₂ 셀·격자 변수 분리 시험 완료
+## 현재 개발 위치 — A04 H₂·He 고정 기준계 설정 비교 완료
+
+2026-11-08 KST [실행 42448653582](https://github.com/Hyunwoo1205/quanta/actions/runs/42448653582)에서 C02 H₂(결합 길이 0.74144 Å)와 C01 He의 고정 x86 CP2K/PBE/GAPW/cc-pVDZ 입력을 대조했습니다. 각 계의 16 Å·800 Ry·REL_CUTOFF 80 Ry를 비교 기준으로 두고, [사전 계획](docs/design/atomistic-a04-v0.1/fixed-fixture-refinement.json)의 세 설정을 같은 러너에서 비교했습니다. 두 작업에서 8개 계산이 완료됐고 스왑 사용량은 0이었습니다. 6개 비교 모두 에너지·힘·전자 수 기준 이내였으며, 밀도 L1까지 충족한 비교는 4개였습니다. [실행 영수증](docs/verification/atomistic-a04/fixed-fixture-accuracy-42448653582.json)
+
+C02 H₂의 12 Å·400 Ry·REL_CUTOFF 40 Ry는 에너지 차이 2.25×10⁻⁸ Hartree, 최대 힘 성분 차이 2.47×10⁻⁷ Hartree/Bohr, 두 보간법의 밀도 L1 7.59×10⁻⁴ 및 3.06×10⁻⁴전자로 기준 이내였습니다. 실행 시간은 18.21초, RAM 피크는 1.76 GiB였습니다. 600 Ry와 800 Ry 설정도 각각 비교 기준을 통과했습니다.
+
+C01 He의 12 Å·400 Ry 및 600 Ry는 두 보간법 모두 밀도 L1 기준 0.001전자를 초과했습니다. 각각 7.26×10⁻³·4.88×10⁻³전자와 3.75×10⁻³·2.58×10⁻³전자였습니다. 셀 크기만 다른 12 Å·800 Ry·REL_CUTOFF 80 Ry는 정렬된 원본 격자에서 밀도 L1 7.57×10⁻⁶전자로 기준을 통과했고, 72.12초와 RAM 4.71 GiB를 사용했습니다.
+
+**다음 시작점은** H₂에는 12 Å·400 Ry, He에는 12 Å·800 Ry를 각각 후속 후보로 두는 것입니다. H₂ 결합 길이 0.60·1.00 Å의 경계 입력과 비교 기준을 사전 고정해 검증한 뒤, 후보별 격리 ARM/OCI 실측에서 시간·메모리와 운영 보호 조건을 확인합니다. 현재 결과는 각 고정 기준계의 유한 셀 대비 수치 비교이며, 구간 전체의 정확도·공개 지원·독립 물리 검증은 별도입니다.
+
+## 이전 개발 기록 — A04 고정 H₂ 셀·격자 변수 분리 시험 완료
 
 2026-11-08 KST [실행 42447627356](https://github.com/Hyunwoo1205/quanta/actions/runs/42447627356)에서 결합 길이 0.8 Å인 H₂에 대해 동일 x86 CP2K/PBE/GAPW/cc-pVDZ와 1랭크·1스레드로 셀 길이, CUTOFF, REL_CUTOFF를 한 번에 하나씩 바꿨습니다. [사전 계획](docs/design/atomistic-a04-v0.1/h2-one-factor-refinement.json)의 세 트랙 모두 정상 완료했고, 해시로 고정한 이전 16→20 Å 비교를 포함하여 7개 비교가 에너지·힘·전자 수 및 탐색용 밀도 L1 기준을 통과했습니다. 이번에 새로 실행한 계산은 모두 스왑 사용량 0입니다. [실행 영수증](docs/verification/atomistic-a04/one-factor-refinement-42447627356.json)
 
