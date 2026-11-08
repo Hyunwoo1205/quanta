@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.15",
+  "plan_version": "1.0.16",
   "updated_at": "2026-11-09",
   "status": "planned_development",
   "executable": false,
@@ -364,7 +364,7 @@
         "A01",
         "A03"
       ],
-      "status": "fixed_fixture_atomic_grid_screen_passed_pre_freeze",
+      "status": "fixed_fixture_basis_pilots_no_go_pre_freeze",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
@@ -374,7 +374,8 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "G2에서 공통 미세 원자 격자의 기저 수렴과 겹침 조건을 판정하고 통과 시 선택 조합을 재확인.",
+      "next_action": "G2 TZ–QZ 기준 미달로 G3 이후 보류. QZ의 수치 민감도를 분리 검증하고 더 정밀한 호환 기저 기준과 자원 조건을 사전 고정.",
+      "fixed_fixture_basis_pilot_receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
       "fixed_fixture_atomic_grid_screen": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
       "remaining_numerical_validation_plan": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
       "fixed_fixture_scf_screen": "docs/verification/atomistic-a04/scf-refinement-42495134220.json",

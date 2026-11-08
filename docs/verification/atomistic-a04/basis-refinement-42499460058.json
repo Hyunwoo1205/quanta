@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "status": "no_go_fixed_fixture_basis_pilots",
+  "scope": "fixed_native_x86_A04_TZ_QZ_basis_screen_at_r200_l194",
+  "workflow_run_id": 42499460058,
+  "workflow_attempt": 1,
+  "workflow_conclusion": "failure",
+  "quanta_source": "11c5abf304f1f3a12033ab06ad6d1270a357a987",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "prerequisite_g1_receipt": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
+  "prerequisite_g1_receipt_sha256": "71a6da225e0a8e4170d9e72cc2fbd21d05b98a494545e3712efeaaac5df93578",
+  "thresholds": {
+    "AV04": {
+      "id": "AV04",
+      "layer": "numerical",
+      "observable": "basis_convergence",
+      "rule": "Two finest compatible basis levels, same method/grid and geometry; no complete-basis accuracy claim.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 0.0001,
+      "force_atol_hartree_per_bohr": 0.0001
+    },
+    "AV05": {
+      "atol": 0.000001,
+      "rtol": 0,
+      "unit": "electron"
+    },
+    "AV06": {
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron"
+    },
+    "same_lattice_density_l1_electrons": 0.001,
+    "printed_conditioning_guard": [
+      0.00001001,
+      99990000
+    ]
+  },
+  "interpretation": "Six engine calculations converged and passed per-case electron counts and overlap checks. The two pilot TZ/QZ comparisons exceeded the preregistered scientific criteria. The workflow intentionally exits nonzero for the failed criterion. QZ is the comparison endpoint, with its own finer-reference evidence pending.",
+  "pilots": [
+    {
+      "system": "h2-short",
+      "job_id": 128788817334,
+      "report_sha256": "e7d6fac08a11ba2d6839896f0112c142ad24d365bc5f835167ba33ef1eaae7bd",
+      "input_manifest_sha256": "f12d1387b7c20ffb811a44e9e99a6ddb16f3d549a492cb764153a4e0338d5a4d",
+      "report_artifact": {
+        "id": 13625415563,
+        "name": "atomistic-a04-adaptive-resource-basis-h2-short-11c5abf304f1f3a12033ab06ad6d1270a357a987",
+        "bytes": 41558,
+        "digest": "sha256:c9dcc9803cd4fff2b335d0f7c4b2e41c305a6a4c29ba8ef4b26c350aed72ee13"
+      },
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "7dcebdb24ac1c100049978fdd2dbd72828f0dadf5eda5e315fcbd3d92c29d010",
+          "iterations": 9,
+          "engine_seconds": 32.711726150000004,
+          "peak_bytes": 1894023168,
+          "engine_count": 2.0000003169,
+          "cube_count": 1.999995670580178,
+          "cube_sha256": "47384418d860fa2c1d6b8226fb516fe0dccd6fc604773b8f4d7874f71971a6a0",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ],
+          "basis": "cc-pVQZ",
+          "conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 60,
+            "independent_orbital_functions_reported": 60,
+            "overlap_ratio_line": "CN : max/min ev:  6.520E+000 /  9.157E-005   = 7.121E+004  Log(2-CN):  4.8525",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 6.52,
+            "overlap_min_eigenvalue_printed": 0.00009157,
+            "overlap_condition_2_printed": 71210,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "diagnostic_excerpt": null
+        },
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "ef97041b4d090092146542ae6c9d6143f0f7f820fafdf4fb01d1eb2db7e26a77",
+          "iterations": 9,
+          "engine_seconds": 29.369995500999977,
+          "peak_bytes": 1892265984,
+          "engine_count": 1.9999999972,
+          "cube_count": 1.999992471043557,
+          "cube_sha256": "8b56c453b3ac6020a0caf47f660a2d0586e25bc360d0fc37619b077eb98d027c",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ],
+          "basis": "cc-pVTZ",
+          "conditioning": {
+            "basis": "cc-pVTZ",
+            "basis_reported": "cc-pVTZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 14,
+            "orbital_functions": 28,
+            "independent_orbital_functions_reported": 28,
+            "overlap_ratio_line": "CN : max/min ev:  5.301E+000 /  6.940E-004   = 7.637E+003  Log(2-CN):  3.8829",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 5.301,
+            "overlap_min_eigenvalue_printed": 0.000694,
+            "overlap_condition_2_printed": 7637,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "diagnostic_excerpt": null
+        },
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "82565f89dcb312c986c9b8e17e328b162b2320a1453475ed781584d6e4829e2b",
+          "iterations": 9,
+          "engine_seconds": 28.551648958000015,
+          "peak_bytes": 1891790848,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287285,
+          "cube_sha256": "eaa9b19aaa7c8ca2ec048584b53eb30082f6a0885fa4504d90c676d170a6c5c7",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ],
+          "basis": "cc-pVDZ",
+          "conditioning": {
+            "basis": "cc-pVDZ",
+            "basis_reported": "cc-pVDZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 5,
+            "orbital_functions": 10,
+            "independent_orbital_functions_reported": 10,
+            "overlap_ratio_line": "CN : max/min ev:  3.650E+000 /  6.214E-003   = 5.874E+002  Log(2-CN):  2.7689",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 3.65,
+            "overlap_min_eigenvalue_printed": 0.006214,
+            "overlap_condition_2_printed": 587.4,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "diagnostic_excerpt": null
+        }
+      ],
+      "comparisons": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "basis": "cc-pVDZ",
+          "reference_basis": "cc-pVQZ",
+          "passed": false,
+          "energy_delta_hartree": 0.012210972740847037,
+          "force_delta_hartree_per_bohr": 0.029628866446271995,
+          "density_l1_electrons": 0.13585403984330005
+        },
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "basis": "cc-pVTZ",
+          "reference_basis": "cc-pVQZ",
+          "passed": false,
+          "energy_delta_hartree": 0.0007356121762460699,
+          "force_delta_hartree_per_bohr": 0.0020613037245850174,
+          "density_l1_electrons": 0.019038152797250792
+        }
+      ],
+      "tz_qz_exceeded": {
+        "energy": true,
+        "force": true,
+        "density_l1": true
+      }
+    },
+    {
+      "system": "he",
+      "job_id": 128788817496,
+      "report_sha256": "9b11bafd02afb66ea505b09a21561472a9203f315c5a5bc4ac413bd93106a3e8",
+      "input_manifest_sha256": "f12d1387b7c20ffb811a44e9e99a6ddb16f3d549a492cb764153a4e0338d5a4d",
+      "report_artifact": {
+        "id": 13625081853,
+        "name": "atomistic-a04-adaptive-resource-basis-he-11c5abf304f1f3a12033ab06ad6d1270a357a987",
+        "bytes": 41047,
+        "digest": "sha256:5858e3e7aa80b0383965b583a0db37466efce8b4ad8952ec51f3b409750539c2"
+      },
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "ddcbc594870c97e05235b1305cedab41f0ead81ed05ab06ec02a6b7e98662995",
+          "iterations": 9,
+          "engine_seconds": 76.870732096,
+          "peak_bytes": 5056536576,
+          "engine_count": 2,
+          "cube_count": 2.0000115490587516,
+          "cube_sha256": "9fb8981a079fa986cfce2388f77194f2739a0be32dfd824ff5e51b09a6f06eb1",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ],
+          "basis": "cc-pVQZ",
+          "conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "diagnostic_excerpt": null
+        },
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "c293b89e9cad5ff21972000c4bf66d0e48155d39c0a85033a1f5d9771756d947",
+          "iterations": 9,
+          "engine_seconds": 75.599494263,
+          "peak_bytes": 5055258624,
+          "engine_count": 2,
+          "cube_count": 2.000008772809011,
+          "cube_sha256": "966390c558b4fa5df87b09e2a20e5bfc157559debd169d53796c633d928dd959",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ],
+          "basis": "cc-pVTZ",
+          "conditioning": {
+            "basis": "cc-pVTZ",
+            "basis_reported": "cc-pVTZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 14,
+            "orbital_functions": 14,
+            "independent_orbital_functions_reported": 14,
+            "overlap_ratio_line": "CN : max/min ev:  2.717E+000 /  2.929E-002   = 9.278E+001  Log(2-CN):  1.9674",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 2.717,
+            "overlap_min_eigenvalue_printed": 0.02929,
+            "overlap_condition_2_printed": 92.78,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "diagnostic_excerpt": null
+        },
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "36d061f449fde18e68ef6026fea060241f1625d97f99769bdfd402e907e16eb2",
+          "iterations": 9,
+          "engine_seconds": 74.30789806199999,
+          "peak_bytes": 5054853120,
+          "engine_count": 2,
+          "cube_count": 2.0000055339681717,
+          "cube_sha256": "221d2b1be90b0cc8a7828c3f6bca85de937dc6dcd5c81a7162bc08b2178669ad",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ],
+          "basis": "cc-pVDZ",
+          "conditioning": {
+            "basis": "cc-pVDZ",
+            "basis_reported": "cc-pVDZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 5,
+            "orbital_functions": 5,
+            "independent_orbital_functions_reported": 5,
+            "overlap_ratio_line": "CN : max/min ev:  1.889E+000 /  1.112E-001   = 1.699E+001  Log(2-CN):  1.2303",
+            "overlap_warnings": [],
+            "overlap_max_eigenvalue_printed": 1.889,
+            "overlap_min_eigenvalue_printed": 0.1112,
+            "overlap_condition_2_printed": 16.99,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "diagnostic_excerpt": null
+        }
+      ],
+      "comparisons": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "basis": "cc-pVDZ",
+          "reference_basis": "cc-pVQZ",
+          "passed": false,
+          "energy_delta_hartree": 0.0081873701668842,
+          "force_delta_hartree_per_bohr": 2.2499999999999998e-13,
+          "density_l1_electrons": 0.054947165299896676
+        },
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "basis": "cc-pVTZ",
+          "reference_basis": "cc-pVQZ",
+          "passed": false,
+          "energy_delta_hartree": 0.0005144140224082605,
+          "force_delta_hartree_per_bohr": 2.3000000000000003e-14,
+          "density_l1_electrons": 0.00820572773780833
+        }
+      ],
+      "tz_qz_exceeded": {
+        "energy": true,
+        "force": false,
+        "density_l1": true
+      }
+    }
+  ],
+  "downstream": {
+    "not_run_fixtures": [
+      "h2-reference",
+      "h2",
+      "h2-long"
+    ],
+    "workflow_job_id": 128790163282,
+    "workflow_job_conclusion": "skipped",
+    "G3_G6": "blocked_by_G2",
+    "physical_validation": "unvalidated"
+  },
+  "other_regression_observation": {
+    "runs": [
+      42498321293,
+      42499460027
+    ],
+    "x86": "success",
+    "arm": "stopped_before_engine",
+    "cause": "No ARM source build on these exact commits. The A03 and ARM build push path filters differed."
+  }
+}

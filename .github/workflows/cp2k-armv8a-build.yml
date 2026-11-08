@@ -5,10 +5,17 @@ on:
     branches-ignore:
       - ops/oci
     paths:
+      - '.github/workflows/atomistic-a03.yml'
       - '.github/workflows/cp2k-armv8a-build.yml'
       - 'deploy/cp2k-armv8/**'
+      - 'docs/design/atomistic-a03-v0.1/**'
+      - 'scripts/atomistic_a03_candidate.py'
+      - 'scripts/atomistic_a03_inputs.py'
       - 'scripts/build_cp2k_armv8.sh'
+      - 'scripts/run_atomistic_a03_ci.py'
       - 'scripts/smoke_cp2k_armv8.py'
+      - 'scripts/verify_atomistic_a03.py'
+      - 'tests/test_atomistic_a03*.py'
 
 permissions:
   contents: read

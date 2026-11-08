@@ -120,6 +120,15 @@
     "criteria_status": "A01 predeclared tolerances unchanged",
     "adapter_status": "not_implemented",
     "numerical_acceptance_status": "not_tested",
+    "fixed_fixture_atomic_grid_screen": {
+      "status": "passed_on_pinned_x86_cc_pVDZ_fixed_fixtures",
+      "receipt": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json"
+    },
+    "fixed_fixture_basis_screen": {
+      "status": "no_go_TZ_QZ_pilot_criteria",
+      "receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
+      "scope": "H2 at 0.60 angstrom and He; six converged CP2K calculations, both mandatory TZ-QZ comparisons failed"
+    },
     "fixed_fixture_scf_screen": {
       "status": "passed_on_pinned_x86_fixed_fixtures",
       "candidate_eps_scf": 1e-8,
