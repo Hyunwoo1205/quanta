@@ -12,7 +12,17 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 현재 개발 위치 — A04 OCI DB 본체와 WAL 읽기 전용 대조 완료
+## 현재 개발 위치 — A04 OCI 고정 다섯 건과 보존 검사 통과
+
+2026-11-08 KST [OCI 재시험 42483814045](https://github.com/Hyunwoo1205/quanta/actions/runs/42483814045)에서 동일 CP2K ARMv8-A 이미지와 고정 입력으로 H₂ 0.60·0.74144·0.80·1.00 Å의 12 Å·400 Ry·REL_CUTOFF 40 Ry 및 He의 12 Å·800 Ry·REL_CUTOFF 80 Ry를 순차 실행했습니다. H₂의 엔진 시간은 31.38–36.45초, 최대 cgroup RAM은 1.77 GiB였고 He는 97.83초와 4.72 GiB였습니다. 다섯 건 모두 1랭크·1스레드로 실행했고 스왑과 OOM은 0이었습니다. [시험 기록](docs/verification/atomistic-a04/oci-qualification-42483814045.json)
+
+다섯 건의 에너지·힘·전자 수·격자·원본 CUBE SHA-256이 네이티브 ARM 기준과 모두 일치했고 x86 동일 입력 허용오차도 충족했습니다. 수치 프로필과 유한 셀·격자의 해상도 검증 범위는 고정 입력에 한정합니다. 독립 물리 검증은 `unvalidated`입니다.
+
+DB 본체와 WAL을 분리한 보존 검사에서 사전에는 WAL이 없었고, 첫 사후에는 빈 파일이 있었으며, 최종에는 다시 없었습니다. 안정 표본의 DB 본체와 WAL 내용은 두 비교 모두 보존됐습니다. 운영 작업 수는 사전·실행 중 128개 표본·사후에서 0건이었고, 호스트 가용 RAM 최저는 6.12 GiB였습니다. 웹·운영 컨테이너·설정 보존과 시험 자원 정리도 통과했습니다. 이전 첫 사후 실패는 당시 기록으로 유지합니다. 이번 운영 판정 범위는 유휴 OCI 호스트의 고정 격리 시험입니다.
+
+**다음 시작점은** SCF 수렴부터 기준을 고정해 측정하고 원자 중심 격자와 기저 수렴을 별도로 검증하는 것입니다. 결과를 근거로 초기 A04 수치 프로필 동결을 판단합니다. 공개 계산 지원과 동시 부하 검증은 후속 범위입니다.
+
+## 이전 개발 기록 — A04 OCI DB 본체와 WAL 읽기 전용 대조 완료
 
 2026-11-08 KST [OCI 진단 42480916880](https://github.com/Hyunwoo1205/quanta/actions/runs/42480916880)에서 운영 jobs DB 본체와 WAL을 SQLite 연결 없이 43 ms 간격으로 관찰했습니다. 안정 표본 640개에서 DB 본체 지문은 모두 같았습니다. WAL이 없었던 표본은 636개, 0바이트 WAL이 있었던 표본은 4개였고 내용이 있는 WAL은 관측되지 않았습니다. 인접한 안정 표본에서 WAL 상태 전환은 8회였습니다. 최초 안정 표본과 비교할 때 4개 표본은 WAL만 달랐고, 최종 표본에서 두 파일 모두 최초와 일치했습니다. [진단 기록](docs/verification/atomistic-a04/oci-db-wal-observation-42480916880.json)
 
