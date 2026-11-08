@@ -1,0 +1,24 @@
+name: Atomistic A04 fixed-fixture basis refinement
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/atomistic-a04-basis-ci.yml
+      - docs/design/atomistic-a04-v0.1/basis-refinement-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  pilot:
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: basis-pilot
+  remaining:
+    needs: pilot
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: basis-refinement

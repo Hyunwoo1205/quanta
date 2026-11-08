@@ -41,6 +41,7 @@ def probe_metadata(
     data_dir: str = "/quanta-data", *, cell_angstrom: int = 12,
     cutoff_ry: int = 400, rel_cutoff_ry: int = 40, eps_scf: float = 1e-8,
     max_scf: int = 80, density: bool = True, radial_grid: int = 100, lebedev_grid: int = 110,
+    overlap_condition: bool = False,
 ) -> dict:
     """Describe an internal probe and its explicit SI-to-native mapping.
 
@@ -70,8 +71,10 @@ def probe_metadata(
         raise ValueError("unsupported A04 candidate lebedev_grid")
     if type(max_scf) is not int or not 1 <= max_scf <= 500:
         raise ValueError("max_scf must be an integer in 1..500")
-    if type(density) is not bool:
-        raise ValueError("density must be boolean")
+    if type(density) is not bool or type(overlap_condition) is not bool:
+        raise ValueError("density and overlap_condition must be boolean")
+    if overlap_condition and not density:
+        raise ValueError("A04 overlap diagnostic requires the full-density print section")
 
     fixture_path = BOUNDARY_FIXTURE_PATH if system in BOUNDARY_SYSTEM_FIXTURES else A01 / "fixtures.json"
     fixture = next(f for f in _read(fixture_path)["valid"]
@@ -123,6 +126,7 @@ def probe_metadata(
                      "lmaxn0": 2, "lmaxn1": 6, "quadrature": "GC_LOG",
                      "radial_grid": radial_grid, "lebedev_grid": lebedev_grid},
         "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
+        **({"overlap_condition": True} if overlap_condition else {}),
         "density": {"enabled": density, "quantity": "electron_number_density_hard_plus_soft",
                     "density_include": "TOTAL_DENSITY", "stride": [1, 1, 1],
                     "xrd_interface": False, "append": False,
@@ -156,6 +160,14 @@ def generate_input(*args, **kwargs) -> str:
       &END E_DENSITY_CUBE
     &END PRINT
 """
+    if p.get("overlap_condition", False):
+        diagnostic = """      &OVERLAP_CONDITION ON
+        1-NORM FALSE
+        DIAGONALIZATION TRUE
+        ARNOLDI FALSE
+      &END OVERLAP_CONDITION
+"""
+        density_text = density_text.replace("    &PRINT\n", "    &PRINT\n" + diagnostic, 1)
     coords = "\n".join("      " + a["element"] + " " + " ".join(a["engine_position_angstrom"])
                        for a in p["atoms"])
     a = p["atoms"][0]  # all atoms of each bounded probe have one element/isotope

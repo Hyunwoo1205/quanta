@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "scope": "A04_fixed_cc_pVDZ_TZ_QZ_same_grid_basis",
+  "development_plan_sha256": "9da71d4eaf274244a2c407f9c5962035aa1656bdd2ab28eeca3cc81f0d752242",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "printed_conditioning_guard": [
+    0.00001001,
+    99990000
+  ],
+  "av04": {
+    "id": "AV04",
+    "layer": "numerical",
+    "observable": "basis_convergence",
+    "rule": "Two finest compatible basis levels, same method/grid and geometry; no complete-basis accuracy claim.",
+    "atol": null,
+    "rtol": 0,
+    "unit": null,
+    "stage": "P2",
+    "status": "not_executed",
+    "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+    "energy_atol_hartree": 0.0001,
+    "force_atol_hartree_per_bohr": 0.0001
+  },
+  "spatial_l1_atol_electrons": 0.001,
+  "fixtures": {
+    "h2-short": {
+      "cc-pVDZ": "82565f89dcb312c986c9b8e17e328b162b2320a1453475ed781584d6e4829e2b",
+      "cc-pVTZ": "ef97041b4d090092146542ae6c9d6143f0f7f820fafdf4fb01d1eb2db7e26a77",
+      "cc-pVQZ": "7dcebdb24ac1c100049978fdd2dbd72828f0dadf5eda5e315fcbd3d92c29d010"
+    },
+    "h2-reference": {
+      "cc-pVDZ": "374bb22e346441e5b98d9a39b452b0f32747fcb36b1218a9787cb3e817027838",
+      "cc-pVTZ": "b5a960b74374af331c9d5b1fedcdc1bc10e44e377f4a1c2ae0ac8ba7d1cf6558",
+      "cc-pVQZ": "c7c18f14608c3ab545e6ddb15408ece02ed5dc250e6c6b175095f87fcd97df4a"
+    },
+    "h2": {
+      "cc-pVDZ": "04045665aac5bf3b31168b090516a0acd8e911cdda73c2d5daa41262da41a1ee",
+      "cc-pVTZ": "1d7d55e4df1815514a7b214ec93b09192752d6c833749bde59d826a87c7e64fb",
+      "cc-pVQZ": "8269dccdad3b81e0a8a1ea2237ba1171831e8a208c224c49d036932d528cebf4"
+    },
+    "h2-long": {
+      "cc-pVDZ": "e190ac801cff72529bcae227eafab228c95ec49505ffd7f431d2153e48dcd401",
+      "cc-pVTZ": "cebc8b05657eac5b14cd930106fcfe1f206168741a8cb6fe8338c077e3af89f7",
+      "cc-pVQZ": "15cfecbbd39d3cbee2494d751848be5d94e265968407a6b5e0dac6fa3367b5f5"
+    },
+    "he": {
+      "cc-pVDZ": "36d061f449fde18e68ef6026fea060241f1625d97f99769bdfd402e907e16eb2",
+      "cc-pVTZ": "c293b89e9cad5ff21972000c4bf66d0e48155d39c0a85033a1f5d9771756d947",
+      "cc-pVQZ": "ddcbc594870c97e05235b1305cedab41f0ead81ed05ab06ec02a6b7e98662995"
+    }
+  },
+  "prerequisite_g1_receipt": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
+  "g1_receipt_sha256": "71a6da225e0a8e4170d9e72cc2fbd21d05b98a494545e3712efeaaac5df93578",
+  "conditioning_policy": "Common output-only overlap diagonalization for each basis. Expected spherical AO counts and finite positive overlap eigenvalues. Printed min >= 1.001e-5 and 2-norm condition <= 9.999e7, one print step within strict engineering limits. The OT independence count alone is insufficient.",
+  "repeated_dz_reference": "The uninstrumented fine DZ deck hashes from G1 were reproduced before launch. Repeat DZ with the common diagnostic to capture conditioning and original same-run signed density for the three-basis comparison; earlier transient G1 CUBEs are not assumed available across workflows."
+}

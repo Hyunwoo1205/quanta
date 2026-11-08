@@ -1,0 +1,1294 @@
+{
+  "schema_version": 1,
+  "status": "passed_fixed_fixture_atomic_grid_screen",
+  "scope": "fixed_native_x86_A04_cc_pVDZ_atom_centered_grid_screen",
+  "workflow_run_id": 42498321184,
+  "workflow_conclusion": "success",
+  "workflow_attempt": 1,
+  "quanta_source": "4929badccbc698bd9b85d75f6027f5259aab2f64",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "development_plan_sha256": "9da71d4eaf274244a2c407f9c5962035aa1656bdd2ab28eeca3cc81f0d752242",
+  "input_manifest_sha256": "b15b8b18fc4af63d9c4e0dcf103bd8c0e99e56119458524255f0c28aaec8fbf5",
+  "thresholds": {
+    "AV03": {
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "energy_atol_hartree": 0.000001,
+      "force_atol_hartree_per_bohr": 0.00001
+    },
+    "AV05": {
+      "atol": 0.000001,
+      "rtol": 0,
+      "unit": "electron"
+    },
+    "AV06": {
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron"
+    },
+    "field_shape_l1_electrons": 0.001
+  },
+  "pilot_artifact_policy": "Temporary raw pilot CUBEs reused within the same workflow after byte size and SHA checks. This receipt uses the finalized logs and exact artifact metadata.",
+  "grid_resolution_evidence": {
+    "policy": "Pinned engine source maps the exact submitted integers; the standard atom grid does not emit a positive grid-count line at MEDIUM.",
+    "allocation": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_rho_atom_methods.F#L898-L928",
+    "lebedev_table": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/lebedev.F#L358-L365"
+  },
+  "totals": {
+    "fixtures": 5,
+    "converged_decks": 30,
+    "reused_pilot_decks": 4,
+    "comparisons_passed": 25,
+    "finest_pairs_passed": 10,
+    "maximum_differences": {
+      "energy_hartree": 1.6608936448392342e-13,
+      "force_hartree_per_bohr": 1.4321550022289298e-9,
+      "density_l1_electrons": 5.96050857888866e-10
+    }
+  },
+  "pilots": {
+    "he": {
+      "job_id": 128785392164,
+      "report_sha256": "75c3137ee061e6504a39ec54f0baed5c857ab3a64f61279d251d9e335d161123",
+      "report_artifact": {
+        "id": 13624158999,
+        "name": "atomistic-a04-adaptive-resource-pilot-he-4929badccbc698bd9b85d75f6027f5259aab2f64",
+        "bytes": 27099,
+        "digest": "sha256:e131c0c3f9c45e94ae5b0d4322c38a8cf8b9b8a483fce5b361063433cc5bb080"
+      },
+      "transient_raw_artifact": {
+        "id": 13624069231,
+        "name": "atomistic-a04-native-grid-he-pilot-1",
+        "bytes": 24085634,
+        "digest": "sha256:41e056b52e511fe7995e689d447bcd760e4a5b7292cba51649935d4e04f3b48f"
+      },
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "1cfea2b2414730e1cdd1187f6530584b98a0d1a26963bce8f4958ba1cc56cf13",
+          "iterations": 9,
+          "engine_seconds": 64.343180462,
+          "peak_bytes": 5055340544,
+          "engine_count": 2,
+          "cube_count": 2.0000055339681717,
+          "cube_sha256": "221d2b1be90b0cc8a7828c3f6bca85de937dc6dcd5c81a7162bc08b2178669ad",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        },
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef",
+          "iterations": 6,
+          "engine_seconds": 48.605316327,
+          "peak_bytes": 5054664704,
+          "engine_count": 2,
+          "cube_count": 2.000005533968151,
+          "cube_sha256": "f795debf360580f6b8bebb3dc1ae3388a555281d33224d4a4950b9881c9ab109",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        }
+      ]
+    },
+    "h2-short": {
+      "job_id": 128785392428,
+      "report_sha256": "b413de27c1833621a7eb6b138da671d7f93040af1f3382b7561d94d4975126a6",
+      "report_artifact": {
+        "id": 13623984400,
+        "name": "atomistic-a04-adaptive-resource-pilot-h2-short-4929badccbc698bd9b85d75f6027f5259aab2f64",
+        "bytes": 27326,
+        "digest": "sha256:43d81a8ef36318274e3f79a4376166643f0f98d9ceef2a4f220a981729d8b14f"
+      },
+      "transient_raw_artifact": {
+        "id": 13624183906,
+        "name": "atomistic-a04-native-grid-h2-short-pilot-1",
+        "bytes": 14641955,
+        "digest": "sha256:4a3f67cdb0426417f47cdf2a61289cd8326af349481d375ace21e4ebd8105292"
+      },
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "32d208a1263dad287fd9403d22139a75f3a2a6807d41515d393fed79f7e42b39",
+          "iterations": 9,
+          "engine_seconds": 28.773299007000006,
+          "peak_bytes": 1891782656,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287305,
+          "cube_sha256": "b8592067085382b261d335a9557be41e8094d7481604c4bfbcdbfa3e2917e153",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+          "iterations": 9,
+          "engine_seconds": 28.528397954,
+          "peak_bytes": 1891389440,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287305,
+          "cube_sha256": "fbd467c5a20ec064f171d2a9b3cdad900d433782d6c190194b92c6bd379be07c",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "system": "h2-short",
+      "fixture": "A04-H2-short",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "job_id": 128786128589,
+      "report_artifact": {
+        "id": 13623873723,
+        "name": "atomistic-a04-adaptive-resource-grid-h2-short-4929badccbc698bd9b85d75f6027f5259aab2f64",
+        "bytes": 51960,
+        "digest": "sha256:9d84b5d11a8d2a35553b7dc3c189b13c4383b625d768b3b821166263a956ccde"
+      },
+      "report_sha256": "67458cf8d13b2d89c3d71d0802d360027969b55b36ba4bd10df66455e642d702",
+      "reused_pilot_report_sha256": "b413de27c1833621a7eb6b138da671d7f93040af1f3382b7561d94d4975126a6",
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": true,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "32d208a1263dad287fd9403d22139a75f3a2a6807d41515d393fed79f7e42b39",
+          "iterations": 9,
+          "engine_seconds": 28.773299007000006,
+          "peak_bytes": 1891782656,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287305,
+          "cube_sha256": "b8592067085382b261d335a9557be41e8094d7481604c4bfbcdbfa3e2917e153",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reused_pilot": true,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "19c98ab3cb58418a781bc50e0690dc6c502dee44e235b4a9e7055dcd9ec9ed95",
+          "iterations": 9,
+          "engine_seconds": 28.528397954,
+          "peak_bytes": 1891389440,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287305,
+          "cube_sha256": "fbd467c5a20ec064f171d2a9b3cdad900d433782d6c190194b92c6bd379be07c",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "729bd3bb3464eeddfa9d392b552b43a05e1d00577f1791c2794533b7834fe692",
+          "iterations": 9,
+          "engine_seconds": 18.572455405,
+          "peak_bytes": 1891872768,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287312,
+          "cube_sha256": "a0f80bb7305421d24687fa5da43131d327667405d83a852d05503d938813b037",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "1dca83f65db2bf1cd9d7310558fb3ad24b9d31a439acfe1e4f08e0e56d608d08",
+          "iterations": 9,
+          "engine_seconds": 18.38539637300002,
+          "peak_bytes": 1892061184,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382292445,
+          "cube_sha256": "b5696dd0bd727f59207037081e9f11ed2925793ba73bb194d14816afc6b5de8c",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "64ed0cf76b9b64456630416fac73fb73c8991da8bfe0b9fcdfb3b4a656b3b463",
+          "iterations": 9,
+          "engine_seconds": 18.151124239000012,
+          "peak_bytes": 1891450880,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287305,
+          "cube_sha256": "b8d7244cfd508f803590d82587e73722bb48e947cbe3c088be44ea80e248e2ba",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "ebf4474735c1f0f82db154a954dcf8dc78fd337dfe7c6893dc566c44478e6851",
+          "iterations": 9,
+          "engine_seconds": 18.091905381000004,
+          "peak_bytes": 1891647488,
+          "engine_count": 2.0000001869,
+          "cube_count": 1.9999971382287305,
+          "cube_sha256": "783755fc6b255bacf3f14023fdaaf88bf718a07669533d0c85ff0cfa3a24c0ee",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 2.886579864025407e-14,
+          "force_delta_hartree_per_bohr": 9.248299348563194e-11,
+          "density_l1_electrons": 1.9539120969023753e-14
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 5.995204332975845e-14,
+          "force_delta_hartree_per_bohr": 6.291900334076672e-11,
+          "density_l1_electrons": 1.893255169565041e-14
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 4.196643033083092e-14,
+          "force_delta_hartree_per_bohr": 1.9117402105806036e-10,
+          "density_l1_electrons": 5.322257673253387e-13
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 1.3988810110276972e-14,
+          "force_delta_hartree_per_bohr": 9.681005996853287e-12,
+          "density_l1_electrons": 1.9201973983220046e-14
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 3.7969627442180354e-14,
+          "force_delta_hartree_per_bohr": 1.1898998453219178e-10,
+          "density_l1_electrons": 1.8150413385912505e-14
+        }
+      ]
+    },
+    {
+      "system": "h2-reference",
+      "fixture": "C02-H2-reference",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "job_id": 128786128579,
+      "report_artifact": {
+        "id": 13624975459,
+        "name": "atomistic-a04-adaptive-resource-grid-h2-reference-4929badccbc698bd9b85d75f6027f5259aab2f64",
+        "bytes": 73016,
+        "digest": "sha256:2bfc2d73f49039d828eef15c8ffb341a6d9636894656aca529d2166c618a0c94"
+      },
+      "report_sha256": "f040ecff05f77be37e27020b47080394945c243a8704c37f95e74c2ba4e6ca53",
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "af73473c9bcfc468316b61b33941cfa8f7de89dc87bd8bcce83d9749786b2e54",
+          "iterations": 10,
+          "engine_seconds": 27.575737005000008,
+          "peak_bytes": 1891864576,
+          "engine_count": 2.0000000045,
+          "cube_count": 1.999998280026292,
+          "cube_sha256": "b75cddcc30001345bbae5e96087cce5cd4407693004fba426e35c1dbb741fa51",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "7f3fd539da032f3660657960da8214ee67a07b9dd8f5fc79a105c4487ff3f5d9",
+          "iterations": 10,
+          "engine_seconds": 26.902139957000003,
+          "peak_bytes": 1891409920,
+          "engine_count": 2.0000000045,
+          "cube_count": 1.999998280026291,
+          "cube_sha256": "2af108f662ead4182d84f9a89793d1285e583018def2ed6ff890fbb5165f4ea1",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "18f1b1cb1f2e390028d49f330f58629db04d17c8ce0ddc74ca542499e9a985b5",
+          "iterations": 9,
+          "engine_seconds": 24.947315285000002,
+          "peak_bytes": 1891774464,
+          "engine_count": 2.0000000045,
+          "cube_count": 1.999998280026289,
+          "cube_sha256": "400364acd3ac88a857f4d817c318b01fdcdd77d979a963320b19bc44af1b4720",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "c6017890717da4ffb51323ae4bff798969a9fc123c62442fe49862e356603276",
+          "iterations": 10,
+          "engine_seconds": 27.33001649000002,
+          "peak_bytes": 1891831808,
+          "engine_count": 2.0000000045,
+          "cube_count": 1.9999982800262925,
+          "cube_sha256": "da4a459fb2f8dc5add229df95ed43d31629a15bb8763d144e0e3757efd711172",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "6a74adbdf1dfec9c78d5d8aef5abfa1c1974b0303d2a6d8fffe6b2ae476d2ee3",
+          "iterations": 9,
+          "engine_seconds": 25.272872328999995,
+          "peak_bytes": 1891762176,
+          "engine_count": 2.0000000045,
+          "cube_count": 1.999998280622328,
+          "cube_sha256": "ba22ae60865761b26e8e8c7a3ab3b425a806fbc6400860b7d1c2be6dd9669fd7",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "1d1b653c7c30eecc20c348ca740d921bfed408b6287588ff0690cbef056cd73a",
+          "iterations": 9,
+          "engine_seconds": 25.306775985,
+          "peak_bytes": 1891631104,
+          "engine_count": 2.0000000045,
+          "cube_count": 1.9999982800262812,
+          "cube_sha256": "71d6d473d4a5539bce5e878b7c034a1576585508700c57ea5d0615492fe207c6",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 1.0591527654923993e-13,
+          "force_delta_hartree_per_bohr": 8.718099853144423e-11,
+          "density_l1_electrons": 1.6419305955513836e-14
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 9.703349235223868e-14,
+          "force_delta_hartree_per_bohr": 9.030230001261241e-10,
+          "density_l1_electrons": 2.1103646705306067e-14
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 8.704148513061227e-14,
+          "force_delta_hartree_per_bohr": 1.0227400176754387e-10,
+          "density_l1_electrons": 1.6819398036504825e-14
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 8.903988657493755e-14,
+          "force_delta_hartree_per_bohr": 4.3192400003833065e-10,
+          "density_l1_electrons": 5.96050857888866e-10
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 9.50350909079134e-14,
+          "force_delta_hartree_per_bohr": 3.0895100019967536e-10,
+          "density_l1_electrons": 2.923189809153509e-14
+        }
+      ]
+    },
+    {
+      "system": "h2",
+      "fixture": "C03-H2-stretched",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "job_id": 128786128619,
+      "report_artifact": {
+        "id": 13624478631,
+        "name": "atomistic-a04-adaptive-resource-grid-h2-4929badccbc698bd9b85d75f6027f5259aab2f64",
+        "bytes": 72566,
+        "digest": "sha256:cdeeb5f980c2c8c16180f693dd6e2053d3c442c7aa184bb155fc59d69a78c469"
+      },
+      "report_sha256": "6c9aa011ead99a436544c9850caaf62ea30b59f9e3780ed6c1d313c9d1de99e8",
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "0ac450dd8416c7dbeef32457a9b2a32866fe132c5b6ca8a6489deda866da3e59",
+          "iterations": 10,
+          "engine_seconds": 32.675982768,
+          "peak_bytes": 1891991552,
+          "engine_count": 2.0000000019,
+          "cube_count": 1.9999968833696258,
+          "cube_sha256": "69b1e479f22f1816673193f36b56215dd14c3dede860fc51ab2e2e0c3dcdacc8",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "8b640cd7d1b8b3f296db780a91a160594af138a9222065a985e4d89aa835ec7f",
+          "iterations": 9,
+          "engine_seconds": 29.993368605,
+          "peak_bytes": 1891704832,
+          "engine_count": 2.0000000019,
+          "cube_count": 1.9999968834561688,
+          "cube_sha256": "53a5cc930401c090a22a5ff3f51e53d3b0cc3d52564e1691a195a2fc6ab6cdcc",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "569767fe906446c68b37b659d2e02822a14933c65da99224aac638d15e9a23fd",
+          "iterations": 9,
+          "engine_seconds": 30.073658172000023,
+          "peak_bytes": 1891704832,
+          "engine_count": 2.0000000019,
+          "cube_count": 1.9999968833696258,
+          "cube_sha256": "9409aa3c728461a6877a413cd571f4f3110fb2cfb92f094118682a9c016f1d1c",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "b1f5a5668dc30711d26498fbf27e76e1541f0b4a920f7a3ca16abf2c749ffdff",
+          "iterations": 10,
+          "engine_seconds": 32.74504722399999,
+          "peak_bytes": 1891569664,
+          "engine_count": 2.0000000019,
+          "cube_count": 1.9999968833696258,
+          "cube_sha256": "937ec1590205c28446012b1ea7ebfc4467482a85764e2993959941e8112bace0",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "a473086d33918235176aa8090ef41113f46b30659615a427faf62c038f27fdd2",
+          "iterations": 9,
+          "engine_seconds": 30.201113338,
+          "peak_bytes": 1891389440,
+          "engine_count": 2.0000000019,
+          "cube_count": 1.9999968833696176,
+          "cube_sha256": "342853c9a6849ca184ee5a5e08c6138402a13b38524d4e2f7c7c265d1620809a",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "da5936748f305f7bff6137170c58e0bf96e693231d031d39dca3e34b74b7c8d6",
+          "iterations": 10,
+          "engine_seconds": 32.907552028,
+          "peak_bytes": 1891549184,
+          "engine_count": 2.0000000019,
+          "cube_count": 1.9999968833696236,
+          "cube_sha256": "6b2bdfd3bc4bea5e4199fac9c1ade9db43bd97983847de00c9de50ac4a69b05e",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 8.903988657493755e-14,
+          "force_delta_hartree_per_bohr": 5.016599982643477e-11,
+          "density_l1_electrons": 8.656007108127408e-11
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 1.389999226830696e-13,
+          "force_delta_hartree_per_bohr": 6.539730007526501e-10,
+          "density_l1_electrons": 1.482108891372218e-14
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 1.2589929099249275e-13,
+          "force_delta_hartree_per_bohr": 4.0280001556425304e-12,
+          "density_l1_electrons": 1.3937366160084141e-14
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 1.6608936448392342e-13,
+          "force_delta_hartree_per_bohr": 2.818520000724689e-10,
+          "density_l1_electrons": 2.2067428914912608e-14
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 1.5210055437364645e-13,
+          "force_delta_hartree_per_bohr": 1.4321550022289298e-9,
+          "density_l1_electrons": 1.5448218258817272e-14
+        }
+      ]
+    },
+    {
+      "system": "h2-long",
+      "fixture": "A04-H2-long",
+      "settings": [
+        12,
+        400,
+        40
+      ],
+      "job_id": 128786128652,
+      "report_artifact": {
+        "id": 13624831632,
+        "name": "atomistic-a04-adaptive-resource-grid-h2-long-4929badccbc698bd9b85d75f6027f5259aab2f64",
+        "bytes": 72823,
+        "digest": "sha256:81779f6d5e170f4867126a81486806e1f081a22847a1b992ee6cb29f6a7931d1"
+      },
+      "report_sha256": "43499efe9df267ca6bde1044d66dd79a8dd1f511e79e7033f5a3a23b801a1cb5",
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "8fcb7edd5169c48f2ef0bc1bb9bdf107f5e114e14fe2bbfe78630b50cf3fa325",
+          "iterations": 10,
+          "engine_seconds": 31.97605602299999,
+          "peak_bytes": 1891647488,
+          "engine_count": 1.9999999997,
+          "cube_count": 1.9999983066484226,
+          "cube_sha256": "649096fbccaacdffe5b6c11bc50bdf0a9524fa5fe9d567574ecdc488bac8e5e3",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "b0dab8fa3832e2b2e5f8306a9eea1899f88dc658b0130a6cf812bef5b0254af4",
+          "iterations": 11,
+          "engine_seconds": 33.805557594999996,
+          "peak_bytes": 1891438592,
+          "engine_count": 1.9999999997,
+          "cube_count": 1.999998306648409,
+          "cube_sha256": "bc495cb12a40b39ebfa8d50c16d5ff26faa533c4aa2d434dfd49645d65875969",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "e0242e649d6114941b291822a16d1e0b165af4401054ab98e5f3b9617f09fb35",
+          "iterations": 9,
+          "engine_seconds": 29.434728433999993,
+          "peak_bytes": 1891635200,
+          "engine_count": 1.9999999997,
+          "cube_count": 1.9999983066484235,
+          "cube_sha256": "54d834ebc8c754d4bc80d7ce21312803ef4520ca22bc4dc250a61f246e696348",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "3b53d3677cde233941555abfc4cfe780712806bf7c6801d07f95605f17b007cd",
+          "iterations": 11,
+          "engine_seconds": 34.15671774200001,
+          "peak_bytes": 1891799040,
+          "engine_count": 1.9999999997,
+          "cube_count": 1.999998306648424,
+          "cube_sha256": "05d74380b49ae2c6631837ea3f831e8b2b7b9082f0cf1103341c45b4620f679d",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "f7d3e4d1b8d76fc1b0b8f41a4b6e478e602809fc1a480427df8f77a5ca31ef8d",
+          "iterations": 10,
+          "engine_seconds": 31.684294609000005,
+          "peak_bytes": 1891401728,
+          "engine_count": 1.9999999997,
+          "cube_count": 1.9999983066484226,
+          "cube_sha256": "b9237d074fe77705f4e3417d6a4fb893e0d73b7d3a81c36b38189243eefd7a5c",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "ac7c16877f37db38ca9ef05eae2e98f1149f2ca2c4e1be21cab4530e21c8f094",
+          "iterations": 10,
+          "engine_seconds": 31.650194144999972,
+          "peak_bytes": 1891545088,
+          "engine_count": 1.9999999997,
+          "cube_count": 1.9999983066484226,
+          "cube_sha256": "25130349cc08fd5aec38692140faf7a49f61e3a8780e915c2bfab6afee07755c",
+          "cube_grid": [
+            150,
+            150,
+            150
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 1.9095836023552692e-14,
+          "force_delta_hartree_per_bohr": 3.8717001826782393e-11,
+          "density_l1_electrons": 2.750091151270319e-14
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 4.285460875053104e-14,
+          "force_delta_hartree_per_bohr": 4.521699681347968e-11,
+          "density_l1_electrons": 1.262398928100836e-14
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 1.887379141862766e-14,
+          "force_delta_hartree_per_bohr": 9.018599755883372e-11,
+          "density_l1_electrons": 1.2680962051452777e-14
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 2.2870594307278225e-14,
+          "force_delta_hartree_per_bohr": 8.179799892982231e-11,
+          "density_l1_electrons": 1.4804428950082742e-14
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 1.7985612998927536e-14,
+          "force_delta_hartree_per_bohr": 2.729629994258076e-10,
+          "density_l1_electrons": 1.3447146536375932e-14
+        }
+      ]
+    },
+    {
+      "system": "he",
+      "fixture": "C01-He",
+      "settings": [
+        12,
+        800,
+        80
+      ],
+      "job_id": 128786128542,
+      "report_artifact": {
+        "id": 13625240275,
+        "name": "atomistic-a04-adaptive-resource-grid-he-4929badccbc698bd9b85d75f6027f5259aab2f64",
+        "bytes": 51299,
+        "digest": "sha256:afd0cddbeb82b491da3b6dec663601856290fcc2b2ea5f2d43eca1cee544f6b7"
+      },
+      "report_sha256": "11e3f053fa87bd3d3b4fac381b3b23a5f3ffb962d1beddbf5215e5993f61a2b5",
+      "reused_pilot_report_sha256": "75c3137ee061e6504a39ec54f0baed5c857ab3a64f61279d251d9e335d161123",
+      "cases": [
+        {
+          "grid": [
+            200,
+            194
+          ],
+          "reused_pilot": true,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "1cfea2b2414730e1cdd1187f6530584b98a0d1a26963bce8f4958ba1cc56cf13",
+          "iterations": 9,
+          "engine_seconds": 64.343180462,
+          "peak_bytes": 5055340544,
+          "engine_count": 2,
+          "cube_count": 2.0000055339681717,
+          "cube_sha256": "221d2b1be90b0cc8a7828c3f6bca85de937dc6dcd5c81a7162bc08b2178669ad",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        },
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reused_pilot": true,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "b56d6339bfef9c1c6604a4fe47682e83d910dec6efd6f7020ad27403b6200eef",
+          "iterations": 6,
+          "engine_seconds": 48.605316327,
+          "peak_bytes": 5054664704,
+          "engine_count": 2,
+          "cube_count": 2.000005533968151,
+          "cube_sha256": "f795debf360580f6b8bebb3dc1ae3388a555281d33224d4a4950b9881c9ab109",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "bce1e05a0d44b049e04ac9e97eafd0d9b2e8114acc0afc66368d068b3f9acafb",
+          "iterations": 8,
+          "engine_seconds": 83.905124943,
+          "peak_bytes": 5054865408,
+          "engine_count": 2,
+          "cube_count": 2.0000055339681726,
+          "cube_sha256": "cdf7ca915e19d6437cee672916a9d56bdc80752786b2bb3c26c188690f50b404",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "70b3074dfc56b5f5ceffc6a9b0474a126d468e184ff825eeb5a6b022ebbcbc31",
+          "iterations": 8,
+          "engine_seconds": 83.58852976200001,
+          "peak_bytes": 5055062016,
+          "engine_count": 2,
+          "cube_count": 2.0000055339681713,
+          "cube_sha256": "6982396abb7ecdf98503d868e09477853a2a7a1a478496fdb2939a68e460504d",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "e813a843354e2204ecfb766f5ae151e1c6d7132cf7e332214478a5e7b8af0e02",
+          "iterations": 10,
+          "engine_seconds": 97.22910215799999,
+          "peak_bytes": 5054562304,
+          "engine_count": 2,
+          "cube_count": 2.00000553396817,
+          "cube_sha256": "006f72d5dcb5b38b989ce4a087b050352b556120a51a88168d4f34fe37c0b98e",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reused_pilot": false,
+          "status": "measured",
+          "error": null,
+          "input_sha256": "7901ad113b5d104e543819455fd1e75664ccfd861642204bb473d3b3bbcc67d4",
+          "iterations": 10,
+          "engine_seconds": 97.497823815,
+          "peak_bytes": 5054816256,
+          "engine_count": 2,
+          "cube_count": 2.000005533968171,
+          "cube_sha256": "7b45a03d915c72f5086ed61dbb65f3eda56494f9e42f8bfe781bef3f41aef113",
+          "cube_grid": [
+            216,
+            216,
+            216
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "grid": [
+            100,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 1.5987211554602254e-14,
+          "force_delta_hartree_per_bohr": 9.999999999999957e-16,
+          "density_l1_electrons": 4.9675583767680554e-14
+        },
+        {
+          "grid": [
+            100,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 1.1102230246251565e-14,
+          "force_delta_hartree_per_bohr": 9.999999999999957e-16,
+          "density_l1_electrons": 2.5984635649036173e-14
+        },
+        {
+          "grid": [
+            150,
+            194
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 2.398081733190338e-14,
+          "force_delta_hartree_per_bohr": 9.999999999999957e-16,
+          "density_l1_electrons": 2.5322721803229908e-14
+        },
+        {
+          "grid": [
+            200,
+            110
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": false,
+          "passed": true,
+          "energy_delta_hartree": 3.774758283725532e-14,
+          "force_delta_hartree_per_bohr": 9.999999999999957e-16,
+          "density_l1_electrons": 2.527536740182696e-14
+        },
+        {
+          "grid": [
+            200,
+            146
+          ],
+          "reference_grid": [
+            200,
+            194
+          ],
+          "required": true,
+          "passed": true,
+          "energy_delta_hartree": 7.993605777301127e-15,
+          "force_delta_hartree_per_bohr": 9.999999999999957e-16,
+          "density_l1_electrons": 2.6258449440455657e-14
+        }
+      ]
+    }
+  ],
+  "verification_scope": {
+    "A04_G0": "passed",
+    "A04_G1": "passed",
+    "basis": "pending",
+    "profile_freeze": "pending",
+    "physical_validation": "unvalidated"
+  }
+}

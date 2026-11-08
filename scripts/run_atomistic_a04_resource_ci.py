@@ -65,6 +65,8 @@ class Case:
     eps_scf: float = 1e-8
     radial_grid: int = 100
     lebedev_grid: int = 110
+    basis: str = "cc-pVDZ"
+    overlap_condition: bool = False
 
 
 CASES = (
@@ -94,6 +96,7 @@ SCF_SYSTEMS = (*FIXTURE_SYSTEMS, "h2")
 SCF_PLAN = FIXTURE_PLAN.with_name("scf-refinement.json")
 GRID_PLAN = FIXTURE_PLAN.with_name("remaining-numerical-validation.json")
 GRID_INPUTS = FIXTURE_PLAN.with_name("atomic-grid-inputs.json")
+BASIS_INPUTS = FIXTURE_PLAN.with_name("basis-refinement-inputs.json")
 
 
 ENGINE_WRAPPER = r"""
@@ -419,10 +422,11 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
         work.mkdir(mode=0o700)
         inputs.mkdir(mode=0o700)
         options = {
-            "system": case.system, "basis": "cc-pVDZ", "project": PROJECT,
+            "system": case.system, "basis": case.basis, "project": PROJECT,
             "cell_angstrom": case.cell, "cutoff_ry": case.cutoff,
             "rel_cutoff_ry": case.rel_cutoff, "density": case.density, "eps_scf": case.eps_scf,
             "radial_grid": case.radial_grid, "lebedev_grid": case.lebedev_grid,
+            "overlap_condition": case.overlap_condition,
         }
         base_input = generate_input(**options).encode("ascii")
         submitted_input = base_input
@@ -549,12 +553,27 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 not cp2k["program_ended"] or not cp2k["scf_converged"]
                 or cp2k["energy_hartree"] is None or not math.isfinite(cp2k["energy_hartree"])
                 or len(forces) != len(metadata["atoms"])
-                or not all(keyword in text for keyword in ("GAPW", "PBE", "cc-pVDZ.cp2k", "ALL_POTENTIALS"))
+                or not all(keyword in text for keyword in ("GAPW", "PBE", f"{case.basis}.cp2k", "ALL_POTENTIALS"))
             ):
                 raise ValueError("Converged CP2K fixture energy, native forces or locked model evidence is missing")
             iterations = re.findall(r"SCF run converged in\s+(\d+)\s+steps", text)
             if len(iterations) == 1:
                 record["engine_scf_iterations"] = int(iterations[0])
+            if case.overlap_condition:
+                from atomistic_a04_basis_output import parse_basis_conditioning
+
+                try:
+                    record["basis_conditioning"] = parse_basis_conditioning(
+                        text, basis=case.basis, element=metadata["atoms"][0]["element"], atom_count=len(forces),
+                    )
+                except ValueError:
+                    labels = ("Atomic kind:", "Orbital Basis Set", "Number of orbital", "Number of independent",
+                              "Number of spherical", "Number of primitive", "Number of Cartesian",
+                              "OVERLAP MATRIX CONDITION NUMBER", "Condition Numbers using", "CN :")
+                    record["basis_diagnostic_excerpt"] = [
+                        line.strip() for line in text.splitlines() if any(label in line for label in labels)
+                    ][:25]
+                    raise
             record["engine_energy_hartree"] = cp2k["energy_hartree"]
             record["engine_forces_hartree_per_bohr"] = forces
             hard_soft_charge = re.findall(
@@ -858,12 +877,13 @@ def accuracy_scalars(reference: dict, candidate: dict, checks: dict, *, energy_f
 
 
 def compare_accuracy_pair(reference_case: Case, case: Case, reference: dict, attempt: dict,
-                          reference_path: Path, path: Path, checks: dict, l1_atol: float) -> dict:
+                          reference_path: Path, path: Path, checks: dict, l1_atol: float,
+                          *, energy_force_check: str = "AV03") -> dict:
     from compare_atomistic_a04_accuracy import compare_density
 
     if reference_case.system != case.system:
         raise ValueError("Energy and density comparisons require identical fixtures")
-    result = accuracy_scalars(reference, attempt, checks)
+    result = accuracy_scalars(reference, attempt, checks, energy_force_check=energy_force_check)
     result.update(
         case=case.name, reference_case=reference_case.name,
         candidate_cell_angstrom=case.cell, candidate_cutoff_ry=case.cutoff,
@@ -1182,6 +1202,7 @@ def check_grid_attempt(attempt: dict, case: Case, spec: dict, expected: str, cub
     numerics = meta["numerics"]
     if (
         meta["source_fixture"] != spec["fixture"]
+        or meta["basis"] != case.basis
         or (numerics["radial_grid"], numerics["lebedev_grid"]) != (case.radial_grid, case.lebedev_grid)
         or numerics["eps_scf"] != 1e-8
         or attempt["input_sha256"] != expected
@@ -1317,6 +1338,80 @@ def run_atomic_grid(system: str, candidate: dict, scratch: Path, diagnostics: Pa
     return "measured"
 
 
+def run_basis_ladder(system: str, candidate: dict, scratch: Path, diagnostics: Path, report: dict) -> str:
+    from atomistic_a04_basis_output import MAX_PRINTED_CONDITION_NUMBER, MIN_PRINTED_EIGENVALUE
+
+    plan = json.loads(GRID_PLAN.read_bytes())
+    locked = json.loads(BASIS_INPUTS.read_bytes())
+    stage = next(row for row in plan["stages"] if row["id"] == "G2")
+    specs = {row["system"]: row for row in plan["fixtures"]}
+    spec = specs[system]
+    gate_path = ROOT / locked["prerequisite_g1_receipt"]
+    gate = json.loads(gate_path.read_bytes())
+    if (
+        locked["development_plan_sha256"] != sha256(GRID_PLAN)
+        or locked["g1_receipt_sha256"] != sha256(gate_path)
+        or gate["status"] != "passed_fixed_fixture_atomic_grid_screen"
+        or gate["totals"]["finest_pairs_passed"] != 10
+        or locked["cp2k_source"] != candidate["cp2k_source"]
+        or locked["binary_sha256"] != candidate["binary_sha256"]
+        or locked["printed_conditioning_guard"] != [MIN_PRINTED_EIGENVALUE, MAX_PRINTED_CONDITION_NUMBER]
+        or stage["basis_levels"] != ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"]
+        or stage["grid_pair"] != [200, 194]
+    ):
+        raise ValueError("Basis execution requires the exact passed G1 evidence and preregistered reference")
+    limits = plan["resource_admission"]["pilot_caps"]["he" if system == "he" else "h2"]
+    cap, deadline = limits["gib"] * GIB, limits["wall_seconds"]
+    checks = {c["id"]: c for c in json.loads(VALIDATION_PLAN.read_bytes())["checks"]}
+    limit = plan["thresholds"]["separate_field_shape_screen"]["absolute_density_l1_electrons"]
+    if checks["AV04"] != locked["av04"] or limit != locked["spatial_l1_atol_electrons"]:
+        raise ValueError("Basis criteria differ from the fixed plan")
+    report.update(system=system, fixture_id=spec["fixture"], comparison_plan_sha256=sha256(GRID_PLAN),
+                  input_manifest_sha256=sha256(BASIS_INPUTS), comparisons=[])
+    report["resource_policy"].update(normal_memory_cap_bytes=cap, retry_memory_cap_bytes=cap)
+    cell, cutoff, relative = spec["baseline_cell_cutoff_relative"]
+    rows = {}
+    for basis in reversed(stage["basis_levels"]):
+        case = Case(f"{system}-{basis}-r200-l194", cell, cutoff, True, deadline, rel_cutoff=relative,
+                    system=system, radial_grid=200, lebedev_grid=194, basis=basis, overlap_condition=True)
+        expected = locked["fixtures"][system][basis]
+        cube = scratch / f"{case.name}.cube"
+        attempt: dict = {}
+        row = {"grid": [200, 194], "basis": basis, "case": case.name, "reused_pilot": False, "attempt": attempt}
+        report["cases"].append(row)
+        available = available_memory_bytes()
+        free = shutil.disk_usage(scratch).free
+        if available < cap + MEMORY_RESERVE_BYTES or free < DISK_ADMISSION:
+            attempt.update(status="deferred_headroom", available_memory_bytes=available, free_disk_bytes=free)
+            return "measurement_incomplete"
+        run_attempt(case, 1, cap, available, candidate, scratch, diagnostics, attempt,
+                    expected_input=expected, retained_cube=cube)
+        if attempt["status"] != "measured":
+            return "measurement_incomplete"
+        check_grid_attempt(attempt, case, spec, expected, cube, cap, checks)
+        rows[basis] = (case, attempt, cube)
+
+    ref_case, ref_attempt, ref_cube = rows[stage["reference"]]
+    for basis in stage["basis_levels"][:-1]:
+        case, attempt, cube = rows[basis]
+        keys = ("grid_counts", "origin_bohr_rounded", "grid_axes_bohr_rounded", "atoms_bohr_rounded")
+        if any(ref_attempt["density"][k] != attempt["density"][k] for k in keys):
+            raise ValueError("Basis screen requires the same native lattice and ordered geometry")
+        result = compare_accuracy_pair(ref_case, case, ref_attempt, attempt, ref_cube, cube, checks, limit,
+                                       energy_force_check="AV04")
+        if result["spatial_density"]["method"] != "native_aligned_crop":
+            raise ValueError("Basis comparison must use the exact native lattice")
+        report["comparisons"].append({"grid": [200, 194], "reference_grid": [200, 194],
+                                      "basis": basis, "reference_basis": stage["reference"],
+                                      "required_finest_pair": basis == stage["target"], "result": result})
+    passing_basis = all(x[1]["basis_conditioning"]["conditioning_passed"] for x in rows.values())
+    finest_passed = next(x["result"]["within_all_endpoint_thresholds"] for x in report["comparisons"]
+                         if x["required_finest_pair"])
+    report["finest_pairs_passed"] = finest_passed and passing_basis
+    report["verification_scope"]["fixed_fixture_basis_screen"] = "measured"
+    return "measured" if report["finest_pairs_passed"] else "criterion_not_met"
+
+
 def summarize_atomic_grid(report: dict, output: Path) -> None:
     summary = {key: report[key] for key in (
         "system", "scope", "status", "comparison_plan_sha256", "input_manifest_sha256",
@@ -1334,12 +1429,15 @@ def summarize_atomic_grid(report: dict, output: Path) -> None:
             "cube_count": row["attempt"].get("density", {}).get("electron_integral"),
             "cube_sha256": row["attempt"].get("density", {}).get("sha256"),
             "cube_grid": row["attempt"].get("density", {}).get("grid_counts"),
+            **({"basis": row["basis"], "conditioning": row["attempt"].get("basis_conditioning"),
+                "diagnostic_excerpt": row["attempt"].get("basis_diagnostic_excerpt")} if "basis" in row else {}),
         }
         for row in report["cases"]
     ]
     summary["comparisons"] = [
         {
             "grid": row["grid"], "reference_grid": row["reference_grid"], "required": row["required_finest_pair"],
+            **({"basis": row["basis"], "reference_basis": row["reference_basis"]} if "basis" in row else {}),
             "passed": row["result"]["within_all_endpoint_thresholds"],
             "energy_delta_hartree": row["result"]["absolute_energy_difference_hartree"],
             "force_delta_hartree_per_bohr": row["result"]["absolute_maximum_force_component_difference_hartree_per_bohr"],
@@ -1364,6 +1462,7 @@ def main() -> int:
     mode.add_argument("--scf-refinement", choices=SCF_SYSTEMS)
     mode.add_argument("--grid-pilot", choices=("h2-short", "he"))
     mode.add_argument("--atomic-grid", choices=SCF_SYSTEMS)
+    mode.add_argument("--basis-refinement", choices=SCF_SYSTEMS)
     parser.add_argument("--grid-pilot-dir", type=Path)
     args = parser.parse_args()
     if args.grid_pilot_dir is not None and not (args.grid_pilot or args.atomic_grid):
@@ -1405,7 +1504,15 @@ def main() -> int:
             "physical_validation": "unvalidated",
         },
     }
-    if args.grid_pilot or args.atomic_grid:
+    if args.basis_refinement:
+        report["scope"] = "isolated_native_x86_A04_fixed_fixture_basis_refinement"
+        report.pop("known_unadmitted_cases")
+        report["resource_policy"].update(
+            retry_maximum_increase_bytes=0, oom_retry="none; fixed sequential one-rank cases",
+            raw_cube="original same-lattice samples compared on runner disk then removed",
+        )
+        report["verification_scope"]["fixed_fixture_basis_screen"] = "incomplete"
+    elif args.grid_pilot or args.atomic_grid:
         report["scope"] = "isolated_native_x86_A04_atomic_grid_" + ("pilot" if args.grid_pilot else "screen")
         report.pop("known_unadmitted_cases")
         report["resource_policy"].update(
@@ -1479,7 +1586,9 @@ def main() -> int:
         if output.stat().st_dev != output.parent.stat().st_dev:
             raise ValueError("Work scratch and evidence path must use the same measured disk filesystem")
         with tempfile.TemporaryDirectory(prefix="quanta-a04-resource-", dir=output.parent) as directory:
-            if args.grid_pilot or args.atomic_grid:
+            if args.basis_refinement:
+                report["status"] = run_basis_ladder(args.basis_refinement, candidate, Path(directory), diagnostics, report)
+            elif args.grid_pilot or args.atomic_grid:
                 report["status"] = run_atomic_grid(
                     args.grid_pilot or args.atomic_grid, candidate, Path(directory), diagnostics, report,
                     pilot=bool(args.grid_pilot), pilot_dir=args.grid_pilot_dir,
@@ -1517,7 +1626,7 @@ def main() -> int:
     finally:
         write_report(output / "report.json", report)
     print(f"A04 native resource measurement: {report['status']}; report.json")
-    if args.grid_pilot or args.atomic_grid:
+    if args.grid_pilot or args.atomic_grid or args.basis_refinement:
         if args.grid_pilot and report["status"] == "measured":
             shutil.copyfile(output / "report.json", args.grid_pilot_dir / "report.json")
         summarize_atomic_grid(report, output)
