@@ -12,6 +12,10 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
+## 다음 실행 — A04 검증 및 확정 판정 일괄 마감
+
+[최종 검증 묶음](docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json)에 남은 검증 전체의 계산 행렬, 사전 판정, 자원과 종료 조건을 기록했습니다. He 고해상도·재표본화 및 두 계의 결합 설정 확인 → QZ LMAXN1 브리지와 QZ–5Z 두 예비 구조 → 나머지 구조·선택 설정·공통 기저 기준 → 동일 입력 ARM 재현 → 조건 충족 시 격리 OCI 순으로 같은 실행 묶음에서 진행합니다. 계획에는 개발 검증과 OCI 적격 판정을 분리하고, 기준 미달 또는 실행 불가도 사유를 남겨 마감하도록 했습니다. 기존 TZ–QZ 미달 이력은 보존합니다. 이번 변경은 계획 기록이며 새 과학 실측은 없습니다.
+
 ## 기존 계획 — A04 수치 프로필 동결 전 검증 G0~G6
 
 [실행 계획 JSON](docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json)에 다섯 고정 구조의 기준 입력, 축별 실측, 판정·중단 기준과 후속 의존관계를 정했습니다. SCF 42495134220의 15개 실행·10개 비교와 기존 H₂ 경계 회귀 42495134228은 성공을 확인했습니다. 이번 변경은 계획과 자료 대조이며 새 CP2K 실측을 제출하지 않았습니다.

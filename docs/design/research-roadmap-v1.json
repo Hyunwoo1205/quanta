@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.18",
+  "plan_version": "1.0.19",
   "updated_at": "2026-11-09",
   "status": "planned_development",
   "executable": false,
@@ -374,7 +374,7 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "He 1200 Ry 이상의 QZ CUTOFF에서 원본 격자와 재표본화 진단을 다시 대조하고, 선정한 결합 설정에서 밀도 경계 및 기준 프로필을 확인. 이후 QZ LMAXN1 브리지와 동일 조건 QZ–5Z 예비시험. G3 이후는 보류.",
+      "next_action": "A04 최종 묶음을 한 번 진행해 He 기준과 두 기저·결합 설정·ARM 재현을 판정하고 검증 범위를 마감. 자격이 있는 경우에만 별도 격리 OCI 경로를 같은 묶음에서 판정.",
       "fixed_fixture_basis_pilot_receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
       "fixed_fixture_atomic_grid_screen": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
       "remaining_numerical_validation_plan": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
@@ -393,7 +393,8 @@
       "qz_sensitivity_receipt": "docs/verification/atomistic-a04/qz-sensitivity-42501071977.json",
       "finer_basis_pilot_plan": "docs/design/atomistic-a04-v0.1/qz-finer-basis-plan.json",
       "qz_cutoff_refinement_inputs": "docs/design/atomistic-a04-v0.1/qz-cutoff-refinement-inputs.json",
-      "qz_cutoff_refinement_receipt": "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json"
+      "qz_cutoff_refinement_receipt": "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json",
+      "final_validation_batch_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json"
     },
     {
       "id": "A05",

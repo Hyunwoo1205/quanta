@@ -1,0 +1,288 @@
+{
+  "document_kind": "A04_development_freeze_validation_plan",
+  "schema_version": 1,
+  "status": "planned_not_executed",
+  "executable": false,
+  "date_kst": "2026-11-09",
+  "scope": "Close the A04 numerical and contract-freeze decision in one requested execution batch. Assess native ARM and isolated OCI separately. A06 adapter, A07 independent physical validation, A11 dynamics and public rollout are downstream acceptance, outside A04.",
+  "baseline": {
+    "main": "e19286a7b6f817f8bd7ef49659ab46048ad4ee8f",
+    "ops_oci": "d7e2c02b119650d3bccfe7db887bbabffceee096",
+    "input_evidence_sha256": {
+      "docs/design/atomistic-a01-v0.1/validation-plan.json": "1b0ae648a0c260cbf9be25af756e6dfcf1243bae88db3e159173a40e9d161206",
+      "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json": "9da71d4eaf274244a2c407f9c5962035aa1656bdd2ab28eeca3cc81f0d752242",
+      "docs/design/atomistic-a04-v0.1/qz-finer-basis-plan.json": "c1489e2aff8482986777d4fc916398c231d01e53e6f68700df262d0a9a6fa4b8",
+      "docs/design/atomistic-a04-v0.1/basis-candidates/cc-pV5Z-H-He.cp2k": "cbd10898d198b5b05f524d4feca1a21eda5bdcf2a104038ca1af4374f05d2d41",
+      "docs/verification/atomistic-a04/basis-refinement-42499460058.json": "896087cd6c54d515e2490dd3041202628ba859d487def22fb5bf8aa619e6d452",
+      "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json": "f4203f41feadec388f38a9d29540f9e3e532bac2ae4de01890def30d22e77cb7",
+      "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json": "fa048df1348bb84b298b13ce5cb64e154c113817cbb1467fac2fca625bf19d02",
+      "docs/verification/atomistic-a04/armv8a-source-dependency-review.json": "5b94eac7aa75c41885d37a7d7e236f8e3c986e7913302814f585ab5031aec750"
+    },
+    "last_cutoff_run": 42533166322,
+    "last_successful_A03": 42501071860,
+    "later_ARM_A03_failure": {
+      "run": 42533166195,
+      "observed_max_web_seconds": 2.187811885,
+      "limit_seconds": 2,
+      "engine_and_cancel_gates_passed": true
+    },
+    "basis_history": "The original G2 TZ/QZ pilot did not meet criteria. Reuse verified G0/G1 and unchanged baselines. This is the alternative QZ/5Z path through gates equivalent to G2–G6, with retained historical outcomes."
+  },
+  "fixed": {
+    "fixtures": [
+      "h2-short",
+      "h2-reference",
+      "h2",
+      "h2-long",
+      "he"
+    ],
+    "h2_bond_lengths_angstrom": [
+      "0.60",
+      "0.74144",
+      "0.80",
+      "1.00"
+    ],
+    "pilot_fixtures": [
+      "h2-short",
+      "he"
+    ],
+    "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "method": "PBE/GAPW all-electron, nonrelativistic, isolated neutral singlet, fixed authored nuclear geometry and MT solver.",
+    "unchanged_controls": "Locked A04 units, precision, state, potential ALL, LMAXN0 2, raw total signed density STRIDE 1, explicit OT/SCF and output diagnostics. Document candidate settings as internal evidence and keep fixture identifiers out of the user schema."
+  },
+  "tuples": {
+    "columns": [
+      "cell_angstrom_decimal",
+      "cutoff_ry",
+      "rel_cutoff_ry",
+      "eps_scf",
+      "radial",
+      "lebedev",
+      "lmaxn1"
+    ],
+    "H2_candidate": [
+      "12",
+      600,
+      40,
+      1e-08,
+      200,
+      194,
+      8
+    ],
+    "H2_joint_reference": [
+      "16",
+      800,
+      80,
+      1e-10,
+      250,
+      302,
+      8
+    ],
+    "He_candidate": [
+      "12",
+      1000,
+      80,
+      1e-08,
+      200,
+      194,
+      8
+    ],
+    "He_joint_reference": [
+      "13.5",
+      1200,
+      120,
+      1e-10,
+      250,
+      302,
+      8
+    ],
+    "H2_cell_axis": [
+      "12",
+      "14.4",
+      "16"
+    ],
+    "He_cell_axis": [
+      "12",
+      "13.5",
+      "14.4"
+    ],
+    "cell_rule": "Use the exact authored decimal as a rational for translation, shell boundaries, and centered crop. Before execution validate single-factor deck diffs, supported FFT sizes, and arithmetic. Candidate cell is always 12 Å. Confirm actual headers; predicted axis sizes are H2 cell axis 180/216/240, He cell axis 240/270/288 and He joint 288. If any essential comparison cannot be aligned, close with missing admissible evidence. The smaller He reference domain is explicit; it does not carry a 16 or 20 Å claim.",
+    "He_reference_window": {
+      "cell_angstrom": "12",
+      "plateau_cutoff_ry": [
+        1000,
+        1100
+      ],
+      "refinement_cutoff_ry": [
+        1200,
+        1400
+      ],
+      "require_actual_plateau_and_distinct_refinement": true
+    }
+  },
+  "matrix": {
+    "per_fixture_unique_decks": [
+      "QZ candidate LMAXN1 8",
+      "QZ candidate LMAXN1 6",
+      "5Z candidate LMAXN1 8",
+      "QZ candidate with only EPS_SCF 1e-9",
+      "QZ candidate with only EPS_SCF 1e-10",
+      "QZ candidate with only radial 250",
+      "QZ candidate with only Lebedev 302",
+      "QZ candidate with only the reference REL_CUTOFF",
+      "QZ candidate with only the reference CUTOFF",
+      "QZ candidate with only middle finite cell",
+      "QZ candidate with only largest finite cell",
+      "QZ jointly finer reference",
+      "5Z jointly finer reference"
+    ],
+    "pilot_only_decks": [
+      "QZ joint-reference tuples at LMAXN1 6 for H2-short and He, paired with their LMAXN1 6 candidate rows in B0",
+      "He at 12 Å and common existing QZ controls including LMAXN1 6, four CUTOFF decks 1000/1100/1200/1400. The 1000 Ry deck can reuse the exact He B0 candidate row."
+    ],
+    "upper_bound_unique_x86_science_decks_before_reuse": 71,
+    "native_arm_selected_decks": 5,
+    "optional_isolated_oci_selected_decks": 5
+  },
+  "thresholds": {
+    "unchanged_AV03_AV06": {
+      "AV03": {
+        "id": "AV03",
+        "layer": "numerical",
+        "observable": "scf_and_grid_property_convergence",
+        "rule": "Refine each SCF/grid/atomic-grid family separately; compare two finest levels with other families fixed sufficiently fine.",
+        "atol": null,
+        "rtol": 0,
+        "unit": null,
+        "stage": "P2",
+        "status": "not_executed",
+        "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+        "energy_atol_hartree": 1e-06,
+        "force_atol_hartree_per_bohr": 1e-05
+      },
+      "AV04": {
+        "id": "AV04",
+        "layer": "numerical",
+        "observable": "basis_convergence",
+        "rule": "Two finest compatible basis levels, same method/grid and geometry; no complete-basis accuracy claim.",
+        "atol": null,
+        "rtol": 0,
+        "unit": null,
+        "stage": "P2",
+        "status": "not_executed",
+        "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+        "energy_atol_hartree": 0.0001,
+        "force_atol_hartree_per_bohr": 0.0001
+      },
+      "AV05": {
+        "id": "AV05",
+        "layer": "density",
+        "observable": "engine_all_electron_count",
+        "rule": "Engine all-electron hard+soft integral compared to 2.",
+        "atol": 1e-06,
+        "rtol": 0,
+        "unit": "electron",
+        "stage": "P2",
+        "status": "not_executed",
+        "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty"
+      },
+      "AV06": {
+        "id": "AV06",
+        "layer": "density",
+        "observable": "exported_density_integral",
+        "rule": "Explicit full hard+soft electron-number density export: integral rho*dV compared to 2, including field/grid refinement.",
+        "atol": 0.001,
+        "rtol": 0,
+        "unit": "electron",
+        "stage": "P2",
+        "status": "not_executed",
+        "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+        "blocked_until": "A02/A04 full-density export semantics pinned; soft or signed total charge density cannot substitute"
+      }
+    },
+    "field_l1_electrons": 0.001,
+    "same_native_lattice": "Require actual geometry, shape, origin, and axes match. Compare signed samples directly.",
+    "different_lattices": "Validate centered crop and reference extent. Require both 4- and 6-point signed L1 within the existing limit when interpolation is needed. Keep Fourier diagnostics separate from that rule.",
+    "boundary_shell_angstrom": 1,
+    "absolute_boundary_shell_and_omitted_mass_electrons_each": 0.001,
+    "arm_same_input_energy_hartree": 1e-08,
+    "arm_same_input_force_hartree_per_bohr": 1e-07,
+    "basis_conditioning": {
+      "printed_overlap_min_at_least": 1.001e-05,
+      "printed_condition_at_most": 99990000,
+      "spherical_per_atom_QZ": 30,
+      "spherical_per_atom_5Z": 55,
+      "expected_effective_density_lmax_under_common_cap_8": {
+        "QZ": 6,
+        "5Z": 8
+      }
+    },
+    "He_reference_readiness_only": "Predeclare the same 0.001-electron limit for the distinct-grid 1200→1400 Fourier L1 in B0 as a conservative admission criterion for the finer-reference pair. Keep shared nodes, sampled-reference and round-trip values as diagnostics. This does not change earlier acceptance or imply continuum bounds."
+  },
+  "batch": [
+    {
+      "id": "F0",
+      "depends_on": [],
+      "action": "Recheck current heads, baseline evidence and live pinned x86/ARM artifact bytes, sources, binaries and BSE coefficients. Verify the older successful ARM regression applicability and the later recorded failure separately. Implement the bounded input matrix, rational-cell comparison and locked 5Z support, validate per-row hashes, one-factor deck differences, previous deck-byte identity, negative cases and isolated controls. Commit exact deck/resource manifest and dependencies before first scientific calculation. Prepare conditional new OCI allowlist/control in parallel if operation is authorized. Rebuild missing assets inside the batch only with pinned source, A03/GAPW and same-deck equivalence evidence."
+    },
+    {
+      "id": "F1",
+      "depends_on": [
+        "F0"
+      ],
+      "action": "In B0 run He 1200→1400 at 12 Å using prior controls. Require real grid refinement, AV03/05/06, both interpolation estimates and the separately specified Fourier admission criterion. Compare He 1000→1100 directly on native signed samples if actual lattices match, with AV03/05/06 and L1; a missing plateau blocks that diagnostic gate. Run both pilot candidate-to-joint comparisons at LMAXN1 6, enforce cell shell and omitted-domain criteria. Before B1 preserve exact settings, alignment and method-specific results. Native shared points and fine-only round trips explain comparison sensitivity, without treating norms as additive."
+    },
+    {
+      "id": "F2",
+      "depends_on": [
+        "F1"
+      ],
+      "action": "For short H2 and He compare QZ LMAXN1 6→8 with only the setting changed. Verify the consumed angular setting, actual effective maximum, expected 30 QZ/55 5Z spherical functions per atom, SCF and overlap. Compare candidate QZ–5Z on identical native lattices with both at LMAXN1 8; the only changes are the locked basis file and KIND labels. Require AV03 for bridge, AV04 for basis, AV05/06 and field L1 for both. The 5Z result never serves as its own basis reference."
+    },
+    {
+      "id": "F3",
+      "depends_on": [
+        "F2"
+      ],
+      "action": "Run the same bridge and basis gates on the other three H2 structures, then run all five independent QZ axes: both stricter SCF levels, radial, Lebedev, CUTOFF, REL_CUTOFF and finite cell. Compare candidate to finest and the two finest when three levels exist. Require boundary and omitted-domain checks for admissible cell pairs. Directly compare candidate QZ to jointly finer QZ, and QZ–5Z at both common tuples. Reuse exact successful decks where possible; preserve raw signed CUBE evidence until all dependent comparisons finish. A single required row failure blocks freeze."
+    },
+    {
+      "id": "F4",
+      "depends_on": [
+        "F3"
+      ],
+      "action": "Replay the five selected byte-identical decks on pinned native ARM. Check input and provenance, ordered E/F, electron counts, exact lattice and native signed L1. Report raw CUBE digest separately from numeric equivalence. For an intended OCI profile, qualify those same admitted decks via a new fixed, authorized operation/request UUID with matching successful control CI, idle preflight, actual memory reserve, web and DB/WAL protection, one-at-a-time monitoring and cleanup. OCI suitability is independent of the development freeze; old fixed DZ OCI evidence is historical."
+    },
+    {
+      "id": "F5",
+      "depends_on": [
+        "F0",
+        "F1",
+        "F2",
+        "F3",
+        "F4"
+      ],
+      "action": "Always aggregate reports and independent branch status, including failed or skipped gates. Record one terminal A04 decision for this batch. Freeze only an evidenced numeric profile with explicit units, origin/transform, boundary, contract negative cases, source/asset hashes and tested five geometries. Do not extend evidence to continuous geometry or production. Write immutable compact receipt plus WORKPLAN, profile, roadmap and same-ID Drive model section. Advance to A05/A06 after development freeze. Preserve the named no-go or incomplete cause if a required row failed or was not admitted, and close this batch without inventing new experiments."
+    }
+  ],
+  "limits": {
+    "candidate_limits_x86_gib": {
+      "H2": 6,
+      "He": 10
+    },
+    "heavy_reference_limit_x86_gib": 12,
+    "wall_seconds_per_science_deck": 900,
+    "runner_job_wall_minutes": 60,
+    "batch_wall_deadline_hours_after_launch": 4,
+    "isolation": "One rank/thread/deck at a time per runner. Parallelize independent fixtures and shards, not calculations on the same host. Split long reference jobs into shards within the time budget.",
+    "resource_protection": "No swap for this matrix. Preserve 2 GiB host RAM; disk admission 10 GiB and stop guard 6 GiB; preserve 1 GiB/file and 2 GiB/work dir limits and account separately for retained references. Cap zero production load. On resource failure record resource no-go; no paid capacity, adaptive physics retries, or arbitrary OCI shell.",
+    "retry": "At most one exact-input retry in the batch for a documented transient infrastructure failure, with original guards and within the deadline. No retry for scientific failure.",
+    "OCI": "Optional only for intended operating scope and authorized fixed route. Recheck actual idle headroom from host, reserve 2 GiB, no swap. If no admitted envelope, classify OCI qualification as incomplete inside this batch. Heavy references stay isolated development work."
+  },
+  "terminal_decision": {
+    "frozen_for_exact_scope": "Every required F0–F4 development row passed. Freeze development candidate for explicitly evidenced scope; record OCI independently.",
+    "closed_no_go": "A required scientific or contract criterion failed. Record failure, skipped dependent rows and no A04 freeze.",
+    "closed_incomplete": "A required prerequisite, host envelope, time, or evidence was unavailable. Record reason and no A04 freeze.",
+    "no_open_ended_followup": "This is the final batch for the specified A04 candidate scope. The task can finish without a further validation round by issuing one of the terminal decisions. A pass cannot be promised before measurement. No automatic new basis, tolerance, profile, or validation round."
+  }
+}
