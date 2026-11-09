@@ -58,7 +58,12 @@ def test_large_grid_diagnostic_requires_explicit_16_angstrom_limit(monkeypatch):
     def stop_before_array_allocation(*args):
         raise ReachedNativeReader
 
-    monkeypatch.setattr(diagnostic, "_grid_count", lambda attempt, cell: attempt["axis_count"])
+    def bounded_count(attempt, cell, *, maximum_axis_count):
+        if attempt["axis_count"] > maximum_axis_count:
+            raise ValueError("distinct bounded axis")
+        return attempt["axis_count"]
+
+    monkeypatch.setattr(diagnostic, "_grid_count", bounded_count)
     monkeypatch.setattr(diagnostic, "_require_aligned_atoms", lambda *args: None)
     monkeypatch.setattr(diagnostic, "_native_grid", stop_before_array_allocation)
     cube = Path("unused.cube")

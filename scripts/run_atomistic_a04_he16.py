@@ -7,6 +7,7 @@ from dataclasses import replace
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -123,12 +124,14 @@ def measure(cutoff: int, manifest: dict, candidate_dir: Path, output: Path, repo
         report["status"] = "measured"
 
 
-def retained_case(cutoff: int, manifest: dict, directory: Path) -> tuple:
+def retained_case(cutoff: int, manifest: dict, directory: Path, expected_report: dict) -> tuple:
     path, cube = directory / "report.json", directory / "density.cube"
     if path.is_symlink() or not 0 < path.stat().st_size <= 128 * 1024:
         raise ValueError("Unexpected bounded report artifact")
     report = json.loads(path.read_bytes())
-    if any(report[key] != value for key, value in report_base(manifest).items() if key != "status"):
+    if any(report[key] != expected_report[key] for key in (
+        "scope", "quanta_source", "workflow_run_id", "manifest_sha256", "resources",
+    )):
         raise ValueError("Cross-job He pilot receipt is not from this fixed workflow and input manifest")
     if report["status"] != "measured" or not report["temporary_swap_removed"] or report["cutoff_ry"] != cutoff:
         raise ValueError("Missing measured and cleaned He pilot receipt")
@@ -147,15 +150,15 @@ def compare(manifest: dict, references: Path, report: dict) -> None:
     from compare_atomistic_qz_sensitivity import compare_qz_pair
     from diagnose_atomistic_cutoff_density import diagnose_cutoff_density
 
-    require_native_ci()
     if available_memory_bytes() < 6 * GIB:
         report.update(status="deferred_comparison_headroom", available_memory_bytes=available_memory_bytes())
         return
-    lo, a, a_cube, a_sha = retained_case(1200, manifest, references / "1200")
-    hi, b, b_cube, b_sha = retained_case(1400, manifest, references / "1400")
+    lo, a, a_cube, a_sha = retained_case(1200, manifest, references / "1200", report)
+    hi, b, b_cube, b_sha = retained_case(1400, manifest, references / "1400", report)
     report["measurement_reports_sha256"] = {"1200": a_sha, "1400": b_sha}
     limit = manifest["l1_atol_electrons_each"]
-    result = compare_qz_pair(hi, lo, b, a, b_cube, a_cube, manifest["checks"], limit, axis="cutoff")
+    result = compare_qz_pair(hi, lo, b, a, b_cube, a_cube, manifest["checks"], limit, axis="cutoff",
+                             maximum_axis_count=MAXIMUM_AXIS)
     report["result"] = result
     diagnosis = diagnose_cutoff_density(b, a, b_cube, a_cube, 16, maximum_axis_count=MAXIMUM_AXIS)
     report["resampling"] = diagnosis
@@ -171,6 +174,8 @@ def main() -> int:
     mode.add_argument("--cutoff", type=int, choices=CUTOFFS)
     mode.add_argument("--references", type=Path)
     parser.add_argument("--candidate-dir", type=Path)
+    parser.add_argument("--reference-source")
+    parser.add_argument("--reference-run-id")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.write_manifest:
@@ -178,10 +183,17 @@ def main() -> int:
         return 0
     if args.output is None or (args.cutoff and args.candidate_dir is None):
         parser.error("Expected output and candidate directory for measurement")
+    replay = args.reference_source is not None or args.reference_run_id is not None
+    if replay and (args.references is None or not re.fullmatch(r"[0-9a-f]{40}", args.reference_source or "")
+                   or not re.fullmatch(r"[0-9]+", args.reference_run_id or "")):
+        parser.error("Artifact replay requires a fixed source SHA and workflow run ID")
     output = args.output.resolve()
     (output / "diagnostics").mkdir(parents=True, exist_ok=True)
     manifest = load_manifest()
     report = report_base(manifest)
+    if replay:
+        report.update(quanta_source=args.reference_source, workflow_run_id=args.reference_run_id,
+                      comparison_execution="offline replay of independently verified GitHub workflow artifacts")
     try:
         if args.cutoff:
             report["cutoff_ry"] = args.cutoff

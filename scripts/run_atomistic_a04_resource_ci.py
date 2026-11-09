@@ -892,7 +892,7 @@ def accuracy_scalars(reference: dict, candidate: dict, checks: dict, *, energy_f
 
 def compare_accuracy_pair(reference_case: Case, case: Case, reference: dict, attempt: dict,
                           reference_path: Path, path: Path, checks: dict, l1_atol: float,
-                          *, energy_force_check: str = "AV03") -> dict:
+                          *, energy_force_check: str = "AV03", maximum_axis_count: int | None = None) -> dict:
     from compare_atomistic_a04_accuracy import compare_density
 
     if reference_case.system != case.system:
@@ -903,7 +903,8 @@ def compare_accuracy_pair(reference_case: Case, case: Case, reference: dict, att
         candidate_cell_angstrom=case.cell, candidate_cutoff_ry=case.cutoff,
         candidate_rel_cutoff_ry=case.rel_cutoff,
     )
-    density = compare_density(reference, attempt, reference_path, path, reference_case.cell, case.cell)
+    limits = {} if maximum_axis_count is None else {"maximum_axis_count": maximum_axis_count}
+    density = compare_density(reference, attempt, reference_path, path, reference_case.cell, case.cell, **limits)
     result["spatial_density"] = density
     result["spatial_l1_screen_passed"] = all(
         method["zero_extended_absolute_density_difference_integral_electrons"] <= l1_atol

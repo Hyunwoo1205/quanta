@@ -1,0 +1,108 @@
+name: Atomistic A04 He 16 angstrom archived comparison
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/design/atomistic-a04-v0.1/he16-reference-replay.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Bind the raw CUBEs to the original measured run
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          def get(path):
+              raw = subprocess.check_output(
+                  ["gh", "api", "repos/Hyunwoo1205/quanta/actions/" + path], timeout=30
+              )
+              return json.loads(raw)
+
+          p = json.loads(Path("docs/design/atomistic-a04-v0.1/he16-reference-replay.json").read_bytes())
+          run_id, sha = p["source_run_id"], p["source_sha"]
+          run = get(f"runs/{run_id}/attempts/{p['source_run_attempt']}")
+          assert run["head_sha"] == sha and run["head_branch"] == "main" and run["status"] == "completed"
+          assert run["path"] == p["source_workflow"]
+          jobs = get(f"runs/{run_id}/attempts/{p['source_run_attempt']}/jobs")["jobs"]
+          outputs = {"run-id": run_id, "source-sha": sha}
+          for cutoff, lock in p["artifacts"].items():
+              job = next(j for j in jobs if j["name"] == f"measure / measure (he16-{cutoff})")
+              assert job["conclusion"] == "success" and job["head_sha"] == sha
+              a = get(f"artifacts/{lock['id']}")
+              assert not a["expired"] and a["workflow_run"]["id"] == run_id and a["workflow_run"]["head_sha"] == sha
+              assert all(a[k] == lock[k] for k in ("id", "name", "digest", "size_in_bytes"))
+              outputs[f"artifact-{cutoff}"] = a["id"]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as stream:
+              for key, value in outputs.items():
+                  print(f"{key}={value}", file=stream)
+          PY
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ steps.source.outputs.run-id }}
+          artifact-ids: ${{ steps.source.outputs.artifact-1200 }}
+          path: .cache/he16-replay/1200
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ steps.source.outputs.run-id }}
+          artifact-ids: ${{ steps.source.outputs.artifact-1400 }}
+          path: .cache/he16-replay/1400
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Compare the unmodified retained densities
+        env:
+          HE16_SOURCE: ${{ steps.source.outputs.source-sha }}
+          HE16_RUN_ID: ${{ steps.source.outputs.run-id }}
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          lock = json.loads(Path("docs/design/atomistic-a04-v0.1/he16-reference-replay.json").read_bytes())
+          for cutoff, artifact in lock["artifacts"].items():
+              report = Path(f".cache/he16-replay/{cutoff}/report.json")
+              assert hashlib.sha256(report.read_bytes()).hexdigest() == artifact["report_sha256"]
+          PY
+          lock="$(mktemp)"
+          grep '^numpy==' requirements.lock.txt > "$lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$lock"
+          python -B scripts/run_atomistic_a04_he16.py --references .cache/he16-replay \
+            --reference-source "$HE16_SOURCE" --reference-run-id "$HE16_RUN_ID" --output .cache/he16-replay-result
+      - name: Preserve compact comparison evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: he16-replayed-pair-receipt-${{ github.run_attempt }}
+          path: .cache/he16-replay-result/report.json
+          if-no-files-found: warn
+          retention-days: 14

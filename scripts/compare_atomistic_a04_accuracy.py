@@ -19,6 +19,7 @@ from verify_atomistic_a03 import LOCK_DIR
 
 HEADER_ATOL_BOHR = 5.01e-7
 MAX_AXIS_COUNT = 360
+MAX_HE16_AXIS_COUNT = 400
 TOTAL_ELECTRON_DENSITY = ["-Quickstep-", " TOTAL ELECTRON DENSITY"]
 
 
@@ -34,13 +35,13 @@ def _cell_length(value: int | float | str) -> Fraction:
     return Fraction(decimal)
 
 
-def _grid_count(attempt: dict, cell_bohr: float) -> int:
+def _grid_count(attempt: dict, cell_bohr: float, *, maximum_axis_count: int = MAX_AXIS_COUNT) -> int:
     density = attempt["density"]
     counts = density["grid_counts"]
     if (
         attempt["status"] != "measured" or density["comments"] != TOTAL_ELECTRON_DENSITY
         or len(counts) != 3 or any(type(n) is not int for n in counts)
-        or not 1 <= counts[0] <= MAX_AXIS_COUNT or counts != [counts[0]] * 3
+        or not 1 <= counts[0] <= maximum_axis_count or counts != [counts[0]] * 3
         or density["samples"] != math.prod(counts)
     ):
         raise ValueError("Expected a measured, bounded cubic total electron-density CUBE")
@@ -155,6 +156,7 @@ def _overlap_metrics(slabs: list[tuple], count: int, dv: float, shell_absolute: 
 def compare_density(
     reference_attempt: dict, candidate_attempt: dict, reference_cube: Path, candidate_cube: Path,
     reference_cell_angstrom: int | float | str, candidate_cell_angstrom: int | float | str,
+    *, maximum_axis_count: int = MAX_AXIS_COUNT,
 ) -> dict:
     """Report overlap and omitted-domain errors, without assigning a scientific pass."""
     reference_cell = _cell_length(reference_cell_angstrom)
@@ -163,8 +165,14 @@ def compare_density(
         raise ValueError("Expected a reference cell no smaller than the candidate cell")
     engine_units = json.loads((LOCK_DIR / "density-and-units.json").read_bytes())["engine_unit_profile"]
     bohr_per_angstrom = 1e-10 / engine_units["a_bohr_m"]
-    ref_n = _grid_count(reference_attempt, reference_cell * bohr_per_angstrom)
-    cand_n = _grid_count(candidate_attempt, candidate_cell * bohr_per_angstrom)
+    if maximum_axis_count != MAX_AXIS_COUNT and (
+        maximum_axis_count != MAX_HE16_AXIS_COUNT or reference_cell != 16 or candidate_cell != 16
+    ):
+        raise ValueError("Extended density grid bound requires two 16 Å cells")
+    ref_n = _grid_count(reference_attempt, reference_cell * bohr_per_angstrom,
+                        maximum_axis_count=maximum_axis_count)
+    cand_n = _grid_count(candidate_attempt, candidate_cell * bohr_per_angstrom,
+                         maximum_axis_count=maximum_axis_count)
     if reference_cell == candidate_cell and ref_n < cand_n:
         raise ValueError("Equal-cell comparison requires a reference grid at least as fine as the candidate")
     overlap = ref_n * candidate_cell / reference_cell

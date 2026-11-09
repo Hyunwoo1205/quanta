@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "source_run_id": 42549178440,
+  "source_run_attempt": 1,
+  "source_sha": "68ae44c5ec73c9428102b904115be6ddc7760e45",
+  "source_workflow": ".github/workflows/atomistic-a04-he16.yml",
+  "artifacts": {
+    "1200": {
+      "id": 13645866395,
+      "name": "he16-1200-raw-1",
+      "digest": "sha256:871b277d660c21dfe28d9e2b1376cd4d64a1036445b8f133484a62f972062154",
+      "size_in_bytes": 24703825,
+      "report_sha256": "4333240fc1471eb203ef99e4e4be9aa61959c31ec28e5659dfea5220f5a22bba"
+    },
+    "1400": {
+      "id": 13645269722,
+      "name": "he16-1400-raw-1",
+      "digest": "sha256:66617ca166c22fa0caeb4d362c15df2c9fdcd14bf835c1bfb7390cb32d188989",
+      "size_in_bytes": 154480921,
+      "report_sha256": "d083c2d6fb4a5baea618d04782e70373d8266d858c26bebadc98a24c7a571a27"
+    }
+  }
+}

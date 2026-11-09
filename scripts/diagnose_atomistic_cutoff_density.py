@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from compare_atomistic_a04_accuracy import (
+    MAX_HE16_AXIS_COUNT,
     _grid_count,
     _interpolated_planes,
     _require_aligned_atoms,
@@ -19,7 +20,7 @@ from verify_atomistic_a03 import LOCK_DIR
 
 # Bound the in-memory diagnostics separately from the CP2K container.
 MAX_DIAGNOSTIC_AXIS_COUNT = 300
-MAX_16_ANGSTROM_DIAGNOSTIC_AXIS_COUNT = 400
+MAX_16_ANGSTROM_DIAGNOSTIC_AXIS_COUNT = MAX_HE16_AXIS_COUNT
 
 
 def _native_grid(path: Path, attempt: dict, count: int) -> np.ndarray:
@@ -110,8 +111,8 @@ def diagnose_cutoff_density(
         raise ValueError("Unsupported cutoff-density diagnostic axis limit for this cell")
     units = json.loads((LOCK_DIR / "density-and-units.json").read_bytes())["engine_unit_profile"]
     cell_bohr = cell_angstrom * 1e-10 / units["a_bohr_m"]
-    fine_count = _grid_count(reference_attempt, cell_bohr)
-    coarse_count = _grid_count(candidate_attempt, cell_bohr)
+    fine_count = _grid_count(reference_attempt, cell_bohr, maximum_axis_count=maximum_axis_count)
+    coarse_count = _grid_count(candidate_attempt, cell_bohr, maximum_axis_count=maximum_axis_count)
     if not 6 <= coarse_count < fine_count <= maximum_axis_count:
         raise ValueError("Expected distinct bounded CUTOFF density grids, finer reference first")
     _require_aligned_atoms(reference_attempt["density"], candidate_attempt["density"], 0)

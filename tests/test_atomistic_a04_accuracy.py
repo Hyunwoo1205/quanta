@@ -298,3 +298,33 @@ def test_helium_comparison_requires_one_force_row(monkeypatch):
         runner.accuracy_scalars(
             one_atom, {**one_atom, "engine_forces_hartree_per_bohr": [[0.0] * 3] * 2}, check_map,
         )
+
+
+def test_extended_he_grid_bound_is_explicit_and_limited_to_equal_16_angstrom_cells(tmp_path, comparison, monkeypatch):
+    import compare_atomistic_a04_accuracy as accuracy
+
+    class ReachedNativeReader(Exception):
+        pass
+
+    def header(count):
+        spacing = 16 * BOHR_PER_ANGSTROM / count
+        return {"status": "measured", "density": {
+            "comments": accuracy.TOTAL_ELECTRON_DENSITY,
+            "grid_counts": [count] * 3, "samples": count**3,
+            "origin_bohr_rounded": [0, 0, 0],
+            "grid_axes_bohr_rounded": (np.eye(3) * spacing).tolist(),
+        }}
+
+    def stop_before_reading(*args):
+        raise ReachedNativeReader
+
+    monkeypatch.setattr(accuracy, "_require_aligned_atoms", stop_before_reading)
+    compare, _ = comparison
+    candidate, reference = header(360), header(375)
+    cube = tmp_path / "unused.cube"
+    with pytest.raises(ValueError, match="bounded cubic"):
+        compare(reference, candidate, cube, cube, 16, 16)
+    with pytest.raises(ValueError, match="Extended density grid bound"):
+        compare(reference, candidate, cube, cube, 16, 12, maximum_axis_count=400)
+    with pytest.raises(ReachedNativeReader):
+        compare(reference, candidate, cube, cube, 16, 16, maximum_axis_count=400)

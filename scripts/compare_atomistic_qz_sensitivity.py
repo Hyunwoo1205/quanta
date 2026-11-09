@@ -102,6 +102,7 @@ def compare_qz_pair(
     reference_cube: Path, candidate_cube: Path, checks: dict, l1_atol: float,
     *, axis: str, shell_width_angstrom: int = 1, shell_atol: float = 0.001,
     omitted_atol: float = 0.001, allow_cell_interpolation: bool = False,
+    maximum_axis_count: int | None = None,
 ) -> dict:
     """Compare a preregistered candidate and its tighter one-factor endpoint."""
     from run_atomistic_a04_resource_ci import compare_accuracy_pair
@@ -128,8 +129,10 @@ def compare_qz_pair(
         reference["density"][key] != candidate["density"][key] for key in SAME_LATTICE_FIELDS
     ):
         raise ValueError(f"The QZ {axis} comparison requires the same native lattice and ordered geometry")
+    limits = {} if maximum_axis_count is None else {"maximum_axis_count": maximum_axis_count}
     result = compare_accuracy_pair(
         reference_case, candidate_case, reference, candidate, reference_cube, candidate_cube, checks, l1_atol,
+        **limits,
     )
     result["sensitivity_axis"] = axis
     result["reference_axis_setting"] = getattr(reference_case, field)
