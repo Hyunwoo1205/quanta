@@ -1,0 +1,186 @@
+name: Atomistic A04 even-grid final pilot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/design/atomistic-a04-v0.1/a04-even-grid-final-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: atomistic-a04-even-grid-final
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    if: github.ref == 'refs/heads/main'
+    name: F0 and F1 fixed inputs and prior evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Verify the locked basis, potential and successor input bytes
+        id: fixed_inputs
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(uname -m)" = x86_64
+          python -B scripts/check_atomistic_a02.py
+          python -B scripts/run_atomistic_a04_even_grid_final.py --check-manifest
+      - name: Verify and retain exact prior candidate evidence
+        id: historical
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -B scripts/verify_atomistic_a04_even_grid_preflight.py \
+            --output .cache/a04-even-grid-preflight/evidence
+      - name: Pass checked historical CUBEs and receipts to F2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-even-grid-historical-${{ github.run_attempt }}
+          path: |
+            .cache/a04-even-grid-preflight/evidence/he/qz6.cube
+            .cache/a04-even-grid-preflight/evidence/he/qz6.json
+            .cache/a04-even-grid-preflight/evidence/h2-short/qz6.cube
+            .cache/a04-even-grid-preflight/evidence/h2-short/qz6.json
+            .cache/a04-even-grid-preflight/evidence/preflight.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+      - name: Record missing preflight evidence
+        if: always()
+        env:
+          FIXED_INPUTS: ${{ steps.fixed_inputs.outcome }}
+          HISTORICAL: ${{ steps.historical.outcome }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          output = Path(".cache/a04-even-grid-preflight/evidence/preflight.json")
+          if not output.exists():
+              output.parent.mkdir(parents=True, exist_ok=True)
+              summary = {
+                  "status": "measurement_incomplete",
+                  "stage": "f0-f1",
+                  "quanta_source": os.environ["GITHUB_SHA"],
+                  "workflow_run_id": os.environ["GITHUB_RUN_ID"],
+                  "workflow_run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                  "fixed_inputs": os.environ["FIXED_INPUTS"],
+                  "historical": os.environ["HISTORICAL"],
+              }
+              output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+              raise SystemExit(1)
+          PY
+      - name: Preserve the F0 and F1 receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-even-grid-preflight-receipt-${{ github.run_attempt }}
+          path: .cache/a04-even-grid-preflight/evidence/preflight.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+  measure:
+    needs: preflight
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: even-grid-final-f2
+
+  compare:
+    if: always() && github.ref == 'refs/heads/main'
+    needs: [preflight, measure]
+    name: F2 QZ angular bridge and QZ to 5Z comparisons
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        if: needs.preflight.result == 'success'
+        with:
+          name: a04-even-grid-historical-${{ github.run_attempt }}
+          path: .cache/a04-even-grid-compare/evidence/historical
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        if: needs.preflight.result == 'success'
+        with:
+          pattern: 'a04-even-grid-*-[q5]z8-${{ github.run_attempt }}'
+          path: .cache/a04-even-grid-compare/evidence/rows
+          digest-mismatch: error
+      - name: Compare only verified inputs and signed native densities
+        if: needs.preflight.result == 'success'
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          numpy_lock="$(mktemp)"
+          grep '^numpy==' requirements.lock.txt > "$numpy_lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
+          evidence=.cache/a04-even-grid-compare/evidence
+          for row in he-qz8 he-5z8 h2-short-qz8 h2-short-5z8; do
+            artifact="$evidence/rows/a04-even-grid-$row-$GITHUB_RUN_ATTEMPT"
+            if [[ -d "$artifact" ]]; then
+              mv -- "$artifact" "$evidence/$row"
+            fi
+          done
+          python -B scripts/run_atomistic_a04_even_grid_final.py \
+            --stage compare \
+            --evidence-dir "$evidence" \
+            --output-dir .cache/a04-even-grid-compare/result
+      - name: Record missing stage evidence
+        if: always()
+        env:
+          PREFLIGHT_RESULT: ${{ needs.preflight.result }}
+          MEASURE_RESULT: ${{ needs.measure.result }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          output = Path(".cache/a04-even-grid-compare/result/report.json")
+          if not output.exists():
+              output.parent.mkdir(parents=True, exist_ok=True)
+              summary = {
+                  "status": "measurement_incomplete",
+                  "stage": "f2",
+                  "quanta_source": os.environ["GITHUB_SHA"],
+                  "workflow_run_id": os.environ["GITHUB_RUN_ID"],
+                  "workflow_run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                  "preflight": os.environ["PREFLIGHT_RESULT"],
+                  "measure": os.environ["MEASURE_RESULT"],
+                  "error": "No digest-verified F2 comparison report was produced.",
+              }
+              output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+              print("QUANTA_A04_EVEN_GRID_RESULT " + json.dumps(summary))
+              raise SystemExit(1)
+          PY
+      - name: Preserve the F2 comparison receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-even-grid-f2-compare-${{ github.run_attempt }}
+          path: .cache/a04-even-grid-compare/result/report.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

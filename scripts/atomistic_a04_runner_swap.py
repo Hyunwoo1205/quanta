@@ -34,6 +34,7 @@ def _check_runner(work_root: Path) -> None:
         "Hyunwoo1205/quanta/.github/workflows/atomistic-a04-resource-ci.yml@refs/heads/main",
         "Hyunwoo1205/quanta/.github/workflows/atomistic-a04-he16.yml@refs/heads/main",
         "Hyunwoo1205/quanta/.github/workflows/atomistic-a04-he-opt.yml@refs/heads/main",
+        "Hyunwoo1205/quanta/.github/workflows/atomistic-a04-even-grid-final.yml@refs/heads/main",
     }
     if (
         os.environ.get("GITHUB_WORKFLOW_REF") not in allowed_workflows

@@ -87,6 +87,25 @@ def probe_metadata(
     ) == (16, 80, 1e-8, 80, 200, 194, 6) and cutoff_ry in (1200, 1400):
         cells += (16,)
         cutoffs += (1400,)
+    if final_batch and system == "he" and lmaxn1 == 8 and max_scf == 80:
+        # Exact successor batch rows, isolated from the historical He probes.
+        controls = (rel_cutoff_ry, eps_scf, radial_grid, lebedev_grid)
+        base = (80, 1e-8, 200, 194)
+        joint = (120, 1e-10, 250, 302)
+        planned = (
+            cell_angstrom == 12 and cutoff_ry == 1800 and controls == base
+            or (cell_angstrom, cutoff_ry) in ((12, 2100), ("13.5", 1900)) and controls == joint
+            or qz and cell_angstrom == 12 and cutoff_ry == 1800 and controls in (
+                (80, 1e-9, 200, 194), (80, 1e-10, 200, 194),
+                (80, 1e-8, 250, 194), (80, 1e-8, 200, 302), (120, 1e-8, 200, 194),
+            )
+            or qz and (cell_angstrom, cutoff_ry) in (
+                (12, 2000), (12, 2100), ("12.6", 1800), ("13.5", 1800),
+            ) and controls == base
+        )
+        if planned:
+            cells += ("12.6",)
+            cutoffs += (1800, 1900, 2000, 2100)
     for value, allowed, name in (
         (cell_angstrom, cells, "cell_angstrom"),
         (cutoff_ry, cutoffs, "cutoff_ry"),
