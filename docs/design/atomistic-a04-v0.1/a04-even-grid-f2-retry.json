@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "scope": "One exact-input He-only recovery after admission failed before CP2K. Retain the original H2 scientific no-go.",
+  "prior": {
+    "quanta_source": "f64dd31014b3a7cb3b1f7e6c16f7cb5376ceb804",
+    "workflow_run_id": "42645481557",
+    "workflow_run_attempt": "1",
+    "manifest_sha256": "f9f84d100e1100a452fd2b239c7e0e649234106dcd11e674a466a4646489507d",
+    "plan_sha256": "f41bd0edd8a3b865e4bd73712d9b8b12fbb61f02a0eee92a3655b32ad50587b2",
+    "workflow": "atomistic-a04-even-grid-final.yml"
+  },
+  "jobs": {
+    "129257469126": {
+      "name": "F0 and F1 fixed inputs and prior evidence",
+      "conclusion": "success"
+    },
+    "129257868916": {
+      "name": "measure / measure (h2-short-5z8)",
+      "conclusion": "success"
+    },
+    "129257869001": {
+      "name": "measure / measure (he-qz8)",
+      "conclusion": "failure"
+    },
+    "129257869020": {
+      "name": "measure / measure (h2-short-qz8)",
+      "conclusion": "success"
+    },
+    "129257869086": {
+      "name": "measure / measure (he-5z8)",
+      "conclusion": "failure"
+    },
+    "129259013994": {
+      "name": "F2 QZ angular bridge and QZ to 5Z comparisons",
+      "conclusion": "failure"
+    }
+  },
+  "artifacts": {
+    "historical": {
+      "id": 13685829435,
+      "name": "a04-even-grid-historical-1",
+      "size_in_bytes": 48279503,
+      "digest": "sha256:90b307a35540f16a7a53fc8a1ce2efcacc0e7a3cd2601edf05dceaafbcc95d70",
+      "members": {
+        "he/qz6.cube": {
+          "size_in_bytes": 431513858,
+          "sha256": "674b2342866faf7cf8b48a17ed799032694a7344c5e074af50a940d3790471c9"
+        },
+        "h2-short/qz6.cube": {
+          "size_in_bytes": 76788312,
+          "sha256": "3edf9537a6b83b0a246e059d357e30474040cf82bb21e2f5243a9b714b38a3fe"
+        },
+        "he/qz6.json": {
+          "size_in_bytes": 11034,
+          "sha256": "8775424fe133eb0fa4ee70381532d36c63b9d1f73e1496d88b6bd1729c577767"
+        },
+        "h2-short/qz6.json": {
+          "size_in_bytes": 5781,
+          "sha256": "7fcee12f544aba291981569e91cb8e03773e8ef579432d01bc277ad6e49222e2"
+        },
+        "preflight.json": {
+          "size_in_bytes": 5881,
+          "sha256": "33db0009b851879d6a844531cc2772488c56c96ba564daced3076febf8b49ba9"
+        }
+      }
+    },
+    "h2-short-qz8": {
+      "id": 13688205373,
+      "name": "a04-even-grid-h2-short-qz8-1",
+      "size_in_bytes": 19046439,
+      "digest": "sha256:7290a33c5723f2574dd8ecb3fd3dc2baf466a28f206c3af82075691dcd17f9f9",
+      "members": {
+        "density.cube": {
+          "size_in_bytes": 76788312,
+          "sha256": "72e3db4f4bc0a1d28750add06deebecf63849d8a6c6bfa738fe15e77d02a8323"
+        },
+        "report.json": {
+          "size_in_bytes": 13950,
+          "sha256": "c92710af25cb96ba023af8377f4a51197866049f90682282fca2c89795b8d12e"
+        }
+      }
+    },
+    "h2-short-5z8": {
+      "id": 13686778963,
+      "name": "a04-even-grid-h2-short-5z8-1",
+      "size_in_bytes": 18986932,
+      "digest": "sha256:03aad5be21d5e8f3398edca8ebd5c31e8f468f1c56fe35964324f53d8b78ce55",
+      "members": {
+        "density.cube": {
+          "size_in_bytes": 76788312,
+          "sha256": "1052629402d521ed3deebeef8c5e15b79617ff65faa8bcf3cd8933c45f8bfc7f"
+        },
+        "report.json": {
+          "size_in_bytes": 13973,
+          "sha256": "503921dae4f1ba5f41e85742e7508f403348309547897e79163fc565d8950a62"
+        }
+      }
+    },
+    "he-qz8-blocked": {
+      "id": 13687631526,
+      "name": "a04-even-grid-he-qz8-1",
+      "size_in_bytes": 1166,
+      "digest": "sha256:cfa75aaf8786c717063e2db2caacd8782741f207141247161030e0220465b32e",
+      "members": {
+        "report.json": {
+          "size_in_bytes": 2405,
+          "sha256": "5bdea229415afb0eeb559e4273b4b1f6e5fa71b2cbca7afccafa663fbdddd6fd"
+        }
+      }
+    },
+    "he-5z8-blocked": {
+      "id": 13688090482,
+      "name": "a04-even-grid-he-5z8-1",
+      "size_in_bytes": 1164,
+      "digest": "sha256:79ac25e8fac4cee4d0cb93526f8025396957c0701348086dcb15a5051f57478e",
+      "members": {
+        "report.json": {
+          "size_in_bytes": 2405,
+          "sha256": "68d6573fc85040ea11d5606d91b294e20d5a5f8e31a62881d3c2bbb86b668456"
+        }
+      }
+    },
+    "comparison": {
+      "id": 13687133282,
+      "name": "a04-even-grid-f2-compare-1",
+      "size_in_bytes": 4362,
+      "digest": "sha256:b70e3e7078bad6a55f638457f8a01e1d7de3cfc7040d3e8190fb361a849e8cf5",
+      "members": {
+        "report.json": {
+          "size_in_bytes": 29281,
+          "sha256": "5fcb1fc3c2eac4a430500154133a077c658b1f473be9e72365bec3dd2cb2d10b"
+        }
+      }
+    }
+  },
+  "allowed_rerun_rows": [
+    "he-qz8",
+    "he-5z8"
+  ],
+  "prior_he_error": "RuntimeError: Host memory reserve unavailable before CP2K start",
+  "prior_h2_status": "criterion_not_met"
+}

@@ -26,9 +26,11 @@ from run_atomistic_a04_resource_ci import (
 
 PLAN = DESIGN / "a04-final-validation-he-even-grid-plan.json"
 MANIFEST = DESIGN / "a04-even-grid-final-inputs.json"
+RETRY_LOCK = DESIGN / "a04-even-grid-f2-retry.json"
 PILOTS = ("h2-short", "he")
 BASIS_LABELS = ("qz8", "5z8")
 ERRORS = (OSError, KeyError, RuntimeError, ValueError, subprocess.SubprocessError)
+RUN_IDENTITY = ("quanta_source", "workflow_run_id", "workflow_run_attempt", "manifest_sha256")
 
 
 def read_json(path: Path) -> dict:
@@ -145,9 +147,10 @@ def measure(system: str, label: str, manifest: dict, candidate_dir: Path, output
     case = make_case(system, label, manifest)
     fixture = manifest["fixtures"][system]
     spec = fixture["decks"][label]
-    cap = min(spec["cap_gib"] * GIB, available_memory_bytes() - MEMORY_RESERVE_BYTES)
+    minimum = spec["min_cap_gib"] * GIB
     swap_bytes = spec["swap_gib"] * GIB
-    if cap < spec["min_cap_gib"] * GIB or shutil.disk_usage(output).free < DISK_ADMISSION + swap_bytes:
+    if (available_memory_bytes() < minimum + MEMORY_RESERVE_BYTES
+            or shutil.disk_usage(output).free < DISK_ADMISSION + swap_bytes):
         raise RuntimeError("Insufficient hosted runner headroom for the fixed row")
     if swap_bytes:
         filesystem = subprocess.check_output(
@@ -162,7 +165,9 @@ def measure(system: str, label: str, manifest: dict, candidate_dir: Path, output
         guard = bounded_ci_swap(scratch, minimum_free_bytes=DISK_ADMISSION) if swap_bytes else nullcontext(0)
         with guard as swap:
             available = available_memory_bytes()
-            if available < cap + MEMORY_RESERVE_BYTES:
+            cap = min(spec["cap_gib"] * GIB, available - MEMORY_RESERVE_BYTES)
+            cap -= cap % os.sysconf("SC_PAGE_SIZE")
+            if cap < minimum:
                 raise RuntimeError("Host memory reserve unavailable before CP2K start")
             attempt = report["attempt"]
             run_attempt(case, 1, cap, available, candidate, scratch, output / "diagnostics", attempt,
@@ -196,8 +201,8 @@ def read_row(system: str, label: str, manifest: dict, evidence: Path, report: di
         root = evidence / f"{system}-{label}"
         record = read_json(root / "report.json")
         cube = root / "density.cube"
-        identity = ("quanta_source", "workflow_run_id", "workflow_run_attempt", "manifest_sha256")
-        if (any(record[key] != report[key] for key in identity)
+        source = report["retry"]["prior"] if system == "h2-short" and "retry" in report else report
+        if (any(record[key] != source[key] for key in RUN_IDENTITY)
                 or record["status"] != "measured" or record["system"] != system or record["label"] != label
                 or record["case"] != asdict(case) or record["temporary_swap_removed"] is not True
                 or record["scratch_removed"] is not True):
@@ -218,8 +223,8 @@ def compare(evidence: Path, manifest: dict, report: dict) -> None:
 
     proof_path = evidence / "historical" / "preflight.json"
     proof = read_json(proof_path)
-    identity = ("quanta_source", "workflow_run_id", "workflow_run_attempt", "manifest_sha256")
-    if (any(proof[key] != report[key] for key in identity) or proof["status"] != "verified_historical_evidence"
+    source = report["retry"]["prior"] if "retry" in report else report
+    if (any(proof[key] != source[key] for key in RUN_IDENTITY) or proof["status"] != "verified_historical_evidence"
             or proof["plan_sha256"] != manifest["plan_sha256"] or set(proof["historical"]) != set(PILOTS)):
         raise ValueError("Historical F1 proof is from a different successor run or plan")
     report.update(preflight_sha256=sha256(proof_path), historical=proof["historical"])
@@ -277,6 +282,7 @@ def main() -> int:
     parser.add_argument("--candidate-dir", type=Path)
     parser.add_argument("--evidence-dir", type=Path)
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--retry-lock", action="store_true")
     args = parser.parse_args()
     if args.write_manifest:
         MANIFEST.write_bytes((json.dumps(build_manifest(), indent=2) + "\n").encode())
@@ -302,6 +308,22 @@ def main() -> int:
             measure(args.system, args.label, manifest, args.candidate_dir, output, report)
         else:
             report["pilots"] = {}
+            if args.retry_lock:
+                lock = read_json(RETRY_LOCK)
+                prior = lock["prior"]
+                if (prior["manifest_sha256"] != report["manifest_sha256"]
+                        or prior["plan_sha256"] != manifest["plan_sha256"]
+                        or prior["workflow_run_id"] == report["workflow_run_id"]):
+                    raise ValueError("Retry must reuse the exact locked prior manifest in a new run")
+                retry_path = args.evidence_dir / "retry.json"
+                staged = read_json(retry_path)
+                lock_sha = sha256(RETRY_LOCK)
+                if (staged["status"] != "verified_exact_retry_evidence" or staged["prior"] != prior
+                        or staged["retry_lock_sha256"] != lock_sha
+                        or any(staged[key] != report[key] for key in RUN_IDENTITY[:3])):
+                    raise ValueError("Retry staging receipt does not authorize the imported results")
+                report["retry"] = {"prior": prior, "lock_sha256": lock_sha,
+                                   "staging_receipt_sha256": sha256(retry_path)}
             compare(args.evidence_dir, manifest, report)
     except ERRORS as exc:
         report["error"] = f"{type(exc).__name__}: {exc}"[:500]

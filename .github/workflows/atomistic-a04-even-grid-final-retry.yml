@@ -1,0 +1,136 @@
+name: Atomistic A04 even-grid He retry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/design/atomistic-a04-v0.1/a04-even-grid-f2-retry.json
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: atomistic-a04-even-grid-final
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: even-grid-final-f2-retry
+
+  compare:
+    if: always() && github.ref == 'refs/heads/main' && github.run_attempt == 1
+    needs: measure
+    name: F2 compare exact prior evidence and two He retries
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Stage verified first-run inputs and results
+        id: original_evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(uname -m)" = x86_64
+          python -B scripts/verify_atomistic_a04_even_grid_retry.py --output .cache/a04-even-grid-compare/evidence
+      - name: Download the checked He QZ8 retry artifact
+        id: he_qz8
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: a04-even-grid-he-qz8-${{ github.run_attempt }}
+          path: .cache/a04-even-grid-compare/downloads/he-qz8
+          digest-mismatch: error
+      - name: Download the checked He 5Z8 retry artifact
+        id: he_5z8
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: a04-even-grid-he-5z8-${{ github.run_attempt }}
+          path: .cache/a04-even-grid-compare/downloads/he-5z8
+          digest-mismatch: error
+      - name: Compare the digest-verified unchanged inputs and signed native densities
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          HE_QZ8_DOWNLOAD: ${{ steps.he_qz8.outcome }}
+          HE_5Z8_DOWNLOAD: ${{ steps.he_5z8.outcome }}
+        run: |
+          set -euo pipefail
+          numpy_lock="$(mktemp)"
+          grep '^numpy==' requirements.lock.txt > "$numpy_lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
+          base=.cache/a04-even-grid-compare
+          if [[ "$HE_QZ8_DOWNLOAD" == success ]]; then
+            mv -- "$base/downloads/he-qz8" "$base/evidence/he-qz8"
+          fi
+          if [[ "$HE_5Z8_DOWNLOAD" == success ]]; then
+            mv -- "$base/downloads/he-5z8" "$base/evidence/he-5z8"
+          fi
+          python -B scripts/run_atomistic_a04_even_grid_final.py \
+            --stage compare --retry-lock \
+            --evidence-dir "$base/evidence" \
+            --output-dir "$base/result"
+      - name: Record missing retry stage evidence
+        if: always()
+        env:
+          MEASURE_RESULT: ${{ needs.measure.result }}
+          ORIGINAL_EVIDENCE: ${{ steps.original_evidence.outcome }}
+          HE_QZ8_DOWNLOAD: ${{ steps.he_qz8.outcome }}
+          HE_5Z8_DOWNLOAD: ${{ steps.he_5z8.outcome }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          output = Path(".cache/a04-even-grid-compare/result/report.json")
+          if not output.exists():
+              output.parent.mkdir(parents=True, exist_ok=True)
+              summary = {
+                  "status": "measurement_incomplete",
+                  "stage": "f2",
+                  "quanta_source": os.environ["GITHUB_SHA"],
+                  "workflow_run_id": os.environ["GITHUB_RUN_ID"],
+                  "workflow_run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                  "measure": os.environ["MEASURE_RESULT"],
+                  "original_evidence": os.environ["ORIGINAL_EVIDENCE"],
+                  "he_qz8_download": os.environ["HE_QZ8_DOWNLOAD"],
+                  "he_5z8_download": os.environ["HE_5Z8_DOWNLOAD"],
+                  "error": "No digest-verified F2 retry comparison report was produced.",
+              }
+              output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+              print("QUANTA_A04_SUCCESSOR_RESULT " + json.dumps(summary))
+              raise SystemExit(1)
+          PY
+      - name: Preserve the F2 retry comparison receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-even-grid-f2-compare-${{ github.run_attempt }}
+          path: .cache/a04-even-grid-compare/result/report.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve compact retry provenance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-even-grid-f2-retry-proof-${{ github.run_attempt }}
+          path: |
+            .cache/a04-even-grid-compare/evidence/retry.json
+            .cache/a04-even-grid-compare/evidence/historical/preflight.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
