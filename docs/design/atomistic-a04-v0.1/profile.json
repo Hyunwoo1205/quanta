@@ -148,6 +148,11 @@
       "numeric_scope": "Seven F1 x86 measurements. He 1200 to 1400 Ry met the original 4-/6-point density criteria and failed the separate preregistered Fourier readiness threshold.",
       "downstream": "QZ–5Z, full matrix and native ARM replay not run; OCI not tested. No automatic further round."
     },
+    "he16_reference_pilot": {
+      "status": "criterion_not_met",
+      "receipt": "docs/verification/atomistic-a04/he16-reference-42549178440.json",
+      "numeric_scope": "He QZ 16 angstrom at 1200 and 1400 Ry, isolated x86 with temporary swap. Both converged; 4-point, 6-point and Fourier density shape criteria failed. No operating qualification."
+    },
     "fixed_fixture_scf_screen": {
       "status": "passed_on_pinned_x86_fixed_fixtures",
       "candidate_eps_scf": 1e-8,

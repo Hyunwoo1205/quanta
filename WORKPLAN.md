@@ -12,6 +12,21 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
+## A04 후속 시도 마감 — He 16 Å 밀도 기준 미달
+
+[계산 실행 42549178440](https://github.com/Hyunwoo1205/quanta/actions/runs/42549178440)에서 [고정 He 입력](docs/design/atomistic-a04-v0.1/he16-reference-inputs.json)의 1200·1400 Ry를 실행했습니다. 기존 12 Å 입력에서 셀과 중앙 좌표만 변경했습니다. x86 격리 러너에서 1랭크·1스레드, RAM 상한 12 GiB와 임시 스왑 상한 16 GiB를 적용했습니다. 두 계산은 각각 SCF 9회로 수렴했습니다.
+
+| He 16 Å | 실제 CUBE 격자 | 엔진 시간 | RAM 피크 | 스왑 피크 |
+| --- | ---: | ---: | ---: | ---: |
+| 1200 Ry | 360³ | 1,447.3초 | 12.00 GiB | 10.08 GiB |
+| 1400 Ry | 375³ | 1,731.8초 | 12.00 GiB | 12.30 GiB |
+
+첫 비교 단계는 공통 CUBE 검사기의 축당 360 제한에서 중단됐습니다. 16 Å 비교에 한해 명시적으로 400까지 허용하고, [비교 재실행 42552435625](https://github.com/Hyunwoo1205/quanta/actions/runs/42552435625)에서 원본 해시가 같은 두 CUBE를 다시 비교했습니다. 엔진 계산은 반복하지 않았습니다. 관련 로컬 회귀시험 90개가 통과했습니다.
+
+에너지 차이 9.77×10⁻¹⁴ Hartree, 최대 힘 성분 차이 6.20×10⁻¹⁴ Hartree/Bohr와 엔진·CUBE 전자 수는 기존 기준을 충족했습니다. 전자밀도 L1은 4점 0.004564전자, 6점 0.004255전자, 푸리에 0.003449전자로 모두 사전 기준 0.001전자를 초과했습니다. 두 계산의 원자 좌표는 같고, 짝수·홀수 격자에서 핵의 표본 위치는 다릅니다. 이 비교로 셀 크기 자체와 표본화의 영향을 각각 확정할 수 없습니다. [정제 검증 기록](docs/verification/atomistic-a04/he16-reference-42549178440.json)
+
+**판정은 기준 미달입니다.** 이 후속 시도의 결과를 기록했고, 통과를 전제로 한 최종 선정 묶음은 열리지 않았습니다. A04의 동결·독립 물리 검증·운영 적격 상태는 아래 최종 묶음 판정을 따릅니다.
+
 ## A04 최종 묶음 마감 — 기준 미달로 동결 불가
 
 [실행 42538884365](https://github.com/Hyunwoo1205/quanta/actions/runs/42538884365)의 F0에서 고정 입력과 자료 해시가 일치했습니다. [잠근 입력 행렬](docs/design/atomistic-a04-v0.1/a04-final-validation-inputs.json) 중 F1 일곱 계산이 수렴했고, 엔진·출력·기저 겹침·전자 수·자원 조건을 충족했습니다. 로컬 회귀시험 87개와 전체 x86 분기의 70개 모의 입력·전달 대조를 통과했습니다. 모의 결과는 실제 과학 판정에 사용하지 않았습니다.
