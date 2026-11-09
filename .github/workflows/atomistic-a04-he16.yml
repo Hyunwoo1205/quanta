@@ -1,0 +1,63 @@
+name: Atomistic A04 He 16 angstrom reference pilot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/design/atomistic-a04-v0.1/he16-reference-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: atomistic-a04-he16
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: he16-reference
+  compare:
+    needs: measure
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: he16-1200-raw-${{ github.run_attempt }}
+          path: .cache/he16-reference/1200
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: he16-1400-raw-${{ github.run_attempt }}
+          path: .cache/he16-reference/1400
+          digest-mismatch: error
+      - name: Compare both original signed fields without swap
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          lock="$(mktemp)"
+          grep '^numpy==' requirements.lock.txt > "$lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$lock"
+          python -B scripts/run_atomistic_a04_he16.py             --references .cache/he16-reference --output .cache/he16-result
+      - name: Preserve compact pair evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: he16-pair-receipt-${{ github.run_attempt }}
+          path: .cache/he16-result/report.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -1209,7 +1209,7 @@ def run_scf_screen(system: str, candidate: dict, scratch: Path, diagnostics: Pat
 
 
 def check_grid_attempt(attempt: dict, case: Case, spec: dict, expected: str, cube: Path, cap: int,
-                       checks: dict, *, require_electron_counts: bool = True) -> None:
+                       checks: dict, *, require_electron_counts: bool = True, expected_swap_bytes: int = 0) -> None:
     if attempt["status"] != "measured":
         raise ValueError("Missing completed atomic-grid attempt")
     meta = attempt["input_metadata"]
@@ -1222,7 +1222,7 @@ def check_grid_attempt(attempt: dict, case: Case, spec: dict, expected: str, cub
         or attempt["input_sha256"] != expected
         or attempt["submitted_input_sha256"] != expected
         or attempt["granted_memory_bytes"] != cap
-        or attempt["granted_swap_extra_bytes"] != 0
+        or attempt["granted_swap_extra_bytes"] != expected_swap_bytes
         or attempt["observed_mpi_ranks"] != 1
         or attempt["observed_omp_threads"] != 1
         or not 1 <= attempt.get("engine_scf_iterations", 0) <= 80

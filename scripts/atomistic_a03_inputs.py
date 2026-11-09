@@ -82,6 +82,11 @@ def probe_metadata(
         cell_angstrom, rel_cutoff_ry, eps_scf, max_scf, radial_grid, lebedev_grid, lmaxn1,
     ) == (12, 80, 1e-8, 80, 200, 194, 6):
         cutoffs += (1100, 1400)
+    if final_batch and qz and system == "he" and (
+        cell_angstrom, rel_cutoff_ry, eps_scf, max_scf, radial_grid, lebedev_grid, lmaxn1,
+    ) == (16, 80, 1e-8, 80, 200, 194, 6) and cutoff_ry in (1200, 1400):
+        cells += (16,)
+        cutoffs += (1400,)
     for value, allowed, name in (
         (cell_angstrom, cells, "cell_angstrom"),
         (cutoff_ry, cutoffs, "cutoff_ry"),

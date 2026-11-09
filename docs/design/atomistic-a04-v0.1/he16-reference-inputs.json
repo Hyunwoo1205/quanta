@@ -1,0 +1,90 @@
+{
+  "scope": "fixed_native_x86_He_QZ_16_angstrom_reference_pilot",
+  "schema_version": 1,
+  "prior_receipt": "docs/verification/atomistic-a04/final-validation-42538884365.json",
+  "prior_receipt_sha256": "d055e1f5abdf890bb458102873b105fdb45e4179d845c451ef8e885b155cc213",
+  "prior_plan_sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "input_sha256": {
+    "1200": "5c42c4d75ccc3dd5e7ae6f51848647b97700dc733e08881ec0d83f90adb433d3",
+    "1400": "8100d4e8054640b7e9cb60cf52cbf95af6b9af169ec141f6a739ea47b3863577"
+  },
+  "cell_angstrom": 16,
+  "cutoffs_ry": [
+    1200,
+    1400
+  ],
+  "rel_cutoff_ry": 80,
+  "checks": {
+    "AV03": {
+      "id": "AV03",
+      "layer": "numerical",
+      "observable": "scf_and_grid_property_convergence",
+      "rule": "Refine each SCF/grid/atomic-grid family separately; compare two finest levels with other families fixed sufficiently fine.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 1e-06,
+      "force_atol_hartree_per_bohr": 1e-05
+    },
+    "AV04": {
+      "id": "AV04",
+      "layer": "numerical",
+      "observable": "basis_convergence",
+      "rule": "Two finest compatible basis levels, same method/grid and geometry; no complete-basis accuracy claim.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 0.0001,
+      "force_atol_hartree_per_bohr": 0.0001
+    },
+    "AV05": {
+      "id": "AV05",
+      "layer": "density",
+      "observable": "engine_all_electron_count",
+      "rule": "Engine all-electron hard+soft integral compared to 2.",
+      "atol": 1e-06,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty"
+    },
+    "AV06": {
+      "id": "AV06",
+      "layer": "density",
+      "observable": "exported_density_integral",
+      "rule": "Explicit full hard+soft electron-number density export: integral rho*dV compared to 2, including field/grid refinement.",
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "blocked_until": "A02/A04 full-density export semantics pinned; soft or signed total charge density cannot substitute"
+    }
+  },
+  "l1_atol_electrons_each": 0.001,
+  "maximum_comparison_axis": 400,
+  "wall_seconds_per_deck": 3600,
+  "resources": {
+    "ram_min_gib": 11,
+    "ram_max_gib": 12,
+    "temporary_runner_swap_gib": 16,
+    "host_ram_reserve_gib": 2,
+    "free_disk_before_swap_gib": 26,
+    "ranks": 1,
+    "omp_threads": 1
+  },
+  "decision": [
+    "Compare equal 16 \u00c5 cells on distinct native grids at fixed QZ/LMAXN1=6. Require AV03/AV05/AV06 and each original 4-point, 6-point and Fourier L1 <= 0.001 electrons.",
+    "Scope is an exploratory He reference screen only. A pass can trigger planning the remaining final validation. It does not reopen or change the prior 12 \u00c5 no-go, freeze a profile, or qualify a deployment."
+  ]
+}

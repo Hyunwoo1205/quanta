@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
@@ -33,3 +34,46 @@ def test_downsampling_folds_modes_and_merges_the_target_nyquist_mode(monkeypatch
 
     actual = _trigonometric_axis(field(12), 8, axis=1)
     np.testing.assert_allclose(actual, field(8), atol=2e-14, rtol=0)
+
+
+def test_he16_large_grid_axis_matches_an_analytic_periodic_field(monkeypatch):
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    from diagnose_atomistic_cutoff_density import _trigonometric_axis
+
+    def field(count):
+        phase = 2 * np.pi * np.arange(count) / count
+        return (0.125 + 0.2 * np.sin(13 * phase) - 0.4 * np.cos(180 * phase))[None, None, :]
+
+    actual = _trigonometric_axis(field(360), 384, axis=2)
+    np.testing.assert_allclose(actual, field(384), atol=2e-13, rtol=0)
+
+
+def test_large_grid_diagnostic_requires_explicit_16_angstrom_limit(monkeypatch):
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    import diagnose_atomistic_cutoff_density as diagnostic
+
+    class ReachedNativeReader(Exception):
+        pass
+
+    def stop_before_array_allocation(*args):
+        raise ReachedNativeReader
+
+    monkeypatch.setattr(diagnostic, "_grid_count", lambda attempt, cell: attempt["axis_count"])
+    monkeypatch.setattr(diagnostic, "_require_aligned_atoms", lambda *args: None)
+    monkeypatch.setattr(diagnostic, "_native_grid", stop_before_array_allocation)
+    cube = Path("unused.cube")
+    reference = {"axis_count": 384, "density": {}}
+    candidate = {"axis_count": 360, "density": {}}
+
+    with pytest.raises(ValueError, match="distinct bounded"):
+        diagnostic.diagnose_cutoff_density(reference, candidate, cube, cube, 16)
+    with pytest.raises(ValueError, match="Unsupported.*axis limit"):
+        diagnostic.diagnose_cutoff_density(reference, candidate, cube, cube, 12, maximum_axis_count=400)
+    with pytest.raises(ValueError, match="Unsupported.*axis limit"):
+        diagnostic.diagnose_cutoff_density(reference, candidate, cube, cube, 16, maximum_axis_count=401)
+    with pytest.raises(ValueError, match="distinct bounded"):
+        diagnostic.diagnose_cutoff_density(
+            {**reference, "axis_count": 401}, candidate, cube, cube, 16, maximum_axis_count=400,
+        )
+    with pytest.raises(ReachedNativeReader):
+        diagnostic.diagnose_cutoff_density(reference, candidate, cube, cube, 16, maximum_axis_count=400)

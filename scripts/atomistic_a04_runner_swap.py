@@ -28,11 +28,15 @@ def _active_swap_paths() -> set[str]:
 def _check_runner(work_root: Path) -> None:
     expected = {
         "GITHUB_ACTIONS": "true", "GITHUB_REPOSITORY": "Hyunwoo1205/quanta",
-        "GITHUB_WORKFLOW_REF": "Hyunwoo1205/quanta/.github/workflows/atomistic-a04-resource-ci.yml@refs/heads/main",
         "RUNNER_ENVIRONMENT": "github-hosted", "RUNNER_ARCH": "X64",
     }
+    allowed_workflows = {
+        "Hyunwoo1205/quanta/.github/workflows/atomistic-a04-resource-ci.yml@refs/heads/main",
+        "Hyunwoo1205/quanta/.github/workflows/atomistic-a04-he16.yml@refs/heads/main",
+    }
     if (
-        os.geteuid() == 0
+        os.environ.get("GITHUB_WORKFLOW_REF") not in allowed_workflows
+        or os.geteuid() == 0
         or platform.system() != "Linux"
         or platform.machine() != "x86_64"
         or any(os.environ.get(key) != value for key, value in expected.items())

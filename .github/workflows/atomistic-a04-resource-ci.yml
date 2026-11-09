@@ -42,9 +42,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ${{ fromJSON(inputs.experiment == 'final-f1' && '["f1-refine-he","f1-joint-he","f1-joint-h2-short"]' || inputs.experiment == 'final-f2' && '["f2-h2-short","f2-he"]' || inputs.experiment == 'final-f3' && '["f3-h2-short","f3-h2-reference","f3-h2","f3-h2-long","f3-he"]' || inputs.experiment == 'qz-cutoff' && '["qz-cutoff-h2-short","qz-cutoff-he"]' || inputs.experiment == 'qz-sensitivity' && '["qz-h2-short","qz-he-local","qz-he-mgrid","qz-he-cell"]' || inputs.experiment == 'basis-pilot' && '["basis-h2-short","basis-he"]' || inputs.experiment == 'basis-refinement' && '["basis-h2-reference","basis-h2","basis-h2-long"]' || inputs.experiment == 'atomic-grid-pilot' && '["pilot-h2-short","pilot-he"]' || inputs.experiment == 'atomic-grid' && '["grid-h2-short","grid-h2-reference","grid-h2","grid-h2-long","grid-he"]' || inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
+        track: ${{ fromJSON(inputs.experiment == 'he16-reference' && '["he16-1200","he16-1400"]' || inputs.experiment == 'final-f1' && '["f1-refine-he","f1-joint-he","f1-joint-h2-short"]' || inputs.experiment == 'final-f2' && '["f2-h2-short","f2-he"]' || inputs.experiment == 'final-f3' && '["f3-h2-short","f3-h2-reference","f3-h2","f3-h2-long","f3-he"]' || inputs.experiment == 'qz-cutoff' && '["qz-cutoff-h2-short","qz-cutoff-he"]' || inputs.experiment == 'qz-sensitivity' && '["qz-h2-short","qz-he-local","qz-he-mgrid","qz-he-cell"]' || inputs.experiment == 'basis-pilot' && '["basis-h2-short","basis-he"]' || inputs.experiment == 'basis-refinement' && '["basis-h2-reference","basis-h2","basis-h2-long"]' || inputs.experiment == 'atomic-grid-pilot' && '["pilot-h2-short","pilot-he"]' || inputs.experiment == 'atomic-grid' && '["grid-h2-short","grid-h2-reference","grid-h2","grid-h2-long","grid-he"]' || inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: ${{ inputs.experiment == 'he16-reference' && 80 || 60 }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -184,6 +184,13 @@ jobs:
           numpy_lock="$(mktemp)"
           grep '^numpy==' requirements.lock.txt > "$numpy_lock"
           python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
+          if [[ "$A04_TRACK" == he16-* ]]; then
+            python -B scripts/run_atomistic_a04_he16.py \
+              --cutoff "${A04_TRACK#he16-}" \
+              --candidate-dir .cache/atomistic-a04-resource/candidate \
+              --output .cache/atomistic-a04-resource/he16
+            exit
+          fi
           case "$A04_TRACK" in
             f1-refine-he) final=(--stage f1-refine --system he) ;;
             f1-joint-*) final=(--stage f1-joint --system "${A04_TRACK#f1-joint-}") ;;
@@ -241,6 +248,26 @@ jobs:
           path: |
             .cache/atomistic-a04-resource/final/report.json
             .cache/atomistic-a04-resource/final/diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Transfer exact raw CUBE for the He 16 angstrom comparison
+        if: success() && inputs.experiment == 'he16-reference'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ matrix.track }}-raw-${{ github.run_attempt }}
+          path: |
+            .cache/atomistic-a04-resource/he16/density.cube
+            .cache/atomistic-a04-resource/he16/report.json
+          if-no-files-found: error
+          retention-days: 1
+      - name: Preserve compact He 16 angstrom attempt evidence
+        if: always() && inputs.experiment == 'he16-reference'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ matrix.track }}-receipt-${{ github.run_attempt }}
+          path: |
+            .cache/atomistic-a04-resource/he16/report.json
+            .cache/atomistic-a04-resource/he16/diagnostics/
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve the resource report and bounded diagnostics
