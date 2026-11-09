@@ -55,7 +55,7 @@ BASELINE_CASE_IDS = ("h2-12a-400ry-density-off", "h2-12a-400ry-density-on")
 @dataclass(frozen=True)
 class Case:
     name: str
-    cell: int
+    cell: int | str
     cutoff: int
     density: bool
     wall_seconds: int
@@ -67,6 +67,8 @@ class Case:
     lebedev_grid: int = 110
     basis: str = "cc-pVDZ"
     overlap_condition: bool = False
+    lmaxn1: int = 6
+    final_batch: bool = False
 
 
 CASES = (
@@ -433,6 +435,12 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
             "radial_grid": case.radial_grid, "lebedev_grid": case.lebedev_grid,
             "overlap_condition": case.overlap_condition,
         }
+        if case.final_batch:
+            options.update(lmaxn1=case.lmaxn1, final_batch=True)
+            if case.basis == "cc-pV5Z":
+                from atomistic_a03_inputs import A04_5Z_ASSET, A04_5Z_INPUT_NAME
+
+                shutil.copyfile(A04_5Z_ASSET, inputs / A04_5Z_INPUT_NAME)
         base_input = generate_input(**options).encode("ascii")
         submitted_input = base_input
         if distribute_real_space:
@@ -570,6 +578,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 try:
                     record["basis_conditioning"] = parse_basis_conditioning(
                         text, basis=case.basis, element=metadata["atoms"][0]["element"], atom_count=len(forces),
+                        **({"expected_density_lmax": 8 if case.basis == "cc-pV5Z" else 6} if case.final_batch else {}),
                     )
                 except ValueError:
                     labels = ("Atomic kind:", "Orbital Basis Set", "Number of orbital", "Number of independent",

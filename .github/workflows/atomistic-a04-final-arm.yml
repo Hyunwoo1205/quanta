@@ -1,0 +1,77 @@
+name: Atomistic A04 final native ARM replay
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  native:
+    name: Native ARM final ${{ matrix.system }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        system: [h2-short, h2-reference, h2, h2-long, he]
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      QUANTA_SYSTEM: ${{ matrix.system }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: arm64
+      - name: Verify pinned native ARM image authorization
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(uname -m)" = aarch64
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python -B scripts/run_atomistic_a04_final_arm.py \
+            --authorize-candidate .cache/atomistic-a04-final-arm/evidence/artifact-lock.json
+      - name: Download the verified native ARM image
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: ${{ steps.candidate.outputs.run-id }}
+          artifact-ids: ${{ steps.candidate.outputs.artifact-id }}
+          path: .cache/atomistic-a04-final-arm/candidate
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Download the exact same-run x86 selected density
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: final-f3-${{ matrix.system }}-${{ github.run_attempt }}
+          path: .cache/atomistic-a04-final-arm/reference
+          digest-mismatch: error
+      - name: Install the pinned ARM comparison dependency
+        run: |
+          lock="$(mktemp)"
+          grep '^numpy==' requirements.aarch64.lock.txt > "$lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$lock"
+      - name: Replay and compare the exact final fixture on native ARM
+        run: |
+          python -B scripts/run_atomistic_a04_final_arm.py \
+            --system "$QUANTA_SYSTEM" \
+            --candidate-dir .cache/atomistic-a04-final-arm/candidate \
+            --reference-dir .cache/atomistic-a04-final-arm/reference \
+            --output-dir .cache/atomistic-a04-final-arm/evidence
+      - name: Preserve compact ARM evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-f4-${{ matrix.system }}-${{ github.run_attempt }}
+          path: .cache/atomistic-a04-final-arm/evidence/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

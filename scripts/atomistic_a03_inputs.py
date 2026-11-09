@@ -17,7 +17,10 @@ ROOT = Path(__file__).resolve().parents[1]
 A01 = ROOT / "docs/design/atomistic-a01-v0.1"
 A02 = ROOT / "docs/design/atomistic-a02-v0.1"
 BASES = ("cc-pVDZ", "cc-pVTZ", "cc-pVQZ")
-BOUNDARY_FIXTURE_PATH = ROOT / "docs/design/atomistic-a04-v0.1/boundary-fixtures.json"
+A04 = ROOT / "docs/design/atomistic-a04-v0.1"
+A04_5Z_ASSET = A04 / "basis-candidates/cc-pV5Z-H-He.cp2k"
+A04_5Z_INPUT_NAME = "cc-pV5Z.cp2k"
+BOUNDARY_FIXTURE_PATH = A04 / "boundary-fixtures.json"
 BOUNDARY_SYSTEM_FIXTURES = {"h2-short": "A04-H2-short", "h2-long": "A04-H2-long"}
 SYSTEM_FIXTURES = {
     "he": "C01-He",
@@ -38,10 +41,10 @@ def _sha(path: Path) -> str:
 
 def probe_metadata(
     system: str = "he", basis: str = "cc-pVDZ", project: str = "a03_probe",
-    data_dir: str = "/quanta-data", *, cell_angstrom: int = 12,
+    data_dir: str = "/quanta-data", *, cell_angstrom: int | str = 12,
     cutoff_ry: int = 400, rel_cutoff_ry: int = 40, eps_scf: float = 1e-8,
     max_scf: int = 80, density: bool = True, radial_grid: int = 100, lebedev_grid: int = 110,
-    overlap_condition: bool = False,
+    overlap_condition: bool = False, lmaxn1: int = 6, final_batch: bool = False,
 ) -> dict:
     """Describe an internal probe and its explicit SI-to-native mapping.
 
@@ -49,7 +52,10 @@ def probe_metadata(
     measured convergence. Additional atomic-grid/split candidates below are
     recorded explicitly and remain subject to A04/P2 refinement.
     """
-    if system not in SYSTEM_FIXTURES or basis not in BASES:
+    if type(final_batch) is not bool:
+        raise ValueError("final_batch must be boolean")
+    finer_basis = basis == "cc-pV5Z"
+    if system not in SYSTEM_FIXTURES or (basis not in BASES and not (final_batch and finer_basis)):
         raise ValueError("unsupported internal probe system or basis")
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", project):
         raise ValueError("project must be a bounded single safe identifier")
@@ -58,17 +64,35 @@ def probe_metadata(
     if ".." in PurePosixPath(data_dir).parts or str(PurePosixPath(data_dir)) != data_dir:
         raise ValueError("data_dir must be normalized without parent traversal")
     qz = basis == "cc-pVQZ"
+    if final_batch and (not (qz or finer_basis) or density is not True or overlap_condition is not True):
+        raise ValueError("final A04 input requires QZ or 5Z, full density and overlap evidence")
+    if type(lmaxn1) is not int or lmaxn1 not in ((6, 8) if final_batch else (6,)):
+        raise ValueError("unsupported A04 candidate lmaxn1")
+    if finer_basis and lmaxn1 != 8:
+        raise ValueError("the locked 5Z input requires LMAXN1 8")
+    cells = (12, 16, 20)
+    if final_batch:
+        cells = (12, "13.5", "14.4") if system == "he" else (12, "14.4", 16)
+        if type(cell_angstrom) is str and cell_angstrom in ("12", "16"):
+            cell_angstrom = int(cell_angstrom)
+        if type(cell_angstrom) not in (int, str):
+            raise ValueError("final A04 cell must be an exact authored decimal")
+    cutoffs = (400, 600, 800, 1000, 1200) if qz or finer_basis else (400, 600, 800)
+    if final_batch and qz and system == "he" and (
+        cell_angstrom, rel_cutoff_ry, eps_scf, max_scf, radial_grid, lebedev_grid, lmaxn1,
+    ) == (12, 80, 1e-8, 80, 200, 194, 6):
+        cutoffs += (1100, 1400)
     for value, allowed, name in (
-        (cell_angstrom, (12, 16, 20), "cell_angstrom"),
-        (cutoff_ry, (400, 600, 800, 1000, 1200) if qz else (400, 600, 800), "cutoff_ry"),
-        (rel_cutoff_ry, (40, 60, 80, 120) if qz else (40, 60, 80), "rel_cutoff_ry"),
+        (cell_angstrom, cells, "cell_angstrom"),
+        (cutoff_ry, cutoffs, "cutoff_ry"),
+        (rel_cutoff_ry, (40, 60, 80, 120) if qz or finer_basis else (40, 60, 80), "rel_cutoff_ry"),
         (eps_scf, (1e-8, 1e-9, 1e-10), "eps_scf"),
     ):
         if isinstance(value, bool) or value not in allowed:
             raise ValueError(f"unsupported A01 candidate {name}")
-    if type(radial_grid) is not int or radial_grid not in ((100, 150, 200, 250) if qz else (100, 150, 200)):
+    if type(radial_grid) is not int or radial_grid not in ((100, 150, 200, 250) if qz or finer_basis else (100, 150, 200)):
         raise ValueError("unsupported A04 candidate radial_grid")
-    if type(lebedev_grid) is not int or lebedev_grid not in ((110, 146, 194, 302) if qz else (110, 146, 194)):
+    if type(lebedev_grid) is not int or lebedev_grid not in ((110, 146, 194, 302) if qz or finer_basis else (110, 146, 194)):
         raise ValueError("unsupported A04 candidate lebedev_grid")
     if type(max_scf) is not int or not 1 <= max_scf <= 500:
         raise ValueError("max_scf must be an integer in 1..500")
@@ -105,6 +129,7 @@ def probe_metadata(
                           "bare_nuclear_mass_kg": str(mass),
                           "engine_mass_amu": str(mass / engine_amu),
                           "mass_reference": "NIST-CODATA-2022:" + key})
+    basis_file = A04_5Z_ASSET if finer_basis else A02 / "assets" / f"{basis}.cp2k"
     return {
         "document_kind": "internal_atomistic_a03_probe",
         "status": "exploratory_settings_not_A04_frozen_not_scientific_acceptance",
@@ -114,6 +139,7 @@ def probe_metadata(
         "system": system, "source_fixture": fixture["fixture_id"],
         "project": project, "operation": "ENERGY_FORCE", "basis": basis,
         "data_dir": data_dir,
+        **({"basis_container_path": f"/quanta-input/{A04_5Z_INPUT_NAME}"} if finer_basis else {}),
         "model": {"method": "GAPW", "functional": "PBE", "potential": "ALL",
                   "charge_e": 0, "multiplicity": 1, "electron_count": 2,
                   "uks": False, "dispersion": False, "periodic": "NONE"},
@@ -124,7 +150,7 @@ def probe_metadata(
                      "scf_method": "OT/DIIS/FULL_ALL", "eps_default": 1e-12,
                      "eps_pgf_orb": 1e-10, "epsfit": 1e-4, "epsiso": 1e-12,
                      "epssvd": 1e-8, "epsrho0": 1e-8,
-                     "lmaxn0": 2, "lmaxn1": 6, "quadrature": "GC_LOG",
+                     "lmaxn0": 2, "lmaxn1": lmaxn1, "quadrature": "GC_LOG",
                      "radial_grid": radial_grid, "lebedev_grid": lebedev_grid},
         "numerical_caveat": "Candidates only. MT requires cell > twice density support; cell/tail, grid, basis and atomic-grid convergence are not established by this probe.",
         **({"overlap_condition": True} if overlap_condition else {}),
@@ -135,11 +161,11 @@ def probe_metadata(
         "energy_output": {"unit": "hartree", "scope": "electronic plus nuclear repulsion; no ZPE/rest/thermal terms"},
         "forces_output": {"file": "forces.xyz", "format": "CP2K ATOMIC FORCES table, not XYZ despite filename suffix",
                           "unit": "hartree/bohr", "ndigits": 15},
-        "coordinate_translation_angstrom": [cell_angstrom / 2] * 3,
+        "coordinate_translation_angstrom": [float(center)] * 3,
         "atoms": atoms,
         "engine_mass_unit_kg": str(units["atomic_mass_kg"]),
         "engine_unit_codata_edition": units["codata_edition"],
-        "data_sha256": {f"{basis}.cp2k": _sha(A02 / "assets" / f"{basis}.cp2k"),
+        "data_sha256": {f"{basis}.cp2k": _sha(basis_file),
                         "ALL_POTENTIALS": _sha(A02 / "assets/ALL_POTENTIALS")},
         "source_files_sha256": {str(p.relative_to(ROOT)): _sha(p) for p in source_paths},
         "unselected_version_locked_defaults": "Remaining engine defaults are tied to the actually measured binary; this is not a complete frozen numerical profile.",
@@ -150,6 +176,7 @@ def generate_input(*args, **kwargs) -> str:
     """Return CP2K text for the bounded internal probe described above."""
     p = probe_metadata(*args, **kwargs)
     n = p["numerics"]
+    basis_path = p.get("basis_container_path", f"{p['data_dir']}/{p['basis']}.cp2k")
     density_text = ""
     if p["density"]["enabled"]:
         density_text = """    &PRINT
@@ -189,7 +216,7 @@ def generate_input(*args, **kwargs) -> str:
 &FORCE_EVAL
   METHOD QUICKSTEP
   &DFT
-    BASIS_SET_FILE_NAME {p['data_dir']}/{p['basis']}.cp2k
+    BASIS_SET_FILE_NAME {basis_path}
     POTENTIAL_FILE_NAME {p['data_dir']}/ALL_POTENTIALS
     CHARGE 0
     MULTIPLICITY 1
@@ -203,7 +230,7 @@ def generate_input(*args, **kwargs) -> str:
       EPSSVD 1.0E-8
       EPSRHO0 1.0E-8
       LMAXN0 2
-      LMAXN1 6
+      LMAXN1 {n['lmaxn1']}
       QUADRATURE GC_LOG
     &END QS
     &MGRID

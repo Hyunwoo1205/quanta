@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ${{ fromJSON(inputs.experiment == 'qz-cutoff' && '["qz-cutoff-h2-short","qz-cutoff-he"]' || inputs.experiment == 'qz-sensitivity' && '["qz-h2-short","qz-he-local","qz-he-mgrid","qz-he-cell"]' || inputs.experiment == 'basis-pilot' && '["basis-h2-short","basis-he"]' || inputs.experiment == 'basis-refinement' && '["basis-h2-reference","basis-h2","basis-h2-long"]' || inputs.experiment == 'atomic-grid-pilot' && '["pilot-h2-short","pilot-he"]' || inputs.experiment == 'atomic-grid' && '["grid-h2-short","grid-h2-reference","grid-h2","grid-h2-long","grid-he"]' || inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
+        track: ${{ fromJSON(inputs.experiment == 'final-f1' && '["f1-refine-he","f1-joint-he","f1-joint-h2-short"]' || inputs.experiment == 'final-f2' && '["f2-h2-short","f2-he"]' || inputs.experiment == 'final-f3' && '["f3-h2-short","f3-h2-reference","f3-h2","f3-h2-long","f3-he"]' || inputs.experiment == 'qz-cutoff' && '["qz-cutoff-h2-short","qz-cutoff-he"]' || inputs.experiment == 'qz-sensitivity' && '["qz-h2-short","qz-he-local","qz-he-mgrid","qz-he-cell"]' || inputs.experiment == 'basis-pilot' && '["basis-h2-short","basis-he"]' || inputs.experiment == 'basis-refinement' && '["basis-h2-reference","basis-h2","basis-h2-long"]' || inputs.experiment == 'atomic-grid-pilot' && '["pilot-h2-short","pilot-he"]' || inputs.experiment == 'atomic-grid' && '["grid-h2-short","grid-h2-reference","grid-h2","grid-h2-long","grid-he"]' || inputs.experiment == 'scf-refinement' && '["scf-h2-short","scf-h2-reference","scf-h2","scf-h2-long","scf-he"]' || (github.event_name == 'push' || inputs.experiment == 'h2-boundary-accuracy') && '["fixture-h2-short","fixture-h2-long"]' || inputs.experiment == 'fixed-fixture-accuracy' && '["fixture-he","fixture-h2-reference"]' || inputs.experiment == 'one-factor-refinement' && '["cell","cutoff","relative"]' || '["legacy"]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -159,6 +159,20 @@ jobs:
           name: atomistic-a04-native-${{ matrix.track }}-pilot-${{ github.run_attempt }}
           path: .cache/atomistic-a04-resource/grid-pilot
           digest-mismatch: error
+      - name: Retrieve the F1 pilot candidate from this workflow
+        if: inputs.experiment == 'final-f2'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: final-f1-joint-${{ matrix.track == 'f2-he' && 'he' || 'h2-short' }}-${{ github.run_attempt }}
+          path: .cache/atomistic-a04-resource/final-previous
+          digest-mismatch: error
+      - name: Retrieve the F2 conditioned basis pilot from this workflow
+        if: matrix.track == 'f3-he' || matrix.track == 'f3-h2-short'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: final-f2-${{ matrix.track == 'f3-he' && 'he' || 'h2-short' }}-${{ github.run_attempt }}
+          path: .cache/atomistic-a04-resource/final-previous
+          digest-mismatch: error
       - name: Measure fixed-input spatial density comparisons
         if: matrix.track != 'legacy' || inputs.experiment == 'cross-grid-accuracy'
         env:
@@ -170,6 +184,21 @@ jobs:
           numpy_lock="$(mktemp)"
           grep '^numpy==' requirements.lock.txt > "$numpy_lock"
           python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
+          case "$A04_TRACK" in
+            f1-refine-he) final=(--stage f1-refine --system he) ;;
+            f1-joint-*) final=(--stage f1-joint --system "${A04_TRACK#f1-joint-}") ;;
+            f2-*) final=(--stage f2 --system "${A04_TRACK#f2-}" --previous-dir .cache/atomistic-a04-resource/final-previous) ;;
+            f3-he|f3-h2-short)
+              final=(--stage f3 --system "${A04_TRACK#f3-}" --previous-dir .cache/atomistic-a04-resource/final-previous) ;;
+            f3-*) final=(--stage f3 --system "${A04_TRACK#f3-}") ;;
+            *) final=() ;;
+          esac
+          if (( ${#final[@]} )); then
+            python -B scripts/run_atomistic_a04_final_x86.py \
+              --candidate-dir .cache/atomistic-a04-resource/candidate \
+              --output-dir .cache/atomistic-a04-resource/final "${final[@]}"
+            exit
+          fi
           mode=(--cross-grid-accuracy)
           case "$A04_TRACK" in
             fixture-*) mode=(--fixture-accuracy "${A04_TRACK#fixture-}") ;;
@@ -194,6 +223,26 @@ jobs:
           path: .cache/atomistic-a04-resource/grid-pilot/
           if-no-files-found: error
           retention-days: 1
+      - name: Pass conditioned raw CUBEs to the dependent job
+        if: success() && (startsWith(matrix.track, 'f1-joint-') || startsWith(matrix.track, 'f2-') || startsWith(matrix.track, 'f3-'))
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-${{ matrix.track }}-${{ github.run_attempt }}
+          path: |
+            .cache/atomistic-a04-resource/final/*.cube
+            .cache/atomistic-a04-resource/final/*.json
+          if-no-files-found: error
+          retention-days: 1
+      - name: Preserve the final phase receipt
+        if: always() && startsWith(inputs.experiment, 'final-')
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-receipt-${{ matrix.track }}-${{ github.run_attempt }}
+          path: |
+            .cache/atomistic-a04-resource/final/report.json
+            .cache/atomistic-a04-resource/final/diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve the resource report and bounded diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

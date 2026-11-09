@@ -74,6 +74,55 @@ def test_native_crop_counts_shell_without_cancellation(tmp_path, comparison):
     assert result["sensitivity"] is None
 
 
+@pytest.mark.parametrize(("reference_cell", "ref_count", "cand_count"), [
+    ("13.5", 18, 16),
+    ("14.4", 24, 20),
+])
+def test_decimal_cell_centers_crop_on_exact_native_nodes(tmp_path, comparison, reference_cell, ref_count, cand_count):
+    compare, parse = comparison
+    start = (ref_count - cand_count) // 2
+    extent = slice(start, start + cand_count)
+    ref = np.zeros((ref_count,) * 3)
+    ref[0, 0, 0] = -3
+    ref[start, start, start] = 2
+    cand = ref[extent, extent, extent].copy()
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, ref, float(reference_cell))
+    candidate = _cube(candidate_cube, parse, cand, 12)
+    result = compare(reference, candidate, reference_cube, candidate_cube, reference_cell, 12)
+    dv = (12 * BOHR_PER_ANGSTROM / cand_count) ** 3
+    assert result["method"] == "native_aligned_crop"
+    assert result["reference_overlap_start_index"] == [start] * 3
+    assert result["reference_overlap_grid_counts"] == [cand_count] * 3
+    assert result["reference_outer_shell_absolute_integral_electrons"] == pytest.approx(3 * dv)
+    assert result["reference_outer_shell_signed_integral_electrons"] == pytest.approx(-3 * dv)
+    assert result["primary"]["overlap_absolute_density_difference_integral_electrons"] == 0
+
+
+def test_decimal_cell_tail_includes_samples_exactly_on_both_inner_boundaries(tmp_path, comparison):
+    from compare_atomistic_qz_sensitivity import compare_cell_tails
+
+    compare, parse = comparison
+    ref = np.zeros((18,) * 3)
+    ref[4, 9, 9] = -3   # x=1 Å
+    ref[14, 9, 9] = 2   # x=3.5 Å
+    ref[13, 9, 9] = 7   # x=3.25 Å is interior
+    cand = ref[2:16, 2:16, 2:16].copy()
+    reference_cube = tmp_path / "reference.cube"
+    candidate_cube = tmp_path / "candidate.cube"
+    reference = _cube(reference_cube, parse, ref, 4.5)
+    candidate = _cube(candidate_cube, parse, cand, 3.5)
+    spatial = compare(reference, candidate, reference_cube, candidate_cube, "4.5", "3.5")
+    tails = compare_cell_tails(reference, candidate, reference_cube, candidate_cube, "4.5", "3.5", spatial)
+    dv = (0.25 * BOHR_PER_ANGSTROM) ** 3
+    assert tails["reference_native_boundary_shell"]["samples"] == 18**3 - 9**3
+    assert tails["reference_native_boundary_shell"]["absolute_integral_electrons"] == pytest.approx(5 * dv)
+    assert tails["reference_native_boundary_shell"]["signed_integral_electrons"] == pytest.approx(-dv)
+    assert tails["omitted_domain_passed"]
+    assert not tails["shell_passed"]
+
+
 @pytest.mark.parametrize("power", [3, 4])
 def test_noncoincident_grids_recover_polynomial_and_expose_sensitivity(tmp_path, comparison, power):
     compare, parse = comparison

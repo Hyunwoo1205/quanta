@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 from functools import lru_cache
 import hashlib
@@ -19,6 +20,18 @@ from verify_atomistic_a03 import LOCK_DIR
 HEADER_ATOL_BOHR = 5.01e-7
 MAX_AXIS_COUNT = 360
 TOTAL_ELECTRON_DENSITY = ["-Quickstep-", " TOTAL ELECTRON DENSITY"]
+
+
+def _cell_length(value: int | float | str) -> Fraction:
+    if type(value) not in (int, float, str):
+        raise ValueError("Expected a positive authored decimal cell length in Å")
+    try:
+        decimal = Decimal(str(value))
+    except InvalidOperation as error:
+        raise ValueError("Expected a positive authored decimal cell length in Å") from error
+    if not decimal.is_finite() or decimal <= 0:
+        raise ValueError("Expected a positive authored decimal cell length in Å")
+    return Fraction(decimal)
 
 
 def _grid_count(attempt: dict, cell_bohr: float) -> int:
@@ -141,30 +154,29 @@ def _overlap_metrics(slabs: list[tuple], count: int, dv: float, shell_absolute: 
 
 def compare_density(
     reference_attempt: dict, candidate_attempt: dict, reference_cube: Path, candidate_cube: Path,
-    reference_cell_angstrom: int, candidate_cell_angstrom: int,
+    reference_cell_angstrom: int | float | str, candidate_cell_angstrom: int | float | str,
 ) -> dict:
     """Report overlap and omitted-domain errors, without assigning a scientific pass."""
-    if (
-        type(reference_cell_angstrom) is not int or type(candidate_cell_angstrom) is not int
-        or not 0 < candidate_cell_angstrom <= reference_cell_angstrom
-    ):
-        raise ValueError("Expected positive authored cubic cells in integer Å with the reference no smaller")
+    reference_cell = _cell_length(reference_cell_angstrom)
+    candidate_cell = _cell_length(candidate_cell_angstrom)
+    if candidate_cell > reference_cell:
+        raise ValueError("Expected a reference cell no smaller than the candidate cell")
     engine_units = json.loads((LOCK_DIR / "density-and-units.json").read_bytes())["engine_unit_profile"]
     bohr_per_angstrom = 1e-10 / engine_units["a_bohr_m"]
-    ref_n = _grid_count(reference_attempt, reference_cell_angstrom * bohr_per_angstrom)
-    cand_n = _grid_count(candidate_attempt, candidate_cell_angstrom * bohr_per_angstrom)
-    if reference_cell_angstrom == candidate_cell_angstrom and ref_n < cand_n:
+    ref_n = _grid_count(reference_attempt, reference_cell * bohr_per_angstrom)
+    cand_n = _grid_count(candidate_attempt, candidate_cell * bohr_per_angstrom)
+    if reference_cell == candidate_cell and ref_n < cand_n:
         raise ValueError("Equal-cell comparison requires a reference grid at least as fine as the candidate")
-    overlap = Fraction(ref_n * candidate_cell_angstrom, reference_cell_angstrom)
+    overlap = ref_n * candidate_cell / reference_cell
     offset = (ref_n - overlap) / 2
     if overlap.denominator != 1 or offset.denominator != 1:
         raise ValueError("Candidate cell boundaries must align to native reference grid indices")
     extent, start = int(overlap), int(offset)
     stop = start + extent
-    dv = (reference_cell_angstrom * bohr_per_angstrom / ref_n) ** 3
+    dv = (reference_cell * bohr_per_angstrom / ref_n) ** 3
     direct = cand_n == extent
     left, right = reference_attempt["density"], candidate_attempt["density"]
-    _require_aligned_atoms(left, right, (reference_cell_angstrom - candidate_cell_angstrom) * bohr_per_angstrom / 2)
+    _require_aligned_atoms(left, right, (reference_cell - candidate_cell) * bohr_per_angstrom / 2)
 
     shell_absolute_sums, shell_signed_sums = [], []
     primary_slabs, sensitivity_slabs, interpolation_delta = [], [], []

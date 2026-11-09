@@ -130,3 +130,45 @@ def test_cancel_probe_stays_static_and_exploratory():
     assert "&MD" not in text
     assert p["physical_validation_status"] == "unvalidated"
     assert not p["public_runtime_contract"]
+
+
+def test_final_a04_bridge_and_basis_change_only_declared_lines():
+    options = {
+        "system": "h2-short", "basis": "cc-pVQZ", "final_batch": True,
+        "cell_angstrom": "12", "cutoff_ry": 600, "radial_grid": 200,
+        "lebedev_grid": 194, "overlap_condition": True,
+    }
+    lower = module.generate_input(**options)
+    higher = module.generate_input(**(options | {"lmaxn1": 8}))
+    finer = module.generate_input(**(options | {"lmaxn1": 8, "basis": "cc-pV5Z"}))
+    assert higher == lower.replace("LMAXN1 6", "LMAXN1 8", 1)
+    assert finer == higher.replace(
+        "/quanta-data/cc-pVQZ.cp2k", "/quanta-input/cc-pV5Z.cp2k", 1
+    ).replace("BASIS_SET cc-pVQZ", "BASIS_SET cc-pV5Z", 1)
+
+
+def test_final_a04_decimal_cell_is_authored_without_binary_float_rounding():
+    options = {
+        "system": "he", "basis": "cc-pVQZ", "final_batch": True, "cell_angstrom": "14.4",
+        "cutoff_ry": 1000, "rel_cutoff_ry": 80, "radial_grid": 200, "lebedev_grid": 194,
+        "overlap_condition": True, "lmaxn1": 8,
+    }
+    deck = module.generate_input(**options)
+    assert "ABC [angstrom] 14.4 14.4 14.4" in deck
+    assert "He 7.2 7.2 7.2" in deck
+    with pytest.raises(ValueError, match="exact authored decimal"):
+        module.generate_input(**(options | {"cell_angstrom": 14.4}))
+
+
+@pytest.mark.parametrize("changes", [
+    {"final_batch": False}, {"system": "h2"}, {"rel_cutoff_ry": 120}, {"lmaxn1": 8},
+])
+def test_final_a04_1400_ry_is_only_admitted_at_locked_he_scout_settings(changes):
+    options = {
+        "system": "he", "basis": "cc-pVQZ", "final_batch": True, "cutoff_ry": 1400,
+        "rel_cutoff_ry": 80, "radial_grid": 200, "lebedev_grid": 194,
+        "overlap_condition": True,
+    }
+    assert "CUTOFF [Ry] 1400" in module.generate_input(**options)
+    with pytest.raises(ValueError, match="cutoff_ry"):
+        module.generate_input(**(options | changes))

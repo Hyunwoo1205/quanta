@@ -1,10 +1,10 @@
-"""G2-only CP2K 2026.2 orbital-basis and overlap evidence parser."""
+"""CP2K 2026.2 orbital-basis and overlap evidence for A04."""
 
 import math
 import re
 
-# Counts for the locked H/He cc-pV{D,T,Q}Z definitions.
-SPHERICAL_PER_ATOM = {"cc-pVDZ": 5, "cc-pVTZ": 14, "cc-pVQZ": 30}
+# Counts for the locked H/He definitions.
+SPHERICAL_PER_ATOM = {"cc-pVDZ": 5, "cc-pVTZ": 14, "cc-pVQZ": 30, "cc-pV5Z": 55}
 
 # A four-significant-digit ES11.3E3 value must be one printable step
 # inside each strict engineering boundary (min(S) > 1e-5, kappa_2 < 1e8).
@@ -43,10 +43,10 @@ def _one(matches, label):
     return matches[0]
 
 
-def parse_basis_conditioning(text, *, basis, element, atom_count):
-    """Return checked CP2K output and the separate G2 overlap guard decision.
+def parse_basis_conditioning(text, *, basis, element, atom_count, expected_density_lmax=None):
+    """Return checked CP2K output and the separate overlap guard decision.
 
-    The intended inputs have one atomic kind, a fixed cc-pV{D,T,Q}Z basis,
+    The intended inputs have one atomic kind, one locked orbital basis,
     OT SCF, and one ENERGY_FORCE calculation. Structural/evidence errors
     raise ValueError. Valid measurements can fail conditioning with a reason.
     """
@@ -55,7 +55,7 @@ def parse_basis_conditioning(text, *, basis, element, atom_count):
         or type(atom_count) is not int
         or (element, atom_count) not in {("H", 2), ("He", 1)}
     ):
-        raise ValueError("G2 basis and fixture must match the locked H2/He matrix")
+        raise ValueError("Basis and fixture must match the locked H2/He matrix")
 
     lines = text.splitlines()
     stripped = [line.strip() for line in lines]
@@ -109,11 +109,22 @@ def parse_basis_conditioning(text, *, basis, element, atom_count):
         "overlap_ratio_line": ratio_line,
         "overlap_warnings": warnings,
     }
+    failures = []
+    if expected_density_lmax is not None:
+        if type(expected_density_lmax) is not int or expected_density_lmax not in (6, 8):
+            raise ValueError("Expected the locked QZ or 5Z effective density lmax")
+        actual_density_lmax = int(_one(re.findall(
+            r"(?m)^[ \t]*QS\|[ \t]+GAPW\|[ \t]+atom-s-grid:[ \t]+max l[ \t]*:[ \t]*(\d+)[ \t]*$",
+            text,
+        ), "GAPW effective density lmax"))
+        evidence.update(expected_density_lmax=expected_density_lmax, effective_density_lmax=actual_density_lmax)
+        if actual_density_lmax != expected_density_lmax:
+            failures.append("unexpected_effective_density_lmax")
     if re.fullmatch(rf"CN : max/min EV: +{_ES} */ +{_ES} +Log\(CN\): infinity", ratio_line):
         return {
             **evidence,
             "conditioning_passed": False,
-            "conditioning_failures": ["nonpositive_overlap_minimum"],
+            "conditioning_failures": [*failures, "nonpositive_overlap_minimum"],
         }
     match = _RATIO.fullmatch(ratio_line)
     if match is None:
@@ -128,7 +139,6 @@ def parse_basis_conditioning(text, *, basis, element, atom_count):
     if abs(log_condition - math.log10(condition)) > 0.0003:
         raise ValueError("Overlap log condition inconsistent with printed ratio")
 
-    failures = []
     if minimum < MIN_PRINTED_EIGENVALUE:
         failures.append("overlap_minimum_outside_printed_guard")
     if condition > MAX_PRINTED_CONDITION_NUMBER:

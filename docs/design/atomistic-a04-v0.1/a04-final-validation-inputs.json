@@ -1,0 +1,1013 @@
+{
+  "schema_version": 1,
+  "plan_sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "wall_seconds": 900,
+  "fixtures": {
+    "h2-short": {
+      "fixture": "A04-H2-short",
+      "decks": {
+        "qz8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "daaa8b2f32e55fdd485ff0510bdf2fb6e907b93cdd936767088e9c302a4c117a"
+        },
+        "qz6": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "5d899325be7ff80f883157e83cd23978809f3120d3a9c9ca6e5ed2f2335c32ed"
+        },
+        "5z8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 6,
+          "input_sha256": "570353863b3400531b94415df4180d01bc88b0ddfa8e44734c12cb869f2fc3c4"
+        },
+        "scf9": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-09,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "309895574c3dfdaf34ac6fdd42ad00fb8232c233d8558f1dd8562134ca668c67"
+        },
+        "scf10": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-10,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "1020981a057c6dddb5f2b9d4ae675ee0ee6b8eae29a8b0cc98f7d53f5c88a83f"
+        },
+        "radial": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 250,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "7edee938d3a3b6d2523803de187c22fc3b368648d07ac0c3db8f3ece07adb8ca"
+        },
+        "angular": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "f10b8d698d5d79e5d44e78864cb03dce0feb62ee5f806e1e33082c28517ccb01"
+        },
+        "relative": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "6de30a36479e252cf9aadee9dfbf21c66f583431b09e55926ecc1ed6a1d733d8"
+        },
+        "cutoff": {
+          "options": {
+            "cell": 12,
+            "cutoff": 800,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "6d91f3d65c81a585505e305ce8220498d312f2a5c5415f128028de274d9da039"
+        },
+        "cell_mid": {
+          "options": {
+            "cell": "14.4",
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "4d670a7db058c096a42174f4decaeb4113b6020e853be86f37700c27f4e49adf"
+        },
+        "cell_high": {
+          "options": {
+            "cell": 16,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "901ccbb678ce60401e97746472ee70b26a67ec9236795ce8c24fcd69ee53c40d"
+        },
+        "joint": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "86e10a3ee6b54e7d697cbb14ac2d55107e4ed37ef9afb75b47d5e237b36a0405"
+        },
+        "joint5z": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 12,
+          "input_sha256": "43dd1ed8ab975a0fec1f02604cf45950fbdcb3a0fb65cfbb260e04af5cf3315a"
+        },
+        "joint6": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "d5c321ecaeeaf28c39db19f10056599cd843f1e5b180c23a46caef216c47f43a"
+        }
+      }
+    },
+    "h2-reference": {
+      "fixture": "C02-H2-reference",
+      "decks": {
+        "qz8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "e9de42c23b7f5c4f69fec008906387d6199e443861c02a6b6f15bebab18dbc34"
+        },
+        "qz6": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "1a2556d24b1c3a4f8172e38015fbd7ac71574d2ce05a651430fd4764a32bd372"
+        },
+        "5z8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 6,
+          "input_sha256": "abab152d22ff3605a12dcc504cdf81138686a94cac6715104be7ab81a396d405"
+        },
+        "scf9": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-09,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "f28ca73cd55a70e84039ae35cb353a185d4e5b9f531954602cae0a5cb7d26c80"
+        },
+        "scf10": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-10,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "dd4ce8be9f0f2955116fe600fe3bcee84f13874b43f481ef1f5ac343b7b1618c"
+        },
+        "radial": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 250,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "7c4b90b42f5d78eb029cdddbfbc93a884a0bf425f86608680ff75e0b1a70b3ed"
+        },
+        "angular": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "a544741735753272198a7a825ee4a5a3ff97eb7418a530af79e0e8cb7a75debc"
+        },
+        "relative": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "4792bda747268ceb82ae0e074ed930cc241e6c3d293fc8be2f011172d762453c"
+        },
+        "cutoff": {
+          "options": {
+            "cell": 12,
+            "cutoff": 800,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "1e2e944363b7768f5eb7f085969b536190a133ac9e4aa87f4c006c400328e691"
+        },
+        "cell_mid": {
+          "options": {
+            "cell": "14.4",
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "d7c4dc0cbf9af57589924e1ad417d0009fdd59de8c5e138a2141b1c4d1efd509"
+        },
+        "cell_high": {
+          "options": {
+            "cell": 16,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "7be95118df9625134ac11d82254a7bf4c9ce28dbf3b31fe805d388189be63cca"
+        },
+        "joint": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "ca421bf55cc650e99f162830023f7d86962996135a7bdf395205ddafc66ebf8f"
+        },
+        "joint5z": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 12,
+          "input_sha256": "9f37e8b934e2296ae22b73b3398e48ca14035af7460d260800083508c309283c"
+        }
+      }
+    },
+    "h2": {
+      "fixture": "C03-H2-stretched",
+      "decks": {
+        "qz8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "460a616f95f5b4d5e9fff7d4758b7062f6705324132d90cc2227cb73f4eb8d32"
+        },
+        "qz6": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "d722d706b77f4a608534d003e9f368867254bdedef02d22c8029610d99522227"
+        },
+        "5z8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 6,
+          "input_sha256": "3b8e19605e448c80256963284c5d9c351e18546ad984cde755ef7b784bd2cde7"
+        },
+        "scf9": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-09,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "faa7a20142dca1039fb4ac36332e4ea6ce28b19ae3dad6ad446f7907bcea9967"
+        },
+        "scf10": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-10,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "ce7e00e0760c67fac32f1d1f18b147790b7e5f4a8abf147bdd6b187756479d7a"
+        },
+        "radial": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 250,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "e0a869e5247b612dd891380fc2fef44521e2039790eb5faed6dee3e59f55f628"
+        },
+        "angular": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "3d9c8e29c2a7e88feae028a65f5b94ee809c71daa032338b68ae244fe5a4aa97"
+        },
+        "relative": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "f4ca17d27b0ce456b5b4f8241677f65fa8b625c0bf1eb79dc1cc7a936d41636b"
+        },
+        "cutoff": {
+          "options": {
+            "cell": 12,
+            "cutoff": 800,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "51cfacae1d091ef192be89065ce45090a2cc6aab51871ded7fdc9bf90b59be2c"
+        },
+        "cell_mid": {
+          "options": {
+            "cell": "14.4",
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "825c0dcf1d975296db6506c2bcca1629545886b2d23514fdff6614931e43cfba"
+        },
+        "cell_high": {
+          "options": {
+            "cell": 16,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "bda431498157f28c76951dcb2c29526469b5ac6e5f325db761c23e408ec0ab2f"
+        },
+        "joint": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "17d03475b6383b0c4db5dff502caf94f68af571aaa342bba42297e341dd441cb"
+        },
+        "joint5z": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 12,
+          "input_sha256": "1b7d1c98d1352f8a7b2473c538779e5b96ec2ff4df45ed13c9bc6f4080acd6a8"
+        }
+      }
+    },
+    "h2-long": {
+      "fixture": "A04-H2-long",
+      "decks": {
+        "qz8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "482d96d0cec193c738674b46ca46fa74eaaf23e6f8b43edffd5c41cb6bd93532"
+        },
+        "qz6": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "cee694cab772b26181283a61d688989bc42f71733920bfaa26701216376f0de1"
+        },
+        "5z8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 6,
+          "input_sha256": "2c2bb4a41b85775aff1ee112bb033c0839f90a38497942d867ef6d4a617044c4"
+        },
+        "scf9": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-09,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "d52b92fb64489169527d13982606e04b6610011aacaf85a2b7f0edae1dfa86c4"
+        },
+        "scf10": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-10,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "393c3f15b079d2c3ebb793fc737db0dd84de239608d33e4809d6c30435b6e249"
+        },
+        "radial": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 250,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "58d1d394e82c2d20cb7ff180acf943866e43de4aa2da3c81988644883bbb75e6"
+        },
+        "angular": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "428cdde462cbeda16c1334889bd3bfaf506657d58e6a9c60ddb1fb79fe2869ca"
+        },
+        "relative": {
+          "options": {
+            "cell": 12,
+            "cutoff": 600,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "fd0b5fba279e8df34ff795b0da124866d76c8d774975dcf08c96dcba7fa69ace"
+        },
+        "cutoff": {
+          "options": {
+            "cell": 12,
+            "cutoff": 800,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 6,
+          "input_sha256": "5f7326527a7935c5c03c2202277bd689ea8e3e19990549939682644fb8f95f5f"
+        },
+        "cell_mid": {
+          "options": {
+            "cell": "14.4",
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "11325c2467010b0c4552849d8e85a1bee947c3cbd330236a7ccdc591bc52333e"
+        },
+        "cell_high": {
+          "options": {
+            "cell": 16,
+            "cutoff": 600,
+            "rel_cutoff": 40,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "b195c523fe69303315c5a0fafba9b5647dc6a0d4a48af5c38f569ac485b790da"
+        },
+        "joint": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "42546d141df8fd6ce43d06a8ed8b2b27d9b9ac34a210cd622198a327d3957258"
+        },
+        "joint5z": {
+          "options": {
+            "cell": 16,
+            "cutoff": 800,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 12,
+          "input_sha256": "a17282d1ff4c1d5c51af715227b770764ba981f6e9e7058939381e92b3fd39b9"
+        }
+      }
+    },
+    "he": {
+      "fixture": "C01-He",
+      "decks": {
+        "qz8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "4b17b6dad5611383896def766f781f740c34e9c842d4587fae28caf8bf0be158"
+        },
+        "qz6": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "e79ffd6a5c7ae5d0ed8b282caf9d708e40c5c1d7819b63b037b752708ccaa272"
+        },
+        "5z8": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 10,
+          "input_sha256": "d185e8a87b0a040467491af41084703087480743c596daeacfc88de244fe1471"
+        },
+        "scf9": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-09,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "d567a28bd5bd47a4fe4178c69c92dbe4cea73799002a4e82d7f76b6ae4f166fb"
+        },
+        "scf10": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-10,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "c128f6f521f4c87e5eebd1753254df35e4fdccbf911357f747758c1f1a23a0c8"
+        },
+        "radial": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 250,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "beb63a71b07d0cfd8b09a97b529bc4243a1768c0a74a5c9c6fa6c9eaa8bdfb61"
+        },
+        "angular": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "38e9338d055e1ad9c1673fc06a86bb0fe9e9ca37e108c10d2aa4294c111da33a"
+        },
+        "relative": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1000,
+            "rel_cutoff": 120,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "556ff268db64318cd023d3a7a0dc2fe1e24a0a95cac57d72a37722f4587f9e79"
+        },
+        "cutoff": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1200,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "c1d9f6910390664fc46691745a924e1985607adfabe1f971224e52ef8d57c4b0"
+        },
+        "cell_mid": {
+          "options": {
+            "cell": "13.5",
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "2f4cb87518d75a30921a088acdab3b358bb43120ad2b68813e3e29d8792691e8"
+        },
+        "cell_high": {
+          "options": {
+            "cell": "14.4",
+            "cutoff": 1000,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "46749fd0e5193495d28d7f70fb06f4fe294287c974b324ffcd084ad984f5ff26"
+        },
+        "joint": {
+          "options": {
+            "cell": "13.5",
+            "cutoff": 1200,
+            "rel_cutoff": 120,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "a5125edfa0f22ddfcfd429701eaefd0fc0a80d7175e230331c21f1bfd3d7494d"
+        },
+        "joint5z": {
+          "options": {
+            "cell": "13.5",
+            "cutoff": 1200,
+            "rel_cutoff": 120,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 8,
+            "basis": "cc-pV5Z"
+          },
+          "cap_gib": 12,
+          "input_sha256": "8d0029da77e0c184c59f2657dafcf6b28e8f79c9a1df5dba17c969ac69ac2da1"
+        },
+        "joint6": {
+          "options": {
+            "cell": "13.5",
+            "cutoff": 1200,
+            "rel_cutoff": 120,
+            "eps_scf": 1e-10,
+            "radial_grid": 250,
+            "lebedev_grid": 302,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "a7b83752700709f48e79c84a596fd52c6fa70e26d54cad0726bfec416e50e85e"
+        },
+        "he1100": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1100,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "918126bdded608adb0d08b2451d1a1eba3610d43b1f4678469134a645d186e20"
+        },
+        "he1200": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1200,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 10,
+          "input_sha256": "7d3eb5e63190091e05a0bfb170bc54fc831647f0ed18d9ab8a5c3e3d109325a0"
+        },
+        "he1400": {
+          "options": {
+            "cell": 12,
+            "cutoff": 1400,
+            "rel_cutoff": 80,
+            "eps_scf": 1e-08,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "lmaxn1": 6,
+            "basis": "cc-pVQZ"
+          },
+          "cap_gib": 12,
+          "input_sha256": "4c256a5c995ca9ca6b96e4f0ec6a4c0a1a41c5e9d4c572bd6b793563d5c4880a"
+        }
+      }
+    }
+  }
+}
