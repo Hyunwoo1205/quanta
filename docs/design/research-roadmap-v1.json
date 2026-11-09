@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.19",
+  "plan_version": "1.0.20",
   "updated_at": "2026-11-09",
   "status": "planned_development",
   "executable": false,
@@ -364,7 +364,7 @@
         "A01",
         "A03"
       ],
-      "status": "fixed_fixture_qz_higher_cutoff_screen_passed_reference_pending",
+      "status": "closed_no_go_reference_readiness",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
@@ -374,7 +374,7 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "A04 최종 묶음을 한 번 진행해 He 기준과 두 기저·결합 설정·ARM 재현을 판정하고 검증 범위를 마감. 자격이 있는 경우에만 별도 격리 OCI 경로를 같은 묶음에서 판정.",
+      "next_action": "A04 최종 묶음을 기준 미달로 마감. 프로필 확정과 A05/A06 전환은 보류. 후속 검증을 자동으로 열지 않음.",
       "fixed_fixture_basis_pilot_receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
       "fixed_fixture_atomic_grid_screen": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
       "remaining_numerical_validation_plan": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
@@ -394,7 +394,8 @@
       "finer_basis_pilot_plan": "docs/design/atomistic-a04-v0.1/qz-finer-basis-plan.json",
       "qz_cutoff_refinement_inputs": "docs/design/atomistic-a04-v0.1/qz-cutoff-refinement-inputs.json",
       "qz_cutoff_refinement_receipt": "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json",
-      "final_validation_batch_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json"
+      "final_validation_batch_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json",
+      "final_validation_batch_receipt": "docs/verification/atomistic-a04/final-validation-42538884365.json"
     },
     {
       "id": "A05",

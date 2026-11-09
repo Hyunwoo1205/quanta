@@ -1,0 +1,1790 @@
+{
+  "schema_version": 1,
+  "scope": "bounded_A04_numeric_and_contract_final_batch",
+  "status": "closed_no_go",
+  "workflow": {
+    "id": 42538884365,
+    "status": "completed",
+    "conclusion": "failure",
+    "head_sha": "9501ed6586b77de28408f07083ff6e248f01af86",
+    "path": ".github/workflows/atomistic-a04-final.yml",
+    "run_attempt": 1
+  },
+  "decision": {
+    "workflow_run_id": 42538884365,
+    "quanta_source": "9501ed6586b77de28408f07083ff6e248f01af86",
+    "phases": {
+      "f0": "success",
+      "f1": "failure",
+      "f2": "skipped",
+      "f3": "skipped",
+      "f4": "skipped"
+    },
+    "reports": [
+      {
+        "stage": "f1-joint",
+        "system": "h2-short",
+        "status": "measured",
+        "gate_failures": [],
+        "report_sha256": "d010522d319b609371c5b1e7a2895f40b9c87aefc2e2e77b3a4935187e0605f9"
+      },
+      {
+        "stage": "f1-joint",
+        "system": "he",
+        "status": "measured",
+        "gate_failures": [],
+        "report_sha256": "f4901088498150c62fc9c861a1a8dc19a247e8c8da9edc51f356d34e4c9aa2eb"
+      },
+      {
+        "stage": "f1-refine",
+        "system": "he",
+        "status": "criterion_not_met",
+        "gate_failures": [
+          "he_reference: Fourier reference readiness"
+        ],
+        "report_sha256": "fac1d63764fd4daa7080d8571c032e7ad6484bd95d3fddd095b9801089c417ea"
+      }
+    ],
+    "state": "closed_no_go",
+    "oci": "requires_separate_admission",
+    "physical_validation_status": "unvalidated"
+  },
+  "manifest": "docs/design/atomistic-a04-v0.1/a04-final-validation-inputs.json",
+  "manifest_sha256": "0f41677702d56aea22533a514c13e3712033bc09ec1c973c77a4d403519e27da",
+  "plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json",
+  "plan_sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+  "reports": [
+    {
+      "artifact": {
+        "job_id": 128909255945,
+        "artifact_id": 13639954112,
+        "artifact_digest": "sha256:07061cdbc275453f8f2535f5c8ac4e720ee6b79812fedff5c392e86cb48a70a7",
+        "artifact_bytes": 26923,
+        "report_sha256": "d010522d319b609371c5b1e7a2895f40b9c87aefc2e2e77b3a4935187e0605f9"
+      },
+      "stage": "f1-joint",
+      "system": "h2-short",
+      "status": "measured",
+      "quanta_source": "9501ed6586b77de28408f07083ff6e248f01af86",
+      "workflow_run_id": "42538884365",
+      "manifest_sha256": "0f41677702d56aea22533a514c13e3712033bc09ec1c973c77a4d403519e27da",
+      "plan_sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+      "cases": {
+        "qz6": {
+          "status": "measured",
+          "input_sha256": "5d899325be7ff80f883157e83cd23978809f3120d3a9c9ca6e5ed2f2335c32ed",
+          "submitted_input_sha256": "5d899325be7ff80f883157e83cd23978809f3120d3a9c9ca6e5ed2f2335c32ed",
+          "granted_memory_bytes": 6442450944,
+          "available_memory_at_admission_bytes": 14974697472,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 3074539520,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -1.146398303179848,
+          "engine_forces_hartree_per_bohr": [
+            [
+              -0.169257820922896,
+              1.12e-13,
+              1.12e-13
+            ],
+            [
+              0.169257820922958,
+              1.06e-13,
+              1.06e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0000003169,
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 60,
+            "independent_orbital_functions_reported": 60,
+            "overlap_ratio_line": "CN : max/min ev:  6.520E+000 /  9.157E-005   = 7.121E+004  Log(2-CN):  4.8525",
+            "overlap_warnings": [],
+            "expected_density_lmax": 6,
+            "effective_density_lmax": 6,
+            "overlap_max_eigenvalue_printed": 6.52,
+            "overlap_min_eigenvalue_printed": 9.157e-05,
+            "overlap_condition_2_printed": 71210.0,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 63.44876034700002,
+            "engine_wall_seconds_with_inventory": 63.69387083599999,
+            "engine_children_peak_rss_kib": 2985732,
+            "engine_user_cpu_seconds": 56.894904,
+            "engine_system_cpu_seconds": 6.533151,
+            "final_cgroup_memory_max_bytes": 6442450944,
+            "final_cgroup_swap_max_bytes": 0,
+            "final_cgroup_swap_current_bytes": 0,
+            "final_cgroup_swap_peak_bytes": 0,
+            "final_cgroup_memory_peak_bytes": 3074539520,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 76788312,
+            "sha256": "3edf9537a6b83b0a246e059d357e30474040cf82bb21e2f5243a9b714b38a3fe",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 2,
+            "atoms_bohr_rounded": [
+              [
+                1.0,
+                1.0,
+                10.771439,
+                11.338357,
+                11.338357
+              ],
+              [
+                1.0,
+                1.0,
+                11.905275,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              180,
+              180,
+              180
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.125982,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.125982,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.125982
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                6.666680309258538e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                6.666680309258538e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                6.666680309258538e-12
+              ]
+            ],
+            "samples": 5832000,
+            "voxel_volume_bohr3_from_rounded_header": 0.0019995188184661686,
+            "electron_integral": 2.000015793114048,
+            "electron_count_error_from_2": 1.5793114048090473e-05,
+            "minimum_electrons_per_bohr3": -2.557e-05,
+            "maximum_electrons_per_bohr3": 0.52608,
+            "negative_samples": 1622247,
+            "negative_integral": -7.365378302969299e-06,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 3.628204492400755e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "container_removed": true,
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1
+        },
+        "joint6": {
+          "status": "measured",
+          "input_sha256": "d5c321ecaeeaf28c39db19f10056599cd843f1e5b180c23a46caef216c47f43a",
+          "submitted_input_sha256": "d5c321ecaeeaf28c39db19f10056599cd843f1e5b180c23a46caef216c47f43a",
+          "granted_memory_bytes": 12884901888,
+          "available_memory_at_admission_bytes": 15589904384,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 12140900352,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_scf_iterations": 10,
+          "engine_energy_hartree": -1.146398288895004,
+          "engine_forces_hartree_per_bohr": [
+            [
+              -0.169257845472331,
+              1.86e-13,
+              1.85e-13
+            ],
+            [
+              0.169257845472487,
+              1.91e-13,
+              1.91e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0000003169,
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "H",
+            "atom_count": 2,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 60,
+            "independent_orbital_functions_reported": 60,
+            "overlap_ratio_line": "CN : max/min ev:  6.520E+000 /  9.157E-005   = 7.121E+004  Log(2-CN):  4.8525",
+            "overlap_warnings": [],
+            "expected_density_lmax": 6,
+            "effective_density_lmax": 6,
+            "overlap_max_eigenvalue_printed": 6.52,
+            "overlap_min_eigenvalue_printed": 9.157e-05,
+            "overlap_condition_2_printed": 71210.0,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 356.91798264700003,
+            "engine_wall_seconds_with_inventory": 357.16431808100003,
+            "engine_children_peak_rss_kib": 11580676,
+            "engine_user_cpu_seconds": 308.833084,
+            "engine_system_cpu_seconds": 47.944315,
+            "final_cgroup_memory_max_bytes": 12884901888,
+            "final_cgroup_swap_max_bytes": 0,
+            "final_cgroup_swap_current_bytes": 0,
+            "final_cgroup_swap_peak_bytes": 0,
+            "final_cgroup_memory_peak_bytes": 12140900352,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 314523960,
+            "sha256": "a9613bbac3b7cade80120c94b3b2209aefcc41547514c0796bdd85a4e98c1f1f",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 2,
+            "atoms_bohr_rounded": [
+              [
+                1.0,
+                1.0,
+                14.550891,
+                15.117809,
+                15.117809
+              ],
+              [
+                1.0,
+                1.0,
+                15.684727,
+                15.117809,
+                15.117809
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              288,
+              288,
+              288
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.104985,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.104985,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.104985
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                5.5555669243821144e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.5555669243821144e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                5.5555669243821144e-12
+              ]
+            ],
+            "samples": 23887872,
+            "voxel_volume_bohr3_from_rounded_header": 0.0011571289458716248,
+            "electron_integral": 2.000013512077915,
+            "electron_count_error_from_2": 1.3512077914779042e-05,
+            "minimum_electrons_per_bohr3": -1.048e-05,
+            "maximum_electrons_per_bohr3": 0.53635,
+            "negative_samples": 10044874,
+            "negative_integral": -3.3992589160163946e-06,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.2321945181147385e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "container_removed": true,
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1
+        }
+      },
+      "comparisons": {
+        "pilot_joint": {
+          "candidate": "qz6",
+          "reference": "joint6",
+          "result": {
+            "absolute_energy_difference_hartree": 1.4284843974365913e-08,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 2.4549529020756466e-08,
+            "reference_exported_electron_count": 2.000013512077915,
+            "candidate_exported_electron_count": 2.000015793114048,
+            "absolute_exported_electron_count_difference": 2.2810361333114315e-06,
+            "reference_engine_hard_soft_electron_count": 2.0000003169,
+            "candidate_engine_hard_soft_electron_count": 2.0000003169,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "h2-short-qz6",
+            "reference_case": "h2-short-joint6",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 600,
+            "candidate_rel_cutoff_ry": 40,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "candidate_grid_counts": [
+                180,
+                180,
+                180
+              ],
+              "reference_native_cube_sha256": "a9613bbac3b7cade80120c94b3b2209aefcc41547514c0796bdd85a4e98c1f1f",
+              "candidate_native_cube_sha256": "3edf9537a6b83b0a246e059d357e30474040cf82bb21e2f5243a9b714b38a3fe",
+              "reference_overlap_start_index": [
+                36,
+                36,
+                36
+              ],
+              "reference_overlap_grid_counts": [
+                216,
+                216,
+                216
+              ],
+              "reference_voxel_volume_bohr3": 0.0011571218420936215,
+              "reference_outer_shell_samples": 13810176,
+              "reference_outer_shell_absolute_integral_electrons": 2.239373016367736e-06,
+              "reference_outer_shell_signed_integral_electrons": 4.118871479816214e-11,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.000837588698787368,
+                "overlap_signed_density_difference_integral_electrons": 0.0002455350671229588,
+                "overlap_rms_density_difference_electron_per_bohr3": 8.697729528926726e-06,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.010490316358024776,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0008398280718037357
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0005838932889876394,
+                "overlap_signed_density_difference_integral_electrons": 8.390515611048889e-05,
+                "overlap_rms_density_difference_electron_per_bohr3": 7.567247008297029e-06,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.008714110243055573,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0005861326620040071
+              },
+              "interpolants_overlap_l1_electrons": 0.00046225753755545077,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "boundary": {
+            "reference_native_boundary_shell": {
+              "width_angstrom": 1,
+              "samples": 8074621,
+              "voxel_volume_bohr3": 0.0011571218420936215,
+              "signed_integral_electrons": 7.106577222685582e-09,
+              "absolute_integral_electrons": 1.117857243870575e-06
+            },
+            "candidate_native_boundary_shell": {
+              "width_angstrom": 1,
+              "samples": 2524051,
+              "voxel_volume_bohr3": 0.0019995065431377777,
+              "signed_integral_electrons": 4.4977240960875515e-08,
+              "absolute_integral_electrons": 4.468309340746264e-06
+            },
+            "shell_absolute_atol_electrons": 0.001,
+            "omitted_reference_absolute_integral_electrons": 2.239373016367736e-06,
+            "omitted_reference_signed_integral_electrons": 4.118871479816214e-11,
+            "omitted_reference_absolute_atol_electrons": 0.001,
+            "shell_passed": true,
+            "omitted_domain_passed": true
+          }
+        }
+      },
+      "reused": [],
+      "gate_failures": [],
+      "candidate": {
+        "predecessor_receipt": "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json",
+        "predecessor_receipt_sha256": "fa048df1348bb84b298b13ce5cb64e154c113817cbb1467fac2fca625bf19d02",
+        "source_sha": "3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+        "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+        "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+        "image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+        "metadata": {
+          "archive_bytes": 878660608,
+          "archive_sha256": "14666a63717c02ba4c5bbfc0ad493d986d14392f8e9e496fa056a519e6c6e1e5",
+          "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+          "config_sha256": "62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "image_ref": "quanta/a03-amd64:3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+          "schema_version": 1,
+          "source_sha": "3b0d0bcf15786747a7bab1b4aa015faf80172a16"
+        },
+        "image_proof": {
+          "proof_method": "native_ci_archive_manifest_and_config",
+          "daemon_image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "locked_platform_manifest_digest": "sha256:aa631fde70fe36bf6730ace4379b289dcc9b71249f1b55d94cd4f0ba30f26551",
+          "locked_platform_manifest_bytes": 1315,
+          "locked_config_digest": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "ordered_rootfs_diff_ids_match": true,
+          "runtime_config_projection_matches": true,
+          "already_loaded_identical_image": false
+        }
+      },
+      "scratch_removed": true
+    },
+    {
+      "artifact": {
+        "job_id": 128909255951,
+        "artifact_id": 13641270669,
+        "artifact_digest": "sha256:facf67ab8f78681402f2ff5b2840ca68ad31324770dd805ad5667dca83176317",
+        "artifact_bytes": 38360,
+        "report_sha256": "f4901088498150c62fc9c861a1a8dc19a247e8c8da9edc51f356d34e4c9aa2eb"
+      },
+      "stage": "f1-joint",
+      "system": "he",
+      "status": "measured",
+      "quanta_source": "9501ed6586b77de28408f07083ff6e248f01af86",
+      "workflow_run_id": "42538884365",
+      "manifest_sha256": "0f41677702d56aea22533a514c13e3712033bc09ec1c973c77a4d403519e27da",
+      "plan_sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+      "cases": {
+        "qz6": {
+          "status": "measured",
+          "input_sha256": "e79ffd6a5c7ae5d0ed8b282caf9d708e40c5c1d7819b63b037b752708ccaa272",
+          "submitted_input_sha256": "e79ffd6a5c7ae5d0ed8b282caf9d708e40c5c1d7819b63b037b752708ccaa272",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15163895808,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 6732660736,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -2.892651023414831,
+          "engine_forces_hartree_per_bohr": [
+            [
+              2.7e-14,
+              2.7e-14,
+              2.6e-14
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "expected_density_lmax": 6,
+            "effective_density_lmax": 6,
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 123.971371726,
+            "engine_wall_seconds_with_inventory": 124.26276971,
+            "engine_children_peak_rss_kib": 6447340,
+            "engine_user_cpu_seconds": 105.434815,
+            "engine_system_cpu_seconds": 18.499879,
+            "final_cgroup_memory_max_bytes": 10737418240,
+            "final_cgroup_swap_max_bytes": 0,
+            "final_cgroup_swap_current_bytes": 0,
+            "final_cgroup_swap_peak_bytes": 0,
+            "final_cgroup_memory_peak_bytes": 6732660736,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 182016258,
+            "sha256": "ab4190a90bb18da566f7fd540fc76a5a56965fe2677d13155e310400f79a4c31",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2.0,
+                2.0,
+                11.338357,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              240,
+              240,
+              240
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.094486,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.094486,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.094486
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                4.999983773083474e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                4.999983773083474e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                4.999983773083474e-12
+              ]
+            ],
+            "samples": 13824000,
+            "voxel_volume_bohr3_from_rounded_header": 0.0008435336100632559,
+            "electron_integral": 1.9999784972459866,
+            "electron_count_error_from_2": -2.1502754013358327e-05,
+            "minimum_electrons_per_bohr3": -1.8658e-05,
+            "maximum_electrons_per_bohr3": 3.2103,
+            "negative_samples": 6300219,
+            "negative_integral": -2.4333956365178483e-05,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "container_removed": true,
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1
+        },
+        "he1100": {
+          "status": "measured",
+          "input_sha256": "918126bdded608adb0d08b2451d1a1eba3610d43b1f4678469134a645d186e20",
+          "submitted_input_sha256": "918126bdded608adb0d08b2451d1a1eba3610d43b1f4678469134a645d186e20",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 15595520000,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 7333720064,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -2.892651023414718,
+          "engine_forces_hartree_per_bohr": [
+            [
+              3.32e-13,
+              3.32e-13,
+              3.33e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "expected_density_lmax": 6,
+            "effective_density_lmax": 6,
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 128.92135652999997,
+            "engine_wall_seconds_with_inventory": 129.21389511299998,
+            "engine_children_peak_rss_kib": 7031944,
+            "engine_user_cpu_seconds": 109.245211,
+            "engine_system_cpu_seconds": 19.643542,
+            "final_cgroup_memory_max_bytes": 10737418240,
+            "final_cgroup_swap_max_bytes": 0,
+            "final_cgroup_swap_current_bytes": 0,
+            "final_cgroup_swap_peak_bytes": 0,
+            "final_cgroup_memory_peak_bytes": 7333720064,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 182016258,
+            "sha256": "6f87d72b0c5141ecc175b09edf7e6db62f48f17f47f9f3a893f083e313415af9",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2.0,
+                2.0,
+                11.338357,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              240,
+              240,
+              240
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.094486,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.094486,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.094486
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                4.999983773083474e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                4.999983773083474e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                4.999983773083474e-12
+              ]
+            ],
+            "samples": 13824000,
+            "voxel_volume_bohr3_from_rounded_header": 0.0008435336100632559,
+            "electron_integral": 1.9999784972458319,
+            "electron_count_error_from_2": -2.1502754168123417e-05,
+            "minimum_electrons_per_bohr3": -1.8658e-05,
+            "maximum_electrons_per_bohr3": 3.2103,
+            "negative_samples": 6300219,
+            "negative_integral": -2.4333956413599413e-05,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "container_removed": true,
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1
+        },
+        "joint6": {
+          "status": "measured",
+          "input_sha256": "a7b83752700709f48e79c84a596fd52c6fa70e26d54cad0726bfec416e50e85e",
+          "submitted_input_sha256": "a7b83752700709f48e79c84a596fd52c6fa70e26d54cad0726bfec416e50e85e",
+          "granted_memory_bytes": 12884901888,
+          "available_memory_at_admission_bytes": 15682625536,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 12288749568,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_scf_iterations": 10,
+          "engine_energy_hartree": -2.892651023414721,
+          "engine_forces_hartree_per_bohr": [
+            [
+              2e-13,
+              2e-13,
+              1.99e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "expected_density_lmax": 6,
+            "effective_density_lmax": 6,
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 307.972104138,
+            "engine_wall_seconds_with_inventory": 308.263323896,
+            "engine_children_peak_rss_kib": 11724820,
+            "engine_user_cpu_seconds": 246.364703,
+            "engine_system_cpu_seconds": 61.550183,
+            "final_cgroup_memory_max_bytes": 12884901888,
+            "final_cgroup_swap_max_bytes": 0,
+            "final_cgroup_swap_current_bytes": 0,
+            "final_cgroup_swap_peak_bytes": 0,
+            "final_cgroup_memory_peak_bytes": 12288749568,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 314523906,
+            "sha256": "f2657174af5761167061bf6c4694f1ad2975cc0a4a11099c9f569542662f6246",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2.0,
+                2.0,
+                12.755651,
+                12.755651,
+                12.755651
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              288,
+              288,
+              288
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.088581,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.088581,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.088581
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                4.687504631411079e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                4.687504631411079e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                4.687504631411079e-12
+              ]
+            ],
+            "samples": 23887872,
+            "voxel_volume_bohr3_from_rounded_header": 0.0006950591042269408,
+            "electron_integral": 2.000008254654943,
+            "electron_count_error_from_2": 8.254654943140594e-06,
+            "minimum_electrons_per_bohr3": -1.3718e-05,
+            "maximum_electrons_per_bohr3": 3.2377,
+            "negative_samples": 10288452,
+            "negative_integral": -5.183407003349251e-06,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 3.96978091288247e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "container_removed": true,
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1
+        }
+      },
+      "comparisons": {
+        "he_plateau": {
+          "candidate": "qz6",
+          "reference": "he1100",
+          "result": {
+            "absolute_energy_difference_hartree": 1.127986593019159e-13,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 3.07e-13,
+            "reference_exported_electron_count": 1.9999784972458319,
+            "candidate_exported_electron_count": 1.9999784972459866,
+            "absolute_exported_electron_count_difference": 1.5476508963274682e-13,
+            "reference_engine_hard_soft_electron_count": 2.0,
+            "candidate_engine_hard_soft_electron_count": 2.0,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "he-qz6",
+            "reference_case": "he-he1100",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 1000,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "native_aligned_crop",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                240,
+                240,
+                240
+              ],
+              "candidate_grid_counts": [
+                240,
+                240,
+                240
+              ],
+              "reference_native_cube_sha256": "6f87d72b0c5141ecc175b09edf7e6db62f48f17f47f9f3a893f083e313415af9",
+              "candidate_native_cube_sha256": "ab4190a90bb18da566f7fd540fc76a5a56965fe2677d13155e310400f79a4c31",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                240,
+                240,
+                240
+              ],
+              "reference_voxel_volume_bohr3": 0.0008435418228862501,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0.0,
+              "reference_outer_shell_signed_integral_electrons": 0.0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 4.901095074569994e-13,
+                "overlap_signed_density_difference_integral_electrons": 1.5495972946833053e-13,
+                "overlap_rms_density_difference_electron_per_bohr3": 7.284902769881765e-15,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 9.9999999999584e-12,
+                "zero_extended_absolute_density_difference_integral_electrons": 4.901095074569994e-13
+              },
+              "sensitivity": null,
+              "interpolants_overlap_l1_electrons": null,
+              "interpolation_right_extrapolated_planes_per_axis": 0,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          }
+        },
+        "pilot_joint": {
+          "candidate": "qz6",
+          "reference": "joint6",
+          "result": {
+            "absolute_energy_difference_hartree": 1.0969003483296547e-13,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 1.7300000000000002e-13,
+            "reference_exported_electron_count": 2.000008254654943,
+            "candidate_exported_electron_count": 1.9999784972459866,
+            "absolute_exported_electron_count_difference": 2.975740895649892e-05,
+            "reference_engine_hard_soft_electron_count": 2.0,
+            "candidate_engine_hard_soft_electron_count": 2.0,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "he-qz6",
+            "reference_case": "he-joint6",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 1000,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "candidate_grid_counts": [
+                240,
+                240,
+                240
+              ],
+              "reference_native_cube_sha256": "f2657174af5761167061bf6c4694f1ad2975cc0a4a11099c9f569542662f6246",
+              "candidate_native_cube_sha256": "ab4190a90bb18da566f7fd540fc76a5a56965fe2677d13155e310400f79a4c31",
+              "reference_overlap_start_index": [
+                16,
+                16,
+                16
+              ],
+              "reference_overlap_grid_counts": [
+                256,
+                256,
+                256
+              ],
+              "reference_voxel_volume_bohr3": 0.0006950570440041733,
+              "reference_outer_shell_samples": 7110656,
+              "reference_outer_shell_absolute_integral_electrons": 1.185065779356606e-06,
+              "reference_outer_shell_signed_integral_electrons": -6.962122056250872e-11,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0008905575927115205,
+                "overlap_signed_density_difference_integral_electrons": 0.00043526713856668035,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.284459913659885e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.027399999999999647,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0008917426584908771
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0004948252090067966,
+                "overlap_signed_density_difference_integral_electrons": 6.848191399840865e-05,
+                "overlap_rms_density_difference_electron_per_bohr3": 9.940787234083133e-06,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.027399999999999647,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0004960102747861532
+              },
+              "interpolants_overlap_l1_electrons": 0.0006415882940670871,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "boundary": {
+            "reference_native_boundary_shell": {
+              "width_angstrom": 1,
+              "samples": 9181747,
+              "voxel_volume_bohr3": 0.0006950570440041733,
+              "signed_integral_electrons": 3.75561911271831e-08,
+              "absolute_integral_electrons": 1.60567068214496e-06
+            },
+            "candidate_native_boundary_shell": {
+              "width_angstrom": 1,
+              "samples": 5943401,
+              "voxel_volume_bohr3": 0.0008435418228862501,
+              "signed_integral_electrons": -7.277351429964034e-08,
+              "absolute_integral_electrons": 1.9209023422838212e-05
+            },
+            "shell_absolute_atol_electrons": 0.001,
+            "omitted_reference_absolute_integral_electrons": 1.185065779356606e-06,
+            "omitted_reference_signed_integral_electrons": -6.962122056250872e-11,
+            "omitted_reference_absolute_atol_electrons": 0.001,
+            "shell_passed": true,
+            "omitted_domain_passed": true
+          }
+        }
+      },
+      "reused": [],
+      "gate_failures": [],
+      "candidate": {
+        "predecessor_receipt": "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json",
+        "predecessor_receipt_sha256": "fa048df1348bb84b298b13ce5cb64e154c113817cbb1467fac2fca625bf19d02",
+        "source_sha": "3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+        "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+        "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+        "image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+        "metadata": {
+          "archive_bytes": 878660608,
+          "archive_sha256": "14666a63717c02ba4c5bbfc0ad493d986d14392f8e9e496fa056a519e6c6e1e5",
+          "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+          "config_sha256": "62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "image_ref": "quanta/a03-amd64:3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+          "schema_version": 1,
+          "source_sha": "3b0d0bcf15786747a7bab1b4aa015faf80172a16"
+        },
+        "image_proof": {
+          "proof_method": "native_ci_archive_manifest_and_config",
+          "daemon_image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "locked_platform_manifest_digest": "sha256:aa631fde70fe36bf6730ace4379b289dcc9b71249f1b55d94cd4f0ba30f26551",
+          "locked_platform_manifest_bytes": 1315,
+          "locked_config_digest": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "ordered_rootfs_diff_ids_match": true,
+          "runtime_config_projection_matches": true,
+          "already_loaded_identical_image": false
+        }
+      },
+      "scratch_removed": true
+    },
+    {
+      "artifact": {
+        "job_id": 128909255931,
+        "artifact_id": 13640798096,
+        "artifact_digest": "sha256:5056746276b3ea74e7660e9f2d9487e799186c04b8615375d6193b813b7796e6",
+        "artifact_bytes": 27116,
+        "report_sha256": "fac1d63764fd4daa7080d8571c032e7ad6484bd95d3fddd095b9801089c417ea"
+      },
+      "stage": "f1-refine",
+      "system": "he",
+      "status": "criterion_not_met",
+      "quanta_source": "9501ed6586b77de28408f07083ff6e248f01af86",
+      "workflow_run_id": "42538884365",
+      "manifest_sha256": "0f41677702d56aea22533a514c13e3712033bc09ec1c973c77a4d403519e27da",
+      "plan_sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+      "cases": {
+        "he1200": {
+          "status": "measured",
+          "input_sha256": "7d3eb5e63190091e05a0bfb170bc54fc831647f0ed18d9ab8a5c3e3d109325a0",
+          "submitted_input_sha256": "7d3eb5e63190091e05a0bfb170bc54fc831647f0ed18d9ab8a5c3e3d109325a0",
+          "granted_memory_bytes": 10737418240,
+          "available_memory_at_admission_bytes": 14899556352,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 8696877056,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -2.892651023414628,
+          "engine_forces_hartree_per_bohr": [
+            [
+              2.62e-13,
+              2.62e-13,
+              2.63e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "expected_density_lmax": 6,
+            "effective_density_lmax": 6,
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 255.81480266699998,
+            "engine_wall_seconds_with_inventory": 256.10945134800005,
+            "engine_children_peak_rss_kib": 8322180,
+            "engine_user_cpu_seconds": 215.222974,
+            "engine_system_cpu_seconds": 37.995699,
+            "final_cgroup_memory_max_bytes": 10737418240,
+            "final_cgroup_swap_max_bytes": 0,
+            "final_cgroup_swap_current_bytes": 0,
+            "final_cgroup_swap_peak_bytes": 0,
+            "final_cgroup_memory_peak_bytes": 8696877056,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 220922114,
+            "sha256": "d15917cb55208c76e697760352da025760c3c449f968d6e2c0a7d1e7cf23815e",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2.0,
+                2.0,
+                11.338357,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              256,
+              256,
+              256
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.088581,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.088581,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.088581
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                4.687504631411079e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                4.687504631411079e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                4.687504631411079e-12
+              ]
+            ],
+            "samples": 16777216,
+            "voxel_volume_bohr3_from_rounded_header": 0.0006950591042269408,
+            "electron_integral": 2.000008024806416,
+            "electron_count_error_from_2": 8.024806415818375e-06,
+            "minimum_electrons_per_bohr3": -1.4205e-05,
+            "maximum_electrons_per_bohr3": 3.2377,
+            "negative_samples": 7629435,
+            "negative_integral": -1.866576089791287e-05,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "container_removed": true,
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1
+        },
+        "he1400": {
+          "status": "measured",
+          "input_sha256": "4c256a5c995ca9ca6b96e4f0ec6a4c0a1a41c5e9d4c572bd6b793563d5c4880a",
+          "submitted_input_sha256": "4c256a5c995ca9ca6b96e4f0ec6a4c0a1a41c5e9d4c572bd6b793563d5c4880a",
+          "granted_memory_bytes": 12884901888,
+          "available_memory_at_admission_bytes": 15367491584,
+          "granted_swap_extra_bytes": 0,
+          "cgroup_memory_peak_bytes": 11815342080,
+          "cgroup_memory_events_max": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          },
+          "engine_scf_iterations": 9,
+          "engine_energy_hartree": -2.892651023414686,
+          "engine_forces_hartree_per_bohr": [
+            [
+              1.86e-13,
+              1.86e-13,
+              1.87e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2.0,
+          "basis_conditioning": {
+            "basis": "cc-pVQZ",
+            "basis_reported": "cc-pVQZ",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 30,
+            "orbital_functions": 30,
+            "independent_orbital_functions_reported": 30,
+            "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+            "overlap_warnings": [],
+            "expected_density_lmax": 6,
+            "effective_density_lmax": 6,
+            "overlap_max_eigenvalue_printed": 3.389,
+            "overlap_min_eigenvalue_printed": 0.006165,
+            "overlap_condition_2_printed": 549.7,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 299.76842787199996,
+            "engine_wall_seconds_with_inventory": 300.062761391,
+            "engine_children_peak_rss_kib": 11261612,
+            "engine_user_cpu_seconds": 236.332349,
+            "engine_system_cpu_seconds": 57.53532,
+            "final_cgroup_memory_max_bytes": 12884901888,
+            "final_cgroup_swap_max_bytes": 0,
+            "final_cgroup_swap_current_bytes": 0,
+            "final_cgroup_swap_peak_bytes": 0,
+            "final_cgroup_memory_peak_bytes": 11815342080,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 0,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 314523906,
+            "sha256": "5bca441609066cdd01526cc57d990e9f66fb4fba3953f82d4d9a24227fd0bc38",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2.0,
+                2.0,
+                11.338357,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_counts": [
+              288,
+              288,
+              288
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.078739,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.078739,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.078739
+              ]
+            ],
+            "origin_m_rounded": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                4.166688422716801e-12,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                4.166688422716801e-12,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                4.166688422716801e-12
+              ]
+            ],
+            "samples": 23887872,
+            "voxel_volume_bohr3_from_rounded_header": 0.0004881684238974191,
+            "electron_integral": 2.0000327426927025,
+            "electron_count_error_from_2": 3.274269270248098e-05,
+            "minimum_electrons_per_bohr3": -8.7769e-06,
+            "maximum_electrons_per_bohr3": 3.2843,
+            "negative_samples": 10809229,
+            "negative_integral": -1.09036693756711e-05,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-07,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+              "absolute_budget_bohr": 5.01e-07,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "container_removed": true,
+          "observed_mpi_ranks": 1,
+          "observed_omp_threads": 1
+        }
+      },
+      "comparisons": {
+        "he_reference": {
+          "candidate": "he1200",
+          "reference": "he1400",
+          "result": {
+            "absolute_energy_difference_hartree": 5.81756864903582e-14,
+            "absolute_maximum_force_component_difference_hartree_per_bohr": 7.6e-14,
+            "reference_exported_electron_count": 2.0000327426927025,
+            "candidate_exported_electron_count": 2.000008024806416,
+            "absolute_exported_electron_count_difference": 2.4717886286662605e-05,
+            "reference_engine_hard_soft_electron_count": 2.0,
+            "candidate_engine_hard_soft_electron_count": 2.0,
+            "engine_electron_counts_passed": true,
+            "energy_passed": true,
+            "force_passed": true,
+            "exported_electron_counts_passed": true,
+            "case": "he-he1200",
+            "reference_case": "he-he1400",
+            "candidate_cell_angstrom": 12,
+            "candidate_cutoff_ry": 1200,
+            "candidate_rel_cutoff_ry": 80,
+            "spatial_density": {
+              "method": "separable_lagrange_4pt_and_6pt",
+              "comparison_grid": "native reference grid with half-open centered cell domain",
+              "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+              "reference_grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "candidate_grid_counts": [
+                256,
+                256,
+                256
+              ],
+              "reference_native_cube_sha256": "5bca441609066cdd01526cc57d990e9f66fb4fba3953f82d4d9a24227fd0bc38",
+              "candidate_native_cube_sha256": "d15917cb55208c76e697760352da025760c3c449f968d6e2c0a7d1e7cf23815e",
+              "reference_overlap_start_index": [
+                0,
+                0,
+                0
+              ],
+              "reference_overlap_grid_counts": [
+                288,
+                288,
+                288
+              ],
+              "reference_voxel_volume_bohr3": 0.00048816077713324655,
+              "reference_outer_shell_samples": 0,
+              "reference_outer_shell_absolute_integral_electrons": 0.0,
+              "reference_outer_shell_signed_integral_electrons": 0.0,
+              "primary": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0009286983143291267,
+                "overlap_signed_density_difference_integral_electrons": 0.0004469539795337563,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.8187791186739087e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.0466000000000002,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0009286983143291267
+              },
+              "sensitivity": {
+                "overlap_absolute_density_difference_integral_electrons": 0.0005360669349854603,
+                "overlap_signed_density_difference_integral_electrons": 0.00010031117534866812,
+                "overlap_rms_density_difference_electron_per_bohr3": 1.4186016516958705e-05,
+                "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.0466000000000002,
+                "zero_extended_absolute_density_difference_integral_electrons": 0.0005360669349854603
+              },
+              "interpolants_overlap_l1_electrons": 0.0006394140572466427,
+              "interpolation_right_extrapolated_planes_per_axis": 1,
+              "candidate_native_samples_clipped_or_renormalized": false
+            },
+            "spatial_l1_screen_passed": true,
+            "within_all_endpoint_thresholds": true
+          },
+          "resampling": {
+            "method": "signed periodic trigonometric diagnostic on a common half-open cell",
+            "reference_grid_axis_count": 288,
+            "candidate_grid_axis_count": 256,
+            "shared_native_grid_axis_count": 32,
+            "shared_native_points": {
+              "samples": 32768,
+              "voxel_volume_bohr3": 0.3558692065301367,
+              "absolute_difference_integral_electrons": 0.019389502449024272,
+              "signed_difference_integral_electrons": -0.01938675648621303,
+              "rms_difference_electrons_per_bohr3": 0.00025777933602977424,
+              "max_absolute_difference_electrons_per_bohr3": 0.0466000000000002
+            },
+            "shared_native_scope": "Direct point differences; its integral uses the sparse shared-grid rectangular rule.",
+            "candidate_to_reference_fourier": {
+              "samples": 23887872,
+              "voxel_volume_bohr3": 0.00048816077713324655,
+              "absolute_difference_integral_electrons": 0.0018848362629339342,
+              "signed_difference_integral_electrons": 6.827933825871789e-07,
+              "rms_difference_electrons_per_bohr3": 1.9125101420334086e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.04660000000000064
+            },
+            "reference_to_candidate_sampling": "periodic trigonometric evaluation with alias folding",
+            "candidate_vs_sampled_reference": {
+              "samples": 16777216,
+              "voxel_volume_bohr3": 0.0006950570440041733,
+              "absolute_difference_integral_electrons": 0.001356461525220058,
+              "signed_difference_integral_electrons": 6.827933829794925e-07,
+              "rms_difference_electrons_per_bohr3": 2.1113894973794638e-05,
+              "max_absolute_difference_electrons_per_bohr3": 0.04659999999999753
+            },
+            "reference_self_roundtrip": {
+              "fourier": {
+                "samples": 23887872,
+                "voxel_volume_bohr3": 0.00048816077713324655,
+                "absolute_difference_integral_electrons": 0.004852019053319838,
+                "signed_difference_integral_electrons": -3.7417071174637494e-16,
+                "rms_difference_electrons_per_bohr3": 2.7954608683240123e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.020933416694557505
+              },
+              "lagrange_4pt": {
+                "samples": 23887872,
+                "voxel_volume_bohr3": 0.00048816077713324655,
+                "absolute_difference_integral_electrons": 0.0012846557008787064,
+                "signed_difference_integral_electrons": 0.00045192945228262433,
+                "rms_difference_electrons_per_bohr3": 2.179257721562028e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.026514312542058383
+              },
+              "lagrange_6pt": {
+                "samples": 23887872,
+                "voxel_volume_bohr3": 0.00048816077713324655,
+                "absolute_difference_integral_electrons": 0.0008772005044858706,
+                "signed_difference_integral_electrons": 0.00010411860461733045,
+                "rms_difference_electrons_per_bohr3": 1.5659283559340288e-05,
+                "max_absolute_difference_electrons_per_bohr3": 0.01639143459294856
+              }
+            },
+            "interpretation": "Self-roundtrip starts from the same fine output and measures sampling plus reconstruction. The Fourier estimator assumes periodic extension of the serialized finite-cell data. These diagnostics do not replace the preregistered two-interpolant gate or provide an additive separation of error magnitudes."
+          }
+        }
+      },
+      "reused": [],
+      "gate_failures": [
+        "he_reference: Fourier reference readiness"
+      ],
+      "candidate": {
+        "predecessor_receipt": "docs/verification/atomistic-a04/x86-a03-gapw-42389732936.json",
+        "predecessor_receipt_sha256": "fa048df1348bb84b298b13ce5cb64e154c113817cbb1467fac2fca625bf19d02",
+        "source_sha": "3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+        "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+        "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+        "image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+        "metadata": {
+          "archive_bytes": 878660608,
+          "archive_sha256": "14666a63717c02ba4c5bbfc0ad493d986d14392f8e9e496fa056a519e6c6e1e5",
+          "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+          "config_sha256": "62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "image_ref": "quanta/a03-amd64:3b0d0bcf15786747a7bab1b4aa015faf80172a16",
+          "schema_version": 1,
+          "source_sha": "3b0d0bcf15786747a7bab1b4aa015faf80172a16"
+        },
+        "image_proof": {
+          "proof_method": "native_ci_archive_manifest_and_config",
+          "daemon_image_id": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "locked_platform_manifest_digest": "sha256:aa631fde70fe36bf6730ace4379b289dcc9b71249f1b55d94cd4f0ba30f26551",
+          "locked_platform_manifest_bytes": 1315,
+          "locked_config_digest": "sha256:62407f18343efb6ff260614e198b5d7e589d1763669e7b763adb1b89c529c029",
+          "ordered_rootfs_diff_ids_match": true,
+          "runtime_config_projection_matches": true,
+          "already_loaded_identical_image": false
+        }
+      },
+      "scratch_removed": true
+    }
+  ],
+  "summary": {
+    "measured_x86_cases": 7,
+    "fixture_receipts": 3,
+    "physical_validation_status": "unvalidated",
+    "no_automatic_followup": true,
+    "f2_f3_f4": "not_run_dependency",
+    "oci": "not_run_dependency",
+    "profile_frozen": false,
+    "sole_admission_failure": "He 1200–1400 Ry Fourier reference-readiness L1 0.0018848362629339342 e exceeds the preregistered 0.001 e limit.",
+    "original_pair_criteria": "He 1200–1400 Ry passed unchanged scalar, electron count, and 4-/6-point density tests. The separate reference criterion controls the no-go."
+  },
+  "decision_artifact": {
+    "id": 13641370128,
+    "digest": "sha256:da7daa2b2fa78e75298ebd0daaa222c03dce9a50e1bc754aba61fe2ca9e7323b",
+    "bytes": 635
+  }
+}

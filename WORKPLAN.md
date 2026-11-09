@@ -12,7 +12,22 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
-## 다음 실행 — A04 검증 및 확정 판정 일괄 마감
+## A04 최종 묶음 마감 — 기준 미달로 동결 불가
+
+[실행 42538884365](https://github.com/Hyunwoo1205/quanta/actions/runs/42538884365)의 F0에서 고정 입력과 자료 해시가 일치했습니다. [잠근 입력 행렬](docs/design/atomistic-a04-v0.1/a04-final-validation-inputs.json) 중 F1 일곱 계산이 수렴했고, 엔진·출력·기저 겹침·전자 수·자원 조건을 충족했습니다. 로컬 회귀시험 87개와 전체 x86 분기의 70개 모의 입력·전달 대조를 통과했습니다. 모의 결과는 실제 과학 판정에 사용하지 않았습니다.
+
+| F1 비교 | 원본·4점 L1 (전자) | 6점 L1 (전자) | 별도 푸리에 L1 (전자) | 판정 |
+| --- | ---: | ---: | ---: | --- |
+| H₂ 0.60 Å 결합 설정 12→16 Å | 0.0008398 | 0.0005861 | — | 통과 |
+| He 1000→1100 Ry 동일 240³ 격자 | 4.90×10⁻¹³ | — | — | 통과 |
+| He 결합 설정 12→13.5 Å | 0.0008917 | 0.0004960 | — | 통과 |
+| He 1200→1400 Ry, 256³→288³ | 0.0009287 | 0.0005361 | 0.001885 | 푸리에 기준 0.001전자 초과 |
+
+두 결합 설정은 셀 경계와 생략 밀도 기준을 충족했습니다. 모든 비교의 에너지·힘은 사전 허용오차 이내입니다. 메모리 최대는 He 13.5 Å 결합 설정의 11.44 GiB였고 스왑과 OOM은 0입니다. He 1200→1400 Ry는 기존 4점·6점 기준에 각각 통과했습니다. 마감 판정의 근거는 이 묶음에서 미리 별도로 정한 푸리에 기준 한 건입니다. [정제 검증 기록](docs/verification/atomistic-a04/final-validation-42538884365.json)
+
+**마감 판정은 `closed_no_go`입니다.** 선행 조건 미달에 따라 F2의 QZ–5Z, F3의 전체 행렬, F4의 ARM과 OCI 격리 시험은 미실행으로 기록했습니다. A04 프로필을 확정하지 않았고 독립 물리 검증은 `unvalidated`입니다. 이 묶음에서 새로운 설정이나 후속 검증 회차를 열지 않았습니다.
+
+## 이전 계획 — A04 검증 및 확정 판정 일괄 마감
 
 [최종 검증 묶음](docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json)에 남은 검증 전체의 계산 행렬, 사전 판정, 자원과 종료 조건을 기록했습니다. He 고해상도·재표본화 및 두 계의 결합 설정 확인 → QZ LMAXN1 브리지와 QZ–5Z 두 예비 구조 → 나머지 구조·선택 설정·공통 기저 기준 → 동일 입력 ARM 재현 → 조건 충족 시 격리 OCI 순으로 같은 실행 묶음에서 진행합니다. 계획에는 개발 검증과 OCI 적격 판정을 분리하고, 기준 미달 또는 실행 불가도 사유를 남겨 마감하도록 했습니다. 기존 TZ–QZ 미달 이력은 보존합니다. 이번 변경은 계획 기록이며 새 과학 실측은 없습니다.
 
@@ -28,7 +43,7 @@
 
 다음 시작점은 계획의 G0에서 고정 빌드와 입력 해시를 확인하고 H₂ 0.60 Å·He 시험의 자원 조건을 고정하는 것입니다.
 
-## 현재 개발 위치 — P1 A04 QZ 고차 CUTOFF 수치 비교 통과
+## 이전 개발 기록 — P1 A04 QZ 고차 CUTOFF 수치 비교 통과
 
 [실행 42533166322](https://github.com/Hyunwoo1205/quanta/actions/runs/42533166322)에서 [사전 고정 입력](docs/design/atomistic-a04-v0.1/qz-cutoff-refinement-inputs.json) 여섯 건을 동일 x86 CP2K로 실행했습니다. 고정 12 Å 셀에서 H₂ 0.60 Å는 REL40, He는 REL80이며, CUTOFF 한 줄만 바꿨습니다. 여섯 건이 수렴하고 기저 겹침·전자 수·자원 검사를 통과했습니다. 지난 두 쌍의 원본 CUBE 네 건은 해시가 일치했고 기존 밀도 기준 초과가 그대로 재현됐습니다.
 

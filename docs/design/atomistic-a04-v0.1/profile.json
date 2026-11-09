@@ -142,6 +142,12 @@
       "receipt": "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json",
       "scope": "H2 600–800 Ry and He 1000–1200 Ry in the fixed 12 angstrom x86 QZ profile. The He Fourier diagnostic remains method-sensitive. Joint reference settings and physical validation are pending."
     },
+    "final_validation_batch": {
+      "status": "closed_no_go_reference_readiness",
+      "receipt": "docs/verification/atomistic-a04/final-validation-42538884365.json",
+      "numeric_scope": "Seven F1 x86 measurements. He 1200 to 1400 Ry met the original 4-/6-point density criteria and failed the separate preregistered Fourier readiness threshold.",
+      "downstream": "QZ–5Z, full matrix and native ARM replay not run; OCI not tested. No automatic further round."
+    },
     "fixed_fixture_scf_screen": {
       "status": "passed_on_pinned_x86_fixed_fixtures",
       "candidate_eps_scf": 1e-8,
