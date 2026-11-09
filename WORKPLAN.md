@@ -12,6 +12,18 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
+## 완료 — A04 기저 기준 미달 원인 분석과 비교 기준 재설계
+
+기존 QZ8→5Z8 입력은 같은 형상·격자·수치 설정에서 기저만 바꿨습니다. 원본 부호를 유지한 차이의 절대 L1은 H₂ 0.00550653전자, He 0.00488950전자였고, 5Z−QZ의 부호 있는 적분은 각각 −3.58×10⁻⁶, +1.84×10⁻⁶전자였습니다. 최근접 핵에서 3 bohr 이내에 L1 차이의 H₂ 90.27%, He 84.27%가 있었습니다. 반올림 오차의 보수적 합은 양쪽에서 8.1×10⁻⁵전자 이내였고 QZ의 LMAXN1 6→8 차이는 밀도 L1이 H₂ 2.11×10⁻¹⁴전자, He 0이었습니다. 고정 수치 설정에서 기저 변경에 따른 밀도 재분포를 확인했습니다. [원인 검증](docs/verification/atomistic-a04/basis-root-cause-20261110.json)
+
+CP2K는 명시한 LMAXN1을 atom-s-grid의 max l로 출력합니다. 한 중심 곱의 차수 상한은 min(LMAXN1, 2 × lmax_GAPW_1C)로 따로 계산합니다. Quanta 검사기가 두 값을 혼동했던 부분을 고쳤습니다. 기존 로그 네 건을 다시 읽어 QZ8의 각운동량 오판이 해소됨을 확인했습니다. 기존 QZ–5Z 에너지·절대 L1 기준 미달과 closed_no_go는 당시 결과로 보존합니다. [CP2K 출력 소스](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/cp_control_utils.F#L2948-L2952) · [곱 차수 계산](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_rho_atom_methods.F#L829-L876)
+
+BSE에 고정된 H·He cc-pV6Z의 모든 지수와 계수를 변환한 CP2K 자료와 십진수 단위로 대조했습니다. 정규화한 구면 AO 겹침의 해석적 계산은 다섯 구조의 QZ·5Z·6Z에 적용했고, 보존된 QZ·5Z CP2K 결과 네 건을 상대 5×10⁻⁴ 이내로 재현했습니다. 5Z는 다섯 구조의 오프라인 겹침 한도를 충족했습니다. 6Z의 최소 고윳값은 He 3.90319×10⁻⁴, H₂ 0.60 Å 4.81518×10⁻⁶이고 하한은 1.001×10⁻⁵입니다. H₂ 0.74144 Å는 하한보다 약 1.8% 높았습니다. He의 6Z만 조건부 기준으로 두고 H₂ 필수 행렬에서는 6Z를 제외했습니다. [오프라인 겹침 계산](docs/verification/atomistic-a04/basis-overlap-preflight-20261110.json)
+
+**새 계획은 [A04 기저 및 기준 재설계](docs/design/atomistic-a04-v0.1/a04-basis-redesign-v1.json)입니다.** 5Z를 두 계의 후보로 두고 He는 5Z의 LMAXN1 8→10 대조 뒤 공통 10의 5Z–6Z를 비교합니다. H₂와 He 모두 HelFEM으로 같은 전전자 PBE를 독립 계산하는 M04를 별도로 둡니다. E/F/L1 총 한도는 10⁻⁴ Hartree, 10⁻⁴ Hartree/Bohr, 10⁻³전자입니다. M04는 독립 기준 불확실성에 각 한도의 10%를 배정하고 측정 차이와 배정분의 합으로 판정합니다. H₂의 기존 동일 계열 AV04 미달은 별도입니다. 5Z 및 6Z의 SCF·격자·셀 수렴은 새 기저에서 따로 검사합니다.
+
+관련 로컬 시험 62개와 하위 시험 15개, 실제 로그 네 건의 재판독과 겹침 보고서 동일 해시 재현을 확인했습니다. **다음 시작점은 R0의 실행 준비**입니다. 고정 CP2K의 5Z L10·He 6Z L10 입력과 겹침·자원 검사를 잠그고 HelFEM 빌드·공통 격자 평가를 검증합니다. 새 CP2K·HelFEM 전자구조 실행과 A04 동결은 대기 상태입니다. 독립 물리 검증은 unvalidated입니다.
+
 ## 완료 — A04 최종 검증 기저 기준 미달
 
 [첫 실행 42645481557](https://github.com/Hyunwoo1205/quanta/actions/runs/42645481557)에서 F0의 고정 입력 68개와 기존 엔진 자산, F1의 He 1800·2000·2100 Ry 원본 및 H₂ 후보 원본의 해시를 확인했습니다. 이전 H₂ 결합 기준은 해시가 고정된 합격 보고서로 대조했습니다. 그 결합 기준의 CUBE 원본은 당시 보존 범위에서 제외됐습니다. [고정 입력](docs/design/atomistic-a04-v0.1/a04-even-grid-final-inputs.json)

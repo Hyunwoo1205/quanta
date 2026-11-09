@@ -153,6 +153,15 @@
       "receipt": "docs/verification/atomistic-a04/he16-reference-42549178440.json",
       "numeric_scope": "He QZ 16 angstrom at 1200 and 1400 Ry, isolated x86 with temporary swap. Both converged; 4-point, 6-point and Fourier density shape criteria failed. No operating qualification."
     },
+    "basis_and_reference_redesign": {
+      "status": "offline_preflight_complete_runtime_pending",
+      "plan": "docs/design/atomistic-a04-v0.1/a04-basis-redesign-v1.json",
+      "diagnosis": "docs/verification/atomistic-a04/basis-root-cause-20261110.json",
+      "overlap_preflight": "docs/verification/atomistic-a04/basis-overlap-preflight-20261110.json",
+      "candidate": "cc-pV5Z for fixed He/H2",
+      "reference": "conditional He cc-pV6Z plus independent matched-PBE HelFEM qualification",
+      "scope": "Offline source, log and overlap preflight. No new electronic structure calculation or profile freeze."
+    },
     "he_even_grid_final_basis_gate": {
       "status": "closed_no_go",
       "receipt": "docs/verification/atomistic-a04/even-grid-final-42646711532.json",

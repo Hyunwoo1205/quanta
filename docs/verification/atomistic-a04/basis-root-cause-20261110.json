@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "date_kst": "2026-11-10",
+  "scope": "Offline analysis of the two measured F2 pilot pairs and actual pinned CP2K logs",
+  "original_receipt": "docs/verification/atomistic-a04/even-grid-final-42646711532.json",
+  "original_receipt_sha256": "ad183e9f45be547adcbaca5ed4c1ae134b53ca0b5f9d68a6a864b48786f7650b",
+  "historical_disposition": "closed_no_go",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "new_cp2k_calculations": false,
+  "physical_validation_status": "unvalidated",
+  "references": {
+    "cp2k_input_and_print": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/cp_control_utils.F#L2948-L2952",
+    "cp2k_products": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_rho_atom_methods.F#L829-L876",
+    "cp2k_lebedev_orders": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/lebedev.F#L356-L363",
+    "cp2k_native_PBE": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_xc.F#L90-L105",
+    "cube_format": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/pw/realspace_grid_cube.F#L35-L36"
+  },
+  "angular_source_result": "Explicit LMAXN1 is echoed by the atom-grid report. The product ceiling min(lmax_sphere, 2*maxlgto) is a separate computation. The historical QZ8 issue was a false diagnostic from Quanta's expected value.",
+  "angular_log_replay": {
+    "h2-short/qz8": {
+      "artifact": {
+        "id": 13686674405,
+        "name": "a04-even-grid-compact-h2-short-qz8-1",
+        "size": 16211,
+        "digest": "sha256:5ac5963a20320f886dfe2e01ae70e05512654714d03cf1404f693e5956ab7755",
+        "run": 42645481557
+      },
+      "input_sha256": "daaa8b2f32e55fdd485ff0510bdf2fb6e907b93cdd936767088e9c302a4c117a",
+      "historical_conditioning_passed": false,
+      "historical_conditioning_failures": [
+        "unexpected_effective_density_lmax"
+      ],
+      "reported_atom_grid_max_l": 8,
+      "expected_atom_grid_max_l": 8,
+      "overlap_conditioning_passed_in_offline_replay": true,
+      "orbital_functions": 60,
+      "overlap_min_eigenvalue_printed": 0.00009157
+    },
+    "h2-short/5z8": {
+      "artifact": {
+        "id": 13686429725,
+        "name": "a04-even-grid-compact-h2-short-5z8-1",
+        "size": 16660,
+        "digest": "sha256:9243f6afc52ee101ec78d360dd0ea3b53b2cc2fe5b79c127e89aec46c4e47974",
+        "run": 42645481557
+      },
+      "input_sha256": "570353863b3400531b94415df4180d01bc88b0ddfa8e44734c12cb869f2fc3c4",
+      "historical_conditioning_passed": true,
+      "historical_conditioning_failures": [],
+      "reported_atom_grid_max_l": 8,
+      "expected_atom_grid_max_l": 8,
+      "overlap_conditioning_passed_in_offline_replay": true,
+      "orbital_functions": 110,
+      "overlap_min_eigenvalue_printed": 0.00002339
+    },
+    "he/qz8": {
+      "artifact": {
+        "id": 13688586747,
+        "name": "a04-even-grid-compact-he-qz8-1",
+        "size": 16062,
+        "digest": "sha256:866be82f0ad30bb675ea423df110e512dc0aea92c20aa62605f71587a29730ea",
+        "run": 42646711532
+      },
+      "input_sha256": "23516f63a5042c32cd777e5766a5dd8a4a3649f79f6158c566140063bc23d4ab",
+      "historical_conditioning_passed": false,
+      "historical_conditioning_failures": [
+        "unexpected_effective_density_lmax"
+      ],
+      "reported_atom_grid_max_l": 8,
+      "expected_atom_grid_max_l": 8,
+      "overlap_conditioning_passed_in_offline_replay": true,
+      "orbital_functions": 30,
+      "overlap_min_eigenvalue_printed": 0.006165
+    },
+    "he/5z8": {
+      "artifact": {
+        "id": 13687313676,
+        "name": "a04-even-grid-compact-he-5z8-1",
+        "size": 16502,
+        "digest": "sha256:f7da9e29968c759adaecf2176bff4b3eabdbaa3b40dfab3740b876e7a42f2186",
+        "run": 42646711532
+      },
+      "input_sha256": "35fd06bf8ed38a446bbf2f4966c17d273bea675473e983a391b4d1604b6aed8d",
+      "historical_conditioning_passed": true,
+      "historical_conditioning_failures": [],
+      "reported_atom_grid_max_l": 8,
+      "expected_atom_grid_max_l": 8,
+      "overlap_conditioning_passed_in_offline_replay": true,
+      "orbital_functions": 55,
+      "overlap_min_eigenvalue_printed": 0.001065
+    }
+  },
+  "density_method": "Verified equal headers, native grids and SHA-256 for the four raw CUBEs. Kept signed values for the absolute and algebraic integrals. Nearest-nucleus bins use the native voxel volume. The He shell means group equal integer radius squared. Text-rounding envelope sums half of each serialized nonzero value's last decimal place at both endpoints. Round-off alone cannot explain the residual.",
+  "density_reanalysis": {
+    "h2-short": {
+      "signed_integral_5z_minus_qz_electrons": -0.0000035796605055704436,
+      "absolute_l1_fraction_within_nearest_nucleus_bohr": {
+        "1": 0.3166,
+        "2": 0.7161,
+        "3": 0.9027,
+        "6": 0.994,
+        "0.5": 0.126
+      },
+      "text_rounding_envelope_electrons": 0.0000806828,
+      "raw_cube_sha256": {
+        "qz8": "72e3db4f4bc0a1d28750add06deebecf63849d8a6c6bfa738fe15e77d02a8323",
+        "5z8": "1052629402d521ed3deebeef8c5e15b79617ff65faa8bcf3cd8933c45f8bfc7f"
+      },
+      "QZ_lmax_6_to_8": {
+        "energy_hartree": 2.398081733190338e-14,
+        "force_hartree_per_bohr": 9.992007221626409e-16,
+        "density_l1_electrons": 2.1131999901063044e-14,
+        "within_limits": true,
+        "energy_passed": true,
+        "force_passed": true,
+        "AV05": true,
+        "AV06": true,
+        "field_l1_passed": true
+      },
+      "QZ8_to_5Z8": {
+        "energy_hartree": 0.00017200479846812833,
+        "force_hartree_per_bohr": 0.00014470057504897826,
+        "density_l1_electrons": 0.005506527734018155,
+        "within_limits": false,
+        "energy_passed": false,
+        "force_passed": false,
+        "AV05": true,
+        "AV06": true,
+        "field_l1_passed": false
+      },
+      "l1_lower_bound_after_print_rounding_only_electrons": 0.005425844934018155
+    },
+    "he": {
+      "signed_integral_5z_minus_qz_electrons": 0.00000184216,
+      "absolute_l1_fraction_within_nearest_nucleus_bohr": {
+        "1": 0.3145,
+        "2": 0.6527,
+        "3": 0.8427,
+        "6": 0.9994,
+        "0.5": 0.0917
+      },
+      "text_rounding_envelope_electrons": 0.0000786492,
+      "he_shell_mean_fraction_of_difference_squared": 0.99849,
+      "raw_cube_sha256": {
+        "qz8": "674b2342866faf7cf8b48a17ed799032694a7344c5e074af50a940d3790471c9",
+        "5z8": "743acdf75185f73f7ada08d65454763868bee2a064e69601113c6c25ebeaaa9e"
+      },
+      "QZ_lmax_6_to_8": {
+        "energy_hartree": 0,
+        "force_hartree_per_bohr": 0,
+        "density_l1_electrons": 0,
+        "within_limits": true,
+        "energy_passed": true,
+        "force_passed": true,
+        "AV05": true,
+        "AV06": true,
+        "field_l1_passed": true
+      },
+      "QZ8_to_5Z8": {
+        "energy_hartree": 0.0001791446296413035,
+        "force_hartree_per_bohr": 3.2e-13,
+        "density_l1_electrons": 0.004889500059188295,
+        "within_limits": false,
+        "energy_passed": false,
+        "force_passed": true,
+        "AV05": true,
+        "AV06": true,
+        "field_l1_passed": false
+      },
+      "l1_lower_bound_after_print_rounding_only_electrons": 0.0048108508591882945
+    }
+  },
+  "regression": {
+    "locked_python": "3.12.14",
+    "numpy": "2.3.5",
+    "passed": 62,
+    "passed_subtests": 15,
+    "archive_logs_replayed": 4,
+    "scope": "A03 input, A04 grid input, basis parser, CUBE comparison and cutoff diagnostics tests on the original workspace. The separate local design-test module could not be collected without jsonschema."
+  }
+}

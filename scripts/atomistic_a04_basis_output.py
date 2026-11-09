@@ -43,7 +43,7 @@ def _one(matches, label):
     return matches[0]
 
 
-def parse_basis_conditioning(text, *, basis, element, atom_count, expected_density_lmax=None):
+def parse_basis_conditioning(text, *, basis, element, atom_count, expected_atom_grid_max_l=None):
     """Return checked CP2K output and the separate overlap guard decision.
 
     The intended inputs have one atomic kind, one locked orbital basis,
@@ -110,16 +110,21 @@ def parse_basis_conditioning(text, *, basis, element, atom_count, expected_densi
         "overlap_warnings": warnings,
     }
     failures = []
-    if expected_density_lmax is not None:
-        if type(expected_density_lmax) is not int or expected_density_lmax not in (6, 8):
-            raise ValueError("Expected the locked QZ or 5Z effective density lmax")
-        actual_density_lmax = int(_one(re.findall(
+    if expected_atom_grid_max_l is not None:
+        if type(expected_atom_grid_max_l) is not int or expected_atom_grid_max_l not in (6, 8, 10):
+            raise ValueError("Expected a locked explicit GAPW atom-grid max l")
+        reported = int(_one(re.findall(
             r"(?m)^[ \t]*QS\|[ \t]+GAPW\|[ \t]+atom-s-grid:[ \t]+max l[ \t]*:[ \t]*(\d+)[ \t]*$",
             text,
-        ), "GAPW effective density lmax"))
-        evidence.update(expected_density_lmax=expected_density_lmax, effective_density_lmax=actual_density_lmax)
-        if actual_density_lmax != expected_density_lmax:
-            failures.append("unexpected_effective_density_lmax")
+        ), "GAPW atom-grid max l"))
+        # For an explicit LMAXN1 this CP2K line echoes lmax_sphere.
+        # Retain the old field names for readers of the original A04 reports.
+        evidence.update(
+            expected_atom_grid_max_l=expected_atom_grid_max_l, reported_atom_grid_max_l=reported,
+            expected_density_lmax=expected_atom_grid_max_l, effective_density_lmax=reported,
+        )
+        if reported != expected_atom_grid_max_l:
+            failures.append("unexpected_atom_grid_max_l")
     if re.fullmatch(rf"CN : max/min EV: +{_ES} */ +{_ES} +Log\(CN\): infinity", ratio_line):
         return {
             **evidence,

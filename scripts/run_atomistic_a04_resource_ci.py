@@ -578,7 +578,7 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
                 try:
                     record["basis_conditioning"] = parse_basis_conditioning(
                         text, basis=case.basis, element=metadata["atoms"][0]["element"], atom_count=len(forces),
-                        **({"expected_density_lmax": 8 if case.basis == "cc-pV5Z" else 6} if case.final_batch else {}),
+                        expected_atom_grid_max_l=case.lmaxn1 if case.final_batch else None,
                     )
                 except ValueError:
                     labels = ("Atomic kind:", "Orbital Basis Set", "Number of orbital", "Number of independent",

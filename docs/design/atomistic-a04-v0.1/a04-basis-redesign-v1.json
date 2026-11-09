@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "document_kind": "A04_basis_and_reference_redesign",
+  "date_kst": "2026-11-10",
+  "status": "redesigned_offline_preflight_complete_runtime_pending",
+  "executable": false,
+  "physical_validation_status": "unvalidated",
+  "scope": "Fixed neutral closed-shell all-electron nonrelativistic PBE for isolated He and four fixed H2 geometries. A04 development candidate only.",
+  "predecessor": {
+    "receipt": "docs/verification/atomistic-a04/even-grid-final-42646711532.json",
+    "sha256": "ad183e9f45be547adcbaca5ed4c1ae134b53ca0b5f9d68a6a864b48786f7650b",
+    "status": "closed_no_go",
+    "unchanged_He_1800_Ry_evidence": "Passed cutoff screen for the historical fixed QZ calculation only."
+  },
+  "diagnosis": {
+    "replay": "docs/verification/atomistic-a04/basis-root-cause-20261110.json",
+    "sha256": "5c2f9123f948221a8ccc2f69a232e09cf753f7e0f6e5995b3904d726d1be45a7",
+    "overlap_preflight": "docs/verification/atomistic-a04/basis-overlap-preflight-20261110.json",
+    "overlap_preflight_sha256": "f7c07fede8e3a992b7e7836370593979a78e7505c5fb7aa24d998fd77df58243",
+    "angular_print": "For explicit LMAXN1, CP2K prints lmax_sphere as atom-s-grid: max l. Match it to the authored input. GAPW one-center product support uses min(lmax_sphere,2*maxlgto). The resulting limit is an upper bound, and does not measure nonzero density coefficients.",
+    "basis_delta": "The QZ8 and 5Z8 decks differ in basis asset and KIND basis names on identical lattices. Their finite-basis difference includes the response to the altered basis under fixed numerical controls. It does not establish the complete-basis error of either basis."
+  },
+  "candidates": {
+    "qz": {
+      "role": "historical_control",
+      "spherical_AOs_per_atom": 30,
+      "one_center_orbital_lmax": 3,
+      "explicit_grid_lmax": 8,
+      "product_upper_bound": 6
+    },
+    "five_z": {
+      "role": "provisional_candidate_for_He_and_all_H2_fixtures",
+      "spherical_AOs_per_atom": 55,
+      "one_center_orbital_lmax": 4,
+      "explicit_grid_lmax": 8,
+      "product_upper_bound": 8,
+      "asset": "docs/design/atomistic-a04-v0.1/basis-candidates/cc-pV5Z-H-He.cp2k",
+      "asset_sha256": "cbd10898d198b5b05f524d4feca1a21eda5bdcf2a104038ca1af4374f05d2d41",
+      "rule": "Use the measured L8 result only with exact deck and CUBE identity. The separate L8 to L10 comparison isolates the authored cap. Use L10 for both bases in the He ladder."
+    },
+    "six_z": {
+      "role": "conditional_He_same_family_reference_only",
+      "spherical_AOs_per_atom": 91,
+      "one_center_orbital_lmax": 5,
+      "explicit_grid_lmax": 10,
+      "product_upper_bound": 10,
+      "source": {
+        "repository": "MolSSI-BSE/basis_set_exchange",
+        "commit": "9fe07596f87753343e0a5748d1722135b21b8623",
+        "path": "basis_set_exchange/data/dunning/cc-pV6Z.1.json",
+        "identity": {
+          "size_bytes": 166487,
+          "sha256": "897f515c0faf40772b4a6aa13c48b5bcafdf62f6bd51d56e3c303e745615f23f",
+          "git_blob_sha1": "de4605a8f7649f7f906ec0f9d1d763336d762ac4"
+        },
+        "license": "BSD-3-Clause",
+        "license_identity": {
+          "size_bytes": 1505,
+          "sha256": "14b5a1c21a9e0966e295b9e3d66c0cee9475ffe5931e74d063c3713e2ae9a496",
+          "git_blob_sha1": "fd33457a8d405cf3f8b3ac3e31bae6e3328af3da"
+        },
+        "H_reference": "Peterson, Woon and Dunning, doi:10.1063/1.466884",
+        "He_reference": "BSE woonXXXXa, unpublished Woon/Dunning data cited by van Mourik et al., Mol. Phys. 96, 529–547 (1999)"
+      },
+      "converted": {
+        "path": "docs/design/atomistic-a04-v0.1/basis-candidates/cc-pV6Z-H-He.cp2k",
+        "identity": {
+          "size_bytes": 5559,
+          "sha256": "c77c439024f911c0a64784cd52705ed90b020945d8dd416bf8d46f2fe2b7f82a",
+          "git_blob_sha1": "1c8bab55fb05ddcbce23006c4295088d9323937b"
+        },
+        "verified_against_source": "Exact decimal equality for every exponent and contraction vector of H and He"
+      },
+      "admission": "H2 0.60 Å fails the established overlap floor offline. Exclude 6Z from the required H2 matrix without rank truncation, basis removal or changing the overlap gate. Admit the He deck only after exact deck locking, engine overlap/count evidence, and resource preflight."
+    }
+  },
+  "fixed_starts": {
+    "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "x86_binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+    "image_artifact_id": 13579899979,
+    "he": {
+      "fixture": "C01-He",
+      "cell_angstrom": 12,
+      "cutoff_ry": 1800,
+      "rel_cutoff_ry": 80,
+      "prior_native_axis": 320
+    },
+    "h2": {
+      "fixtures": [
+        [
+          "A04-H2-short",
+          0.6
+        ],
+        [
+          "C02-H2-reference",
+          0.74144
+        ],
+        [
+          "C03-H2-stretched",
+          0.8
+        ],
+        [
+          "A04-H2-long",
+          1
+        ]
+      ],
+      "cell_angstrom": 12,
+      "cutoff_ry": 600,
+      "rel_cutoff_ry": 40,
+      "prior_pilot_native_axis": 180
+    },
+    "controls": {
+      "eps_scf": 1e-8,
+      "radial_points": 200,
+      "lebedev_points": 194,
+      "lmaxn0": 2,
+      "gapw_1c_basis": "ORB",
+      "density": "Native signed TOTAL_DENSITY, STRIDE 1"
+    },
+    "interpretation": "These exact historical starts are provisional for finer bases. Establish cutoff, relative cutoff, cell, radial, Lebedev and SCF convergence on the proposed candidate and required references."
+  },
+  "independent_reference": {
+    "role": "Independent numerical solution of the same PBE equations for He and H2, not physical validation",
+    "engine": "HelFEM",
+    "source_commit": "c7a452d210b049e977cc1950a166709fcb143c2c",
+    "repository": "https://github.com/susilehtola/HelFEM",
+    "license": "BSD-3-Clause",
+    "method": "Point nuclei, same bare charges, fixed identical Bohr geometry, neutral restricted singlet Kohn-Sham PBE, including nuclear repulsion in the total energy. Use the independently implemented LibXC gga_x_pbe and gga_c_pbe.",
+    "functional_check": "The historical CP2K deck selects native PBE. Pin independent LibXC 7.0.0 (locked CP2K build archive SHA256 e9ae69f8966d8de6b7585abd9fab588794ada1fab8f689337959a35abbf9527d) and cross-check PBE values and first derivatives on frozen representative spin-unpolarized density and gradient points before claiming a matched model.",
+    "citations": {
+      "atomic": "https://doi.org/10.1002/qua.25945",
+      "diatomic": "https://doi.org/10.1002/qua.25944",
+      "density_native_export": "https://github.com/susilehtola/HelFEM/blob/c7a452d210b049e977cc1950a166709fcb143c2c/src/diatomic/density_grid.cpp"
+    },
+    "admission": "Lock compiler, build assets, numerical reference axes and tests before execution. Use independent radial finite elements for He and prolate finite elements for H2. Establish domain, mesh, angular expansion and quadrature convergence with at least three recorded levels per axis. Select the finest settings prospectively and retain both final refinement differences.",
+    "density": "The native prolate HDF5 density grid has different coordinates. Verify direct finite-element density evaluation on exact half-open CP2K Cartesian comparison nodes. Check rotation/centering, independent density integral and omitted tail, and use signed, unclipped and unrenormalized samples. Integrate the absolute difference on the common lattice and include sampling/refinement uncertainty.",
+    "force": {
+      "convention": "Force is minus the derivative of total energy. The H2 right atom along the bond has axial force -dE/dR, the left atom has the opposite sign. Compare all Cartesian components after orienting to the fixed input; the centered He symmetry check is not a molecular force benchmark.",
+      "derivative": "Five-point centered stencil using identical refined settings at all displacements, including nuclear repulsion",
+      "h_bohr": [
+        0.002,
+        0.001,
+        0.0005
+      ],
+      "energy_refinement_per_displaced_geometry_hartree": 1e-10
+    },
+    "required_before_acceptance": "Reference build and exact-lattice evaluator, numerical uncertainty and displaced energy convergence are pending."
+  },
+  "thresholds": {
+    "overlap": {
+      "min_printed_eigenvalue": 0.00001001,
+      "max_printed_condition_2": 99990000,
+      "rank_policy": "Require full expected AO counts, no rank loss/warnings and the frozen overlap limits. Offline eigenvalues screen candidates and do not certify CP2K."
+    },
+    "AV03": {
+      "energy_hartree": 0.000001,
+      "max_force_hartree_per_bohr": 0.00001,
+      "density_l1_electrons": 0.001
+    },
+    "AV04": {
+      "energy_hartree": 0.0001,
+      "max_force_hartree_per_bohr": 0.0001,
+      "density_l1_electrons": 0.001,
+      "scope": "Apply the existing same-family requirement to He 5Z/6Z at identical lattice and LMAXN1 10. Keep the historical AV04 H2 record as failed/unresolved for same-family refinement."
+    },
+    "AV05": {
+      "engine_count_absolute_electrons": 0.000001
+    },
+    "AV06": {
+      "native_cube_count_absolute_electrons": 0.001
+    },
+    "density_shape": {
+      "same_lattice": "Integrate absolute difference of signed native samples directly",
+      "different_lattice": "Enforce the locked 4-point, 6-point and Fourier limits separately in He cutoff readiness, centered-cell shell and omitted-domain limits where applicable",
+      "diagnostic_only": "Signed integral, nearest-nucleus fractions, shell-mean and text-rounding envelope"
+    },
+    "matched_pbe": {
+      "id": "A04-M04",
+      "role": "Separate full numerical reference gate for both species, and proposed H2 route where 6Z is inadmissible",
+      "total_limits": {
+        "energy_hartree": 0.0001,
+        "max_force_hartree_per_bohr": 0.0001,
+        "density_l1_electrons": 0.001
+      },
+      "reserve": {
+        "energy_hartree": 0.00001,
+        "max_force_hartree_per_bohr": 0.00001,
+        "density_l1_electrons": 0.0001
+      },
+      "rule": "Predeclare reference uncertainty allowance from empirical fine refinement and independent sampling checks. Sum per-axis contributions conservatively with finite-difference error for forces and domain/projection contributions for density. Admission requires these estimates within the fixed reserve. Require measured absolute discrepancy plus the full reserve at or below each total limit. Treat unavailable or unconverged reference as incomplete. Do not claim a rigorous complete-basis error bound from two mesh levels.",
+      "status_semantics": "Report M04 and AV04 separately. A04 freeze requires a versioned decision on the new H2 reference route, and may not be represented as a retroactive same-family AV04 pass."
+    }
+  },
+  "execution": [
+    {
+      "id": "R0",
+      "state": "offline_preflight_complete",
+      "action": "Reproduce overlap and corrected log replay, lock sources, exact decks, derived product ceilings, asset hashes and reference setup. Verify native CP2K 5Z L8/L10 and 6Z L10 input/readback support and reference build readiness as launch checks."
+    },
+    {
+      "id": "R1",
+      "state": "planned",
+      "action": "Pilot in parallel on He and H2 0.60 Å. Reuse exact 5Z L8 anchors if admissible. On He run 5Z L10 and 6Z L10 at identical grid, apply AV03 on the bridge and AV04 on the common-cap pair. On both fixtures qualify the independent matched-PBE reference and run M04. A science failure blocks expansion."
+    },
+    {
+      "id": "R2",
+      "state": "planned",
+      "action": "For the passing candidate, verify SCF, radial and Lebedev separately, and joint controls. Repeat basis comparison on the required tighter numerical setting. Test CUTOFF, relative cutoff, finite cell shell and omitted mass separately. Do not reuse QZ convergence as new-basis acceptance."
+    },
+    {
+      "id": "R3",
+      "state": "planned",
+      "action": "Only after both pilot routes pass, cover the other three fixed H2 geometries with 5Z and independent reference, and re-evaluate all reported axes and evidence under the applicable gates."
+    },
+    {
+      "id": "R4",
+      "state": "planned",
+      "action": "Replay the admitted exact x86 candidate inputs on pinned native ARM. Separate no-swap OCI admission and scoped operations. Aggregate exact-scope eligibility, scientific no-go or missing-resource/evidence incomplete."
+    }
+  ],
+  "resources": {
+    "CP2K_He_x86": "One locked row on a hosted native x86 runner, one rank and one thread, up to 12 GiB RAM and 16 GiB temporary swap, at least 2 GiB measured host RAM reserve, 26 GiB free disk before swap and 3000 s per deck. Recompute the grant after swap and verify cleanup, exact cgroup evidence and zero OOM.",
+    "CP2K_H2_x86": "Retain the prior bounded H2 x86 limits. Only eligible exact rows. No automatic extra experiments when the gate fails.",
+    "numerical_reference_x86": "Use a separate isolated runner and pin dependencies. One thread per row, at most 8 GiB RAM, at least 2 GiB available to the host, no swap, at most 1800 s per row. Reassess only in a new explicit resource plan if the reference cannot be admitted.",
+    "OCI": "Independent no-swap preflight and admission. Hosted-runners with swap do not establish fit."
+  },
+  "sources": {
+    "cp2k_input_and_print": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/cp_control_utils.F#L2948-L2952",
+    "cp2k_products": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/qs_rho_atom_methods.F#L829-L876",
+    "cp2k_lebedev_orders": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/common/lebedev.F#L356-L363",
+    "cp2k_native_PBE": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_xc.F#L90-L105"
+  }
+}

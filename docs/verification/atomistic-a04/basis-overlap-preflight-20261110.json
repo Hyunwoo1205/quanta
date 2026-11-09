@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "date_kst": "2026-11-10",
+  "scope": "Offline analytic normalized full real-spherical AO overlap on five fixed geometries",
+  "method": "Gaussian product integrals over Cartesian moments of spherical polynomials, followed by binary64 eigensolution. No diagonalization truncation or alteration of the basis.",
+  "engine_bohr_m": 5.2917720859e-11,
+  "thresholds": {
+    "lambda_min_at_least": 0.00001001,
+    "condition_2_at_most": 99990000
+  },
+  "proof": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "old_cp2k_rounded_anchors_reproduced": 4,
+    "relative_agreement_at_most": 0.0005,
+    "repeat_same_workspace_output_sha256": "7712e88138974ad4ad3292101239a02a6793fa0fb6bba6c088e883b36e950a8a",
+    "reported_precision": "Eigenvalues and condition numbers below are the nine-significant-digit console values from the deterministic offline run. The replay script can regenerate full precision."
+  },
+  "verifier": "scripts/verify_atomistic_a04_basis_overlap.py",
+  "exact_input_artifact_sha256": {
+    "qz": "731dbb160f6f90fb7814e9a688ed6bf33aee82ed08b0f1418a0b6ce4b8a891ce",
+    "five_z": "cbd10898d198b5b05f524d4feca1a21eda5bdcf2a104038ca1af4374f05d2d41",
+    "six_z": "c77c439024f911c0a64784cd52705ed90b020945d8dd416bf8d46f2fe2b7f82a",
+    "bse_six_z_source": "897f515c0faf40772b4a6aa13c48b5bcafdf62f6bd51d56e3c303e745615f23f",
+    "previous_cp2k_receipt": "ad183e9f45be547adcbaca5ed4c1ae134b53ca0b5f9d68a6a864b48786f7650b"
+  },
+  "rows": [
+    {
+      "fixture_id": "C01-He",
+      "distance_angstrom": null,
+      "basis": "cc-pVQZ",
+      "dimension": 30,
+      "min_eigenvalue": 0.00616495099,
+      "condition_2": 549.664695,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "C01-He",
+      "distance_angstrom": null,
+      "basis": "cc-pV5Z",
+      "dimension": 55,
+      "min_eigenvalue": 0.00106471343,
+      "condition_2": 3669.39536,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "C01-He",
+      "distance_angstrom": null,
+      "basis": "cc-pV6Z",
+      "dimension": 91,
+      "min_eigenvalue": 0.000390318676,
+      "condition_2": 11355.1121,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "A04-H2-short",
+      "distance_angstrom": 0.6,
+      "basis": "cc-pVQZ",
+      "dimension": 60,
+      "min_eigenvalue": 0.0000915697914,
+      "condition_2": 71207.244,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "A04-H2-short",
+      "distance_angstrom": 0.6,
+      "basis": "cc-pV5Z",
+      "dimension": 110,
+      "min_eigenvalue": 0.0000233863871,
+      "condition_2": 326704.214,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "A04-H2-short",
+      "distance_angstrom": 0.6,
+      "basis": "cc-pV6Z",
+      "dimension": 182,
+      "min_eigenvalue": 0.00000481517518,
+      "condition_2": 1814504.77,
+      "against_existing_overlap_limit_only": false
+    },
+    {
+      "fixture_id": "C02-H2-reference",
+      "distance_angstrom": 0.74144,
+      "basis": "cc-pVQZ",
+      "dimension": 60,
+      "min_eigenvalue": 0.000202689774,
+      "condition_2": 31408.4198,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "C02-H2-reference",
+      "distance_angstrom": 0.74144,
+      "basis": "cc-pV5Z",
+      "dimension": 110,
+      "min_eigenvalue": 0.0000389052265,
+      "condition_2": 191483.42,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "C02-H2-reference",
+      "distance_angstrom": 0.74144,
+      "basis": "cc-pV6Z",
+      "dimension": 182,
+      "min_eigenvalue": 0.0000101890252,
+      "condition_2": 835306.06,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "C03-H2-stretched",
+      "distance_angstrom": 0.8,
+      "basis": "cc-pVQZ",
+      "dimension": 60,
+      "min_eigenvalue": 0.000266166217,
+      "condition_2": 23637.5495,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "C03-H2-stretched",
+      "distance_angstrom": 0.8,
+      "basis": "cc-pV5Z",
+      "dimension": 110,
+      "min_eigenvalue": 0.0000469970115,
+      "condition_2": 156598.111,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "C03-H2-stretched",
+      "distance_angstrom": 0.8,
+      "basis": "cc-pV6Z",
+      "dimension": 182,
+      "min_eigenvalue": 0.0000132570731,
+      "condition_2": 634134.88,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "A04-H2-long",
+      "distance_angstrom": 1,
+      "basis": "cc-pVQZ",
+      "dimension": 60,
+      "min_eigenvalue": 0.000568716508,
+      "condition_2": 10539.1259,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "A04-H2-long",
+      "distance_angstrom": 1,
+      "basis": "cc-pV5Z",
+      "dimension": 110,
+      "min_eigenvalue": 0.000100433084,
+      "condition_2": 69818.3597,
+      "against_existing_overlap_limit_only": true
+    },
+    {
+      "fixture_id": "A04-H2-long",
+      "distance_angstrom": 1,
+      "basis": "cc-pV6Z",
+      "dimension": 182,
+      "min_eigenvalue": 0.0000553102409,
+      "condition_2": 144899.95,
+      "against_existing_overlap_limit_only": true
+    }
+  ],
+  "h2_0_60_6z": {
+    "mode_count_above_existing_floor": 180,
+    "mathematical_matrix_dimension": 182,
+    "no_modes_discarded": true
+  },
+  "new_cp2k_or_electronic_structure_calculation": false,
+  "physical_validation_status": "unvalidated"
+}
