@@ -1,0 +1,81 @@
+name: Atomistic A04 He even-grid cutoff screen
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/design/atomistic-a04-v0.1/he-opt-reference-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: atomistic-a04-he-opt
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/atomistic-a04-resource-ci.yml
+    with:
+      experiment: he-opt-reference
+  compare:
+    needs: measure
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: he-opt-evidence-1400-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/he-opt-reference/1400
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: he-opt-evidence-1600-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/he-opt-reference/1600
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: he-opt-evidence-1800-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/he-opt-reference/1800
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: he-opt-evidence-2000-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/he-opt-reference/2000
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: he-opt-evidence-2100-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/he-opt-reference/2100
+          digest-mismatch: error
+      - name: Compare the original signed fields without swap
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          lock="$(mktemp)"
+          grep '^numpy==' requirements.lock.txt > "$lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$lock"
+          python -B scripts/run_atomistic_a04_he_opt.py compare \
+            --references "$RUNNER_TEMP/he-opt-reference" \
+            --output "$RUNNER_TEMP/he-opt-result/he-opt-report.json"
+      - name: Preserve the compact cutoff screen report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: he-opt-comparison-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/he-opt-result/he-opt-report.json
+          if-no-files-found: warn
+          retention-days: 14

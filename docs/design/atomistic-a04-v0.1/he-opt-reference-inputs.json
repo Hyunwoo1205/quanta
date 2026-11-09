@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "scope": "fixed_native_x86_He_QZ_centered_12_angstrom_cutoff_screen",
+  "prior_receipt": "docs/verification/atomistic-a04/final-validation-42538884365.json",
+  "prior_receipt_sha256": "d055e1f5abdf890bb458102873b105fdb45e4179d845c451ef8e885b155cc213",
+  "prior_plan_sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "cell_angstrom": 12,
+  "fixture": "C01-He",
+  "rel_cutoff_ry": 80,
+  "basis": "cc-pVQZ",
+  "eps_scf": 1e-08,
+  "radial_grid": 200,
+  "lebedev_grid": 194,
+  "lmaxn1": 6,
+  "density_include": "TOTAL_DENSITY",
+  "cube_stride": [
+    1,
+    1,
+    1
+  ],
+  "decks": {
+    "1400": {
+      "input_sha256": "4c256a5c995ca9ca6b96e4f0ec6a4c0a1a41c5e9d4c572bd6b793563d5c4880a",
+      "expected_axis_count": 288
+    },
+    "1600": {
+      "input_sha256": "80e8cd3b6df60f237731d264ebdd45012121ef31cdcde31b1aaeecfb038c365f",
+      "expected_axis_count": 300
+    },
+    "1800": {
+      "input_sha256": "d97e68b4b19935b44c447f855d0435e5e0f76741dae15f274c5b25c9380ed5b2",
+      "expected_axis_count": 320
+    },
+    "2000": {
+      "input_sha256": "4073f8d0dec99b04069d76b75c8d3eedb21cf961764dda0b03571c0512595318",
+      "expected_axis_count": 324
+    },
+    "2100": {
+      "input_sha256": "be55a24b66b5bfa3a0b8f5ddd403625e16ce267200bc29e936e4d89291332a46",
+      "expected_axis_count": 360
+    }
+  },
+  "checks": {
+    "AV03": {
+      "id": "AV03",
+      "layer": "numerical",
+      "observable": "scf_and_grid_property_convergence",
+      "rule": "Refine each SCF/grid/atomic-grid family separately; compare two finest levels with other families fixed sufficiently fine.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 1e-06,
+      "force_atol_hartree_per_bohr": 1e-05
+    },
+    "AV05": {
+      "id": "AV05",
+      "layer": "density",
+      "observable": "engine_all_electron_count",
+      "rule": "Engine all-electron hard+soft integral compared to 2.",
+      "atol": 1e-06,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty"
+    },
+    "AV06": {
+      "id": "AV06",
+      "layer": "density",
+      "observable": "exported_density_integral",
+      "rule": "Explicit full hard+soft electron-number density export: integral rho*dV compared to 2, including field/grid refinement.",
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "blocked_until": "A02/A04 full-density export semantics pinned; soft or signed total charge density cannot substitute"
+    }
+  },
+  "l1_atol_electrons_each": 0.001,
+  "boundary_shell_width_angstrom": 1,
+  "boundary_shell_absolute_atol_electrons": 0.001,
+  "maximum_comparison_axis": 360,
+  "wall_seconds_per_deck": 3000,
+  "resources": {
+    "ram_min_gib": 11,
+    "ram_max_gib": 12,
+    "temporary_runner_swap_gib": 16,
+    "host_ram_reserve_gib": 2,
+    "free_disk_before_swap_gib": 26,
+    "comparison_available_ram_min_gib": 6,
+    "ranks": 1,
+    "omp_threads": 1
+  },
+  "selection": [
+    "Check all ten ordered finer-reference comparisons using unchanged AV03/AV05/AV06 and the 0.001 electron limit separately for each of the 4-point, 6-point and Fourier L1 values.",
+    "Each measured row must use the prescribed distinct even native lattice, the centered He geometry and a converged SCF. Each passing pair must pass both QZ overlap and 1 Å native boundary shell checks.",
+    "An eligible candidate needs at least two distinct finer measured lattices. The candidate must pass against every finer tested lattice, and the two finest references must pass against each other.",
+    "Among eligible candidates rank by observed engine wall seconds, peak cgroup RAM, peak cgroup swap and then cutoff. These are individual isolated host observations, not a controlled performance benchmark.",
+    "A pair-level pass without the finer-lattice confirmation does not qualify a candidate. This screen does not execute F2 through F4, establish basis convergence, freeze a profile, or qualify public or OCI execution."
+  ]
+}

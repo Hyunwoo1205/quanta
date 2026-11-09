@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from compare_atomistic_a04_accuracy import (
+    MAX_AXIS_COUNT,
     MAX_HE16_AXIS_COUNT,
     _grid_count,
     _interpolated_planes,
@@ -20,6 +21,7 @@ from verify_atomistic_a03 import LOCK_DIR
 
 # Bound the in-memory diagnostics separately from the CP2K container.
 MAX_DIAGNOSTIC_AXIS_COUNT = 300
+MAX_12_ANGSTROM_DIAGNOSTIC_AXIS_COUNT = MAX_AXIS_COUNT
 MAX_16_ANGSTROM_DIAGNOSTIC_AXIS_COUNT = MAX_HE16_AXIS_COUNT
 
 
@@ -105,7 +107,9 @@ def diagnose_cutoff_density(
     if type(cell_angstrom) is not int or cell_angstrom <= 0:
         raise ValueError("Expected a positive authored cubic cell in integer Å")
     limits = (MAX_DIAGNOSTIC_AXIS_COUNT,)
-    if cell_angstrom == 16:
+    if cell_angstrom == 12:
+        limits += (MAX_12_ANGSTROM_DIAGNOSTIC_AXIS_COUNT,)
+    elif cell_angstrom == 16:
         limits += (MAX_16_ANGSTROM_DIAGNOSTIC_AXIS_COUNT,)
     if type(maximum_axis_count) is not int or maximum_axis_count not in limits:
         raise ValueError("Unsupported cutoff-density diagnostic axis limit for this cell")
