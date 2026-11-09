@@ -1,8 +1,8 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.22",
-  "updated_at": "2026-11-09",
+  "plan_version": "1.0.23",
+  "updated_at": "2026-11-10",
   "status": "planned_development",
   "executable": false,
   "runtime_contract_version": null,
@@ -364,7 +364,7 @@
         "A01",
         "A03"
       ],
-      "status": "he_even_grid_reference_passed_final_validation_planned",
+      "status": "he_even_grid_final_basis_closed_no_go",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
@@ -374,7 +374,7 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "He 12 Å·1800 Ry 개발 후보를 선정. 버전 고정 최종 묶음 F0에서 입력·자원을 잠근 뒤 기저, 전체 수치 축과 결합 설정, 네이티브 ARM 및 별도 OCI 적격성을 한 번에 판정.",
+      "next_action": "He와 H₂의 QZ–5Z 기준 미달. 기저 수렴 실패와 CP2K 각운동량 출력의 의미를 검토해 새 기저 후보와 독립 기준을 설계.",
       "fixed_fixture_basis_pilot_receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
       "fixed_fixture_atomic_grid_screen": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
       "remaining_numerical_validation_plan": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
@@ -398,7 +398,8 @@
       "final_validation_batch_receipt": "docs/verification/atomistic-a04/final-validation-42538884365.json",
       "he16_reference_pilot_receipt": "docs/verification/atomistic-a04/he16-reference-42549178440.json",
       "he_even_grid_cutoff_screen_receipt": "docs/verification/atomistic-a04/he-even-grid-42563236250.json",
-      "he_even_grid_final_validation_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-he-even-grid-plan.json"
+      "he_even_grid_final_validation_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-he-even-grid-plan.json",
+      "he_even_grid_final_basis_receipt": "docs/verification/atomistic-a04/even-grid-final-42646711532.json"
     },
     {
       "id": "A05",
