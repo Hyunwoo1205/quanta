@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.21",
+  "plan_version": "1.0.22",
   "updated_at": "2026-11-09",
   "status": "planned_development",
   "executable": false,
@@ -364,7 +364,7 @@
         "A01",
         "A03"
       ],
-      "status": "closed_no_go_reference_readiness_and_he16_pilot",
+      "status": "he_even_grid_reference_passed_final_validation_planned",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
@@ -374,7 +374,7 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "He 16 Å 후속 시도도 밀도 기준 미달로 마감. 통과를 전제로 한 최종 선정은 시작하지 않음.",
+      "next_action": "He 12 Å·1800 Ry 개발 후보를 선정. 버전 고정 최종 묶음 F0에서 입력·자원을 잠근 뒤 기저, 전체 수치 축과 결합 설정, 네이티브 ARM 및 별도 OCI 적격성을 한 번에 판정.",
       "fixed_fixture_basis_pilot_receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
       "fixed_fixture_atomic_grid_screen": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
       "remaining_numerical_validation_plan": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
@@ -396,7 +396,9 @@
       "qz_cutoff_refinement_receipt": "docs/verification/atomistic-a04/qz-cutoff-refinement-42533166322.json",
       "final_validation_batch_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json",
       "final_validation_batch_receipt": "docs/verification/atomistic-a04/final-validation-42538884365.json",
-      "he16_reference_pilot_receipt": "docs/verification/atomistic-a04/he16-reference-42549178440.json"
+      "he16_reference_pilot_receipt": "docs/verification/atomistic-a04/he16-reference-42549178440.json",
+      "he_even_grid_cutoff_screen_receipt": "docs/verification/atomistic-a04/he-even-grid-42563236250.json",
+      "he_even_grid_final_validation_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-he-even-grid-plan.json"
     },
     {
       "id": "A05",

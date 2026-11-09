@@ -12,6 +12,30 @@
 
 최신 운영 버전·보존·실계산은 아래 **동역학 웹0.16.0 구현·운영 반영 마감**과 [실제0.16 반영](docs/oci_dynamics_web_upgrade_verification.json)을 우선합니다. 이전 [0.15 반영](docs/oci_application_upgrade_verification.json)은 당시 근거로 보존합니다. 기존 사용자 가입·로그인 확인은 [계정 후속 확인](docs/account_auth_verification.json)의 latest_user_verification, 이전 계정 전환은 [계정 배포·보존 점검](docs/oci_accounts_upgrade_verification.json)을 기준으로 합니다. [개인 컨테이너 삭제 후 점검](docs/oci_personal_container_removal_verification.json), 이전 [재부팅 기록](docs/oci_reboot_recovery_verification.json)과 [새 계산](docs/oci_post_reboot_compute_verification.json)은 당시 근거로 보존합니다. 아래의 이전 구현·검증 문단과 당시0.12 운영 언급은 각 시점의 경과 기록입니다.
 
+## 완료 — A04 He 12 Å CUTOFF 탐색, 1800 Ry 개발 후보 선정
+
+[실행 42563236250](https://github.com/Hyunwoo1205/quanta/actions/runs/42563236250)에서 [고정 입력](docs/design/atomistic-a04-v0.1/he-opt-reference-inputs.json)의 CP2K/PBE/GAPW/cc-pVQZ, 12 Å 중앙 He, REL_CUTOFF 80 Ry, EPS_SCF 10⁻⁸, radial 200, Lebedev 194, LMAXN1 6과 부호 있는 TOTAL_DENSITY CUBE를 유지하고 CUTOFF만 변경했습니다. 다섯 예상 짝수 격자가 실제 출력과 일치했고 중앙 핵은 각 격자의 표본점에 놓였습니다. 다섯 계산 모두 SCF 9회로 수렴했으며 1400 Ry CUBE는 과거 원본과 같은 SHA-256입니다. [고정 CP2K 격자 규칙](https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/pw/pw_grid_info.F#L223) · [정제 검증 기록](docs/verification/atomistic-a04/he-even-grid-42563236250.json)
+
+| He 12 Å CUTOFF | 실제 격자 | 엔진 시간(초) | RAM 피크(GiB) | 스왑 피크(GiB) |
+| --- | ---: | ---: | ---: | ---: |
+| 1400 Ry | 288³ | 213.95 | 11.00 | 0.00 |
+| 1600 Ry | 300³ | 266.92 | 12.00 | 0.89 |
+| 1800 Ry | 320³ | 475.05 | 11.93 | 4.42 |
+| 2000 Ry | 324³ | 484.98 | 11.94 | 8.37 |
+| 2100 Ry | 360³ | 1195.63 | 11.82 | 10.08 |
+
+열 쌍 모두 AV03 에너지·힘, AV05 엔진 전자 수, AV06 CUBE 전자 수, QZ 겹침과 바깥 1 Å 밀도 및 4점·6점 L1 기준을 충족했습니다. 1400·1600 Ry가 포함된 일곱 쌍은 푸리에 L1이 0.001전자를 초과했습니다. 세 방법의 기준을 모두 충족한 쌍은 다음과 같습니다.
+
+| CUTOFF 비교(Ry) | 4점 L1(전자) | 6점 L1(전자) | 푸리에 L1(전자) |
+| --- | ---: | ---: | ---: |
+| 1800→2000 | 0.00010807 | 0.00006587 | 0.00055583 |
+| 1800→2100 | 0.00038523 | 0.00019795 | 0.00093670 |
+| 2000→2100 | 0.00036537 | 0.00018232 | 0.00089729 |
+
+**He 개발 후보는 12 Å·1800 Ry·REL80·QZ입니다.** 두 개의 더 미세한 격자와 각각 합격하고 두 기준 격자끼리도 합격한 유일한 탐색 설정입니다. 엔진 475.05초, RAM 11.93 GiB, 스왑 4.42 GiB입니다. 전체 측정의 OOM은 0이고 임시 스왑을 정리했습니다. 고정 환경 로컬 회귀에서 2386개와 하위시험 1663개가 통과했고 호스트 ptrace 정책 때문에 1개를 건너뛰었습니다.
+
+**다음 시작점은 [최종 선정 묶음](docs/design/atomistic-a04-v0.1/a04-final-validation-he-even-grid-plan.json)의 F0입니다.** 먼저 새 행렬과 자원 상한을 잠그고, QZ LMAXN1 6→8·QZ–5Z, 다섯 구조의 독립 축·셀·결합 설정, 네이티브 ARM의 동일 입력 대조를 의존 순서대로 실행합니다. OCI 적격성은 실측 자원 조건과 고정 운영 제어로 별도 판정합니다. 한 묶음에서 개발 확정·기준 미달·검증 불완전 중 하나로 마감합니다. 이번 범위는 고정 x86 QZ 격자이며 A04 최종 동결과 독립 물리 검증은 남아 있습니다.
+
 ## A04 후속 시도 마감 — He 16 Å 밀도 기준 미달
 
 [계산 실행 42549178440](https://github.com/Hyunwoo1205/quanta/actions/runs/42549178440)에서 [고정 He 입력](docs/design/atomistic-a04-v0.1/he16-reference-inputs.json)의 1200·1400 Ry를 실행했습니다. 기존 12 Å 입력에서 셀과 중앙 좌표만 변경했습니다. x86 격리 러너에서 1랭크·1스레드, RAM 상한 12 GiB와 임시 스왑 상한 16 GiB를 적용했습니다. 두 계산은 각각 SCF 9회로 수렴했습니다.

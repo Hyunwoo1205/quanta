@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "document_kind": "development_validation_plan",
+  "date_kst": "2026-11-09",
+  "status": "planned_not_executed",
+  "executable": false,
+  "scope": "One successor batch for development A04 numerical selection on five fixed He/H2 geometries, with OCI qualification reported separately.",
+  "inherits": {
+    "path": "docs/design/atomistic-a04-v0.1/a04-final-validation-batch.json",
+    "sha256": "b40d00874a2edbeb352d91c2abac667139cfc078aa0bb455dc6c267aac492776",
+    "criteria": "Preserve all numerical, source, geometry, security and evidence requirements of the historical plan except the explicit He matrix and development-only resource amendments below. The historical no-go remains recorded."
+  },
+  "admission": {
+    "receipt": "docs/verification/atomistic-a04/he-even-grid-42563236250.json",
+    "receipt_sha256": "fbed84737193bffe0919028cfa9d0936c2d2673d99664389acef0c236bbf5af1",
+    "workflow_run_id": 42563236250,
+    "screen_scope": "x86 He QZ LMAXN1 6, 12 Å, candidate 1800 Ry and distinct 2000/2100 Ry references",
+    "reusable": "Reuse the exact retained He LMAXN1 6 and passed H2 F1 rows after validating deck, artifact, source, raw CUBE and report digests. The old He plateau is historical and cannot substitute for the new selected He grid."
+  },
+  "tuples": {
+    "columns": [
+      "cell_angstrom_decimal",
+      "cutoff_ry",
+      "rel_cutoff_ry",
+      "eps_scf",
+      "radial",
+      "lebedev",
+      "lmaxn1"
+    ],
+    "H2_candidate": [
+      "12",
+      600,
+      40,
+      1e-08,
+      200,
+      194,
+      8
+    ],
+    "H2_joint_reference": [
+      "16",
+      800,
+      80,
+      1e-10,
+      250,
+      302,
+      8
+    ],
+    "H2_cell_axis": [
+      "12",
+      "14.4",
+      "16"
+    ],
+    "He_candidate": [
+      "12",
+      1800,
+      80,
+      1e-08,
+      200,
+      194,
+      8
+    ],
+    "He_cutoff_axis": [
+      1800,
+      2000,
+      2100
+    ],
+    "He_cell_axis_angstrom": [
+      "12",
+      "12.6",
+      "13.5"
+    ],
+    "He_cell_axis_expected_grids": [
+      320,
+      324,
+      360
+    ],
+    "He_joint_finer_grid_reference": [
+      "12",
+      2100,
+      120,
+      1e-10,
+      250,
+      302,
+      8
+    ],
+    "He_joint_enlarged_cell_reference": [
+      "13.5",
+      1900,
+      120,
+      1e-10,
+      250,
+      302,
+      8
+    ],
+    "He_cell_checks": [
+      "Compare 12 and 12.6 Å separately against 13.5 Å, with all controls except cell fixed. On the 360-axis reference, the two exact centered crops span 320 and 336 nodes per axis. Lock the actual CP2K axes and origin.",
+      "Apply signed 4-/6-point L1 where the grids differ, absolute outer 1 Å shell and omitted-domain mass. The enlarged joint reference has expected 360-axis output and the same real-space spacing as the 12 Å candidate. The separate joint 12 Å/2100 Ry tests finer real-space spacing."
+    ]
+  },
+  "resource_amendments": {
+    "H2": "Use the historical H2 x86 and native ARM isolation and limits.",
+    "He_x86_development": "One deck per hosted native runner at a time, single rank/thread, measured RAM cap at most 12 GiB and at least 2 GiB left available to the host. Allow up to 16 GiB temporary runner swap only for the named He development rows. Require at least 26 GiB disk before allocation, cap 3000 s per deck and 65 min per shard including I/O, zero OOM and verified cleanup. Honor the historical four-hour batch deadline and transient exact-input retry limit. Report an inadmissible or exhausting row as incomplete.",
+    "He_ARM_development": "Evaluate a locked hosted native ARM envelope with the same ceilings, host reserve and cleanup for the selected He deck. A separate explicit native ARM allowlist and same-input binding is needed if temporary swap is required. If the safe envelope cannot be implemented or admitted in F0/F4, record incomplete for the development scope.",
+    "OCI": "Keep the existing no-swap gate and at least 2 GiB reserve. Require a new authorized fixed request for exact admitted inputs and production isolation. If the selected He input does not fit that envelope, record OCI qualification as not admitted. Hosted development evidence does not grant operational support.",
+    "basis_resource_caveat": "The measurements in the admission receipt concern QZ LMAXN1 6. No assumption that the 5Z or joint references fit is allowed. No paid capacity, scientific retries, or arbitrary operations on OCI."
+  },
+  "batch": [
+    {
+      "id": "F0",
+      "depends_on": [],
+      "action": "Lock exact successor decks, bytes and allowed case IDs, CP2K artifacts, basis files and SHA links. Check CP2K axis predictions and exact crops, retention of all needed raw CUBEs, isolated admission by architecture, deadlines and negative cases before calculating."
+    },
+    {
+      "id": "F1",
+      "depends_on": [
+        "F0"
+      ],
+      "action": "Verify the passed He three-grid receipt and prior H2 evidence for exact reusable inputs. Confirm actual centered lattices, unchanged scalar/field thresholds and each 1 Å shell; enforce finite-cell comparisons at the new He setting in F3."
+    },
+    {
+      "id": "F2",
+      "depends_on": [
+        "F1"
+      ],
+      "action": "For He and H2 0.60 Å, compare QZ LMAXN1 6→8 at unchanged controls and then QZ vs 5Z at LMAXN1 8 on an identical native lattice. Enforce overlap, SCF, 30/55 spherical AO, AV03/04/05/06 and signed L1. A failed gate blocks F3."
+    },
+    {
+      "id": "F3",
+      "depends_on": [
+        "F2"
+      ],
+      "action": "Complete the remaining H2 geometry and QZ/5Z matrix. For all five structures check both stricter SCF values, radial 250, Lebedev 302, independent REL_CUTOFF, distinct CUTOFF, finite cells and joint reference comparisons. Repeat required He CUTOFF comparisons with LMAXN1 8 and the original three L1 checks. For the two He joint endpoints check QZ vs 5Z on each common lattice and candidate vs joint QZ, using tail criteria when changing the cell. Reuse only byte-identical admitted rows."
+    },
+    {
+      "id": "F4",
+      "depends_on": [
+        "F3"
+      ],
+      "action": "Replay all five selected exact decks on pinned native ARM. Check source, native geometry/lattice, ordered energy/forces, counts and signed density L1 under the original same-input gates. Report raw SHA separately. Record any fixed authorized OCI qualification or admission failure independently."
+    },
+    {
+      "id": "F5",
+      "depends_on": [
+        "F0",
+        "F1",
+        "F2",
+        "F3",
+        "F4"
+      ],
+      "action": "Aggregate every pass, criterion failure and inadmissible row in one run record. Issue the historical plan's frozen-for-exact-scope, closed-no-go or closed-incomplete decision. Update WORKPLAN, draft profile, roadmap and existing Drive model document. No automatic repeat batch."
+    }
+  ],
+  "independent_physical_validation_status": "unvalidated"
+}

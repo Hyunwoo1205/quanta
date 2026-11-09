@@ -1,0 +1,858 @@
+{
+  "schema_version": 1,
+  "scope": "fixed_native_x86_He_QZ_centered_12_angstrom_cutoff_screen",
+  "workflow": {
+    "id": 42563236250,
+    "head_sha": "6dd7ca326835098a6775998ad659cdc4315f27e1",
+    "run_attempt": 1,
+    "html_url": "https://github.com/Hyunwoo1205/quanta/actions/runs/42563236250",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "id": 128984046633,
+      "name": "measure / measure (he-opt-1400)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128984046837,
+      "name": "measure / measure (he-opt-2100)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128984046853,
+      "name": "measure / measure (he-opt-2000)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128984046871,
+      "name": "measure / measure (he-opt-1800)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128984046934,
+      "name": "measure / measure (he-opt-1600)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 128989927922,
+      "name": "compare",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "manifest": "docs/design/atomistic-a04-v0.1/he-opt-reference-inputs.json",
+  "manifest_sha256": "76787d2f97ba90c223a1cd63f21e84c3edb2755f5986c5a605be6cd72c85c15d",
+  "cp2k_source": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+  "cp2k_binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+  "resources": {
+    "ram_min_gib": 11,
+    "ram_max_gib": 12,
+    "temporary_runner_swap_gib": 16,
+    "host_ram_reserve_gib": 2,
+    "free_disk_before_swap_gib": 26,
+    "comparison_available_ram_min_gib": 6,
+    "ranks": 1,
+    "omp_threads": 1
+  },
+  "comparison_artifact": {
+    "id": 13650889504,
+    "name": "he-opt-comparison-1",
+    "size_in_bytes": 9859,
+    "digest": "sha256:d0a12160db9e63e7ef4a2ea38770b340cd60c3b1468e46daa2f8d6a72b05d54f",
+    "report_sha256": "3b8fd1f34c361c7eb1adcdf36aad57ef015496b39c6a5ecb76399e8181726f71"
+  },
+  "checks": {
+    "AV03": {
+      "id": "AV03",
+      "layer": "numerical",
+      "observable": "scf_and_grid_property_convergence",
+      "rule": "Refine each SCF/grid/atomic-grid family separately; compare two finest levels with other families fixed sufficiently fine.",
+      "atol": null,
+      "rtol": 0,
+      "unit": null,
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "energy_atol_hartree": 1e-06,
+      "force_atol_hartree_per_bohr": 1e-05
+    },
+    "AV05": {
+      "id": "AV05",
+      "layer": "density",
+      "observable": "engine_all_electron_count",
+      "rule": "Engine all-electron hard+soft integral compared to 2.",
+      "atol": 1e-06,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty"
+    },
+    "AV06": {
+      "id": "AV06",
+      "layer": "density",
+      "observable": "exported_density_integral",
+      "rule": "Explicit full hard+soft electron-number density export: integral rho*dV compared to 2, including field/grid refinement.",
+      "atol": 0.001,
+      "rtol": 0,
+      "unit": "electron",
+      "stage": "P2",
+      "status": "not_executed",
+      "origin": "Quanta predeclared engineering acceptance, not source-certified uncertainty",
+      "blocked_until": "A02/A04 full-density export semantics pinned; soft or signed total charge density cannot substitute"
+    }
+  },
+  "density_shape_l1_atol_electrons": 0.001,
+  "native_boundary_shell_width_angstrom": 1,
+  "native_boundary_shell_atol_electrons": 0.001,
+  "measurements": [
+    {
+      "cutoff_ry": 1400,
+      "input_sha256": "4c256a5c995ca9ca6b96e4f0ec6a4c0a1a41c5e9d4c572bd6b793563d5c4880a",
+      "native_cube_sha256": "5bca441609066cdd01526cc57d990e9f66fb4fba3953f82d4d9a24227fd0bc38",
+      "native_cube_bytes": 314523906,
+      "native_grid_axis_count": 288,
+      "native_spacing_angstrom": 0.041666666666666664,
+      "nuclear_center_index_xyz": [
+        144,
+        144,
+        144
+      ],
+      "geometry_check": {
+        "atoms_and_composition_match": true,
+        "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+        "absolute_budget_bohr": 5.01e-07,
+        "unit_constants_candidate": "CP2K source CODATA2006"
+      },
+      "engine_scf_iterations": 9,
+      "engine_energy_hartree": -2.892651023414686,
+      "engine_forces_hartree_per_bohr": [
+        [
+          1.86e-13,
+          1.86e-13,
+          1.87e-13
+        ]
+      ],
+      "engine_hard_soft_electron_count": 2.0,
+      "native_cube_electron_integral": 2.0000327426927025,
+      "native_cube_negative_integral_electrons": -1.09036693756711e-05,
+      "native_cube_minimum_electrons_per_bohr3": -8.7769e-06,
+      "native_cube_maximum_electrons_per_bohr3": 3.2843,
+      "basis_conditioning": {
+        "basis": "cc-pVQZ",
+        "basis_reported": "cc-pVQZ",
+        "element": "He",
+        "atom_count": 1,
+        "spherical_functions_per_atom": 30,
+        "orbital_functions": 30,
+        "independent_orbital_functions_reported": 30,
+        "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+        "overlap_warnings": [],
+        "expected_density_lmax": 6,
+        "effective_density_lmax": 6,
+        "overlap_max_eigenvalue_printed": 3.389,
+        "overlap_min_eigenvalue_printed": 0.006165,
+        "overlap_condition_2_printed": 549.7,
+        "conditioning_passed": true,
+        "conditioning_failures": []
+      },
+      "engine_wall_seconds": 213.95402918599999,
+      "granted_ram_bytes": 12882825216,
+      "peak_ram_bytes": 11815591936,
+      "peak_swap_bytes": 0,
+      "minimum_sampled_host_available_ram_bytes": 3999141888,
+      "native_boundary_shell": {
+        "width_angstrom": 1,
+        "samples": 10235953,
+        "voxel_volume_bohr3": 0.00048816077713324655,
+        "signed_integral_electrons": -2.1289569876690144e-08,
+        "absolute_integral_electrons": 9.209474597352848e-06
+      },
+      "native_boundary_shell_absolute_atol_electrons": 0.001,
+      "native_boundary_shell_passed": true,
+      "measurement_report_sha256": "d1f5641b9e18f627494b31fb13da649eafc333ad16d3aa60c3fe3bad1c7c619b",
+      "raw_evidence": {
+        "id": 13650711102,
+        "name": "he-opt-evidence-1400-1",
+        "size_in_bytes": 16503525,
+        "digest": "sha256:e079ec037fab96507e2b5029be3f8a49ee9dff48612904250f84a0243cbec43a"
+      },
+      "compact_evidence": {
+        "id": 13649894818,
+        "name": "he-opt-1400-receipt-1",
+        "size_in_bytes": 16223,
+        "digest": "sha256:ffd23bc2869ecb0c8df64733086324dc28d20177824f650731fada5307a53dba",
+        "report_sha256": "d1f5641b9e18f627494b31fb13da649eafc333ad16d3aa60c3fe3bad1c7c619b"
+      },
+      "oom_events": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    {
+      "cutoff_ry": 1600,
+      "input_sha256": "80e8cd3b6df60f237731d264ebdd45012121ef31cdcde31b1aaeecfb038c365f",
+      "native_cube_sha256": "ce4efcf16d72d4d31dceda0d45963c4173de0baa104c1e0a0e4ac7f9f0044c55",
+      "native_cube_bytes": 355500258,
+      "native_grid_axis_count": 300,
+      "native_spacing_angstrom": 0.04,
+      "nuclear_center_index_xyz": [
+        150,
+        150,
+        150
+      ],
+      "geometry_check": {
+        "atoms_and_composition_match": true,
+        "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+        "absolute_budget_bohr": 5.01e-07,
+        "unit_constants_candidate": "CP2K source CODATA2006"
+      },
+      "engine_scf_iterations": 9,
+      "engine_energy_hartree": -2.892651023414596,
+      "engine_forces_hartree_per_bohr": [
+        [
+          2.04e-13,
+          2.04e-13,
+          2.04e-13
+        ]
+      ],
+      "engine_hard_soft_electron_count": 2.0,
+      "native_cube_electron_integral": 1.9999954053658207,
+      "native_cube_negative_integral_electrons": -8.884418358919449e-06,
+      "native_cube_minimum_electrons_per_bohr3": -7.5814e-06,
+      "native_cube_maximum_electrons_per_bohr3": 3.2998,
+      "basis_conditioning": {
+        "basis": "cc-pVQZ",
+        "basis_reported": "cc-pVQZ",
+        "element": "He",
+        "atom_count": 1,
+        "spherical_functions_per_atom": 30,
+        "orbital_functions": 30,
+        "independent_orbital_functions_reported": 30,
+        "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+        "overlap_warnings": [],
+        "expected_density_lmax": 6,
+        "effective_density_lmax": 6,
+        "overlap_max_eigenvalue_printed": 3.389,
+        "overlap_min_eigenvalue_printed": 0.006165,
+        "overlap_condition_2_printed": 549.7,
+        "conditioning_passed": true,
+        "conditioning_failures": []
+      },
+      "engine_wall_seconds": 266.919669859,
+      "granted_ram_bytes": 12884901888,
+      "peak_ram_bytes": 12884901888,
+      "peak_swap_bytes": 957472768,
+      "minimum_sampled_host_available_ram_bytes": 2527240192,
+      "native_boundary_shell": {
+        "width_angstrom": 1,
+        "samples": 11561751,
+        "voxel_volume_bohr3": 0.00043189341331775993,
+        "signed_integral_electrons": 1.5796472931606993e-08,
+        "absolute_integral_electrons": 7.588357736547775e-06
+      },
+      "native_boundary_shell_absolute_atol_electrons": 0.001,
+      "native_boundary_shell_passed": true,
+      "measurement_report_sha256": "22b5a7ff33783fdbb886890e99ac75e52e4cbb1eeb28ae5989a913958a0db463",
+      "raw_evidence": {
+        "id": 13650975235,
+        "name": "he-opt-evidence-1600-1",
+        "size_in_bytes": 18756056,
+        "digest": "sha256:b6779749999d1ea6ed7b9e7699c00f4a466ea81e10ad4585f90747ee30743f8a"
+      },
+      "compact_evidence": {
+        "id": 13650004592,
+        "name": "he-opt-1600-receipt-1",
+        "size_in_bytes": 16278,
+        "digest": "sha256:998d9496a7fb543f5efa269aa705db9f69a40a6c8cb929d934fdad50cf88b294",
+        "report_sha256": "22b5a7ff33783fdbb886890e99ac75e52e4cbb1eeb28ae5989a913958a0db463"
+      },
+      "oom_events": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    {
+      "cutoff_ry": 1800,
+      "input_sha256": "d97e68b4b19935b44c447f855d0435e5e0f76741dae15f274c5b25c9380ed5b2",
+      "native_cube_sha256": "674b2342866faf7cf8b48a17ed799032694a7344c5e074af50a940d3790471c9",
+      "native_cube_bytes": 431513858,
+      "native_grid_axis_count": 320,
+      "native_spacing_angstrom": 0.0375,
+      "nuclear_center_index_xyz": [
+        160,
+        160,
+        160
+      ],
+      "geometry_check": {
+        "atoms_and_composition_match": true,
+        "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+        "absolute_budget_bohr": 5.01e-07,
+        "unit_constants_candidate": "CP2K source CODATA2006"
+      },
+      "engine_scf_iterations": 9,
+      "engine_energy_hartree": -2.892651023414664,
+      "engine_forces_hartree_per_bohr": [
+        [
+          8.7e-14,
+          8.7e-14,
+          8.6e-14
+        ]
+      ],
+      "engine_hard_soft_electron_count": 2.0,
+      "native_cube_electron_integral": 2.0000218407983703,
+      "native_cube_negative_integral_electrons": -6.293997959330493e-06,
+      "native_cube_minimum_electrons_per_bohr3": -6.2429e-06,
+      "native_cube_maximum_electrons_per_bohr3": 3.3238,
+      "basis_conditioning": {
+        "basis": "cc-pVQZ",
+        "basis_reported": "cc-pVQZ",
+        "element": "He",
+        "atom_count": 1,
+        "spherical_functions_per_atom": 30,
+        "orbital_functions": 30,
+        "independent_orbital_functions_reported": 30,
+        "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+        "overlap_warnings": [],
+        "expected_density_lmax": 6,
+        "effective_density_lmax": 6,
+        "overlap_max_eigenvalue_printed": 3.389,
+        "overlap_min_eigenvalue_printed": 0.006165,
+        "overlap_condition_2_printed": 549.7,
+        "conditioning_passed": true,
+        "conditioning_failures": []
+      },
+      "engine_wall_seconds": 475.04953942000003,
+      "granted_ram_bytes": 12810395648,
+      "peak_ram_bytes": 12810395648,
+      "peak_swap_bytes": 4749021184,
+      "minimum_sampled_host_available_ram_bytes": 2362159104,
+      "native_boundary_shell": {
+        "width_angstrom": 1,
+        "samples": 13733837,
+        "voxel_volume_bohr3": 0.0003558692065301366,
+        "signed_integral_electrons": -9.853139411202602e-09,
+        "absolute_integral_electrons": 5.329669892716526e-06
+      },
+      "native_boundary_shell_absolute_atol_electrons": 0.001,
+      "native_boundary_shell_passed": true,
+      "measurement_report_sha256": "040190f2f13eea36c5388ce21f931ff88e9c058eb8f675a0981f02289f461644",
+      "raw_evidence": {
+        "id": 13650601574,
+        "name": "he-opt-evidence-1800-1",
+        "size_in_bytes": 29232682,
+        "digest": "sha256:27d1cc930f3ffd8908f0770c2728b3a43b7954cba5edca82bd36ae17bfbda28b"
+      },
+      "compact_evidence": {
+        "id": 13649644698,
+        "name": "he-opt-1800-receipt-1",
+        "size_in_bytes": 16278,
+        "digest": "sha256:f966ad77a03caa1f826fe61352605fb1de0da2d43122e2a2a39c01b94549b3a9",
+        "report_sha256": "040190f2f13eea36c5388ce21f931ff88e9c058eb8f675a0981f02289f461644"
+      },
+      "oom_events": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    {
+      "cutoff_ry": 2000,
+      "input_sha256": "4073f8d0dec99b04069d76b75c8d3eedb21cf961764dda0b03571c0512595318",
+      "native_cube_sha256": "02fc72bcfd62594b8bb4effb92c7f1405834de487475f1dcb9c5643ee238c4e8",
+      "native_cube_bytes": 447827874,
+      "native_grid_axis_count": 324,
+      "native_spacing_angstrom": 0.037037037037037035,
+      "nuclear_center_index_xyz": [
+        162,
+        162,
+        162
+      ],
+      "geometry_check": {
+        "atoms_and_composition_match": true,
+        "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+        "absolute_budget_bohr": 5.01e-07,
+        "unit_constants_candidate": "CP2K source CODATA2006"
+      },
+      "engine_scf_iterations": 9,
+      "engine_energy_hartree": -2.892651023414545,
+      "engine_forces_hartree_per_bohr": [
+        [
+          2.16e-13,
+          2.16e-13,
+          2.16e-13
+        ]
+      ],
+      "engine_hard_soft_electron_count": 2.0,
+      "native_cube_electron_integral": 2.0000128573754123,
+      "native_cube_negative_integral_electrons": -5.8710776770879566e-06,
+      "native_cube_minimum_electrons_per_bohr3": -6.0495e-06,
+      "native_cube_maximum_electrons_per_bohr3": 3.3284,
+      "basis_conditioning": {
+        "basis": "cc-pVQZ",
+        "basis_reported": "cc-pVQZ",
+        "element": "He",
+        "atom_count": 1,
+        "spherical_functions_per_atom": 30,
+        "orbital_functions": 30,
+        "independent_orbital_functions_reported": 30,
+        "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+        "overlap_warnings": [],
+        "expected_density_lmax": 6,
+        "effective_density_lmax": 6,
+        "overlap_max_eigenvalue_printed": 3.389,
+        "overlap_min_eigenvalue_printed": 0.006165,
+        "overlap_condition_2_printed": 549.7,
+        "conditioning_passed": true,
+        "conditioning_failures": []
+      },
+      "engine_wall_seconds": 484.97690680700003,
+      "granted_ram_bytes": 12820152320,
+      "peak_ram_bytes": 12820152320,
+      "peak_swap_bytes": 8989925376,
+      "minimum_sampled_host_available_ram_bytes": 2494697472,
+      "native_boundary_shell": {
+        "width_angstrom": 1,
+        "samples": 14547115,
+        "voxel_volume_bohr3": 0.0003428509161758877,
+        "signed_integral_electrons": 9.056815584507535e-09,
+        "absolute_integral_electrons": 5.085420285779304e-06
+      },
+      "native_boundary_shell_absolute_atol_electrons": 0.001,
+      "native_boundary_shell_passed": true,
+      "measurement_report_sha256": "b056477b4e4972de3d0a3f991721216b6be8388ae26d00b8b4e8d1a1f75d7342",
+      "raw_evidence": {
+        "id": 13650488239,
+        "name": "he-opt-evidence-2000-1",
+        "size_in_bytes": 30009358,
+        "digest": "sha256:a12c914fc8af719f8fb0caa17e711384a087cb694903e4554d2f73a8d9682628"
+      },
+      "compact_evidence": {
+        "id": 13650687101,
+        "name": "he-opt-2000-receipt-1",
+        "size_in_bytes": 16341,
+        "digest": "sha256:953b81d00f77dc89490e4f0847e31f06abb326e6be98b63d3e85081f7fa4e2d4",
+        "report_sha256": "b056477b4e4972de3d0a3f991721216b6be8388ae26d00b8b4e8d1a1f75d7342"
+      },
+      "oom_events": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    {
+      "cutoff_ry": 2100,
+      "input_sha256": "be55a24b66b5bfa3a0b8f5ddd403625e16ce267200bc29e936e4d89291332a46",
+      "native_cube_sha256": "16da997ea3c563314553f6beaf7ba98855fc752d5219c33caeee919d4f211dd9",
+      "native_cube_bytes": 614304258,
+      "native_grid_axis_count": 360,
+      "native_spacing_angstrom": 0.03333333333333333,
+      "nuclear_center_index_xyz": [
+        180,
+        180,
+        180
+      ],
+      "geometry_check": {
+        "atoms_and_composition_match": true,
+        "maximum_coordinate_difference_bohr": 2.0268614164820065e-07,
+        "absolute_budget_bohr": 5.01e-07,
+        "unit_constants_candidate": "CP2K source CODATA2006"
+      },
+      "engine_scf_iterations": 9,
+      "engine_energy_hartree": -2.8926510234145,
+      "engine_forces_hartree_per_bohr": [
+        [
+          4.98e-13,
+          4.98e-13,
+          4.98e-13
+        ]
+      ],
+      "engine_hard_soft_electron_count": 2.0,
+      "native_cube_electron_integral": 2.000011363309895,
+      "native_cube_negative_integral_electrons": -6.307881948962951e-07,
+      "native_cube_minimum_electrons_per_bohr3": -4.8629e-06,
+      "native_cube_maximum_electrons_per_bohr3": 3.3661,
+      "basis_conditioning": {
+        "basis": "cc-pVQZ",
+        "basis_reported": "cc-pVQZ",
+        "element": "He",
+        "atom_count": 1,
+        "spherical_functions_per_atom": 30,
+        "orbital_functions": 30,
+        "independent_orbital_functions_reported": 30,
+        "overlap_ratio_line": "CN : max/min ev:  3.389E+000 /  6.165E-003   = 5.497E+002  Log(2-CN):  2.7401",
+        "overlap_warnings": [],
+        "expected_density_lmax": 6,
+        "effective_density_lmax": 6,
+        "overlap_max_eigenvalue_printed": 3.389,
+        "overlap_min_eigenvalue_printed": 0.006165,
+        "overlap_condition_2_printed": 549.7,
+        "conditioning_passed": true,
+        "conditioning_failures": []
+      },
+      "engine_wall_seconds": 1195.6324448130001,
+      "granted_ram_bytes": 12691124224,
+      "peak_ram_bytes": 12691124224,
+      "peak_swap_bytes": 10827505664,
+      "minimum_sampled_host_available_ram_bytes": 2587533312,
+      "native_boundary_shell": {
+        "width_angstrom": 1,
+        "samples": 19925101,
+        "voxel_volume_bohr3": 0.0002499383178922222,
+        "signed_integral_electrons": -4.60414565620559e-09,
+        "absolute_integral_electrons": 2.880111650189935e-07
+      },
+      "native_boundary_shell_absolute_atol_electrons": 0.001,
+      "native_boundary_shell_passed": true,
+      "measurement_report_sha256": "232753b11b60d487563b182ba0f7f9f1a834f99fc887fec90e060f625b15dd80",
+      "raw_evidence": {
+        "id": 13651047541,
+        "name": "he-opt-evidence-2100-1",
+        "size_in_bytes": 163312325,
+        "digest": "sha256:8c6dbcfe7362092645fb20aeba5dd4a6c0c99829e969d2b13fb220ee8f4d8837"
+      },
+      "compact_evidence": {
+        "id": 13651570167,
+        "name": "he-opt-2100-receipt-1",
+        "size_in_bytes": 16381,
+        "digest": "sha256:7c3527b9ffc849d2b4a7d7f700f8dc21cc2e94dba10429f2baef646f70281be1",
+        "report_sha256": "232753b11b60d487563b182ba0f7f9f1a834f99fc887fec90e060f625b15dd80"
+      },
+      "oom_events": {
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    }
+  ],
+  "pairwise": [
+    {
+      "candidate_cutoff_ry": 1400,
+      "reference_cutoff_ry": 1600,
+      "l1_electrons": {
+        "lagrange_4pt": 0.00036532033208206636,
+        "lagrange_6pt": 0.00018025977383307859,
+        "fourier": 0.0010913230697740036
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": false
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": false,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 9.015010959956271e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 1.8e-14,
+        "absolute_exported_electron_count_difference": 3.733732688182556e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1400,
+      "reference_cutoff_ry": 1800,
+      "l1_electrons": {
+        "lagrange_4pt": 0.0005653941283354163,
+        "lagrange_6pt": 0.00029865439387162843,
+        "fourier": 0.0012841084515378403
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": false
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": false,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 2.220446049250313e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 1.0100000000000001e-13,
+        "absolute_exported_electron_count_difference": 1.090189433217148e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1400,
+      "reference_cutoff_ry": 2000,
+      "l1_electrons": {
+        "lagrange_4pt": 0.0005782611558376531,
+        "lagrange_6pt": 0.00031409258288905845,
+        "fourier": 0.0012891330225873036
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": false
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": false,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 1.412203687323199e-13,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 3e-14,
+        "absolute_exported_electron_count_difference": 1.9885317290135873e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1400,
+      "reference_cutoff_ry": 2100,
+      "l1_electrons": {
+        "lagrange_4pt": 0.000624558432746852,
+        "lagrange_6pt": 0.0003594188406794432,
+        "fourier": 0.0012722448713724426
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": false
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": false,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 1.8607337892717624e-13,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 3.12e-13,
+        "absolute_exported_electron_count_difference": 2.1379382807662495e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1600,
+      "reference_cutoff_ry": 1800,
+      "l1_electrons": {
+        "lagrange_4pt": 0.000407357949731095,
+        "lagrange_6pt": 0.00019521016525585687,
+        "fourier": 0.0010658584434540944
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": false
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": false,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 6.794564910705958e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 1.18e-13,
+        "absolute_exported_electron_count_difference": 2.643543254965408e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1600,
+      "reference_cutoff_ry": 2000,
+      "l1_electrons": {
+        "lagrange_4pt": 0.00043538242120736835,
+        "lagrange_6pt": 0.00021619107695097008,
+        "fourier": 0.0010947570611602837
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": false
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": false,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 5.10702591327572e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 1.2e-14,
+        "absolute_exported_electron_count_difference": 1.7452009591689688e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1600,
+      "reference_cutoff_ry": 2100,
+      "l1_electrons": {
+        "lagrange_4pt": 0.0005190004865509753,
+        "lagrange_6pt": 0.00029177970464306746,
+        "fourier": 0.0011571982081306203
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": false
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": false,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 9.592326932761353e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 2.94e-13,
+        "absolute_exported_electron_count_difference": 1.5957944074163066e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1800,
+      "reference_cutoff_ry": 2000,
+      "l1_electrons": {
+        "lagrange_4pt": 0.00010806664805263226,
+        "lagrange_6pt": 6.586619277936961e-05,
+        "fourier": 0.0005558335474370483
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": true
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": true,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 1.1901590823981678e-13,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 1.3e-13,
+        "absolute_exported_electron_count_difference": 8.983422957964393e-06
+      }
+    },
+    {
+      "candidate_cutoff_ry": 1800,
+      "reference_cutoff_ry": 2100,
+      "l1_electrons": {
+        "lagrange_4pt": 0.00038522654793175337,
+        "lagrange_6pt": 0.0001979486453786209,
+        "fourier": 0.0009366988261638608
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": true
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": true,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 1.638689184346731e-13,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 4.12e-13,
+        "absolute_exported_electron_count_difference": 1.0477488475491015e-05
+      }
+    },
+    {
+      "candidate_cutoff_ry": 2000,
+      "reference_cutoff_ry": 2100,
+      "l1_electrons": {
+        "lagrange_4pt": 0.0003653724216212189,
+        "lagrange_6pt": 0.0001823215744371416,
+        "fourier": 0.0008972926902934656
+      },
+      "l1_passed": {
+        "lagrange_4pt": true,
+        "lagrange_6pt": true,
+        "fourier": true
+      },
+      "basis_conditioning_passed": true,
+      "native_boundary_shell_passed": true,
+      "pair_passed": true,
+      "scalar_and_two_interpolant_checks": {
+        "energy_passed": true,
+        "force_passed": true,
+        "engine_electron_counts_passed": true,
+        "exported_electron_counts_passed": true,
+        "spatial_l1_screen_passed": true
+      },
+      "observed_scalar_differences": {
+        "absolute_energy_difference_hartree": 4.4853010194856324e-14,
+        "absolute_maximum_force_component_difference_hartree_per_bohr": 2.82e-13,
+        "absolute_exported_electron_count_difference": 1.4940655175266215e-06
+      }
+    }
+  ],
+  "verdict": {
+    "status": "passed_reference_screen",
+    "selected_candidate_cutoff_ry": 1800,
+    "eligible_cutoffs_ranked_ry": [
+      1800
+    ],
+    "passing_pairs_candidate_reference_ry": [
+      [
+        1800,
+        2000
+      ],
+      [
+        1800,
+        2100
+      ],
+      [
+        2000,
+        2100
+      ]
+    ],
+    "two_finest_reference_pair_ry": [
+      2000,
+      2100
+    ],
+    "two_finest_reference_pair_passed": true
+  },
+  "historical_1400_cube_sha256_matched": true,
+  "independent_physical_validation_status": "unvalidated",
+  "A04_frozen": false,
+  "downstream_stages_executed": false
+}

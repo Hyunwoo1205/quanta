@@ -153,6 +153,24 @@
       "receipt": "docs/verification/atomistic-a04/he16-reference-42549178440.json",
       "numeric_scope": "He QZ 16 angstrom at 1200 and 1400 Ry, isolated x86 with temporary swap. Both converged; 4-point, 6-point and Fourier density shape criteria failed. No operating qualification."
     },
+    "he_even_grid_cutoff_screen": {
+      "status": "passed_fixed_x86_cutoff_screen",
+      "receipt": "docs/verification/atomistic-a04/he-even-grid-42563236250.json",
+      "manifest": "docs/design/atomistic-a04-v0.1/he-opt-reference-inputs.json",
+      "successor_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-he-even-grid-plan.json",
+      "candidate": {
+        "cell_angstrom": 12,
+        "cutoff_ry": 1800,
+        "rel_cutoff_ry": 80,
+        "basis": "cc-pVQZ",
+        "lmaxn1": 6
+      },
+      "finer_reference_cutoffs_ry": [
+        2000,
+        2100
+      ],
+      "numeric_scope": "Fixed He x86 signed-density, scalar, conditioning and native shell screen. All three ordered comparisons among 1800, 2000 and 2100 Ry passed. Development reference with temporary runner swap."
+    },
     "fixed_fixture_scf_screen": {
       "status": "passed_on_pinned_x86_fixed_fixtures",
       "candidate_eps_scf": 1e-8,
