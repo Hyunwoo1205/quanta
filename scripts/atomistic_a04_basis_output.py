@@ -4,7 +4,7 @@ import math
 import re
 
 # Counts for the locked H/He definitions.
-SPHERICAL_PER_ATOM = {"cc-pVDZ": 5, "cc-pVTZ": 14, "cc-pVQZ": 30, "cc-pV5Z": 55}
+SPHERICAL_PER_ATOM = {"cc-pVDZ": 5, "cc-pVTZ": 14, "cc-pVQZ": 30, "cc-pV5Z": 55, "cc-pV6Z": 91}
 
 # A four-significant-digit ES11.3E3 value must be one printable step
 # inside each strict engineering boundary (min(S) > 1e-5, kappa_2 < 1e8).
@@ -54,6 +54,7 @@ def parse_basis_conditioning(text, *, basis, element, atom_count, expected_atom_
         basis not in SPHERICAL_PER_ATOM
         or type(atom_count) is not int
         or (element, atom_count) not in {("H", 2), ("He", 1)}
+        or (basis == "cc-pV6Z" and (element, expected_atom_grid_max_l) != ("He", 10))
     ):
         raise ValueError("Basis and fixture must match the locked H2/He matrix")
 

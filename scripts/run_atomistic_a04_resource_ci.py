@@ -20,7 +20,7 @@ import time
 from uuid import uuid4
 
 from atomistic_a03_candidate import load_candidate
-from atomistic_a03_inputs import generate_input, probe_metadata
+from atomistic_a03_inputs import A04_FINE_BASIS_ASSETS, generate_input, probe_metadata
 from atomistic_a04_resources import (
     GIB, MEMORY_RESERVE_BYTES, MEMORY_TIERS_BYTES, available_memory_bytes, memory_budget,
 )
@@ -437,10 +437,8 @@ def run_attempt(case: Case, attempt: int, budget: int, available: int, candidate
         }
         if case.final_batch:
             options.update(lmaxn1=case.lmaxn1, final_batch=True)
-            if case.basis == "cc-pV5Z":
-                from atomistic_a03_inputs import A04_5Z_ASSET, A04_5Z_INPUT_NAME
-
-                shutil.copyfile(A04_5Z_ASSET, inputs / A04_5Z_INPUT_NAME)
+            if case.basis in A04_FINE_BASIS_ASSETS:
+                shutil.copyfile(A04_FINE_BASIS_ASSETS[case.basis], inputs / f"{case.basis}.cp2k")
         base_input = generate_input(**options).encode("ascii")
         submitted_input = base_input
         if distribute_real_space:

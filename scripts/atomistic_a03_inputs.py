@@ -19,7 +19,8 @@ A02 = ROOT / "docs/design/atomistic-a02-v0.1"
 BASES = ("cc-pVDZ", "cc-pVTZ", "cc-pVQZ")
 A04 = ROOT / "docs/design/atomistic-a04-v0.1"
 A04_5Z_ASSET = A04 / "basis-candidates/cc-pV5Z-H-He.cp2k"
-A04_5Z_INPUT_NAME = "cc-pV5Z.cp2k"
+A04_6Z_ASSET = A04 / "basis-candidates/cc-pV6Z-H-He.cp2k"
+A04_FINE_BASIS_ASSETS = {"cc-pV5Z": A04_5Z_ASSET, "cc-pV6Z": A04_6Z_ASSET}
 BOUNDARY_FIXTURE_PATH = A04 / "boundary-fixtures.json"
 BOUNDARY_SYSTEM_FIXTURES = {"h2-short": "A04-H2-short", "h2-long": "A04-H2-long"}
 SYSTEM_FIXTURES = {
@@ -54,7 +55,7 @@ def probe_metadata(
     """
     if type(final_batch) is not bool:
         raise ValueError("final_batch must be boolean")
-    finer_basis = basis == "cc-pV5Z"
+    finer_basis = basis in A04_FINE_BASIS_ASSETS
     if system not in SYSTEM_FIXTURES or (basis not in BASES and not (final_batch and finer_basis)):
         raise ValueError("unsupported internal probe system or basis")
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", project):
@@ -65,11 +66,17 @@ def probe_metadata(
         raise ValueError("data_dir must be normalized without parent traversal")
     qz = basis == "cc-pVQZ"
     if final_batch and (not (qz or finer_basis) or density is not True or overlap_condition is not True):
-        raise ValueError("final A04 input requires QZ or 5Z, full density and overlap evidence")
-    if type(lmaxn1) is not int or lmaxn1 not in ((6, 8) if final_batch else (6,)):
+        raise ValueError("final A04 input requires a locked basis, full density and overlap evidence")
+    he_l10 = final_batch and finer_basis and (
+        system, cell_angstrom, cutoff_ry, rel_cutoff_ry, eps_scf, max_scf, radial_grid, lebedev_grid, lmaxn1,
+    ) == ("he", 12, 1800, 80, 1e-8, 80, 200, 194, 10)
+    allowed_lmaxn1 = (6, 8) if final_batch else (6,)
+    if he_l10:
+        allowed_lmaxn1 += (10,)
+    if type(lmaxn1) is not int or lmaxn1 not in allowed_lmaxn1:
         raise ValueError("unsupported A04 candidate lmaxn1")
-    if finer_basis and lmaxn1 != 8:
-        raise ValueError("the locked 5Z input requires LMAXN1 8")
+    if finer_basis and not he_l10 and (basis, lmaxn1) != ("cc-pV5Z", 8):
+        raise ValueError("5Z/6Z LMAXN1 10 is restricted to the exact He pilot")
     cells = (12, 16, 20)
     if final_batch:
         cells = (12, "13.5", "14.4") if system == "he" else (12, "14.4", 16)
@@ -78,6 +85,8 @@ def probe_metadata(
         if type(cell_angstrom) not in (int, str):
             raise ValueError("final A04 cell must be an exact authored decimal")
     cutoffs = (400, 600, 800, 1000, 1200) if qz or finer_basis else (400, 600, 800)
+    if he_l10:
+        cutoffs += (1800,)
     if final_batch and qz and system == "he" and (
         cell_angstrom, rel_cutoff_ry, eps_scf, max_scf, radial_grid, lebedev_grid, lmaxn1,
     ) == (12, 80, 1e-8, 80, 200, 194, 6):
@@ -153,7 +162,7 @@ def probe_metadata(
                           "bare_nuclear_mass_kg": str(mass),
                           "engine_mass_amu": str(mass / engine_amu),
                           "mass_reference": "NIST-CODATA-2022:" + key})
-    basis_file = A04_5Z_ASSET if finer_basis else A02 / "assets" / f"{basis}.cp2k"
+    basis_file = A04_FINE_BASIS_ASSETS[basis] if finer_basis else A02 / "assets" / f"{basis}.cp2k"
     return {
         "document_kind": "internal_atomistic_a03_probe",
         "status": "exploratory_settings_not_A04_frozen_not_scientific_acceptance",
@@ -163,7 +172,7 @@ def probe_metadata(
         "system": system, "source_fixture": fixture["fixture_id"],
         "project": project, "operation": "ENERGY_FORCE", "basis": basis,
         "data_dir": data_dir,
-        **({"basis_container_path": f"/quanta-input/{A04_5Z_INPUT_NAME}"} if finer_basis else {}),
+        **({"basis_container_path": f"/quanta-input/{basis}.cp2k"} if finer_basis else {}),
         "model": {"method": "GAPW", "functional": "PBE", "potential": "ALL",
                   "charge_e": 0, "multiplicity": 1, "electron_count": 2,
                   "uks": False, "dispersion": False, "periodic": "NONE"},

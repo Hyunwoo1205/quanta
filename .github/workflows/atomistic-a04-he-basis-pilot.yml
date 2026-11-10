@@ -1,0 +1,159 @@
+name: Atomistic A04 He basis pilot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/design/atomistic-a04-v0.1/a04-he-basis-pilot-inputs.json
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: atomistic-a04-even-grid-final
+  cancel-in-progress: false
+
+jobs:
+  anchor:
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1
+    name: Verify exact He 5Z8 archive and candidate availability
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Lock the two exact decks and stage the historical raw ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python -B scripts/run_atomistic_a04_he_basis_pilot.py --stage anchor --output-dir .cache/he-basis-anchor
+      - name: Preserve the staged exact archive and provenance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-he-basis-anchor-1
+          path: .cache/he-basis-anchor/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  measure:
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1
+    needs: anchor
+    name: Native He ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        label: [5z10, 6z10]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Download the fixed A03 and GAPW qualified x86 image
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          repository: Hyunwoo1205/quanta
+          run-id: 42385227123
+          artifact-ids: 13579899979
+          path: .cache/he-basis-candidate
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+      - name: Run one isolated locked He deck
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          HE_BASIS_LABEL: ${{ matrix.label }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python -B scripts/check_atomistic_a02.py --output .cache/he-basis-a02/report.json
+          python -B scripts/run_atomistic_a04_he_basis_pilot.py --stage measure \
+            --label "$HE_BASIS_LABEL" --candidate-dir .cache/he-basis-candidate \
+            --output-dir ".cache/he-$HE_BASIS_LABEL"
+      - name: Preserve the signed native CUBE and row receipt
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: he-${{ matrix.label }}
+          path: |
+            .cache/he-${{ matrix.label }}/density.cube
+            .cache/he-${{ matrix.label }}/report.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+      - name: Preserve compact native evidence and diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-he-basis-compact-${{ matrix.label }}
+          path: |
+            .cache/he-${{ matrix.label }}/report.json
+            .cache/he-${{ matrix.label }}/diagnostics/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+  compare:
+    if: always() && !cancelled() && github.ref == 'refs/heads/main' && github.run_attempt == 1
+    needs: [anchor, measure]
+    name: He AV03 cap bridge and AV04 same-family comparison
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - name: Download the staged exact 5Z8 anchor
+        if: needs.anchor.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: a04-he-basis-anchor-1
+          path: .cache/he-basis-evidence
+          digest-mismatch: error
+      - name: Download the two completed native rows
+        if: needs.anchor.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: he-*z10
+          path: .cache/he-basis-evidence
+          digest-mismatch: error
+      - name: Compare the locked signed native densities and endpoints
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          numpy_lock="$(mktemp)"
+          rg '^numpy==' requirements.lock.txt > "$numpy_lock"
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
+          python -B scripts/run_atomistic_a04_he_basis_pilot.py --stage compare \
+            --evidence-dir .cache/he-basis-evidence --output-dir .cache/he-basis-result
+      - name: Preserve the He pilot verdict
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: a04-he-basis-compare-1
+          path: .cache/he-basis-result/report.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
