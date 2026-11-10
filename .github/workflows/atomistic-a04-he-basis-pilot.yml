@@ -144,7 +144,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           numpy_lock="$(mktemp)"
-          rg '^numpy==' requirements.lock.txt > "$numpy_lock"
+          grep '^numpy==' requirements.lock.txt > "$numpy_lock"
           python -m pip install --require-hashes --only-binary=:all: --no-deps -r "$numpy_lock"
           python -B scripts/run_atomistic_a04_he_basis_pilot.py --stage compare \
             --evidence-dir .cache/he-basis-evidence --output-dir .cache/he-basis-result

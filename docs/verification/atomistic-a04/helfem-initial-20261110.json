@@ -1,0 +1,112 @@
+{
+  "scope": "Historical initial independent default LibXC diagnostics. Preserved before the revised numerical setup.",
+  "manifest": {
+    "sha256": "c66be2c467e7ac5d9257948e5236fb8046d28f202cf0ead9ee38f09561cf9af3",
+    "bytes": 2412
+  },
+  "libxc_shared_library": {
+    "sha256": "04357dfb756fbc45c311fdd59fb4817f8fc8854908312fea9609de98edebd08e",
+    "bytes": 17237408
+  },
+  "rows": [
+    {
+      "fixture": "he",
+      "arguments": [
+        "--Q=0",
+        "--M=1",
+        "--restricted=1",
+        "--finitenuc=0",
+        "--mmax=0",
+        "--symmetry=2",
+        "--nnodes=8",
+        "--grid=4",
+        "--dftthr=1E-14",
+        "--verbosity=2",
+        "--method=gga_x_pbe-gga_c_pbe",
+        "--Rmax=50",
+        "--nelem=16",
+        "--lmax=2",
+        "--nquad=44",
+        "--ldft=20",
+        "--mdft=20",
+        "--quanta-scf-threshold=1E-9",
+        "--Z=2",
+        "--save=checkpoint.h5"
+      ],
+      "binary": {
+        "sha256": "b9d8e4494128342995ce00fa1498f57e98956997b4d9ffa24b02ec505cdc3180",
+        "bytes": 5474000
+      },
+      "raw_log": {
+        "sha256": "17ea4519e8eb2817a02c9e21128f57e62180d4a62e38cc1ab7bedbc8da8157cf",
+        "bytes": 3743
+      },
+      "checkpoint": {
+        "sha256": "3623caeaa133cce099dc201430f049e11abc89bef0bea7c4e68f51da0e4a5592",
+        "bytes": 14485736
+      },
+      "required_scf_residual_limit": 1e-09,
+      "status": "scf_or_charge_rejected",
+      "returncode": 0,
+      "energy_hartree": -2.892934866543892,
+      "scf_residual": 1.4240806138552352e-07,
+      "overlap_electrons": 2.0000000000000013,
+      "scf_solver_reported_converged": true,
+      "solver_effective_scf_residual_limit": 1.912351e-07
+    },
+    {
+      "fixture": "h2",
+      "arguments": [
+        "--Q=0",
+        "--M=1",
+        "--restricted=1",
+        "--finitenuc=0",
+        "--mmax=0",
+        "--symmetry=2",
+        "--nnodes=8",
+        "--grid=4",
+        "--dftthr=1E-14",
+        "--verbosity=2",
+        "--method=gga_x_pbe-gga_c_pbe",
+        "--Rmax=50",
+        "--nelem=16",
+        "--lmax=16",
+        "--nquad=44",
+        "--ldft=68",
+        "--quanta-scf-threshold=1E-9",
+        "--purem=1",
+        "--Z1=1",
+        "--Z2=1",
+        "--Rbond=1.1338356797313858",
+        "--save=checkpoint.h5"
+      ],
+      "binary": {
+        "sha256": "6d9cd8522b1a7f1b264f7acf0e28cc5054f546f7dd59b7ddaed53006df9c185d",
+        "bytes": 6057912
+      },
+      "raw_log": {
+        "sha256": "9b8392d8a850069812e10dee61a36870765a7c69ccf588e98d6d9aa36fc498f8",
+        "bytes": 2270
+      },
+      "checkpoint": null,
+      "required_scf_residual_limit": 1e-09,
+      "status": "operator_interrupted_after_first_scf_iteration",
+      "shell_exit_code": 130,
+      "last_iteration_scf_energy_hartree": -1.1126535494,
+      "last_iteration_scf_residual": 0.0001661884,
+      "last_iteration_scope": "SAP-starting guess, not a final solution",
+      "radial_functions": 224,
+      "angular_shells": 17,
+      "total_functions": 3808,
+      "solver_effective_scf_residual_limit": 1.905507e-07
+    }
+  ],
+  "concurrent_compile_interruption": {
+    "raw_log": {
+      "sha256": "135034ffcfde38e835a9f99cc4753b88798cf6a7c1f314bb05ac4645691a0a73",
+      "bytes": 3267
+    },
+    "reason_observed": "cc1plus terminated by SIGKILL while the original H2 run was active.",
+    "cleanup": "Stopped original diagnostic and compiled the updated diatomic solver sequentially. No numerical tolerance changed."
+  }
+}

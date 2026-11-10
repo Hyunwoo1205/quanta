@@ -1,0 +1,1468 @@
+{
+  "schema_version": 1,
+  "execution_started_kst_date": "2026-11-10",
+  "scope": "A04 development R1 pilot, fixed isolated all-electron restricted PBE He and H2 0.60 angstrom.",
+  "verdict": "closed_no_go",
+  "physical_validation_status": "unvalidated",
+  "decisive_gate": "He AV04 common LMAXN1 10 same-family native density L1 0.0029350258331820186 e exceeds 0.001 e. AV03 cap bridge, endpoint counts, overlap, energy and force checks passed.",
+  "following_stages": {
+    "R2": "held",
+    "R3": "held",
+    "R4": "held"
+  },
+  "native_he": {
+    "commit": "0efbcd564e8db1499f35c37c150fffe669c7a63a",
+    "workflow_run_id": 42837190311,
+    "jobs": {
+      "historical_anchor": 129902454491,
+      "five_z_l10": 129902667591,
+      "six_z_l10": 129902668961,
+      "hosted_compare": 129907681464
+    },
+    "hosted_compare_failure": {
+      "kind": "runner_tool_missing",
+      "message": "rg: command not found",
+      "exit_code": 127,
+      "phase": "before starting comparison Python; native rows succeeded",
+      "fix": "Use grep for the exact pinned NumPy requirement"
+    },
+    "artifacts": [
+      {
+        "id": 13775445067,
+        "name": "a04-he-basis-compact-5z10",
+        "digest": "sha256:9c18065638dd0b7a0807f1bbd1e0ccd4facc10d4a15aaae4551da8aca898f5d7",
+        "size_in_bytes": 16561,
+        "expires_at": "2026-11-24T14:53:21Z"
+      },
+      {
+        "id": 13774557925,
+        "name": "he-5z10",
+        "digest": "sha256:c24d9de6c296bda3ff7175ad19663bba08eb672367ada499e04b7cbfbc8ea07d",
+        "size_in_bytes": 31335915,
+        "expires_at": "2026-11-17T14:53:12Z"
+      },
+      {
+        "id": 13774427588,
+        "name": "he-6z10",
+        "digest": "sha256:a5ba4bfbbfbf66320424075e9777ed67de4bb57eefb1d680d91eae39e3c7afe9",
+        "size_in_bytes": 35297239,
+        "expires_at": "2026-11-17T14:50:53Z"
+      },
+      {
+        "id": 13772974019,
+        "name": "a04-he-basis-anchor-1",
+        "digest": "sha256:98ee76db7e20e1e955b51524c9f0d8cdfaad32bcf9e11a486a702348ddc1b75c",
+        "size_in_bytes": 31337023,
+        "expires_at": "2026-11-17T14:45:01Z"
+      },
+      {
+        "id": 13772909897,
+        "name": "a04-he-basis-compact-6z10",
+        "digest": "sha256:d3ced1772fa3f1cb097b6d8717fcd3336e37800f790361781882c04b63859d91",
+        "size_in_bytes": 16459,
+        "expires_at": "2026-11-24T14:50:59Z"
+      }
+    ],
+    "local_replay_report_sha256": "70505b023e1564694c0a52b72d6ae5fb99a48aa12e167ed9621b93322d73cc6d",
+    "local_replay_launcher_sha256": "24ee85c283d940e2eea312ce1ed53d8b1a2dc6e42e9224b9538ad2063efab90d",
+    "local_exact_replay": {
+      "status": "criterion_not_met",
+      "scope": "isolated_native_x86_A04_He_basis_pilot",
+      "stage": "compare_local_replay",
+      "cases": {
+        "5z8": {
+          "case": {
+            "name": "he-5z8",
+            "cell": 12,
+            "cutoff": 1800,
+            "density": true,
+            "wall_seconds": 3000,
+            "minimum_memory_bytes": 2147483648,
+            "rel_cutoff": 80,
+            "system": "he",
+            "eps_scf": 1e-8,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "basis": "cc-pV5Z",
+            "overlap_condition": true,
+            "lmaxn1": 8,
+            "final_batch": true
+          },
+          "one_center_product_upper_bound": 8,
+          "input_sha256": "35fd06bf8ed38a446bbf2f4966c17d273bea675473e983a391b4d1604b6aed8d",
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 431513858,
+            "sha256": "743acdf75185f73f7ada08d65454763868bee2a064e69601113c6c25ebeaaa9e",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2,
+                2,
+                11.338357,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0,
+              0,
+              0
+            ],
+            "grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.070865,
+                0,
+                0
+              ],
+              [
+                0,
+                0.070865,
+                0
+              ],
+              [
+                0,
+                0,
+                0.070865
+              ]
+            ],
+            "origin_m_rounded": [
+              0,
+              0,
+              0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                3.750014288673035e-12,
+                0,
+                0
+              ],
+              [
+                0,
+                3.750014288673035e-12,
+                0
+              ],
+              [
+                0,
+                0,
+                3.750014288673035e-12
+              ]
+            ],
+            "samples": 32768000,
+            "voxel_volume_bohr3_from_rounded_header": 0.00035587327446462495,
+            "electron_integral": 2.0000236829767064,
+            "electron_count_error_from_2": 0.000023682976706407288,
+            "minimum_electrons_per_bohr3": -0.0000075923,
+            "maximum_electrons_per_bohr3": 3.3377,
+            "negative_samples": 14550801,
+            "negative_integral": -0.000006540518431204806,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-7,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.0268614164820065e-7,
+              "absolute_budget_bohr": 5.01e-7,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "basis_conditioning": {
+            "basis": "cc-pV5Z",
+            "basis_reported": "cc-pV5Z",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 55,
+            "orbital_functions": 55,
+            "independent_orbital_functions_reported": 55,
+            "overlap_ratio_line": "CN : max/min ev:  3.907E+000 /  1.065E-003   = 3.669E+003  Log(2-CN):  3.5646",
+            "overlap_warnings": [],
+            "expected_density_lmax": 8,
+            "effective_density_lmax": 8,
+            "overlap_max_eigenvalue_printed": 3.907,
+            "overlap_min_eigenvalue_printed": 0.001065,
+            "overlap_condition_2_printed": 3669,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_scf_iterations": 7,
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 411.06024466200006,
+            "engine_wall_seconds_with_inventory": 411.356530393,
+            "engine_children_peak_rss_kib": 12567332,
+            "engine_user_cpu_seconds": 314.799671,
+            "engine_system_cpu_seconds": 73.216346,
+            "final_cgroup_memory_max_bytes": 12823187456,
+            "final_cgroup_swap_max_bytes": 17179869184,
+            "final_cgroup_swap_current_bytes": 9269248,
+            "final_cgroup_swap_peak_bytes": 4189925376,
+            "final_cgroup_memory_peak_bytes": 12823187456,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 2877,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "engine_energy_hartree": -2.892830168044305,
+          "engine_forces_hartree_per_bohr": [
+            [
+              4.06e-13,
+              4.06e-13,
+              4.06e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2,
+          "cgroup_memory_peak_bytes": 12823187456,
+          "cgroup_memory_events_max": {
+            "max": 2877,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          }
+        },
+        "5z10": {
+          "case": {
+            "name": "he-5z10",
+            "cell": 12,
+            "cutoff": 1800,
+            "density": true,
+            "wall_seconds": 3000,
+            "minimum_memory_bytes": 2147483648,
+            "rel_cutoff": 80,
+            "system": "he",
+            "eps_scf": 1e-8,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "basis": "cc-pV5Z",
+            "overlap_condition": true,
+            "lmaxn1": 10,
+            "final_batch": true
+          },
+          "one_center_product_upper_bound": 8,
+          "input_sha256": "6d0ae15762eaefe7254fe3ac6fc0668b8d0cd5c8e4e28848f28561e0e6cc7aa6",
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 431513858,
+            "sha256": "743acdf75185f73f7ada08d65454763868bee2a064e69601113c6c25ebeaaa9e",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2,
+                2,
+                11.338357,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0,
+              0,
+              0
+            ],
+            "grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.070865,
+                0,
+                0
+              ],
+              [
+                0,
+                0.070865,
+                0
+              ],
+              [
+                0,
+                0,
+                0.070865
+              ]
+            ],
+            "origin_m_rounded": [
+              0,
+              0,
+              0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                3.750014288673035e-12,
+                0,
+                0
+              ],
+              [
+                0,
+                3.750014288673035e-12,
+                0
+              ],
+              [
+                0,
+                0,
+                3.750014288673035e-12
+              ]
+            ],
+            "samples": 32768000,
+            "voxel_volume_bohr3_from_rounded_header": 0.00035587327446462495,
+            "electron_integral": 2.0000236829767064,
+            "electron_count_error_from_2": 0.000023682976706407288,
+            "minimum_electrons_per_bohr3": -0.0000075923,
+            "maximum_electrons_per_bohr3": 3.3377,
+            "negative_samples": 14550801,
+            "negative_integral": -0.000006540518431204806,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-7,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.0268614164820065e-7,
+              "absolute_budget_bohr": 5.01e-7,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "basis_conditioning": {
+            "basis": "cc-pV5Z",
+            "basis_reported": "cc-pV5Z",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 55,
+            "orbital_functions": 55,
+            "independent_orbital_functions_reported": 55,
+            "overlap_ratio_line": "CN : max/min ev:  3.907E+000 /  1.065E-003   = 3.669E+003  Log(2-CN):  3.5646",
+            "overlap_warnings": [],
+            "expected_atom_grid_max_l": 10,
+            "reported_atom_grid_max_l": 10,
+            "expected_density_lmax": 10,
+            "effective_density_lmax": 10,
+            "overlap_max_eigenvalue_printed": 3.907,
+            "overlap_min_eigenvalue_printed": 0.001065,
+            "overlap_condition_2_printed": 3669,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_scf_iterations": 7,
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 418.186377937,
+            "engine_wall_seconds_with_inventory": 418.484653459,
+            "engine_children_peak_rss_kib": 12493660,
+            "engine_user_cpu_seconds": 314.982072,
+            "engine_system_cpu_seconds": 74.69783,
+            "final_cgroup_memory_max_bytes": 12741812224,
+            "final_cgroup_swap_max_bytes": 17179869184,
+            "final_cgroup_swap_current_bytes": 9273344,
+            "final_cgroup_swap_peak_bytes": 5399687168,
+            "final_cgroup_memory_peak_bytes": 12741812224,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 3018,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "engine_energy_hartree": -2.892830168044305,
+          "engine_forces_hartree_per_bohr": [
+            [
+              4.06e-13,
+              4.06e-13,
+              4.06e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2,
+          "cgroup_memory_peak_bytes": 12741812224,
+          "cgroup_memory_events_max": {
+            "max": 3018,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          }
+        },
+        "6z10": {
+          "case": {
+            "name": "he-6z10",
+            "cell": 12,
+            "cutoff": 1800,
+            "density": true,
+            "wall_seconds": 3000,
+            "minimum_memory_bytes": 2147483648,
+            "rel_cutoff": 80,
+            "system": "he",
+            "eps_scf": 1e-8,
+            "radial_grid": 200,
+            "lebedev_grid": 194,
+            "basis": "cc-pV6Z",
+            "overlap_condition": true,
+            "lmaxn1": 10,
+            "final_batch": true
+          },
+          "one_center_product_upper_bound": 10,
+          "input_sha256": "35525db9ece19517156391535e6121d1b75377ca82d2320823921ba929eb2653",
+          "density": {
+            "file": "a04_resource_h2-TOTAL_ELECTRON_DENSITY-1_0.cube",
+            "bytes": 431513858,
+            "sha256": "9b708ce949c2d2b629b112b7fd7b4908da0a18f3e8bf96b6c8bf1fe318e44026",
+            "comments": [
+              "-Quickstep-",
+              " TOTAL ELECTRON DENSITY"
+            ],
+            "atom_count": 1,
+            "atoms_bohr_rounded": [
+              [
+                2,
+                2,
+                11.338357,
+                11.338357,
+                11.338357
+              ]
+            ],
+            "origin_bohr_rounded": [
+              0,
+              0,
+              0
+            ],
+            "grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "grid_axes_bohr_rounded": [
+              [
+                0.070865,
+                0,
+                0
+              ],
+              [
+                0,
+                0.070865,
+                0
+              ],
+              [
+                0,
+                0,
+                0.070865
+              ]
+            ],
+            "origin_m_rounded": [
+              0,
+              0,
+              0
+            ],
+            "grid_axes_m_rounded": [
+              [
+                3.750014288673035e-12,
+                0,
+                0
+              ],
+              [
+                0,
+                3.750014288673035e-12,
+                0
+              ],
+              [
+                0,
+                0,
+                3.750014288673035e-12
+              ]
+            ],
+            "samples": 32768000,
+            "voxel_volume_bohr3_from_rounded_header": 0.00035587327446462495,
+            "electron_integral": 2.0000229702609325,
+            "electron_count_error_from_2": 0.000022970260932453357,
+            "minimum_electrons_per_bohr3": -0.0000069005,
+            "maximum_electrons_per_bohr3": 3.3348,
+            "negative_samples": 14219255,
+            "negative_integral": -0.0000062566160131482535,
+            "density_multiplier_per_m3": 6.748334583089999e+30,
+            "engine_constants_edition_candidate": 2006,
+            "header_rounding_bound_bohr": 5e-7,
+            "field_significant_digits": 5,
+            "field_serialization": "CP2K E13.5E3 fixed13columns; five significant digits after leading zero",
+            "clipped_smoothed_or_renormalized": false,
+            "physical_validation_status": "unvalidated",
+            "convergence_status": "not_tested",
+            "geometry_check": {
+              "atoms_and_composition_match": true,
+              "maximum_coordinate_difference_bohr": 2.0268614164820065e-7,
+              "absolute_budget_bohr": 5.01e-7,
+              "unit_constants_candidate": "CP2K source CODATA2006"
+            }
+          },
+          "basis_conditioning": {
+            "basis": "cc-pV6Z",
+            "basis_reported": "cc-pV6Z",
+            "element": "He",
+            "atom_count": 1,
+            "spherical_functions_per_atom": 91,
+            "orbital_functions": 91,
+            "independent_orbital_functions_reported": 91,
+            "overlap_ratio_line": "CN : max/min ev:  4.432E+000 /  3.903E-004   = 1.136E+004  Log(2-CN):  4.0552",
+            "overlap_warnings": [],
+            "expected_atom_grid_max_l": 10,
+            "reported_atom_grid_max_l": 10,
+            "expected_density_lmax": 10,
+            "effective_density_lmax": 10,
+            "overlap_max_eigenvalue_printed": 4.432,
+            "overlap_min_eigenvalue_printed": 0.0003903,
+            "overlap_condition_2_printed": 11360,
+            "conditioning_passed": true,
+            "conditioning_failures": []
+          },
+          "engine_scf_iterations": 6,
+          "engine_resource": {
+            "binary_sha256": "67b1fe52e628fca5b5c8263073a9ad7ea778b61f643fb07794cd39ab385613f9",
+            "reported_revision": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+            "requested_mpi_ranks": 1,
+            "engine_returncode": 0,
+            "engine_wall_seconds": 281.638515271,
+            "engine_wall_seconds_with_inventory": 281.87798969000005,
+            "engine_children_peak_rss_kib": 12629048,
+            "engine_user_cpu_seconds": 201.939516,
+            "engine_system_cpu_seconds": 52.927445,
+            "final_cgroup_memory_max_bytes": 12884901888,
+            "final_cgroup_swap_max_bytes": 17179869184,
+            "final_cgroup_swap_current_bytes": 9248768,
+            "final_cgroup_swap_peak_bytes": 4057563136,
+            "final_cgroup_memory_peak_bytes": 12884901888,
+            "final_cgroup_memory_events": {
+              "low": 0,
+              "high": 0,
+              "max": 1625,
+              "oom": 0,
+              "oom_kill": 0,
+              "oom_group_kill": 0,
+              "sock_throttled": 0
+            },
+            "final_tmpfs_used_bytes": 0
+          },
+          "engine_energy_hartree": -2.892917962058057,
+          "engine_forces_hartree_per_bohr": [
+            [
+              1.68e-13,
+              1.67e-13,
+              1.67e-13
+            ]
+          ],
+          "engine_hard_soft_electron_count": 2,
+          "cgroup_memory_peak_bytes": 12884901888,
+          "cgroup_memory_events_max": {
+            "max": 1625,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "low": 0,
+            "high": 0,
+            "sock_throttled": 0
+          }
+        }
+      },
+      "comparisons": {
+        "lmax_bridge": {
+          "absolute_energy_difference_hartree": 0,
+          "absolute_maximum_force_component_difference_hartree_per_bohr": 0,
+          "reference_exported_electron_count": 2.0000236829767064,
+          "candidate_exported_electron_count": 2.0000236829767064,
+          "absolute_exported_electron_count_difference": 0,
+          "reference_engine_hard_soft_electron_count": 2,
+          "candidate_engine_hard_soft_electron_count": 2,
+          "engine_electron_counts_passed": true,
+          "energy_passed": true,
+          "force_passed": true,
+          "exported_electron_counts_passed": true,
+          "case": "he-5z8",
+          "reference_case": "he-5z10",
+          "candidate_cell_angstrom": 12,
+          "candidate_cutoff_ry": 1800,
+          "candidate_rel_cutoff_ry": 80,
+          "spatial_density": {
+            "method": "native_aligned_crop",
+            "comparison_grid": "native reference grid with half-open centered cell domain",
+            "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+            "reference_grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "candidate_grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "reference_native_cube_sha256": "743acdf75185f73f7ada08d65454763868bee2a064e69601113c6c25ebeaaa9e",
+            "candidate_native_cube_sha256": "743acdf75185f73f7ada08d65454763868bee2a064e69601113c6c25ebeaaa9e",
+            "reference_overlap_start_index": [
+              0,
+              0,
+              0
+            ],
+            "reference_overlap_grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "reference_voxel_volume_bohr3": 0.0003558692065301366,
+            "reference_outer_shell_samples": 0,
+            "reference_outer_shell_absolute_integral_electrons": 0,
+            "reference_outer_shell_signed_integral_electrons": 0,
+            "primary": {
+              "overlap_absolute_density_difference_integral_electrons": 0,
+              "overlap_signed_density_difference_integral_electrons": 0,
+              "overlap_rms_density_difference_electron_per_bohr3": 0,
+              "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0,
+              "zero_extended_absolute_density_difference_integral_electrons": 0
+            },
+            "sensitivity": null,
+            "interpolants_overlap_l1_electrons": null,
+            "interpolation_right_extrapolated_planes_per_axis": 0,
+            "candidate_native_samples_clipped_or_renormalized": false
+          },
+          "spatial_l1_screen_passed": true,
+          "within_all_endpoint_thresholds": true
+        },
+        "five_z_vs_six_z": {
+          "absolute_energy_difference_hartree": 0.0000877940137518074,
+          "absolute_maximum_force_component_difference_hartree_per_bohr": 2.39e-13,
+          "reference_exported_electron_count": 2.0000229702609325,
+          "candidate_exported_electron_count": 2.0000236829767064,
+          "absolute_exported_electron_count_difference": 7.127157739539314e-7,
+          "reference_engine_hard_soft_electron_count": 2,
+          "candidate_engine_hard_soft_electron_count": 2,
+          "engine_electron_counts_passed": true,
+          "energy_passed": true,
+          "force_passed": true,
+          "exported_electron_counts_passed": true,
+          "case": "he-5z10",
+          "reference_case": "he-6z10",
+          "candidate_cell_angstrom": 12,
+          "candidate_cutoff_ry": 1800,
+          "candidate_rel_cutoff_ry": 80,
+          "spatial_density": {
+            "method": "native_aligned_crop",
+            "comparison_grid": "native reference grid with half-open centered cell domain",
+            "outside_extension_for_metric": "zero outside candidate cell only; report native reference absolute and signed sums",
+            "reference_grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "candidate_grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "reference_native_cube_sha256": "9b708ce949c2d2b629b112b7fd7b4908da0a18f3e8bf96b6c8bf1fe318e44026",
+            "candidate_native_cube_sha256": "743acdf75185f73f7ada08d65454763868bee2a064e69601113c6c25ebeaaa9e",
+            "reference_overlap_start_index": [
+              0,
+              0,
+              0
+            ],
+            "reference_overlap_grid_counts": [
+              320,
+              320,
+              320
+            ],
+            "reference_voxel_volume_bohr3": 0.0003558692065301366,
+            "reference_outer_shell_samples": 0,
+            "reference_outer_shell_absolute_integral_electrons": 0,
+            "reference_outer_shell_signed_integral_electrons": 0,
+            "primary": {
+              "overlap_absolute_density_difference_integral_electrons": 0.0029350258331820186,
+              "overlap_signed_density_difference_integral_electrons": 7.127076273409808e-7,
+              "overlap_rms_density_difference_electron_per_bohr3": 0.000004645476814848443,
+              "overlap_maximum_absolute_density_difference_electron_per_bohr3": 0.0028999999999999027,
+              "zero_extended_absolute_density_difference_integral_electrons": 0.0029350258331820186
+            },
+            "sensitivity": null,
+            "interpolants_overlap_l1_electrons": null,
+            "interpolation_right_extrapolated_planes_per_axis": 0,
+            "candidate_native_samples_clipped_or_renormalized": false
+          },
+          "spatial_l1_screen_passed": false,
+          "within_all_endpoint_thresholds": false
+        }
+      },
+      "errors": {},
+      "gate_failures": [
+        "five_z_vs_six_z: AV04/AV05/AV06/signed density"
+      ],
+      "quanta_source": "0efbcd564e8db1499f35c37c150fffe669c7a63a",
+      "workflow_run_id": "42837190311",
+      "workflow_run_attempt": "1",
+      "manifest_sha256": "909c136b6b7aa0d77e05ed209449ce18813551dc05ccc166892bcc4617bdc66b",
+      "physical_validation_status": "unvalidated",
+      "local_replay_environment": {
+        "python": "3.12.14",
+        "numpy": "2.3.5",
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "hosted_admission_check_bypassed_for_local_replay": "No visible mount for cgroup v2 membership",
+        "hosted_admission_floor_bytes": 6442450944,
+        "local_memavailable_before_bytes": 5500047360,
+        "local_memavailable_after_bytes": 5776228352,
+        "local_comparison_address_space_cap_bytes": 1073741824,
+        "local_process_peak_rss_bytes": 41172992,
+        "started_utc": "2026-11-10T14:56:21.053081+00:00",
+        "finished_utc": "2026-11-10T14:56:49.575847+00:00",
+        "wall_seconds": 28.522788743008277,
+        "native_cp2k_execution_count": 0
+      }
+    }
+  },
+  "independent": {
+    "scalar_implementation_check": "docs/verification/atomistic-a04/native-libxc-pbe-match-20261110.json",
+    "solver_failure_receipt": "docs/verification/atomistic-a04/helfem-initial-20261110.json",
+    "reference_numerical_receipt": "docs/verification/atomistic-a04/helfem-numerical-pilot-20261110.json",
+    "total_limits": {
+      "energy_hartree": 0.0001,
+      "force_hartree_per_bohr": 0.0001,
+      "density_electrons": 0.001
+    },
+    "reserve": {
+      "energy_hartree": 0.00001,
+      "force_hartree_per_bohr": 0.00001,
+      "density_electrons": 0.0001
+    },
+    "status": "all_measured_density_discrepancies_above_total_limit_full_reference_admission_incomplete",
+    "qualification_limits": "The rounded LibXC 7.0.0 restricted EXC/VXC matches the frozen native CP2K scalar points. This does not cover every engine density cutoff or CP2K integration path. He common-node density sampling uncertainty remains to be characterized for full M04. H2 force and three independent FE axes are unexecuted after the density screen.",
+    "observed_native_rounding_sensitivity_he_hartree": -7.060547506654302e-7,
+    "cases": {
+      "he_five_z_l8_l10": {
+        "cp2k_total_energy_hartree": -2.892830168044305,
+        "helfem_total_energy_hartree": -2.8929355729338697,
+        "absolute_energy_discrepancy_hartree": 0.00010540488956456429,
+        "energy_screen_within_reserved_margin": false,
+        "max_force_component_discrepancy_hartree_per_bohr": 4.06e-13,
+        "force_status": "centered_atom_symmetry_only",
+        "density_screen": {
+          "status": "density_screen_measured_reference_admission_pending",
+          "physical_validation_status": "unvalidated",
+          "m04_passed": null,
+          "scope": "Exact authored half-open Cartesian nodes; raw signed CP2K versus direct HelFEM FE samples",
+          "fixture": "he",
+          "cp2k_report_sha256": "b8bc1575621730cab1588ba18b09dfd7e43cf466c2b09c59f7ad9ec91cf51e41",
+          "cp2k_cube_sha256": "743acdf75185f73f7ada08d65454763868bee2a064e69601113c6c25ebeaaa9e",
+          "exporter_binary_sha256": "e271590fb994c278b3fa2c565b90fdbeed902671176a2e36628286d35a57dbbf",
+          "reference_density": {
+            "checkpoint_sha256": "558e1b144365405d056454c0340643d8c87abfdd8c1a3bc8af982706fcbf5456",
+            "projected_field_sha256": "c8f31f6f1f9eff8a266e0e1f82ed0b39e5a4d674ad16da7934db7d3ee10c3ec4",
+            "overlap_electrons": 2.0000000000000075,
+            "finite_domain_axial_bohr": 50,
+            "quadrature_32_electrons": 2.000000000000045,
+            "cell_omitted_upper_32_electrons": 3.0319485582018926e-10,
+            "quadrature_64_electrons": 2.000000000000008,
+            "cell_omitted_upper_64_electrons": 3.0319485581963004e-10
+          },
+          "density_refinement_diagnostics": [],
+          "exact_grid_count_per_axis": 320,
+          "exact_cell_bohr": 22.676713594627717,
+          "exact_bond_bohr": 0,
+          "exact_origin_bohr": [
+            0,
+            0,
+            0
+          ],
+          "exact_voxel_volume_bohr3": 0.0003558692065301366,
+          "cp2k_cartesian_integral_electrons": 2.0000008210033546,
+          "helfem_cartesian_integral_electrons": 2.000100039696866,
+          "helfem_cartesian_minus_overlap_electrons": 0.00010003969685845604,
+          "omitted_mass_scope": "Native FE quadrature outside a sphere (He) or prolate ellipsoid (H2) inscribed in the cube, an upper enclosure within the finite FE domain",
+          "signed_cp2k_minus_helfem_integral_electrons": -0.00009921869351137147,
+          "measured_absolute_density_difference_integral_electrons": 0.0031262202137085754,
+          "cumulative_nearest_nucleus_l1": [
+            {
+              "radius_bohr": 0.25,
+              "l1_electrons": 0.0002304456358323518
+            },
+            {
+              "radius_bohr": 0.5,
+              "l1_electrons": 0.0004037579516120935
+            },
+            {
+              "radius_bohr": 1,
+              "l1_electrons": 0.0009523082663230935
+            },
+            {
+              "radius_bohr": 2,
+              "l1_electrons": 0.0013756771337687834
+            },
+            {
+              "radius_bohr": 3,
+              "l1_electrons": 0.0021032397653395593
+            }
+          ],
+          "maximum_absolute_difference_sample": {
+            "centered_position_bohr": [
+              0,
+              0,
+              0
+            ],
+            "grid_indices_zero_based": [
+              160,
+              160,
+              160
+            ],
+            "signed_cp2k_minus_helfem_electrons_per_bohr3": -0.34839885812238736
+          },
+          "full_reference_density_reserve_electrons": 0.0001,
+          "total_density_limit_electrons": 0.001,
+          "measured_discrepancy_within_fixed_margin": false,
+          "reference_uncertainty_status": "Needs FE-axis convergence and Cartesian shape-sampling uncertainty; finite-domain and signed mass diagnostics are reported separately"
+        },
+        "qualified_full_m04": false
+      },
+      "he_six_z_l10": {
+        "cp2k_total_energy_hartree": -2.892917962058057,
+        "helfem_total_energy_hartree": -2.8929355729338697,
+        "absolute_energy_discrepancy_hartree": 0.000017610875812756888,
+        "energy_screen_within_reserved_margin": true,
+        "max_force_component_discrepancy_hartree_per_bohr": 1.68e-13,
+        "force_status": "centered_atom_symmetry_only",
+        "density_screen": {
+          "status": "density_screen_measured_reference_admission_pending",
+          "physical_validation_status": "unvalidated",
+          "m04_passed": null,
+          "scope": "Exact authored half-open Cartesian nodes; raw signed CP2K versus direct HelFEM FE samples",
+          "fixture": "he",
+          "cp2k_report_sha256": "d2157f18765cf35088a4a64984cc3868eeea52db44c16d6e3e21085dbb5c541d",
+          "cp2k_cube_sha256": "9b708ce949c2d2b629b112b7fd7b4908da0a18f3e8bf96b6c8bf1fe318e44026",
+          "exporter_binary_sha256": "e271590fb994c278b3fa2c565b90fdbeed902671176a2e36628286d35a57dbbf",
+          "reference_density": {
+            "checkpoint_sha256": "558e1b144365405d056454c0340643d8c87abfdd8c1a3bc8af982706fcbf5456",
+            "projected_field_sha256": "c8f31f6f1f9eff8a266e0e1f82ed0b39e5a4d674ad16da7934db7d3ee10c3ec4",
+            "overlap_electrons": 2.0000000000000075,
+            "finite_domain_axial_bohr": 50,
+            "quadrature_32_electrons": 2.000000000000045,
+            "cell_omitted_upper_32_electrons": 3.0319485582018926e-10,
+            "quadrature_64_electrons": 2.000000000000008,
+            "cell_omitted_upper_64_electrons": 3.0319485581963004e-10
+          },
+          "density_refinement_diagnostics": [],
+          "exact_grid_count_per_axis": 320,
+          "exact_cell_bohr": 22.676713594627717,
+          "exact_bond_bohr": 0,
+          "exact_origin_bohr": [
+            0,
+            0,
+            0
+          ],
+          "exact_voxel_volume_bohr3": 0.0003558692065301366,
+          "cp2k_cartesian_integral_electrons": 2.000000108295727,
+          "helfem_cartesian_integral_electrons": 2.000100039696866,
+          "helfem_cartesian_minus_overlap_electrons": 0.00010003969685845604,
+          "omitted_mass_scope": "Native FE quadrature outside a sphere (He) or prolate ellipsoid (H2) inscribed in the cube, an upper enclosure within the finite FE domain",
+          "signed_cp2k_minus_helfem_integral_electrons": -0.00009993140113895294,
+          "measured_absolute_density_difference_integral_electrons": 0.0010761141906253855,
+          "cumulative_nearest_nucleus_l1": [
+            {
+              "radius_bohr": 0.25,
+              "l1_electrons": 0.00023255237232971127
+            },
+            {
+              "radius_bohr": 0.5,
+              "l1_electrons": 0.00030642518335950004
+            },
+            {
+              "radius_bohr": 1,
+              "l1_electrons": 0.00045281719187375804
+            },
+            {
+              "radius_bohr": 2,
+              "l1_electrons": 0.0006255368785784037
+            },
+            {
+              "radius_bohr": 3,
+              "l1_electrons": 0.0008062834795964684
+            }
+          ],
+          "maximum_absolute_difference_sample": {
+            "centered_position_bohr": [
+              0,
+              0,
+              0
+            ],
+            "grid_indices_zero_based": [
+              160,
+              160,
+              160
+            ],
+            "signed_cp2k_minus_helfem_electrons_per_bohr3": -0.35129885812238726
+          },
+          "full_reference_density_reserve_electrons": 0.0001,
+          "total_density_limit_electrons": 0.001,
+          "measured_discrepancy_within_fixed_margin": false,
+          "reference_uncertainty_status": "Needs FE-axis convergence and Cartesian shape-sampling uncertainty; finite-domain and signed mass diagnostics are reported separately"
+        },
+        "qualified_full_m04": false
+      },
+      "h2_short_five_z_l8": {
+        "cp2k_total_energy_hartree": -1.14657030797834,
+        "helfem_total_energy_hartree": -1.1466121335670447,
+        "absolute_energy_discrepancy_hartree": 0.00004182558870469144,
+        "energy_screen_within_reserved_margin": true,
+        "max_force_component_discrepancy_hartree_per_bohr": null,
+        "force_status": "not_executed_center_density_above_total_limit",
+        "density_screen": {
+          "status": "density_screen_measured_reference_admission_pending",
+          "physical_validation_status": "unvalidated",
+          "m04_passed": null,
+          "scope": "Exact authored half-open Cartesian nodes; raw signed CP2K versus direct HelFEM FE samples",
+          "fixture": "h2-short",
+          "cp2k_report_sha256": "503921dae4f1ba5f41e85742e7508f403348309547897e79163fc565d8950a62",
+          "cp2k_cube_sha256": "1052629402d521ed3deebeef8c5e15b79617ff65faa8bcf3cd8933c45f8bfc7f",
+          "exporter_binary_sha256": "e271590fb994c278b3fa2c565b90fdbeed902671176a2e36628286d35a57dbbf",
+          "reference_density": {
+            "checkpoint_sha256": "93fd752ee680bc81242066fc61aa6f0de39788c51e3b68fb0b631478568c7ef1",
+            "projected_field_sha256": "17afb754beb45fe1ebb129ceaae67c5eaf9a67690c4668ea5cf83884e192353d",
+            "overlap_electrons": 2.0000000000000013,
+            "finite_domain_axial_bohr": 50.00000000000002,
+            "quadrature_32_electrons": 1.9999999999998996,
+            "cell_omitted_upper_32_electrons": 2.418254745909146e-8,
+            "quadrature_64_electrons": 1.9999999999999982,
+            "cell_omitted_upper_64_electrons": 2.4182547458949046e-8
+          },
+          "density_refinement_diagnostics": [],
+          "exact_grid_count_per_axis": 180,
+          "exact_cell_bohr": 22.676713594627717,
+          "exact_bond_bohr": 1.1338356797313858,
+          "exact_origin_bohr": [
+            0,
+            0,
+            0
+          ],
+          "exact_voxel_volume_bohr3": 0.0019995065431377777,
+          "cp2k_cartesian_integral_electrons": 1.9999999350741529,
+          "helfem_cartesian_integral_electrons": 2.000006426794668,
+          "helfem_cartesian_minus_overlap_electrons": 0.000006426794666669622,
+          "omitted_mass_scope": "Native FE quadrature outside a sphere (He) or prolate ellipsoid (H2) inscribed in the cube, an upper enclosure within the finite FE domain",
+          "signed_cp2k_minus_helfem_integral_electrons": -0.000006491720515144905,
+          "measured_absolute_density_difference_integral_electrons": 0.0016661367368316282,
+          "cumulative_nearest_nucleus_l1": [
+            {
+              "radius_bohr": 0.25,
+              "l1_electrons": 0.00015490223771672887
+            },
+            {
+              "radius_bohr": 0.5,
+              "l1_electrons": 0.0003470964985750747
+            },
+            {
+              "radius_bohr": 1,
+              "l1_electrons": 0.0006668032623965895
+            },
+            {
+              "radius_bohr": 2,
+              "l1_electrons": 0.001156630653148977
+            },
+            {
+              "radius_bohr": 3,
+              "l1_electrons": 0.0014951985938852948
+            }
+          ],
+          "maximum_absolute_difference_sample": {
+            "centered_position_bohr": [
+              -0.5039269687695048,
+              0,
+              0
+            ],
+            "grid_indices_zero_based": [
+              86,
+              90,
+              90
+            ],
+            "signed_cp2k_minus_helfem_electrons_per_bohr3": -0.005348272364602447
+          },
+          "full_reference_density_reserve_electrons": 0.0001,
+          "total_density_limit_electrons": 0.001,
+          "measured_discrepancy_within_fixed_margin": false,
+          "reference_uncertainty_status": "Needs FE-axis convergence and Cartesian shape-sampling uncertainty; finite-domain and signed mass diagnostics are reported separately"
+        },
+        "qualified_full_m04": false
+      }
+    },
+    "projected_density_axis_refinement": {
+      "he": {
+        "scope": "Empirical finite-element axis differences only, on identical Cartesian nodes",
+        "reference_plan_sha256": "984c23e8bc6e2a4c578ed07864b143c9de6982f044502a78b88f488e9f7b9139",
+        "reference_summary_sha256": "3190f115d61903bf39f3419e185367e0210152f0e43355174ba5631de99dd5db",
+        "exporter_binary_sha256": "e271590fb994c278b3fa2c565b90fdbeed902671176a2e36628286d35a57dbbf",
+        "reference_density": {
+          "checkpoint_sha256": "558e1b144365405d056454c0340643d8c87abfdd8c1a3bc8af982706fcbf5456",
+          "projected_field_sha256": "c8f31f6f1f9eff8a266e0e1f82ed0b39e5a4d674ad16da7934db7d3ee10c3ec4",
+          "overlap_electrons": 2.0000000000000075,
+          "finite_domain_axial_bohr": 50,
+          "quadrature_32_electrons": 2.000000000000045,
+          "cell_omitted_upper_32_electrons": 3.0319485582018926e-10,
+          "quadrature_64_electrons": 2.000000000000008,
+          "cell_omitted_upper_64_electrons": 3.0319485581963004e-10
+        },
+        "axis_differences": {
+          "Rmax": {
+            "levels": [
+              30,
+              40,
+              50
+            ],
+            "coarse": {
+              "checkpoint_sha256": "37c27c237be5eb520ad591bfa78fdf022ad437bf170f400f445b486901c7adee",
+              "projected_field_sha256": "9425d1bae9ab2fa53d25a9a73e85277b0627fd8c9a3605eefb43ff43427e3801",
+              "overlap_electrons": 1.9999999999999933,
+              "finite_domain_axial_bohr": 30,
+              "quadrature_32_electrons": 2.000000000000026,
+              "cell_omitted_upper_32_electrons": 3.0319496431407367e-10,
+              "quadrature_64_electrons": 1.9999999999999942,
+              "cell_omitted_upper_64_electrons": 3.031949643137004e-10
+            },
+            "middle": {
+              "checkpoint_sha256": "24c3ac7f0a211f2bc50c29ed30c4743fcdec78bc09a53eaa1901df4f5b6a8014",
+              "projected_field_sha256": "a4f713cb184012f3ca1c6c0655b95a91e85f7eb897c39ca5790c14bc7c5cb22f",
+              "overlap_electrons": 1.9999999999999987,
+              "finite_domain_axial_bohr": 40,
+              "quadrature_32_electrons": 2.000000000000034,
+              "cell_omitted_upper_32_electrons": 3.031957326926719e-10,
+              "quadrature_64_electrons": 1.9999999999999982,
+              "cell_omitted_upper_64_electrons": 3.031957326904199e-10
+            },
+            "coarse_to_middle_l1_electrons": 1.4501877089168312e-11,
+            "middle_to_fine_l1_electrons": 8.004672675228475e-12
+          },
+          "nelem": {
+            "levels": [
+              10,
+              13,
+              16
+            ],
+            "coarse": {
+              "checkpoint_sha256": "1601f3ca0956719da9e86e819334b80829649e74479624d65b683b83e64d0c49",
+              "projected_field_sha256": "e6822fcabc2f35d453adf2321976a7e324b619ccf8b2607a7aabe479b3bacf95",
+              "overlap_electrons": 1.9999999999999936,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.0000000000000986,
+              "cell_omitted_upper_32_electrons": 3.0319547500702287e-10,
+              "quadrature_64_electrons": 1.9999999999999933,
+              "cell_omitted_upper_64_electrons": 3.031954749948853e-10
+            },
+            "middle": {
+              "checkpoint_sha256": "d9b0dabdd8f3da6ae5b9b00e65a189feb5ea7fb151e423296098f384664f2f32",
+              "projected_field_sha256": "d483b10faa857a856433365d6c31c566085adeeaca1939d0926cda50eefc2e1f",
+              "overlap_electrons": 2.0000000000000067,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.0000000000000635,
+              "cell_omitted_upper_32_electrons": 3.0319397098225513e-10,
+              "quadrature_64_electrons": 2.000000000000007,
+              "cell_omitted_upper_64_electrons": 3.0319397098042406e-10
+            },
+            "coarse_to_middle_l1_electrons": 3.1152935709641464e-11,
+            "middle_to_fine_l1_electrons": 8.138874937477336e-12
+          },
+          "lmax": {
+            "levels": [
+              0,
+              1,
+              2
+            ],
+            "coarse": {
+              "checkpoint_sha256": "ef024648ca2ef69f9f2067c74301a8e170f753b3fe689f914686c0a1b63e2467",
+              "projected_field_sha256": "e902c5e3022f9815ad27e11c0d41bf239a5ff78b707aa5559964726b173e1a3a",
+              "overlap_electrons": 2.000000000000005,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.0000000000000417,
+              "cell_omitted_upper_32_electrons": 3.031948558393247e-10,
+              "quadrature_64_electrons": 2.0000000000000053,
+              "cell_omitted_upper_64_electrons": 3.031948558387654e-10
+            },
+            "middle": {
+              "checkpoint_sha256": "e5400db9e6e3f1cef732913befc896908c98abe7b90541c2622f3733c3994603",
+              "projected_field_sha256": "6032d5fc582cb87f89b56e595aa320a4aec6cacb8d5ec21690f652bb1272f8d2",
+              "overlap_electrons": 2.0000000000000018,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.0000000000000377,
+              "cell_omitted_upper_32_electrons": 3.0319485583240553e-10,
+              "quadrature_64_electrons": 2.0000000000000013,
+              "cell_omitted_upper_64_electrons": 3.0319485583184605e-10
+            },
+            "coarse_to_middle_l1_electrons": 3.832390586209519e-12,
+            "middle_to_fine_l1_electrons": 1.9757205990771006e-12
+          },
+          "nquad": {
+            "levels": [
+              32,
+              38,
+              44
+            ],
+            "coarse": {
+              "checkpoint_sha256": "eabdccd70f2fb2b6d5801f18d0e9c0eaae38ef772db75f87b18a99fb91d5678a",
+              "projected_field_sha256": "c110596593a493ee34e85d945499a7fd24bfc04d31d4a5259a16e2e1d5b6b7fb",
+              "overlap_electrons": 2.0000000000000098,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.000000000000046,
+              "cell_omitted_upper_32_electrons": 3.031955032842146e-10,
+              "quadrature_64_electrons": 2.0000000000000084,
+              "cell_omitted_upper_64_electrons": 3.0319550328365527e-10
+            },
+            "middle": {
+              "checkpoint_sha256": "0c33ca369499d2a354ade407d555466cf64512acaeb3fec5cc6c9e8d1d3209bc",
+              "projected_field_sha256": "af5a52611eebaa3aab000821479ac127bafecaa7f67b79739b4e9bafec8831c1",
+              "overlap_electrons": 2.0000000000000036,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.000000000000042,
+              "cell_omitted_upper_32_electrons": 3.031951237060753e-10,
+              "quadrature_64_electrons": 2.0000000000000036,
+              "cell_omitted_upper_64_electrons": 3.031951237055164e-10
+            },
+            "coarse_to_middle_l1_electrons": 2.2283690973982977e-12,
+            "middle_to_fine_l1_electrons": 3.056602639456167e-13
+          },
+          "ldft": {
+            "levels": [
+              12,
+              16,
+              20
+            ],
+            "coarse": {
+              "checkpoint_sha256": "11a75de3e696ef0b7281e3a3376d7543adc93049e98175cf7aa577298c54aae4",
+              "projected_field_sha256": "910ba359ebf87765c2bc7e02b3f66819acdf82599a94fa57ff3012f09e75fdc9",
+              "overlap_electrons": 1.9999999999999978,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.000000000000034,
+              "cell_omitted_upper_32_electrons": 3.0319485581724667e-10,
+              "quadrature_64_electrons": 1.9999999999999973,
+              "cell_omitted_upper_64_electrons": 3.0319485581668745e-10
+            },
+            "middle": {
+              "checkpoint_sha256": "6a9e33017557d2dc3ac27cc7ff65184e29017c21f7ac82e13dad43e08c458457",
+              "projected_field_sha256": "3d4994c88d083f23ca513ed7e0fff7a8bc9c7d4c65f1ca444c53c976440ad450",
+              "overlap_electrons": 1.9999999999999996,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.000000000000037,
+              "cell_omitted_upper_32_electrons": 3.0319485581630674e-10,
+              "quadrature_64_electrons": 1.9999999999999996,
+              "cell_omitted_upper_64_electrons": 3.031948558157474e-10
+            },
+            "coarse_to_middle_l1_electrons": 6.693217978613703e-13,
+            "middle_to_fine_l1_electrons": 7.985510479839499e-14
+          },
+          "mdft": {
+            "levels": [
+              12,
+              16,
+              20
+            ],
+            "coarse": {
+              "checkpoint_sha256": "c5f8b6bfb5d03747171f2b9de565a7844b581f16a8f64cc8efb1d87cb9bee8d0",
+              "projected_field_sha256": "6f63bb4395a5c7c31198beda2c18ca432297b14445b168ae0bb3fedbf86aa283",
+              "overlap_electrons": 2.000000000000001,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.000000000000038,
+              "cell_omitted_upper_32_electrons": 3.0319485581319173e-10,
+              "quadrature_64_electrons": 2.0000000000000004,
+              "cell_omitted_upper_64_electrons": 3.031948558126323e-10
+            },
+            "middle": {
+              "checkpoint_sha256": "82f01c481f53808f172bcfd1725a3adc22cfcd712c43ef2da8f8835b345ca3b5",
+              "projected_field_sha256": "8e90c48c77652ccbde53cec1a71c3a8381c625a036052f43fb4b84af4f047faf",
+              "overlap_electrons": 2.000000000000003,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.0000000000000413,
+              "cell_omitted_upper_32_electrons": 3.031948558120317e-10,
+              "quadrature_64_electrons": 2.0000000000000027,
+              "cell_omitted_upper_64_electrons": 3.031948558114723e-10
+            },
+            "coarse_to_middle_l1_electrons": 4.021448212574936e-13,
+            "middle_to_fine_l1_electrons": 6.822077300482112e-13
+          },
+          "quanta-scf-threshold": {
+            "levels": [
+              1e-7,
+              1e-8,
+              1e-9
+            ],
+            "coarse": {
+              "checkpoint_sha256": "8f3d18d1371c261a6231023c515ba48048dd9d4426e04d7bb0e7676ea13cdb28",
+              "projected_field_sha256": "283b7ea6fd56e8950d61e97e155e87f6f139607df10ce9364e0f0f62cb6fc403",
+              "overlap_electrons": 1.9999999999999962,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.0000000000000346,
+              "cell_omitted_upper_32_electrons": 3.031984306904272e-10,
+              "quadrature_64_electrons": 1.9999999999999962,
+              "cell_omitted_upper_64_electrons": 3.031984306898679e-10
+            },
+            "middle": {
+              "checkpoint_sha256": "ed8788a5a148faa0ee935fc49be1466f392894bedc50976c3acc7685bf51f471",
+              "projected_field_sha256": "283b7ea6fd56e8950d61e97e155e87f6f139607df10ce9364e0f0f62cb6fc403",
+              "overlap_electrons": 1.9999999999999962,
+              "finite_domain_axial_bohr": 50,
+              "quadrature_32_electrons": 2.0000000000000346,
+              "cell_omitted_upper_32_electrons": 3.031984306904272e-10,
+              "quadrature_64_electrons": 1.9999999999999962,
+              "cell_omitted_upper_64_electrons": 3.031984306898679e-10
+            },
+            "coarse_to_middle_l1_electrons": 0,
+            "middle_to_fine_l1_electrons": 7.762740649251272e-7
+          }
+        },
+        "missing_or_inadmissible_labels": [],
+        "available_middle_to_fine_l1_sum_electrons": 7.762932519164377e-7
+      },
+      "h2_short": {
+        "scope": "Empirical finite-element axis differences only, on identical Cartesian nodes",
+        "reference_plan_sha256": "2fccf70fe09d9dcf1e08bda4856d2afc2b41bf87b4160e116700de812adfaa71",
+        "reference_summary_sha256": "02e1af549b06401f7bc88566f29b90dc033accfcbe8792bb01b6b47d1063ba1c",
+        "exporter_binary_sha256": "e271590fb994c278b3fa2c565b90fdbeed902671176a2e36628286d35a57dbbf",
+        "reference_density": {
+          "checkpoint_sha256": "93fd752ee680bc81242066fc61aa6f0de39788c51e3b68fb0b631478568c7ef1",
+          "projected_field_sha256": "17afb754beb45fe1ebb129ceaae67c5eaf9a67690c4668ea5cf83884e192353d",
+          "overlap_electrons": 2.0000000000000013,
+          "finite_domain_axial_bohr": 50.00000000000002,
+          "quadrature_32_electrons": 1.9999999999998996,
+          "cell_omitted_upper_32_electrons": 2.418254745909146e-8,
+          "quadrature_64_electrons": 1.9999999999999982,
+          "cell_omitted_upper_64_electrons": 2.4182547458949046e-8
+        },
+        "axis_differences": {
+          "Rmax": {
+            "levels": [
+              30,
+              40,
+              50
+            ],
+            "coarse": {
+              "checkpoint_sha256": "18cc10407c9e4ed11dd1b515bc4b16d3a48c16681311c0931200b2d743e7ad67",
+              "projected_field_sha256": "90afb70c29763587e4daadd83c32f633cf3ab94a7a7c4254738274fbdbc98940",
+              "overlap_electrons": 1.9999999999999922,
+              "finite_domain_axial_bohr": 30.000000000000007,
+              "quadrature_32_electrons": 1.999999999999894,
+              "cell_omitted_upper_32_electrons": 2.4182551605104116e-8,
+              "quadrature_64_electrons": 1.9999999999999947,
+              "cell_omitted_upper_64_electrons": 2.4182551604963565e-8
+            },
+            "middle": {
+              "checkpoint_sha256": "13cdbd4195ac22bdbd37b67473e0be4953b3b8d545a80875942bf4f13d004a2b",
+              "projected_field_sha256": "eed27986069c5a702ac4b281c08445f5fd97a10a6a3e8404af312b939d52a1d9",
+              "overlap_electrons": 2.00000000000002,
+              "finite_domain_axial_bohr": 40,
+              "quadrature_32_electrons": 1.999999999999916,
+              "cell_omitted_upper_32_electrons": 2.4182552146775234e-8,
+              "quadrature_64_electrons": 2.0000000000000178,
+              "cell_omitted_upper_64_electrons": 2.4182552146714883e-8
+            },
+            "coarse_to_middle_l1_electrons": 3.940611829273627e-11,
+            "middle_to_fine_l1_electrons": 4.3370852980005425e-11
+          },
+          "nelem": {
+            "levels": [
+              6,
+              8,
+              10
+            ],
+            "coarse": {
+              "checkpoint_sha256": "915e2011a00b1c5c4ee9e18790fa4876f3c2d461062bd9396f71b17f5dedf557",
+              "projected_field_sha256": "2ebfecd65b3bbc9fc2f9d9f2491b6969967d608a72718d7a1f21bdca4c70079b",
+              "overlap_electrons": 2.000000000000003,
+              "finite_domain_axial_bohr": 50.00000000000002,
+              "quadrature_32_electrons": 1.9999999999999203,
+              "cell_omitted_upper_32_electrons": 2.418075910125569e-8,
+              "quadrature_64_electrons": 2.000000000000002,
+              "cell_omitted_upper_64_electrons": 2.4180759099789457e-8
+            },
+            "middle": {
+              "checkpoint_sha256": "b305270babf295310e08eb37cd31277ae7568eb0f3e123bf3e48d11ed5c4fddc",
+              "projected_field_sha256": "73e8655c3fd3eb516c91263f6d5f94531245ec1d326b4e986236f03aa378eef5",
+              "overlap_electrons": 1.9999999999999993,
+              "finite_domain_axial_bohr": 50.00000000000002,
+              "quadrature_32_electrons": 1.99999999999991,
+              "cell_omitted_upper_32_electrons": 2.418231701820008e-8,
+              "quadrature_64_electrons": 2.0000000000000044,
+              "cell_omitted_upper_64_electrons": 2.4182317018153517e-8
+            },
+            "coarse_to_middle_l1_electrons": 1.3355364771577727e-8,
+            "middle_to_fine_l1_electrons": 8.045603553744461e-7
+          },
+          "lmax": {
+            "levels": [
+              6,
+              8,
+              10
+            ],
+            "coarse": {
+              "checkpoint_sha256": "794c18cca3e2aec2473cca01aee6a616126c96ca31611e70f8e2bf64a8125daf",
+              "projected_field_sha256": "d23a4e121c82287206b067a019aa03abbe5eb5d2ccd788fab09e15e7cfcfb1c5",
+              "overlap_electrons": 2.000000000000002,
+              "finite_domain_axial_bohr": 50.00000000000002,
+              "quadrature_32_electrons": 1.9999999999999023,
+              "cell_omitted_upper_32_electrons": 2.41823306890752e-8,
+              "quadrature_64_electrons": 2.0000000000000018,
+              "cell_omitted_upper_64_electrons": 2.418233068893283e-8
+            },
+            "middle": {
+              "checkpoint_sha256": "f07ed182a483280b8871d9c702e3619462bec9cae7e9aeeb732868efafdc254d",
+              "projected_field_sha256": "13b4f473be28b52b3227f1fd9245d65db03711a0139d8cf9bfcfac9efd7b24e3",
+              "overlap_electrons": 2.000000000000004,
+              "finite_domain_axial_bohr": 50.00000000000002,
+              "quadrature_32_electrons": 1.999999999999907,
+              "cell_omitted_upper_32_electrons": 2.418254705681702e-8,
+              "quadrature_64_electrons": 2.0000000000000053,
+              "cell_omitted_upper_64_electrons": 2.4182547056674654e-8
+            },
+            "coarse_to_middle_l1_electrons": 0.0000012203723332631311,
+            "middle_to_fine_l1_electrons": 1.1245802591022526e-7
+          },
+          "nnodes": {
+            "levels": [
+              9,
+              11,
+              13
+            ],
+            "coarse": {
+              "checkpoint_sha256": "5e6cd32cf75a4745d3d89dd50dd3ac2963aa90b489ebc90419af35d77a375cdd",
+              "projected_field_sha256": "e9524c744e4fb7d0087f960393d248fbb4279d4e88a9bb47828465a9f2967d22",
+              "overlap_electrons": 2.0000000000000093,
+              "finite_domain_axial_bohr": 50.00000000000002,
+              "quadrature_32_electrons": 1.99999999999991,
+              "cell_omitted_upper_32_electrons": 2.4178105672131946e-8,
+              "quadrature_64_electrons": 2.0000000000000107,
+              "cell_omitted_upper_64_electrons": 2.4178105671989476e-8
+            },
+            "middle": {
+              "checkpoint_sha256": "86547e18fa577ad7435ebba1e39f06461142deabcd6a749389c1adc2658ea212",
+              "projected_field_sha256": "07868dbee5b6570825fd443fbf7193c123b5e0073bd8e3c91b7a836814ad32ee",
+              "overlap_electrons": 1.999999999999989,
+              "finite_domain_axial_bohr": 50.00000000000002,
+              "quadrature_32_electrons": 1.9999999999998874,
+              "cell_omitted_upper_32_electrons": 2.4182512519368147e-8,
+              "quadrature_64_electrons": 1.9999999999999873,
+              "cell_omitted_upper_64_electrons": 2.4182512519225773e-8
+            },
+            "coarse_to_middle_l1_electrons": 8.035236340038426e-7,
+            "middle_to_fine_l1_electrons": 3.2807148447508713e-9
+          }
+        },
+        "missing_or_inadmissible_labels": [
+          "nquad-1",
+          "nquad-2",
+          "ldft-1",
+          "ldft-2",
+          "quanta-scf-threshold-1",
+          "quanta-scf-threshold-2"
+        ],
+        "available_middle_to_fine_l1_sum_electrons": 9.203424669824023e-7
+      }
+    },
+    "h2_native_density_line_qa": {
+      "scope": "Two independent pinned HelFEM native diatomic_dline replays on exact H2 CP2K x-axis slices. Comparison allows native six-digit serialization.",
+      "checkpoint_sha256": "93fd752ee680bc81242066fc61aa6f0de39788c51e3b68fb0b631478568c7ef1",
+      "density_line_binary_sha256": "f2674cd36cdba252984f83351f773434d18db67d369a81a48a33787a607f9496",
+      "relative_tolerance": 0.000006,
+      "absolute_tolerance": 5e-14,
+      "lines": [
+        {
+          "transverse_offset_grid_units": [
+            0,
+            0
+          ],
+          "points": 180,
+          "max_abs_density_error_electrons_per_bohr3": 4.5744334417618937e-7,
+          "max_abs_cartesian_z_coordinate_error_bohr": 0.00004808635197761646,
+          "line_sha256": "00138240ae03d51233033ea4d53c44c5dab5fc577f63a5f0f9c227767041bbac"
+        },
+        {
+          "transverse_offset_grid_units": [
+            4,
+            -3
+          ],
+          "points": 180,
+          "max_abs_density_error_electrons_per_bohr3": 4.130562215320932e-7,
+          "max_abs_cartesian_z_coordinate_error_bohr": 0.00004808635197761646,
+          "line_sha256": "375ed6609661fab2743024b440a64dd7cbcad18552693a4dba7978a049315f14"
+        }
+      ],
+      "passed": true
+    }
+  },
+  "archival": {
+    "cp2k": {
+      "filename": "Quanta_A04_R1_He_CP2K_42837190311.zip",
+      "bytes": 66661557,
+      "sha256": "dba5e63c4a112552c09ecb4487e79e86e158247c904b9763b4c0cd8a1683d76a"
+    },
+    "helfem": {
+      "filename": "Quanta_A04_R1_HelFEM_He_H2_20261110.zip",
+      "bytes": 50499375,
+      "sha256": "a37bfd1ce1202bdad7cfb8888a0bc869ac0ff8de83f0e962cef8a48bc4bdc325",
+      "checkpoint_scope": "Seven selected exact checkpoints with all retained per-row inputs and logs"
+    }
+  },
+  "tests": {
+    "local_atomistic": {
+      "passed": 182,
+      "skipped": 1,
+      "subtests_passed": 36,
+      "skip_reason": "host policy denies unprivileged ptrace"
+    },
+    "existing_x86_h2_boundary": {
+      "run_id": 42837190105,
+      "result": "success"
+    },
+    "incidental_ARM": {
+      "build_run_id": 42837190099,
+      "build_failure": "Ubuntu package-index HTTP 500 before the candidate build",
+      "a03_run_id": 42837190389,
+      "a03_failure": "ARM source candidate artifact unavailable",
+      "r4_executed": false
+    }
+  },
+  "next_action": {
+    "action": "At fixed He 6Z L10, add high-precision AO density-matrix evidence and compare analytic AO density, raw TOTAL_DENSITY CUBE and independent FE at identical coordinates. Separate charge normalization, near-nuclear and outer-shell residuals. First verify that output-only changes preserve E/F/CUBE.",
+    "decision": "If AO versus FE dominates, test one pre-screened tight-s enrichment. If AO versus CUBE dominates, isolate CUTOFF and GAPW projection controls. Apply the same decomposition to H2 5Z without using 6Z as a molecular reference. Preserve the AV03/AV04/M04 gates.",
+    "cp2k_ao_output_source": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_print_dft.F#L429-L451",
+    "cp2k_cube_source": "https://github.com/cp2k/cp2k/blob/67b5da876dd6a76b8b021d5a04d1c81ba79a4c50/src/input_cp2k_print_dft.F#L2611-L2631"
+  }
+}

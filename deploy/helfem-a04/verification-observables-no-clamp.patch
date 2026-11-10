@@ -1,0 +1,72 @@
+diff --git a/src/atomic/main.cpp b/src/atomic/main.cpp
+index 989edee..80aa0f9 100644
+--- a/src/atomic/main.cpp
++++ b/src/atomic/main.cpp
+@@ -143,6 +143,7 @@ int main(int argc, char **argv) {
+   parser.add<bool>("stabilityanalysis", 0, "run OpenTrustRegion's stability analysis when the second-order phase converges, and follow a negative Hessian eigenvalue if one is found", false, false);
+   parser.add<double>("sotest", 0, "instead of optimizing, check the analytic gradient and Hessian against finite differences with this step size", false, 0.0);
+ 
++  parser.add<double>("quanta-scf-threshold", 0, "fixed verification orbital residual limit", false, 1e-9);
+   parser.parse_check(argc, argv);
+ 
+   // Gates every non-warning printout below; see the option help.
+@@ -843,7 +844,15 @@ int main(int argc, char **argv) {
+   if (secondorder)
+     scfsolver.set("maximum_iterations", parser.get<int>("preiter"));
+   scfsolver.print_citation();
++  const double quanta_threshold = parser.get<double>("quanta-scf-threshold");
++  if (!std::isfinite(quanta_threshold) || quanta_threshold <= 0.0)
++    throw std::invalid_argument("Invalid verification orbital residual limit");
++  scfsolver.set("convergence_threshold", quanta_threshold);
++  // Require the measured verification threshold instead of OOO's estimated floor.
++  scfsolver.set("noise_safety_factor", 0.0);
+   scfsolver.run();
++  printf("QUANTA_SCF %.17g %.17g %d\n", scfsolver.get_energy(),
++         scfsolver.diis_error_norm(), static_cast<int>(scfsolver.converged()));
+ 
+   if (secondorder) {
+     std::vector<double> maxocc((size_t) maximum_occupation.size());
+@@ -961,6 +970,7 @@ int main(int argc, char **argv) {
+     // Densities written straight through the checkpoint's helfem::Matrix overloads.
+     savechk.write("Pa", Pa_final);
+     savechk.write("Pb", Pb_final);
++    printf("QUANTA_ELECTRONS %.17g\n", ((Pa_final + Pb_final).cwiseProduct(S)).sum());
+     // The AO-basis orbitals, occupied columns first (same layout as the
+     // diatomic checkpoint; used by the analysis tools).
+     helfem::Matrix Ca_final, Cb_final;
+diff --git a/src/diatomic/main.cpp b/src/diatomic/main.cpp
+index 4881907..c48616f 100644
+--- a/src/diatomic/main.cpp
++++ b/src/diatomic/main.cpp
+@@ -134,6 +134,7 @@ int main(int argc, char **argv) {
+   parser.add<bool>("stabilityanalysis", 0, "run OpenTrustRegion's stability analysis when the second-order phase converges, and follow a negative Hessian eigenvalue if one is found", false, false);
+   parser.add<double>("sotest", 0, "instead of optimizing, check the analytic gradient and Hessian against finite differences with this step size", false, 0.0);
+ 
++  parser.add<double>("quanta-scf-threshold", 0, "fixed verification orbital residual limit", false, 1e-9);
+   parser.parse_check(argc, argv);
+ 
+   // Gates every non-warning printout below; see the option help.
+@@ -930,7 +931,15 @@ int main(int argc, char **argv) {
+   if (secondorder)
+     scfsolver.set("maximum_iterations", parser.get<int>("preiter"));
+   scfsolver.print_citation();
++  const double quanta_threshold = parser.get<double>("quanta-scf-threshold");
++  if (!std::isfinite(quanta_threshold) || quanta_threshold <= 0.0)
++    throw std::invalid_argument("Invalid verification orbital residual limit");
++  scfsolver.set("convergence_threshold", quanta_threshold);
++  // Require the measured verification threshold instead of OOO's estimated floor.
++  scfsolver.set("noise_safety_factor", 0.0);
+   scfsolver.run();
++  printf("QUANTA_SCF %.17g %.17g %d\n", scfsolver.get_energy(),
++         scfsolver.diis_error_norm(), static_cast<int>(scfsolver.converged()));
+ 
+   if (secondorder) {
+     std::vector<double> maxocc((size_t) maximum_occupation.size());
+@@ -1076,6 +1085,7 @@ int main(int argc, char **argv) {
+     // Densities written straight through the checkpoint's helfem::Matrix overloads.
+     savechk.write("Pa", Pa_final);
+     savechk.write("Pb", Pb_final);
++    printf("QUANTA_ELECTRONS %.17g\n", ((Pa_final + Pb_final).cwiseProduct(S)).sum());
+     // The AO-basis orbitals, occupied columns first: what diatomic_cpl
+     // projects the probe AOs against.
+     helfem::Matrix Ca_final, Cb_final;

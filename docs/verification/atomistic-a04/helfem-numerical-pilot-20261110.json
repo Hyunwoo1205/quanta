@@ -1,0 +1,511 @@
+{
+  "scope": "Isolated local native x86-64 A04 independent FEM numerical pilot. No OCI, production, public capability or independent physical validation.",
+  "physical_validation": "unvalidated",
+  "build": {
+    "helfem_source": "c7a452d210b049e977cc1950a166709fcb143c2c",
+    "wignernj_source": "8976d3a80c54fbe4ca1a07d66a19cc9e0795f7dd",
+    "openorbitaloptimizer_source": "bef468dfb24241ea6e44d73e2d749182d45dce16",
+    "libxc_source_sha256": "e9ae69f8966d8de6b7585abd9fab588794ada1fab8f689337959a35abbf9527d",
+    "gcc": "Debian 14.2.0-19",
+    "binutils": "Debian 2.44",
+    "glibc": "Debian 2.41",
+    "hdf5_core_linked_sha256": "a544be0de301b91dcca21095442ff03e18f07d8ca8cd7a8150bbd08790d9e7bf",
+    "default_libxc": {
+      "sha256": "04357dfb756fbc45c311fdd59fb4817f8fc8854908312fea9609de98edebd08e",
+      "bytes": 17237408
+    },
+    "matched_libxc": {
+      "sha256": "bb59f692c3f552ce9af95a35973e76ecefc79692fdb1749b3883833c2891f9c7",
+      "bytes": 6090696
+    },
+    "build_locks": "deploy/helfem-a04/debian-trixie-amd64.sha256",
+    "exact_library_digest_note": "LibXC binary bytes contain absolute build paths through assertions. Rebuilds in other directories require independently recorded binary digests and matching functional evidence; these pilot locks accept the measured original binaries."
+  },
+  "he_matched": {
+    "fixture": "he",
+    "revision": 4,
+    "center_only": false,
+    "plan_sha256": "984c23e8bc6e2a4c578ed07864b143c9de6982f044502a78b88f488e9f7b9139",
+    "binary_sha256": "b46a2f2a14b60db68c058bc59a3f48573a82dac9a62d3d2eaa375b062d2cfe6e",
+    "libxc_binary_sha256": "bb59f692c3f552ce9af95a35973e76ecefc79692fdb1749b3883833c2891f9c7",
+    "status": "rows_completed",
+    "center_energy_hartree": -2.8929355729338697,
+    "energy_adjacent_differences_hartree": {
+      "Rmax": [
+        1.0954792628581345e-11,
+        3.703704010149522e-12
+      ],
+      "nelem": [
+        2.013722522065109e-11,
+        6.844302902209165e-12
+      ],
+      "lmax": [
+        2.398081733190338e-14,
+        3.8191672047105385e-14
+      ],
+      "nquad": [
+        4.618527782440651e-14,
+        8.171241461241152e-14
+      ],
+      "ldft": [
+        8.393286066166183e-14,
+        5.10702591327572e-14
+      ],
+      "mdft": [
+        5.773159728050814e-14,
+        8.526512829121202e-14
+      ],
+      "quanta-scf-threshold": [
+        0.0,
+        2.1360690993788012e-13
+      ]
+    },
+    "energy_finest_axis_differences_sum_hartree": 1.1017853296380054e-11,
+    "force_by_centered_atom_symmetry_hartree_per_bohr": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "batch_peak_child_rss_kib": 220472,
+    "raw_summary": {
+      "sha256": "3190f115d61903bf39f3419e185367e0210152f0e43355174ba5631de99dd5db",
+      "bytes": 19139
+    },
+    "case_count": 15,
+    "cases": {
+      "fine": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 8.293288371001836,
+        "host_available_before_bytes": 5283901440,
+        "address_space_limit_bytes": 3136417792,
+        "log_sha256": "c610ff40157eb894da5f17c88b4bcf1fa120bf697fbac54836bdacad5bae5d3e",
+        "energy_hartree": -2.8929355729338697,
+        "scf_residual": 1.941757690446301e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.0000000000000075,
+        "checkpoint_sha256": "558e1b144365405d056454c0340643d8c87abfdd8c1a3bc8af982706fcbf5456",
+        "reused_he_v3_case": "fine",
+        "reused_receipt_sha256": "74cfbaf788bb666783c6341045b080e167a8191080357f316bd4469ceefe9ec2"
+      },
+      "Rmax-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 8.294807261991082,
+        "host_available_before_bytes": 5276024832,
+        "address_space_limit_bytes": 3128541184,
+        "log_sha256": "e99a23a1b1f57c1bdb7c10f478e6f60b8daf77867591148faa6d6f2821cb628c",
+        "energy_hartree": -2.892935572941121,
+        "scf_residual": 1.9427559486322466e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999956,
+        "checkpoint_sha256": "37c27c237be5eb520ad591bfa78fdf022ad437bf170f400f445b486901c7adee",
+        "reused_he_v3_case": "Rmax-1",
+        "reused_receipt_sha256": "74cfbaf788bb666783c6341045b080e167a8191080357f316bd4469ceefe9ec2"
+      },
+      "Rmax-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 8.493359849991975,
+        "host_available_before_bytes": 5321695232,
+        "address_space_limit_bytes": 3174211584,
+        "log_sha256": "b02127d22b33ae4363d67797c53ed9f470d6f8b96791a7d3c54a2aa2cc3f6f6a",
+        "energy_hartree": -2.892935572930166,
+        "scf_residual": 1.9449496648112316e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999991,
+        "checkpoint_sha256": "24c3ac7f0a211f2bc50c29ed30c4743fcdec78bc09a53eaa1901df4f5b6a8014",
+        "reused_he_v3_case": "Rmax-2",
+        "reused_receipt_sha256": "74cfbaf788bb666783c6341045b080e167a8191080357f316bd4469ceefe9ec2"
+      },
+      "nelem-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 5.184075033001136,
+        "host_available_before_bytes": 5264908288,
+        "address_space_limit_bytes": 3117424640,
+        "log_sha256": "c2e6b4151844827b318e4f48248616bb62ae4908254724e216a2abdd10fd495b",
+        "energy_hartree": -2.892935572906888,
+        "scf_residual": 3.104978910733864e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999942,
+        "checkpoint_sha256": "1601f3ca0956719da9e86e819334b80829649e74479624d65b683b83e64d0c49",
+        "reused_he_v3_case": "nelem-1",
+        "reused_receipt_sha256": "74cfbaf788bb666783c6341045b080e167a8191080357f316bd4469ceefe9ec2"
+      },
+      "nelem-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 6.888801104010781,
+        "host_available_before_bytes": 5239902208,
+        "address_space_limit_bytes": 3092418560,
+        "log_sha256": "59ba0bc9f8769ae6844d2986f89a87119847bb923714f0cb214a337e889120e6",
+        "energy_hartree": -2.8929355729270254,
+        "scf_residual": 2.3908829568722648e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.000000000000007,
+        "checkpoint_sha256": "d9b0dabdd8f3da6ae5b9b00e65a189feb5ea7fb151e423296098f384664f2f32",
+        "reused_he_v3_case": "nelem-2",
+        "reused_receipt_sha256": "74cfbaf788bb666783c6341045b080e167a8191080357f316bd4469ceefe9ec2"
+      },
+      "lmax-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 2.7750762489886256,
+        "host_available_before_bytes": 5263454208,
+        "address_space_limit_bytes": 3115970560,
+        "log_sha256": "5cd1e619cbf1d4e5a3f0107cf065eaad65d5214cb1189b54e0a6bba055bd4fef",
+        "energy_hartree": -2.892935572933884,
+        "scf_residual": 3.363072022274948e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.000000000000004,
+        "checkpoint_sha256": "ef024648ca2ef69f9f2067c74301a8e170f753b3fe689f914686c0a1b63e2467",
+        "reused_he_v3_case": "lmax-1",
+        "reused_receipt_sha256": "74cfbaf788bb666783c6341045b080e167a8191080357f316bd4469ceefe9ec2"
+      },
+      "lmax-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 5.0438805149897235,
+        "host_available_before_bytes": 5013270528,
+        "address_space_limit_bytes": 2865786880,
+        "log_sha256": "8b19cb061ef36f7a0cd8839867fb0bf2b671aa38c2a7701030034dbb536e6350",
+        "energy_hartree": -2.892935572933908,
+        "scf_residual": 2.3787246883318756e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.000000000000001,
+        "checkpoint_sha256": "e5400db9e6e3f1cef732913befc896908c98abe7b90541c2622f3733c3994603",
+        "reused_he_v3_case": "lmax-2",
+        "reused_receipt_sha256": "74cfbaf788bb666783c6341045b080e167a8191080357f316bd4469ceefe9ec2"
+      },
+      "nquad-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 6.080832453008043,
+        "host_available_before_bytes": 5872013312,
+        "address_space_limit_bytes": 3724529664,
+        "log_sha256": "2cae3d5bbdc722960b7a8feae9d652b0e14442c3bcf4e05c371f36eb619ea1ca",
+        "energy_hartree": -2.8929355729339976,
+        "scf_residual": 1.9440752173895858e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.0000000000000093,
+        "checkpoint_sha256": "eabdccd70f2fb2b6d5801f18d0e9c0eaae38ef772db75f87b18a99fb91d5678a"
+      },
+      "nquad-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 6.730241487006424,
+        "host_available_before_bytes": 5755363328,
+        "address_space_limit_bytes": 3607879680,
+        "log_sha256": "dc864f83556914ffd8d28e7428a21c1006dd13acbe7677f39ea456b178c3db71",
+        "energy_hartree": -2.8929355729339514,
+        "scf_residual": 1.941370451190721e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.0000000000000036,
+        "checkpoint_sha256": "0c33ca369499d2a354ade407d555466cf64512acaeb3fec5cc6c9e8d1d3209bc"
+      },
+      "ldft-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 4.777159300996573,
+        "host_available_before_bytes": 5817872384,
+        "address_space_limit_bytes": 3670388736,
+        "log_sha256": "7559ec2a88874bd246a50f808932b5cc04ed8f89398fe69d53d46d07f5c353dd",
+        "energy_hartree": -2.8929355729340047,
+        "scf_residual": 1.94054703190788e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999973,
+        "checkpoint_sha256": "11a75de3e696ef0b7281e3a3376d7543adc93049e98175cf7aa577298c54aae4"
+      },
+      "ldft-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 6.685729639997589,
+        "host_available_before_bytes": 5833678848,
+        "address_space_limit_bytes": 3686195200,
+        "log_sha256": "a65d2c2bcb9a9de491ac91da3ea7662f0b30e52ff7d6d6d1c8eff901b29dff0c",
+        "energy_hartree": -2.892935572933921,
+        "scf_residual": 1.9422256780088974e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999998,
+        "checkpoint_sha256": "6a9e33017557d2dc3ac27cc7ff65184e29017c21f7ac82e13dad43e08c458457"
+      },
+      "mdft-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 5.0780937610106776,
+        "host_available_before_bytes": 5855010816,
+        "address_space_limit_bytes": 3707527168,
+        "log_sha256": "57a302aaf1fad2a5b3212820508dbf915440d31b2a1ffb2778b8f592710d9534",
+        "energy_hartree": -2.8929355729338972,
+        "scf_residual": 1.9422730918157873e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999996,
+        "checkpoint_sha256": "c5f8b6bfb5d03747171f2b9de565a7844b581f16a8f64cc8efb1d87cb9bee8d0"
+      },
+      "mdft-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 6.688200462987879,
+        "host_available_before_bytes": 5853757440,
+        "address_space_limit_bytes": 3706273792,
+        "log_sha256": "043625be60a66940c3d8fcfe5b92977582fc15fa15c04624d0b0755e79357b7d",
+        "energy_hartree": -2.892935572933955,
+        "scf_residual": 1.9424717943486406e-11,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.0000000000000018,
+        "checkpoint_sha256": "82f01c481f53808f172bcfd1725a3adc22cfcd712c43ef2da8f8835b345ca3b5"
+      },
+      "quanta-scf-threshold-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-07,
+        "wall_seconds": 6.8369707179954275,
+        "host_available_before_bytes": 5704683520,
+        "address_space_limit_bytes": 3557199872,
+        "log_sha256": "a7c42765214d5d517d7a6df8bbc85e10a5aef7bd1ccc0c5713a54379f43ac3ff",
+        "energy_hartree": -2.892935572933656,
+        "scf_residual": 3.7033775518727846e-09,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999962,
+        "checkpoint_sha256": "8f3d18d1371c261a6231023c515ba48048dd9d4426e04d7bb0e7676ea13cdb28"
+      },
+      "quanta-scf-threshold-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-08,
+        "wall_seconds": 6.834948944000644,
+        "host_available_before_bytes": 5729824768,
+        "address_space_limit_bytes": 3582341120,
+        "log_sha256": "a7c42765214d5d517d7a6df8bbc85e10a5aef7bd1ccc0c5713a54379f43ac3ff",
+        "energy_hartree": -2.892935572933656,
+        "scf_residual": 3.7033775518727846e-09,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999962,
+        "checkpoint_sha256": "ed8788a5a148faa0ee935fc49be1466f392894bedc50976c3acc7685bf51f471"
+      }
+    },
+    "manifest": "deploy/helfem-a04/pilot-v4.json"
+  },
+  "h2_matched_center_refinement": {
+    "fixture": "h2",
+    "revision": 3,
+    "center_only": false,
+    "h2_center_refinement": true,
+    "plan_sha256": "2fccf70fe09d9dcf1e08bda4856d2afc2b41bf87b4160e116700de812adfaa71",
+    "binary_sha256": "0990334d28b3ece0d047dc8955786fb96a070af56a1481deb7e60fb616d2b890",
+    "libxc_binary_sha256": "bb59f692c3f552ce9af95a35973e76ecefc79692fdb1749b3883833c2891f9c7",
+    "status": "rows_completed",
+    "center_refinement_budget_seconds": 240,
+    "planned_cases": [
+      "fine",
+      "Rmax-1",
+      "Rmax-2",
+      "nelem-1",
+      "nelem-2",
+      "lmax-1",
+      "lmax-2",
+      "nnodes-1",
+      "nnodes-2"
+    ],
+    "center_energy_hartree": -1.1466121335670447,
+    "energy_adjacent_differences_hartree": {
+      "Rmax": [
+        3.1086244689504383e-13,
+        7.194245199571014e-14
+      ],
+      "nelem": [
+        1.2168044349891716e-13,
+        6.039613253960852e-14
+      ],
+      "lmax": [
+        2.027480405786264e-10,
+        4.18252099620986e-11
+      ],
+      "nnodes": [
+        1.4210854715202004e-14,
+        4.973799150320701e-14
+      ]
+    },
+    "energy_finest_axis_differences_sum_hartree": 4.200728653813712e-11,
+    "h2_force_status": "not_measured_center_density_exceeds_total_limit",
+    "batch_peak_child_rss_kib": 405236,
+    "raw_summary": {
+      "sha256": "02e1af549b06401f7bc88566f29b90dc033accfcbe8792bb01b6b47d1063ba1c",
+      "bytes": 12230
+    },
+    "case_count": 9,
+    "cases": {
+      "fine": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 24.34957917399879,
+        "host_available_before_bytes": 5308104704,
+        "address_space_limit_bytes": 3160621056,
+        "log_sha256": "371de8393b3d8de0710b4fa37dda3ec86b61e23951c7ee2f3b5affd9c43101de",
+        "energy_hartree": -1.1466121335670447,
+        "scf_residual": 8.204900267036909e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999987,
+        "checkpoint_sha256": "93fd752ee680bc81242066fc61aa6f0de39788c51e3b68fb0b631478568c7ef1",
+        "reused_v3_case": "fine",
+        "reused_receipt_sha256": "02962023f6da7f9c007d845f3ad2fe1d1d114cd16c3286b8d6ab55828b602288"
+      },
+      "Rmax-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 28.543853116003447,
+        "host_available_before_bytes": 5779279872,
+        "address_space_limit_bytes": 3631796224,
+        "log_sha256": "0f27745ce727d7ab4ae630f6e4dad3d6897e59793f7a12ede158cfc52508d843",
+        "energy_hartree": -1.1466121335672836,
+        "scf_residual": 8.204556550028017e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999938,
+        "checkpoint_sha256": "18cc10407c9e4ed11dd1b515bc4b16d3a48c16681311c0931200b2d743e7ad67"
+      },
+      "Rmax-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 23.332288742996752,
+        "host_available_before_bytes": 5509353472,
+        "address_space_limit_bytes": 3361869824,
+        "log_sha256": "2de7c8dae437e367f82580a9b771e397811485ee0365c87c37a4caf24014b777",
+        "energy_hartree": -1.1466121335669728,
+        "scf_residual": 8.204384447789191e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.000000000000015,
+        "checkpoint_sha256": "13cdbd4195ac22bdbd37b67473e0be4953b3b8d545a80875942bf4f13d004a2b"
+      },
+      "nelem-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 9.438782251992961,
+        "host_available_before_bytes": 5466550272,
+        "address_space_limit_bytes": 3319066624,
+        "log_sha256": "cccd354072d6bd61dd78342eae05db97d463e5e529d794e86be681821261f26b",
+        "energy_hartree": -1.1466121335668626,
+        "scf_residual": 2.793608983208251e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.0000000000000084,
+        "checkpoint_sha256": "915e2011a00b1c5c4ee9e18790fa4876f3c2d461062bd9396f71b17f5dedf557"
+      },
+      "nelem-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 19.616396422003163,
+        "host_available_before_bytes": 5503926272,
+        "address_space_limit_bytes": 3356442624,
+        "log_sha256": "df493f1e0db77dba46b8f612018626108223ebf02cdb253ba9c691cbf42f574b",
+        "energy_hartree": -1.1466121335669843,
+        "scf_residual": 2.0523025257013255e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.0000000000000027,
+        "checkpoint_sha256": "b305270babf295310e08eb37cd31277ae7568eb0f3e123bf3e48d11ed5c4fddc"
+      },
+      "lmax-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 11.244552666001255,
+        "host_available_before_bytes": 5423427584,
+        "address_space_limit_bytes": 3275943936,
+        "log_sha256": "7ed81f1d5013754a8475dbd92ff857f499651178bc384b4727400f231705672a",
+        "energy_hartree": -1.1466121333224715,
+        "scf_residual": 2.573586627677138e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.0000000000000004,
+        "checkpoint_sha256": "794c18cca3e2aec2473cca01aee6a616126c96ca31611e70f8e2bf64a8125daf"
+      },
+      "lmax-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 18.71343802899355,
+        "host_available_before_bytes": 5545717760,
+        "address_space_limit_bytes": 3398234112,
+        "log_sha256": "ba1a55577460771c342e5f24122367d0057d397eaa24932a26d1443a0a7dafaa",
+        "energy_hartree": -1.1466121335252195,
+        "scf_residual": 9.974492554290108e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.000000000000008,
+        "checkpoint_sha256": "f07ed182a483280b8871d9c702e3619462bec9cae7e9aeeb732868efafdc254d"
+      },
+      "nnodes-1": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 9.292348578994279,
+        "host_available_before_bytes": 5530173440,
+        "address_space_limit_bytes": 3382689792,
+        "log_sha256": "4d13117266ddb97f88cb990aa4a9731309040b5e03166045e8d71a808d2d0217",
+        "energy_hartree": -1.1466121335671087,
+        "scf_residual": 2.493646083610125e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 2.000000000000008,
+        "checkpoint_sha256": "5e6cd32cf75a4745d3d89dd50dd3ac2963aa90b489ebc90419af35d77a375cdd"
+      },
+      "nnodes-2": {
+        "status": "admitted",
+        "returncode": 0,
+        "required_scf_residual_limit": 1e-09,
+        "wall_seconds": 16.0107778209931,
+        "host_available_before_bytes": 5726257152,
+        "address_space_limit_bytes": 3578773504,
+        "log_sha256": "1d010d1ea8df046fde35b05b9134d6a8e1ac389cecf8c722194d9f694ff1495a",
+        "energy_hartree": -1.1466121335670945,
+        "scf_residual": 9.800059705301362e-10,
+        "scf_solver_reported_converged": true,
+        "overlap_electrons": 1.9999999999999865,
+        "checkpoint_sha256": "86547e18fa577ad7435ebba1e39f06461142deabcd6a749389c1adc2658ea212"
+      }
+    },
+    "manifest": "deploy/helfem-a04/pilot-v3.json"
+  },
+  "native_rounding_sensitivity_he_hartree": -7.060547506654302e-07,
+  "he_default_fine": {
+    "energy_hartree": -2.892934866879119,
+    "scf_residual": 1.942250416494395e-11,
+    "overlap_electrons": 2.0000000000000067,
+    "wall_seconds": 16.22020989000157,
+    "host_available_before_bytes": 4125892608,
+    "address_space_limit_bytes": 1978408960,
+    "log_sha256": "d3d964a659f645d6dd1886ca5bb443c6bcfabb6cd95891bb758cf994a93eb717",
+    "checkpoint_sha256": "1406773ba9de950d4510c1549c4a8816d0b50c23dc563fd090ae17e2eba0b178"
+  },
+  "he_default_fine_binary_sha256": "b46a2f2a14b60db68c058bc59a3f48573a82dac9a62d3d2eaa375b062d2cfe6e",
+  "interpretation": {
+    "h2_actual_finest_basis_functions": 1320,
+    "h2_actual_finest_basis": "11 angular shells \u00d7 120 radial functions; replaces v3 prospective count estimate of 1309",
+    "v3_matched_libxc_build": "Uses EXC/VXC only (DISABLE_FXC=ON), despite inherited derivative_order=2 metadata from default LibXC. v4 lock corrects it.",
+    "h2_force_status": "Not executed after the exact-lattice density diagnostic exceeded its total budget.",
+    "reference_uncertainty": "Center energy refinements are empirical, not bounds on Cartesian density, force or complete basis error. H2 radial/angular quadrature and SCF axis, displaced energy checks and full M04 reference uncertainty remain incomplete."
+  },
+  "he_v3_quadrature_rejection": {
+    "status": "process_failed",
+    "returncode": -6,
+    "required_scf_residual_limit": 1e-09,
+    "wall_seconds": 0.0185600999975577,
+    "host_available_before_bytes": 4970340352,
+    "address_space_limit_bytes": 2822856704,
+    "log_sha256": "60375e8b7a206a0df750805aca1e29d144a56d08f9cd9ffcd73dd6443fb1c275"
+  }
+}

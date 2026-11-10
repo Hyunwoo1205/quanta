@@ -1,0 +1,137 @@
+{
+  "scope": "A04 independent He and H2 0.60 angstrom numerical reference pilot at locked restricted native CP2K PBE coefficients",
+  "helfem_commit": "c7a452d210b049e977cc1950a166709fcb143c2c",
+  "wignernj_commit": "8976d3a80c54fbe4ca1a07d66a19cc9e0795f7dd",
+  "openorbitaloptimizer_commit": "bef468dfb24241ea6e44d73e2d749182d45dce16",
+  "libxc_archive_sha256": "e9ae69f8966d8de6b7585abd9fab588794ada1fab8f689337959a35abbf9527d",
+  "verification_patch_sha256": "bad07f9c15be0fc84e3434bf0c59ae6c523dd3737542b695250d890bcae36f1d",
+  "compiler": "GCC and G++ 14.2.0 Debian 14.2.0-19, x86-64",
+  "build": {
+    "helfem_cxx_release_flags": "-O2 -DNDEBUG -ffp-contract=off",
+    "helfem_parallel_runtime": "No OpenMP, external BLAS, or OpenTrustRegion",
+    "libxc_c_release_flags": "-O1",
+    "libxc_derivative_order": 2,
+    "cmake_version": "3.31.6",
+    "ninja_version": "1.12.1",
+    "eigen_version": "3.4.0",
+    "hdf5_version": "1.14.5"
+  },
+  "codata2006_bohr_m": 5.2917720859e-11,
+  "h2_bond_angstrom": 0.6,
+  "resource": {
+    "max_address_space_bytes": 8589934592,
+    "min_host_available_reserve_bytes": 2147483648,
+    "threads": 1,
+    "swap": "disabled on host",
+    "timeout_seconds_per_case": 1800
+  },
+  "method": "gga_x_pbe_mod-gga_c_pbe",
+  "shared_options": {
+    "Q": 0,
+    "M": 1,
+    "restricted": 1,
+    "finitenuc": 0,
+    "mmax": 0,
+    "symmetry": 2,
+    "nnodes": 8,
+    "grid": 4,
+    "dftthr": 1e-14,
+    "verbosity": 2
+  },
+  "axes": {
+    "he": {
+      "Rmax": [
+        30,
+        40,
+        50
+      ],
+      "nelem": [
+        10,
+        13,
+        16
+      ],
+      "lmax": [
+        0,
+        1,
+        2
+      ],
+      "nquad": [
+        24,
+        32,
+        44
+      ],
+      "ldft": [
+        12,
+        16,
+        20
+      ],
+      "mdft": [
+        12,
+        16,
+        20
+      ],
+      "quanta-scf-threshold": [
+        1e-07,
+        1e-08,
+        1e-09
+      ]
+    },
+    "h2": {
+      "Rmax": [
+        30,
+        40,
+        50
+      ],
+      "nelem": [
+        6,
+        8,
+        10
+      ],
+      "lmax": [
+        6,
+        8,
+        10
+      ],
+      "nquad": [
+        28,
+        36,
+        44
+      ],
+      "ldft": [
+        36,
+        48,
+        60
+      ],
+      "quanta-scf-threshold": [
+        1e-07,
+        1e-08,
+        1e-09
+      ],
+      "nnodes": [
+        9,
+        11,
+        13
+      ]
+    }
+  },
+  "h2_fixed_options": {
+    "purem": 1,
+    "primbas": 4
+  },
+  "h2_force_steps_bohr": [
+    0.002,
+    0.001,
+    0.0005
+  ],
+  "h2_energy_refinement_per_displacement_hartree": 1e-10,
+  "native_electron_count_limit": 1e-06,
+  "note": "Use the finest fixed level as the center case. Change one axis at a time for both lower levels. For the fixed five-point force stencils use the joint middle and finest levels at each distinct displacement. Pure-m H2 integrates phi analytically. He uses the exact spherical restricted ground state with l expansion checked explicitly.",
+  "scf_revision": {
+    "scope": "Preserve all numerical levels, force steps and actual residual limits from v1.",
+    "observed_initial_failure": "He initial fine case requested 1e-9 but OOO clamped its limit to 1.912351e-7 and returned measured RMS residual 1.4240806138552352e-7.",
+    "solver_control": "Disable OOO noise_safety_factor clamp by setting it to zero. Require its convergence flag and measured orbital residual at or below the requested tolerance; stop if binary64 cannot reach it."
+  },
+  "libxc_binary_sha256": "bb59f692c3f552ce9af95a35973e76ecefc79692fdb1749b3883833c2891f9c7",
+  "libxc_semantics": "Same independently implemented LibXC 7.0.0, restricted exchange ID 320 and correlation with native rounded constants. The linked library digest identifies the exact executable path checked against the frozen native CP2K EXC/VXC points. Default LibXC v1/v2 uses a distinct library and cannot establish matched-PBE equivalence.",
+  "h2_resource_revision": "Replace the original 3,808-function Hermite finest matrix by a 1,309-function 13-node Lagrange finest matrix and use independent mesh-count and polynomial-order axes. The original run reached the SCF and a concurrent compiler was killed. Keep residual and force displacement acceptance limits unchanged and retain prior diagnostics."
+}

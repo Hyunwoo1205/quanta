@@ -1,0 +1,705 @@
+{
+  "schema_version": 1,
+  "scope": "Unpolarized binary64 pointwise energy density and first derivatives. The standalone native source test does not exercise CP2K integration, the shipped binary, or total-system numerical acceptance.",
+  "physical_validation_status": "unvalidated",
+  "cp2k": {
+    "commit": "67b5da876dd6a76b8b021d5a04d1c81ba79a4c50",
+    "source_file_sha256": {
+      "src/xc/xc_pbe.F": "53e89074030aad219ffe5847f6c0d31ea39030d6d6e8a2de20945cc43eb9aefb",
+      "src/base/kinds.F": "509bf418e94a8a0194bc1f95cdb960f3b355d937d069aaeccde532b9f0ff6eaf",
+      "src/common/mathconstants.F": "e1385f0fa30cddf4a6c2942d51d47528cfce3b5ae3e0923d615badbdc7f95c01",
+      "src/xc/xc_input_constants.F": "e78a4a8a55e3475c62d976d86fd4d2d0ec99eda9598e7054d7e04082f0a57c78",
+      "src/input_cp2k_xc.F": "332cda33e1d90c5e3002fcc1e965633d009f28caadbc98c188474cd26e314e3b"
+    },
+    "parametrization": "ORIG",
+    "density_cutoff_e_per_bohr3": 1e-10,
+    "verbatim_routine_sha256": "82609d5ddf29b9578b5c90e721d70a052b7b2896ae871e90bf1c4727af876884",
+    "harness_source_sha256": "c6b8c588b5626eafb073fe3c99ad4fa9ddf00e1aaff0e80e0b80e0d262bac15b",
+    "standalone_binary_sha256": "8b5e882b553c044a1f5f39102bc89a0a80170854b11a60a32e914f7329f41c15",
+    "fortran_compiler": "GNU Fortran (Debian 14.2.0-19) 14.2.0",
+    "c_link_driver": "gcc (Debian 14.2.0-19) 14.2.0"
+  },
+  "libxc": {
+    "version": "7.0.0",
+    "locked_source_archive_sha256": "e9ae69f8966d8de6b7585abd9fab588794ada1fab8f689337959a35abbf9527d",
+    "tested_shared_library_sha256": "04357dfb756fbc45c311fdd59fb4817f8fc8854908312fea9609de98edebd08e",
+    "default_ids": [
+      101,
+      130
+    ]
+  },
+  "points": {
+    "count": 64,
+    "densities_e_per_bohr3": [
+      1e-08,
+      1e-05,
+      0.001,
+      0.01,
+      0.1,
+      1.0,
+      4.0,
+      8.0
+    ],
+    "reduced_gradients_s": [
+      0.0,
+      0.01,
+      0.1,
+      0.5,
+      1.0,
+      3.0,
+      10.0,
+      100.0
+    ],
+    "gradient_norm_e_per_bohr4": "2*(3*pi^2)^(1/3)*rho^(4/3)*s",
+    "gradient_derivative": "CP2K d(rho*eps)/d|grad rho| versus LibXC 2*|grad rho|*vsigma",
+    "compared_units": {
+      "energy_density": "Eh/bohr^3",
+      "density_derivative": "Eh",
+      "gradient_norm_derivative": "Eh*bohr"
+    }
+  },
+  "criterion": {
+    "absolute_error_divided_by_max_of_one_and_two_magnitudes": 2e-12,
+    "role": "pointwise arithmetic equivalence diagnostic, distinct from the M04 total-system limits"
+  },
+  "default_libxc": {
+    "exchange": {
+      "arithmetic_equivalence_on_frozen_points": false,
+      "fields": {
+        "energy_density": {
+          "worst_normalized": {
+            "rho": 4.0,
+            "s": 1.0,
+            "gradient_norm": 39.287131225097234,
+            "cp2k": -5.498204763241032,
+            "libxc": -5.498200485019219,
+            "absolute": 4.278221812370475e-06,
+            "normalized": 7.781124924580997e-07
+          },
+          "worst_absolute": {
+            "rho": 8.0,
+            "s": 3.0,
+            "gradient_norm": 296.992101722893,
+            "cp2k": -18.56969317944165,
+            "libxc": -18.56968002444878,
+            "absolute": 1.3154992871022841e-05,
+            "normalized": 7.084119669562781e-07
+          },
+          "points_exceeding_tolerance": 38
+        },
+        "density_derivative": {
+          "worst_normalized": {
+            "rho": 8.0,
+            "s": 3.0,
+            "gradient_norm": 296.992101722893,
+            "cp2k": -2.443881626620055,
+            "libxc": -2.4438775858091644,
+            "absolute": 4.0408108907818985e-06,
+            "normalized": 1.653439694773774e-06
+          },
+          "worst_absolute": {
+            "rho": 8.0,
+            "s": 3.0,
+            "gradient_norm": 296.992101722893,
+            "cp2k": -2.443881626620055,
+            "libxc": -2.4438775858091644,
+            "absolute": 4.0408108907818985e-06,
+            "normalized": 1.653439694773774e-06
+          },
+          "points_exceeding_tolerance": 55
+        },
+        "gradient_norm_derivative": {
+          "worst_normalized": {
+            "rho": 4.0,
+            "s": 0.5,
+            "gradient_norm": 19.643565612548617,
+            "cp2k": -0.02296130054853076,
+            "libxc": -0.022961165665232163,
+            "absolute": 1.3488329859631665e-07,
+            "normalized": 1.3488329859631665e-07
+          },
+          "worst_absolute": {
+            "rho": 4.0,
+            "s": 0.5,
+            "gradient_norm": 19.643565612548617,
+            "cp2k": -0.02296130054853076,
+            "libxc": -0.022961165665232163,
+            "absolute": 1.3488329859631665e-07,
+            "normalized": 1.3488329859631665e-07
+          },
+          "points_exceeding_tolerance": 56
+        }
+      }
+    },
+    "correlation": {
+      "arithmetic_equivalence_on_frozen_points": false,
+      "fields": {
+        "energy_density": {
+          "worst_normalized": {
+            "rho": 8.0,
+            "s": 0.0,
+            "gradient_norm": 0.0,
+            "cp2k": -0.712924708343048,
+            "libxc": -0.7129216126662785,
+            "absolute": 3.095676769482303e-06,
+            "normalized": 3.095676769482303e-06
+          },
+          "worst_absolute": {
+            "rho": 8.0,
+            "s": 0.0,
+            "gradient_norm": 0.0,
+            "cp2k": -0.712924708343048,
+            "libxc": -0.7129216126662785,
+            "absolute": 3.095676769482303e-06,
+            "normalized": 3.095676769482303e-06
+          },
+          "points_exceeding_tolerance": 39
+        },
+        "density_derivative": {
+          "worst_normalized": {
+            "rho": 8.0,
+            "s": 0.1,
+            "gradient_norm": 9.899736724096433,
+            "cp2k": -0.1018259722534471,
+            "libxc": -0.10182549432983032,
+            "absolute": 4.77923616779008e-07,
+            "normalized": 4.77923616779008e-07
+          },
+          "worst_absolute": {
+            "rho": 8.0,
+            "s": 0.1,
+            "gradient_norm": 9.899736724096433,
+            "cp2k": -0.1018259722534471,
+            "libxc": -0.10182549432983032,
+            "absolute": 4.77923616779008e-07,
+            "normalized": 4.77923616779008e-07
+          },
+          "points_exceeding_tolerance": 56
+        },
+        "gradient_norm_derivative": {
+          "worst_normalized": {
+            "rho": 1e-08,
+            "s": 1.0,
+            "gradient_norm": 1.333021013785999e-10,
+            "cp2k": 0.04410776523461533,
+            "libxc": 0.04410755256628713,
+            "absolute": 2.126683281977737e-07,
+            "normalized": 2.126683281977737e-07
+          },
+          "worst_absolute": {
+            "rho": 1e-08,
+            "s": 1.0,
+            "gradient_norm": 1.333021013785999e-10,
+            "cp2k": 0.04410776523461533,
+            "libxc": 0.04410755256628713,
+            "absolute": 2.126683281977737e-07,
+            "normalized": 2.126683281977737e-07
+          },
+          "points_exceeding_tolerance": 47
+        }
+      }
+    },
+    "sum": {
+      "arithmetic_equivalence_on_frozen_points": false,
+      "fields": {
+        "energy_density": {
+          "worst_normalized": {
+            "rho": 8.0,
+            "s": 1.0,
+            "gradient_norm": 98.99736724096432,
+            "cp2k": -14.010479623543308,
+            "libxc": -14.010467697387238,
+            "absolute": 1.1926156069819172e-05,
+            "normalized": 8.512311063054812e-07
+          },
+          "worst_absolute": {
+            "rho": 8.0,
+            "s": 3.0,
+            "gradient_norm": 296.992101722893,
+            "cp2k": -18.575822472646042,
+            "libxc": -18.575809240724862,
+            "absolute": 1.3231921180079098e-05,
+            "normalized": 7.123195325301939e-07
+          },
+          "points_exceeding_tolerance": 47
+        },
+        "density_derivative": {
+          "worst_normalized": {
+            "rho": 8.0,
+            "s": 3.0,
+            "gradient_norm": 296.992101722893,
+            "cp2k": -2.448349492904959,
+            "libxc": -2.448345395331563,
+            "absolute": 4.097573396144583e-06,
+            "normalized": 1.673606406282636e-06
+          },
+          "worst_absolute": {
+            "rho": 8.0,
+            "s": 3.0,
+            "gradient_norm": 296.992101722893,
+            "cp2k": -2.448349492904959,
+            "libxc": -2.448345395331563,
+            "absolute": 4.097573396144583e-06,
+            "normalized": 1.673606406282636e-06
+          },
+          "points_exceeding_tolerance": 64
+        },
+        "gradient_norm_derivative": {
+          "worst_normalized": {
+            "rho": 8.0,
+            "s": 0.5,
+            "gradient_norm": 49.49868362048216,
+            "cp2k": -0.016022148376497434,
+            "libxc": -0.016022030350261757,
+            "absolute": 1.1802623567716553e-07,
+            "normalized": 1.1802623567716553e-07
+          },
+          "worst_absolute": {
+            "rho": 8.0,
+            "s": 0.5,
+            "gradient_norm": 49.49868362048216,
+            "cp2k": -0.016022148376497434,
+            "libxc": -0.016022030350261757,
+            "absolute": 1.1802623567716553e-07,
+            "normalized": 1.1802623567716553e-07
+          },
+          "points_exceeding_tolerance": 51
+        }
+      }
+    }
+  },
+  "separate_parameter_diagnostic": {
+    "exchange_id": 320,
+    "correlation_id": 130,
+    "correlation_beta": 0.066725,
+    "scope": "diagnostic only, preserves the default comparison and leaves LibXC's internal PW92 constants unchanged",
+    "results": {
+      "exchange": {
+        "arithmetic_equivalence_on_frozen_points": true,
+        "fields": {
+          "energy_density": {
+            "worst_normalized": {
+              "rho": 4.0,
+              "s": 0.5,
+              "gradient_norm": 19.643565612548617,
+              "cp2k": -4.9304702742499105,
+              "libxc": -4.930470274249911,
+              "absolute": 8.881784197001252e-16,
+              "normalized": 1.8014071078346512e-16
+            },
+            "worst_absolute": {
+              "rho": 8.0,
+              "s": 0.5,
+              "gradient_norm": 49.49868362048216,
+              "cp2k": -12.42400656881682,
+              "libxc": -12.424006568816822,
+              "absolute": 1.7763568394002505e-15,
+              "normalized": 1.4297777689998588e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "density_derivative": {
+            "worst_normalized": {
+              "rho": 4.0,
+              "s": 1.0,
+              "gradient_norm": 39.287131225097234,
+              "cp2k": -1.4092577834517765,
+              "libxc": -1.409257783451776,
+              "absolute": 4.440892098500626e-16,
+              "normalized": 3.1512276537677104e-16
+            },
+            "worst_absolute": {
+              "rho": 4.0,
+              "s": 1.0,
+              "gradient_norm": 39.287131225097234,
+              "cp2k": -1.4092577834517765,
+              "libxc": -1.409257783451776,
+              "absolute": 4.440892098500626e-16,
+              "normalized": 3.1512276537677104e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "gradient_norm_derivative": {
+            "worst_normalized": {
+              "rho": 0.01,
+              "s": 1.0,
+              "gradient_norm": 0.013330210137859979,
+              "cp2k": -0.03233708782671638,
+              "libxc": -0.032337087826716404,
+              "absolute": 2.0816681711721685e-17,
+              "normalized": 2.0816681711721685e-17
+            },
+            "worst_absolute": {
+              "rho": 0.01,
+              "s": 1.0,
+              "gradient_norm": 0.013330210137859979,
+              "cp2k": -0.03233708782671638,
+              "libxc": -0.032337087826716404,
+              "absolute": 2.0816681711721685e-17,
+              "normalized": 2.0816681711721685e-17
+            },
+            "points_exceeding_tolerance": 0
+          }
+        }
+      },
+      "correlation": {
+        "arithmetic_equivalence_on_frozen_points": false,
+        "fields": {
+          "energy_density": {
+            "worst_normalized": {
+              "rho": 8.0,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -0.712924708343048,
+              "libxc": -0.7129216126662785,
+              "absolute": 3.095676769482303e-06,
+              "normalized": 3.095676769482303e-06
+            },
+            "worst_absolute": {
+              "rho": 8.0,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -0.712924708343048,
+              "libxc": -0.7129216126662785,
+              "absolute": 3.095676769482303e-06,
+              "normalized": 3.095676769482303e-06
+            },
+            "points_exceeding_tolerance": 40
+          },
+          "density_derivative": {
+            "worst_normalized": {
+              "rho": 8.0,
+              "s": 1.0,
+              "gradient_norm": 98.99736724096432,
+              "cp2k": -0.070118906408701,
+              "libxc": -0.07011821489623782,
+              "absolute": 6.915124631801106e-07,
+              "normalized": 6.915124631801106e-07
+            },
+            "worst_absolute": {
+              "rho": 8.0,
+              "s": 1.0,
+              "gradient_norm": 98.99736724096432,
+              "cp2k": -0.070118906408701,
+              "libxc": -0.07011821489623782,
+              "absolute": 6.915124631801106e-07,
+              "normalized": 6.915124631801106e-07
+            },
+            "points_exceeding_tolerance": 55
+          },
+          "gradient_norm_derivative": {
+            "worst_normalized": {
+              "rho": 0.1,
+              "s": 1.0,
+              "gradient_norm": 0.2871906714642023,
+              "cp2k": 0.01078341519849045,
+              "libxc": 0.010783384548134994,
+              "absolute": 3.065035545680994e-08,
+              "normalized": 3.065035545680994e-08
+            },
+            "worst_absolute": {
+              "rho": 0.1,
+              "s": 1.0,
+              "gradient_norm": 0.2871906714642023,
+              "cp2k": 0.01078341519849045,
+              "libxc": 0.010783384548134994,
+              "absolute": 3.065035545680994e-08,
+              "normalized": 3.065035545680994e-08
+            },
+            "points_exceeding_tolerance": 34
+          }
+        }
+      },
+      "sum": {
+        "arithmetic_equivalence_on_frozen_points": false,
+        "fields": {
+          "energy_density": {
+            "worst_normalized": {
+              "rho": 4.0,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -5.02150500994787,
+              "libxc": -5.0215036485852425,
+              "absolute": 1.361362627960716e-06,
+              "normalized": 2.711064960134031e-07
+            },
+            "worst_absolute": {
+              "rho": 8.0,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -12.529864970455405,
+              "libxc": -12.529861874778636,
+              "absolute": 3.095676769149236e-06,
+              "normalized": 2.470638571483921e-07
+            },
+            "points_exceeding_tolerance": 40
+          },
+          "density_derivative": {
+            "worst_normalized": {
+              "rho": 1.0,
+              "s": 1.0,
+              "gradient_norm": 6.187335452560271,
+              "cp2k": -0.9550072044068265,
+              "libxc": -0.9550067418197363,
+              "absolute": 4.6258709018864863e-07,
+              "normalized": 4.6258709018864863e-07
+            },
+            "worst_absolute": {
+              "rho": 8.0,
+              "s": 1.0,
+              "gradient_norm": 98.99736724096432,
+              "cp2k": -1.845672452507785,
+              "libxc": -1.8456717609953215,
+              "absolute": 6.915124635131775e-07,
+              "normalized": 3.7466694730887564e-07
+            },
+            "points_exceeding_tolerance": 55
+          },
+          "gradient_norm_derivative": {
+            "worst_normalized": {
+              "rho": 0.1,
+              "s": 1.0,
+              "gradient_norm": 0.2871906714642023,
+              "cp2k": -0.02155367262822594,
+              "libxc": -0.0215537032785814,
+              "absolute": 3.065035546201411e-08,
+              "normalized": 3.065035546201411e-08
+            },
+            "worst_absolute": {
+              "rho": 0.1,
+              "s": 1.0,
+              "gradient_norm": 0.2871906714642023,
+              "cp2k": -0.02155367262822594,
+              "libxc": -0.0215537032785814,
+              "absolute": 3.065035546201411e-08,
+              "normalized": 3.065035546201411e-08
+            },
+            "points_exceeding_tolerance": 34
+          }
+        }
+      }
+    }
+  },
+  "separate_rounded_build_diagnostic": {
+    "scope": "Spin-unpolarized energy density and first derivatives only",
+    "tested_shared_library_sha256": "bb59f692c3f552ce9af95a35973e76ecefc79692fdb1749b3883833c2891f9c7",
+    "patch_script_sha256": "ef4edb5bb53a7dc302dc280fa1ed6e5737a13c31835c9d8d4e6a8bb76aff265d",
+    "patched_source_sha256": {
+      "src/gga_c_pbe.c": "03e93f0af082466946cb5b6bf3a6e79339227f41d381c59676bcf1f67df19e2f",
+      "src/maple2c/gga_exc/gga_c_pbe.c": "12783055bf4c61ae37d04acbdab2b458c378c566a38f17d7a88858d833101fb7"
+    },
+    "required_build_option": "-DDISABLE_FXC=ON",
+    "ids": [
+      320,
+      130
+    ],
+    "beta": 0.066725,
+    "pw92_unpolarized_a": 0.031091,
+    "results": {
+      "exchange": {
+        "arithmetic_equivalence_on_frozen_points": true,
+        "fields": {
+          "energy_density": {
+            "worst_normalized": {
+              "rho": 4.0,
+              "s": 0.5,
+              "gradient_norm": 19.643565612548617,
+              "cp2k": -4.9304702742499105,
+              "libxc": -4.930470274249911,
+              "absolute": 8.881784197001252e-16,
+              "normalized": 1.8014071078346512e-16
+            },
+            "worst_absolute": {
+              "rho": 8.0,
+              "s": 0.5,
+              "gradient_norm": 49.49868362048216,
+              "cp2k": -12.42400656881682,
+              "libxc": -12.424006568816822,
+              "absolute": 1.7763568394002505e-15,
+              "normalized": 1.4297777689998588e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "density_derivative": {
+            "worst_normalized": {
+              "rho": 4.0,
+              "s": 1.0,
+              "gradient_norm": 39.287131225097234,
+              "cp2k": -1.4092577834517765,
+              "libxc": -1.409257783451776,
+              "absolute": 4.440892098500626e-16,
+              "normalized": 3.1512276537677104e-16
+            },
+            "worst_absolute": {
+              "rho": 4.0,
+              "s": 1.0,
+              "gradient_norm": 39.287131225097234,
+              "cp2k": -1.4092577834517765,
+              "libxc": -1.409257783451776,
+              "absolute": 4.440892098500626e-16,
+              "normalized": 3.1512276537677104e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "gradient_norm_derivative": {
+            "worst_normalized": {
+              "rho": 0.01,
+              "s": 1.0,
+              "gradient_norm": 0.013330210137859979,
+              "cp2k": -0.03233708782671638,
+              "libxc": -0.032337087826716404,
+              "absolute": 2.0816681711721685e-17,
+              "normalized": 2.0816681711721685e-17
+            },
+            "worst_absolute": {
+              "rho": 0.01,
+              "s": 1.0,
+              "gradient_norm": 0.013330210137859979,
+              "cp2k": -0.03233708782671638,
+              "libxc": -0.032337087826716404,
+              "absolute": 2.0816681711721685e-17,
+              "normalized": 2.0816681711721685e-17
+            },
+            "points_exceeding_tolerance": 0
+          }
+        }
+      },
+      "correlation": {
+        "arithmetic_equivalence_on_frozen_points": true,
+        "fields": {
+          "energy_density": {
+            "worst_normalized": {
+              "rho": 8.0,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -0.712924708343048,
+              "libxc": -0.7129247083430478,
+              "absolute": 2.220446049250313e-16,
+              "normalized": 2.220446049250313e-16
+            },
+            "worst_absolute": {
+              "rho": 8.0,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -0.712924708343048,
+              "libxc": -0.7129247083430478,
+              "absolute": 2.220446049250313e-16,
+              "normalized": 2.220446049250313e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "density_derivative": {
+            "worst_normalized": {
+              "rho": 1e-08,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -0.0016290926015197175,
+              "libxc": -0.0016290926015199824,
+              "absolute": 2.649790109554573e-16,
+              "normalized": 2.649790109554573e-16
+            },
+            "worst_absolute": {
+              "rho": 1e-08,
+              "s": 0.0,
+              "gradient_norm": 0.0,
+              "cp2k": -0.0016290926015197175,
+              "libxc": -0.0016290926015199824,
+              "absolute": 2.649790109554573e-16,
+              "normalized": 2.649790109554573e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "gradient_norm_derivative": {
+            "worst_normalized": {
+              "rho": 1e-05,
+              "s": 1.0,
+              "gradient_norm": 1.3330210137859986e-06,
+              "cp2k": 0.037500319606291924,
+              "libxc": 0.037500319606291944,
+              "absolute": 2.0816681711721685e-17,
+              "normalized": 2.0816681711721685e-17
+            },
+            "worst_absolute": {
+              "rho": 1e-05,
+              "s": 1.0,
+              "gradient_norm": 1.3330210137859986e-06,
+              "cp2k": 0.037500319606291924,
+              "libxc": 0.037500319606291944,
+              "absolute": 2.0816681711721685e-17,
+              "normalized": 2.0816681711721685e-17
+            },
+            "points_exceeding_tolerance": 0
+          }
+        }
+      },
+      "sum": {
+        "arithmetic_equivalence_on_frozen_points": true,
+        "fields": {
+          "energy_density": {
+            "worst_normalized": {
+              "rho": 4.0,
+              "s": 0.5,
+              "gradient_norm": 19.643565612548617,
+              "cp2k": -5.124650230211117,
+              "libxc": -5.124650230211118,
+              "absolute": 8.881784197001252e-16,
+              "normalized": 1.7331493463965351e-16
+            },
+            "worst_absolute": {
+              "rho": 4.0,
+              "s": 0.5,
+              "gradient_norm": 19.643565612548617,
+              "cp2k": -5.124650230211117,
+              "libxc": -5.124650230211118,
+              "absolute": 8.881784197001252e-16,
+              "normalized": 1.7331493463965351e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "density_derivative": {
+            "worst_normalized": {
+              "rho": 4.0,
+              "s": 1.0,
+              "gradient_norm": 39.287131225097234,
+              "cp2k": -1.478670397166004,
+              "libxc": -1.4786703971660036,
+              "absolute": 4.440892098500626e-16,
+              "normalized": 3.0033008755784715e-16
+            },
+            "worst_absolute": {
+              "rho": 4.0,
+              "s": 1.0,
+              "gradient_norm": 39.287131225097234,
+              "cp2k": -1.478670397166004,
+              "libxc": -1.4786703971660036,
+              "absolute": 4.440892098500626e-16,
+              "normalized": 3.0033008755784715e-16
+            },
+            "points_exceeding_tolerance": 0
+          },
+          "gradient_norm_derivative": {
+            "worst_normalized": {
+              "rho": 1e-05,
+              "s": 1.0,
+              "gradient_norm": 1.3330210137859986e-06,
+              "cp2k": 0.0051632317795755195,
+              "libxc": 0.005163231779575547,
+              "absolute": 2.7755575615628914e-17,
+              "normalized": 2.7755575615628914e-17
+            },
+            "worst_absolute": {
+              "rho": 1e-05,
+              "s": 1.0,
+              "gradient_norm": 1.3330210137859986e-06,
+              "cp2k": 0.0051632317795755195,
+              "libxc": 0.005163231779575547,
+              "absolute": 2.7755575615628914e-17,
+              "normalized": 2.7755575615628914e-17
+            },
+            "points_exceeding_tolerance": 0
+          }
+        }
+      }
+    }
+  }
+}

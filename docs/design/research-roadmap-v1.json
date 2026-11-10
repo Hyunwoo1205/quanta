@@ -1,7 +1,7 @@
 {
   "document_kind": "development_plan",
   "plan_id": "quanta-research-roadmap",
-  "plan_version": "1.0.24",
+  "plan_version": "1.0.25",
   "updated_at": "2026-11-10",
   "status": "planned_development",
   "executable": false,
@@ -364,7 +364,7 @@
         "A01",
         "A03"
       ],
-      "status": "basis_redesign_offline_preflight_complete",
+      "status": "basis_r1_pilot_closed_no_go",
       "acceptance": [
         "상태·단위·에너지 기준·변환·근사·엔진/자료 해시·오류·적합성 규칙 확정",
         "초기 한 엔진·작은 비주기 계의 지원 프로필과 사전 수치/물리 허용오차 잠금",
@@ -374,7 +374,7 @@
       "source_binding_gate": "Both source-linked ARMv8-A and x86-64-v2 candidates passed native isolated A03 and pinned upstream GAPW. The rebuilt ARM candidate passed OCI A03. Five fixed A04 OCI reruns matched native ARM, passed the same-input x86 gates and passed isolated host preservation with split DB/WAL comparisons. Contract freeze and independent physical acceptance remain pending.",
       "contract_draft": "docs/design/atomistic-a04-v0.1/profile.json",
       "authored_input_schema_draft": "docs/design/atomistic-a04-v0.1/authored-input.schema.json",
-      "next_action": "R0 실행 준비에서 5Z L10·He 6Z L10 입력과 자원을 잠그고, 독립 PBE HelFEM 빌드·밀도·힘 기준을 검증.",
+      "next_action": "He 6Z L10의 수치 조건을 고정하고 고정밀 AO 밀도와 CUBE 출력 및 독립 유한요소 밀도를 같은 격자에서 대조해 기저·GAPW 출력 기여를 분리. 독립 기준 및 기존 AV/M04 허용치를 유지하고 R2~R4는 보류.",
       "fixed_fixture_basis_pilot_receipt": "docs/verification/atomistic-a04/basis-refinement-42499460058.json",
       "fixed_fixture_atomic_grid_screen": "docs/verification/atomistic-a04/atomic-grid-refinement-42498321184.json",
       "remaining_numerical_validation_plan": "docs/design/atomistic-a04-v0.1/remaining-numerical-validation.json",
@@ -401,7 +401,9 @@
       "he_even_grid_final_validation_plan": "docs/design/atomistic-a04-v0.1/a04-final-validation-he-even-grid-plan.json",
       "he_even_grid_final_basis_receipt": "docs/verification/atomistic-a04/even-grid-final-42646711532.json",
       "basis_redesign_plan": "docs/design/atomistic-a04-v0.1/a04-basis-redesign-v1.json",
-      "basis_overlap_preflight": "docs/verification/atomistic-a04/basis-overlap-preflight-20261110.json"
+      "basis_overlap_preflight": "docs/verification/atomistic-a04/basis-overlap-preflight-20261110.json",
+      "basis_r1_inputs": "docs/design/atomistic-a04-v0.1/a04-he-basis-pilot-inputs.json",
+      "basis_r1_receipt": "docs/verification/atomistic-a04/basis-r1-pilot-42837190311.json"
     },
     {
       "id": "A05",
